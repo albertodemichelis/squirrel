@@ -455,6 +455,7 @@ SQRESULT sq_bindenv(HSQUIRRELVM v,SQInteger idx)
 		return sq_throwerror(v,_SC("the target is not a closure"));
     SQObjectPtr &env = stack_get(v,-1);
 	if(!sq_istable(env) &&
+		!sq_isarray(env) &&
 		!sq_isclass(env) &&
 		!sq_isinstance(env))
 		return sq_throwerror(v,_SC("invalid environment"));
@@ -892,29 +893,30 @@ SQRESULT sq_set(HSQUIRRELVM v,SQInteger idx)
 SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx)
 {
 	SQObjectPtr &self = stack_get(v, idx);
-	if(type(v->GetUp(-2)) == OT_NULL) {
+	SQObjectPtr &key = v->GetUp(-2);
+	if(type(key) == OT_NULL) {
 		v->Pop(2);
 		return sq_throwerror(v, _SC("null key"));
 	}
 	switch(type(self)) {
 	case OT_TABLE:
-		_table(self)->NewSlot(v->GetUp(-2), v->GetUp(-1));
+		_table(self)->NewSlot(key, v->GetUp(-1));
 		v->Pop(2);
 		return SQ_OK;
 	break;
 	case OT_CLASS:
-		_class(self)->NewSlot(_ss(v), v->GetUp(-2), v->GetUp(-1),false);
+		_class(self)->NewSlot(_ss(v), key, v->GetUp(-1),false);
 		v->Pop(2);
 		return SQ_OK;
 	break;
 	case OT_INSTANCE:
-		if(_instance(self)->Set(v->GetUp(-2), v->GetUp(-1))) {
+		if(_instance(self)->Set(key, v->GetUp(-1))) {
 			v->Pop(2);
 			return SQ_OK;
 		}
 	break;
 	case OT_ARRAY:
-		if(v->Set(self, v->GetUp(-2), v->GetUp(-1),false)) {
+		if(v->Set(self, key, v->GetUp(-1),false)) {
 			v->Pop(2);
 			return SQ_OK;
 		}
@@ -930,8 +932,9 @@ SQRESULT sq_newmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
 {
 	SQObjectPtr &self = stack_get(v, idx);
 	if(type(self) != OT_CLASS) return sq_throwerror(v, _SC("new member only works with classes"));
-	if(type(v->GetUp(-3)) == OT_NULL) return sq_throwerror(v, _SC("null key"));
-	if(!v->NewSlotA(self,v->GetUp(-3),v->GetUp(-2),v->GetUp(-1),bstatic?true:false,false))
+	SQObjectPtr &key = v->GetUp(-3);
+	if(type(key) == OT_NULL) return sq_throwerror(v, _SC("null key"));
+	if(!v->NewSlotA(self,key,v->GetUp(-2),v->GetUp(-1),bstatic?true:false,false))
 		return SQ_ERROR;
 	return SQ_OK; 
 }
@@ -940,8 +943,9 @@ SQRESULT sq_rawnewmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
 {
 	SQObjectPtr &self = stack_get(v, idx);
 	if(type(self) != OT_CLASS) return sq_throwerror(v, _SC("new member only works with classes"));
-	if(type(v->GetUp(-3)) == OT_NULL) return sq_throwerror(v, _SC("null key"));
-	if(!v->NewSlotA(self,v->GetUp(-3),v->GetUp(-2),v->GetUp(-1),bstatic?true:false,true))
+	SQObjectPtr &key = v->GetUp(-3);
+	if(type(key) == OT_NULL) return sq_throwerror(v, _SC("null key"));
+	if(!v->NewSlotA(self,key,v->GetUp(-2),v->GetUp(-1),bstatic?true:false,true))
 		return SQ_ERROR;
 	return SQ_OK; 
 }
@@ -1011,7 +1015,8 @@ SQRESULT sq_getdelegate(HSQUIRRELVM v,SQInteger idx)
 SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx)
 {
 	SQObjectPtr &self=stack_get(v,idx);
-	if(v->Get(self,v->GetUp(-1),v->GetUp(-1),0,DONT_FALL_BACK))
+	SQObjectPtr &obj = v->GetUp(-1);
+	if(v->Get(self,obj,obj,false,DONT_FALL_BACK))
 		return SQ_OK;
 	v->Pop();
 	return SQ_ERROR;
