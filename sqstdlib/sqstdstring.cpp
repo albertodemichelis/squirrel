@@ -71,7 +71,7 @@ SQRESULT sqstd_format(HSQUIRRELVM v,SQInteger nformatstringidx,SQInteger *outlen
 	SQChar fmt[MAX_FORMAT_LEN];
 	sq_getstring(v,nformatstringidx,&format);
 	SQInteger format_size = sq_getsize(v,nformatstringidx); 
-	SQInteger allocated = (sq_getsize(v,nformatstringidx)+2)*sizeof(SQChar);
+	SQInteger allocated = (format_size+2)*sizeof(SQChar);
 	dest = sq_getscratchpad(v,allocated);
 	SQInteger n = 0,i = 0, nparam = nformatstringidx+1, w = 0;
 	//while(format[n] != '\0') 
