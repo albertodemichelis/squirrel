@@ -1020,23 +1020,23 @@ SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx)
 SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx)
 {
 	SQObjectPtr &self=stack_get(v,idx);
+	SQObjectPtr &obj = v->GetUp(-1);
 	switch(type(self)) {
 	case OT_TABLE:
-		if(_table(self)->Get(v->GetUp(-1),v->GetUp(-1)))
+		if(_table(self)->Get(obj,obj))
 			return SQ_OK;
 		break;
 	case OT_CLASS:
-		if(_class(self)->Get(v->GetUp(-1),v->GetUp(-1)))
+		if(_class(self)->Get(obj,obj))
 			return SQ_OK;
 		break;
 	case OT_INSTANCE:
-		if(_instance(self)->Get(v->GetUp(-1),v->GetUp(-1)))
+		if(_instance(self)->Get(obj,obj))
 			return SQ_OK;
 		break;
 	case OT_ARRAY:{
-		SQObjectPtr& key = v->GetUp(-1);
-		if(sq_isnumeric(key)){
-			if(_array(self)->Get(tointeger(key),v->GetUp(-1))) {
+		if(sq_isnumeric(obj)){
+			if(_array(self)->Get(tointeger(obj),obj)) {
 				return SQ_OK;
 			}
 		}
@@ -1049,7 +1049,7 @@ SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx)
 	default:
 		v->Pop();
 		return sq_throwerror(v,_SC("rawget works only on array/table/instance and class"));
-	}	
+	}
 	v->Pop();
 	return sq_throwerror(v,_SC("the index doesn't exist"));
 }
@@ -1132,9 +1132,10 @@ SQRESULT sq_reservestack(HSQUIRRELVM v,SQInteger nsize)
 
 SQRESULT sq_resume(HSQUIRRELVM v,SQBool retval,SQBool raiseerror)
 {
-	if(type(v->GetUp(-1))==OT_GENERATOR){
+    SQObjectPtr &obj = v->GetUp(-1);
+	if(type(obj)==OT_GENERATOR){
 		v->PushNull(); //retval
-		if(!v->Execute(v->GetUp(-2),0,v->_top,v->GetUp(-1),raiseerror,SQVM::ET_RESUME_GENERATOR))
+		if(!v->Execute(v->GetUp(-2),0,v->_top,obj,raiseerror,SQVM::ET_RESUME_GENERATOR))
 		{v->Raise_Error(v->_lasterror); return SQ_ERROR;}
 		if(!retval)
 			v->Pop();
