@@ -34,7 +34,8 @@ static bool sq_aux_gettypedarg(HSQUIRRELVM v,SQInteger idx,SQObjectType type,SQO
 
 SQInteger sq_aux_invalidtype(HSQUIRRELVM v,SQObjectType type)
 {
-	scsprintf(_ss(v)->GetScratchPad(100), 100 *sizeof(SQChar), _SC("unexpected type %s"), IdType2Name(type));
+	SQUnsignedInteger buf_size = 100 *sizeof(SQChar);
+	scsprintf(_ss(v)->GetScratchPad(buf_size), buf_size, _SC("unexpected type %s"), IdType2Name(type));
 	return sq_throwerror(v, _ss(v)->GetScratchPad(-1));
 }
 
