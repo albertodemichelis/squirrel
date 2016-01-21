@@ -13,7 +13,7 @@ static const SQChar *g_nnames[] =
 	_SC("NONE"),_SC("OP_GREEDY"),	_SC("OP_OR"),
 	_SC("OP_EXPR"),_SC("OP_NOCAPEXPR"),_SC("OP_DOT"),	_SC("OP_CLASS"),
 	_SC("OP_CCLASS"),_SC("OP_NCLASS"),_SC("OP_RANGE"),_SC("OP_CHAR"),
-	_SC("OP_EOL"),_SC("OP_BOL"),_SC("OP_WB")
+	_SC("OP_EOL"),_SC("OP_BOL"),_SC("OP_WB"),_C("OP_MB")
 };
 
 #endif
@@ -31,6 +31,7 @@ static const SQChar *g_nnames[] =
 #define OP_EOL			(MAX_CHAR+11)
 #define OP_BOL			(MAX_CHAR+12)
 #define OP_WB			(MAX_CHAR+13)
+#define OP_MB           (MAX_CHAR+14) //match balanced
 
 #define SQREX_SYMBOL_ANY_CHAR ('.')
 #define SQREX_SYMBOL_GREEDY_ONE_OR_MORE ('+')
@@ -139,7 +140,20 @@ static SQInteger sqstd_rex_charnode(SQRex *exp,SQBool isclass)
 				t = *exp->_p; exp->_p++; 
 				return sqstd_rex_charclass(exp,t);
 				}
-			case 'b': 
+            case 'm':
+                {
+                     SQChar cb, ce; //cb = character begin match ce = character end match
+                     cb = *++exp->_p; //skip 'm'
+                     ce = *++exp->_p;
+                     exp->_p++; //points to the next char to be parsed
+                     if ((!cb) || (!ce)) sqstd_rex_error(exp,_SC("balanced chars expected"));
+                     if ( cb == ce ) sqstd_rex_error(exp,_SC("open/close char can't be the same"));
+                     SQInteger node =  sqstd_rex_newnode(exp,OP_MB);
+                     exp->_nodes[node].left = cb;
+                     exp->_nodes[node].right = ce;
+                     return node;
+                }
+			case 'b':
 			case 'B':
 				if(!isclass) {
 					SQInteger node = sqstd_rex_newnode(exp,OP_WB);
@@ -199,8 +213,6 @@ static SQInteger sqstd_rex_class(SQRex *exp)
 	if(first!=-1){
 		SQInteger c = first;
 		exp->_nodes[chain].next = c;
-		chain = c;
-		first = -1;
 	}
 	/* hack? */
 	exp->_nodes[ret].left = exp->_nodes[ret].next;
@@ -506,6 +518,23 @@ static const SQChar *sqstd_rex_matchnode(SQRex* exp,SQRexNode *node,const SQChar
 			return str;
 		}
 		return NULL;
+    case OP_MB:
+        {
+            int cb = node->left; //char that opens a balanced expression
+            if(*str != cb) return NULL; // string doesnt start with open char
+            int ce = node->right; //char that closes a balanced expression
+            int cont = 1;
+            const SQChar *strEol = exp->_eol;
+            while (++str < strEol) {
+              if (*str == ce) {
+                if (--cont == 0) {
+                    return ++str;
+                }
+              }
+              else if (*str == cb) cont++;
+            }
+        }
+        return NULL; // string ends out of balance
 	default: /* char */
 		if(*str != node->type) return NULL;
 		str++;

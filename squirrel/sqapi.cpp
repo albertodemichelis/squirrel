@@ -34,7 +34,8 @@ static bool sq_aux_gettypedarg(HSQUIRRELVM v,SQInteger idx,SQObjectType type,SQO
 
 SQInteger sq_aux_invalidtype(HSQUIRRELVM v,SQObjectType type)
 {
-	scsprintf(_ss(v)->GetScratchPad(100), 100 *sizeof(SQChar), _SC("unexpected type %s"), IdType2Name(type));
+	SQUnsignedInteger buf_size = 100 *sizeof(SQChar);
+	scsprintf(_ss(v)->GetScratchPad(buf_size), buf_size, _SC("unexpected type %s"), IdType2Name(type));
 	return sq_throwerror(v, _ss(v)->GetScratchPad(-1));
 }
 
@@ -454,6 +455,7 @@ SQRESULT sq_bindenv(HSQUIRRELVM v,SQInteger idx)
 		return sq_throwerror(v,_SC("the target is not a closure"));
     SQObjectPtr &env = stack_get(v,-1);
 	if(!sq_istable(env) &&
+		!sq_isarray(env) &&
 		!sq_isclass(env) &&
 		!sq_isinstance(env))
 		return sq_throwerror(v,_SC("invalid environment"));
@@ -891,29 +893,30 @@ SQRESULT sq_set(HSQUIRRELVM v,SQInteger idx)
 SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx)
 {
 	SQObjectPtr &self = stack_get(v, idx);
-	if(type(v->GetUp(-2)) == OT_NULL) {
+	SQObjectPtr &key = v->GetUp(-2);
+	if(type(key) == OT_NULL) {
 		v->Pop(2);
 		return sq_throwerror(v, _SC("null key"));
 	}
 	switch(type(self)) {
 	case OT_TABLE:
-		_table(self)->NewSlot(v->GetUp(-2), v->GetUp(-1));
+		_table(self)->NewSlot(key, v->GetUp(-1));
 		v->Pop(2);
 		return SQ_OK;
 	break;
 	case OT_CLASS:
-		_class(self)->NewSlot(_ss(v), v->GetUp(-2), v->GetUp(-1),false);
+		_class(self)->NewSlot(_ss(v), key, v->GetUp(-1),false);
 		v->Pop(2);
 		return SQ_OK;
 	break;
 	case OT_INSTANCE:
-		if(_instance(self)->Set(v->GetUp(-2), v->GetUp(-1))) {
+		if(_instance(self)->Set(key, v->GetUp(-1))) {
 			v->Pop(2);
 			return SQ_OK;
 		}
 	break;
 	case OT_ARRAY:
-		if(v->Set(self, v->GetUp(-2), v->GetUp(-1),false)) {
+		if(v->Set(self, key, v->GetUp(-1),false)) {
 			v->Pop(2);
 			return SQ_OK;
 		}
@@ -929,8 +932,9 @@ SQRESULT sq_newmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
 {
 	SQObjectPtr &self = stack_get(v, idx);
 	if(type(self) != OT_CLASS) return sq_throwerror(v, _SC("new member only works with classes"));
-	if(type(v->GetUp(-3)) == OT_NULL) return sq_throwerror(v, _SC("null key"));
-	if(!v->NewSlotA(self,v->GetUp(-3),v->GetUp(-2),v->GetUp(-1),bstatic?true:false,false))
+	SQObjectPtr &key = v->GetUp(-3);
+	if(type(key) == OT_NULL) return sq_throwerror(v, _SC("null key"));
+	if(!v->NewSlotA(self,key,v->GetUp(-2),v->GetUp(-1),bstatic?true:false,false))
 		return SQ_ERROR;
 	return SQ_OK; 
 }
@@ -939,8 +943,9 @@ SQRESULT sq_rawnewmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
 {
 	SQObjectPtr &self = stack_get(v, idx);
 	if(type(self) != OT_CLASS) return sq_throwerror(v, _SC("new member only works with classes"));
-	if(type(v->GetUp(-3)) == OT_NULL) return sq_throwerror(v, _SC("null key"));
-	if(!v->NewSlotA(self,v->GetUp(-3),v->GetUp(-2),v->GetUp(-1),bstatic?true:false,true))
+	SQObjectPtr &key = v->GetUp(-3);
+	if(type(key) == OT_NULL) return sq_throwerror(v, _SC("null key"));
+	if(!v->NewSlotA(self,key,v->GetUp(-2),v->GetUp(-1),bstatic?true:false,true))
 		return SQ_ERROR;
 	return SQ_OK; 
 }
@@ -1010,7 +1015,8 @@ SQRESULT sq_getdelegate(HSQUIRRELVM v,SQInteger idx)
 SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx)
 {
 	SQObjectPtr &self=stack_get(v,idx);
-	if(v->Get(self,v->GetUp(-1),v->GetUp(-1),0,DONT_FALL_BACK))
+	SQObjectPtr &obj = v->GetUp(-1);
+	if(v->Get(self,obj,obj,false,DONT_FALL_BACK))
 		return SQ_OK;
 	v->Pop();
 	return SQ_ERROR;
@@ -1019,23 +1025,23 @@ SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx)
 SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx)
 {
 	SQObjectPtr &self=stack_get(v,idx);
+	SQObjectPtr &obj = v->GetUp(-1);
 	switch(type(self)) {
 	case OT_TABLE:
-		if(_table(self)->Get(v->GetUp(-1),v->GetUp(-1)))
+		if(_table(self)->Get(obj,obj))
 			return SQ_OK;
 		break;
 	case OT_CLASS:
-		if(_class(self)->Get(v->GetUp(-1),v->GetUp(-1)))
+		if(_class(self)->Get(obj,obj))
 			return SQ_OK;
 		break;
 	case OT_INSTANCE:
-		if(_instance(self)->Get(v->GetUp(-1),v->GetUp(-1)))
+		if(_instance(self)->Get(obj,obj))
 			return SQ_OK;
 		break;
 	case OT_ARRAY:{
-		SQObjectPtr& key = v->GetUp(-1);
-		if(sq_isnumeric(key)){
-			if(_array(self)->Get(tointeger(key),v->GetUp(-1))) {
+		if(sq_isnumeric(obj)){
+			if(_array(self)->Get(tointeger(obj),obj)) {
 				return SQ_OK;
 			}
 		}
@@ -1048,7 +1054,7 @@ SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx)
 	default:
 		v->Pop();
 		return sq_throwerror(v,_SC("rawget works only on array/table/instance and class"));
-	}	
+	}
 	v->Pop();
 	return sq_throwerror(v,_SC("the index doesn't exist"));
 }
@@ -1131,9 +1137,10 @@ SQRESULT sq_reservestack(HSQUIRRELVM v,SQInteger nsize)
 
 SQRESULT sq_resume(HSQUIRRELVM v,SQBool retval,SQBool raiseerror)
 {
-	if(type(v->GetUp(-1))==OT_GENERATOR){
+    SQObjectPtr &obj = v->GetUp(-1);
+	if(type(obj)==OT_GENERATOR){
 		v->PushNull(); //retval
-		if(!v->Execute(v->GetUp(-2),0,v->_top,v->GetUp(-1),raiseerror,SQVM::ET_RESUME_GENERATOR))
+		if(!v->Execute(v->GetUp(-2),0,v->_top,obj,raiseerror,SQVM::ET_RESUME_GENERATOR))
 		{v->Raise_Error(v->_lasterror); return SQ_ERROR;}
 		if(!retval)
 			v->Pop();
