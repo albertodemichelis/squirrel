@@ -1216,8 +1216,9 @@ bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &des
 	case OT_STRING:
 		if(sq_isnumeric(key)){
 			SQInteger n = tointeger(key);
-			if(abs((int)n) < _string(self)->_len) {
-				if(n < 0) n = _string(self)->_len - n;
+			SQInteger len = _string(self)->_len;
+			if (n < 0) { n += len; }
+			if (n >= 0 && n < len) {
 				dest = SQInteger(_stringval(self)[n]);
 				return true;
 			}
@@ -1551,7 +1552,8 @@ SQInteger prevstackbase = _stackbase;
 		SQObjectPtr constr;
 		SQObjectPtr temp;
 		CreateClassInstance(_class(closure),outres,constr);
-		if(type(constr) != OT_NULL) {
+		SQObjectType ctype = type(constr);
+		if (ctype == OT_NATIVECLOSURE || ctype == OT_CLOSURE) {
 			_stack[stackbase] = outres;
 			return Call(constr,nparams,stackbase,temp,raiseerror);
 		}
@@ -1631,7 +1633,7 @@ bool SQVM::EnterFrame(SQInteger newbase, SQInteger newtop, bool tailcall)
 			Raise_Error(_SC("stack overflow, cannot resize stack while in  a metamethod"));
 			return false;
 		}
-		_stack.resize(_stack.size() + (MIN_STACK_OVERHEAD << 2));
+		_stack.resize(newtop + (MIN_STACK_OVERHEAD << 2));
 		RelocateOuters();
 	}
 	return true;
