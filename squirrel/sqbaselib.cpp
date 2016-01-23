@@ -760,7 +760,7 @@ static SQInteger array_slice(HSQUIRRELVM v)
 	if(sidx < 0)sidx = alen + sidx;
 	if(eidx < 0)eidx = alen + eidx;
 	if(eidx < sidx)return sq_throwerror(v,_SC("wrong indexes"));
-	if(eidx > alen)return sq_throwerror(v,_SC("slice out of range"));
+	if(eidx > alen || sidx < 0)return sq_throwerror(v, _SC("slice out of range"));
 	SQArray *arr=SQArray::Create(_ss(v),eidx-sidx);
 	SQObjectPtr t;
 	SQInteger count=0;
@@ -807,7 +807,7 @@ static SQInteger string_slice(HSQUIRRELVM v)
 	if(sidx < 0)sidx = slen + sidx;
 	if(eidx < 0)eidx = slen + eidx;
 	if(eidx < sidx)	return sq_throwerror(v,_SC("wrong indexes"));
-	if(eidx > slen)	return sq_throwerror(v,_SC("slice out of range"));
+	if(eidx > slen || sidx < 0)	return sq_throwerror(v, _SC("slice out of range"));
 	v->Push(SQString::Create(_ss(v),&_stringval(o)[sidx],eidx-sidx));
 	return 1;
 }
@@ -839,7 +839,7 @@ static SQInteger string_find(HSQUIRRELVM v)
 	if(sidx < 0)sidx = slen + sidx; \
 	if(eidx < 0)eidx = slen + eidx; \
 	if(eidx < sidx)	return sq_throwerror(v,_SC("wrong indexes")); \
-	if(eidx > slen)	return sq_throwerror(v,_SC("slice out of range")); \
+	if(eidx > slen || sidx < 0)	return sq_throwerror(v,_SC("slice out of range")); \
 	SQInteger len=_string(str)->_len; \
 	const SQChar *sthis=_stringval(str); \
 	SQChar *snew=(_ss(v)->GetScratchPad(sq_rsl(len))); \
