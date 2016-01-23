@@ -153,6 +153,10 @@ bool SQGenerator::Yield(SQVM *v,SQInteger target)
 	for(SQInteger i=0;i<_ci._etraps;i++) {
 		_etraps.push_back(v->_etraps.top());
 		v->_etraps.pop_back();
+		// store relative stack base and size in case of resume to other _top
+		SQExceptionTrap &et = _etraps.back();
+		et._stackbase -= v->_stackbase;
+		et._stacksize -= v->_stackbase;
 	}
 	_state=eSuspended;
 	return true;
@@ -165,6 +169,7 @@ bool SQGenerator::Resume(SQVM *v,SQObjectPtr &dest)
 	SQInteger size = _stack.size();
 	SQInteger target = &dest - &(v->_stack._vals[v->_stackbase]);
 	assert(target>=0 && target<=255);
+	SQInteger newbase = v->_top;
 	if(!v->EnterFrame(v->_top, v->_top + size, false)) 
 		return false;
 	v->ci->_generator   = this;
@@ -180,6 +185,10 @@ bool SQGenerator::Resume(SQVM *v,SQObjectPtr &dest)
 	for(SQInteger i=0;i<_ci._etraps;i++) {
 		v->_etraps.push_back(_etraps.top());
 		_etraps.pop_back();
+		SQExceptionTrap &et = v->_etraps.back();
+		// restore absolute stack base and size
+		et._stackbase += newbase;
+		et._stacksize += newbase;
 	}
 	SQObject _this = _stack._vals[0];
 	v->_stack[v->_stackbase] = type(_this) == OT_WEAKREF ? _weakref(_this)->_obj : _this;
