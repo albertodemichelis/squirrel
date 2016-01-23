@@ -13,7 +13,7 @@ static const SQChar *g_nnames[] =
 	_SC("NONE"),_SC("OP_GREEDY"),	_SC("OP_OR"),
 	_SC("OP_EXPR"),_SC("OP_NOCAPEXPR"),_SC("OP_DOT"),	_SC("OP_CLASS"),
 	_SC("OP_CCLASS"),_SC("OP_NCLASS"),_SC("OP_RANGE"),_SC("OP_CHAR"),
-	_SC("OP_EOL"),_SC("OP_BOL"),_SC("OP_WB"),_C("OP_MB")
+	_SC("OP_EOL"),_SC("OP_BOL"),_SC("OP_WB"),_SC("OP_MB")
 };
 
 #endif
@@ -502,17 +502,20 @@ static const SQChar *sqstd_rex_matchnode(SQRex* exp,SQRexNode *node,const SQChar
 		if(str == exp->_eol) return str;
 		return NULL;
 	case OP_DOT:{
+		if (str == exp->_eol) return NULL;
 		str++;
 				}
 		return str;
 	case OP_NCLASS:
 	case OP_CLASS:
+		if (str == exp->_eol) return NULL;
 		if(sqstd_rex_matchclass(exp,&exp->_nodes[node->left],*str)?(type == OP_CLASS?SQTrue:SQFalse):(type == OP_NCLASS?SQTrue:SQFalse)) {
 			str++;
 			return str;
 		}
 		return NULL;
 	case OP_CCLASS:
+		if (str == exp->_eol) return NULL;
 		if(sqstd_rex_matchcclass(node->left,*str)) {
 			str++;
 			return str;
@@ -524,8 +527,8 @@ static const SQChar *sqstd_rex_matchnode(SQRex* exp,SQRexNode *node,const SQChar
             if(*str != cb) return NULL; // string doesnt start with open char
             int ce = node->right; //char that closes a balanced expression
             int cont = 1;
-            const SQChar *strEol = exp->_eol;
-            while (++str < strEol) {
+            const SQChar *streol = exp->_eol;
+            while (++str < streol) {
               if (*str == ce) {
                 if (--cont == 0) {
                     return ++str;
@@ -536,6 +539,7 @@ static const SQChar *sqstd_rex_matchnode(SQRex* exp,SQRexNode *node,const SQChar
         }
         return NULL; // string ends out of balance
 	default: /* char */
+		if (str == exp->_eol) return NULL;
 		if(*str != node->type) return NULL;
 		str++;
 		return str;
