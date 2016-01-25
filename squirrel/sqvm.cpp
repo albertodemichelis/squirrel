@@ -68,12 +68,14 @@ bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,
 			switch(op) {
 			case '+': res = i1 + i2; break;
 			case '-': res = i1 - i2; break;
-			case '/': if(i2 == 0) { Raise_Error(_SC("division by zero")); return false; }
-					res = i1 / i2; 
+			case '/': if (i2 == 0) { Raise_Error(_SC("division by zero")); return false; }
+					else if (i2 == -1 && i1 == INT_MIN) { Raise_Error(_SC("integer overflow")); return false; }
+					res = i1 / i2;
 					break;
 			case '*': res = i1 * i2; break;
-			case '%': if(i2 == 0) { Raise_Error(_SC("modulo by zero")); return false; }
-					res = i1 % i2; 
+			case '%': if (i2 == 0) { Raise_Error(_SC("modulo by zero")); return false; }
+					else if (i2 == -1 && i1 == INT_MIN) { res = 0; break; }
+					res = i1 % i2;
 					break;
 			default: res = 0xDEADBEEF;
 			}
