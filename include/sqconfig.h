@@ -62,8 +62,10 @@ typedef wchar_t SQChar;
 #define	scstrcmp	wcscmp
 #ifdef _MSC_VER
 #define scsprintf	_snwprintf
+#define scvfprintf	_vfwprintf
 #else
 #define scsprintf	snwprintf
+#define scvfprintf	vfwprintf
 #endif
 #define scstrlen	wcslen
 #define scstrtod	wcstod
@@ -107,8 +109,10 @@ typedef char SQChar;
 #define	scstrcmp	strcmp
 #ifdef _MSC_VER
 #define scsprintf	_snprintf
+#define scvfprintf	_vfprintf
 #else
 #define scsprintf	snprintf
+#define scvfprintf	vfprintf
 #endif
 #define scstrlen	strlen
 #define scstrtod	strtod
