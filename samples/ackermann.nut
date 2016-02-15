@@ -15,7 +15,7 @@ local n;
 if(vargv.len()!=0) {
    n = vargv[0].tointeger();
   if(n < 1) n = 1;
-} else {   
+} else {
   n = 1;
 }
 print("n="+n+"\n");

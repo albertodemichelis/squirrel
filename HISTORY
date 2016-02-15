@@ -15,7 +15,7 @@
 -fixed incorrect optional semicolon after "if block"(thx Alexander)
 -fixed crash bug in compiler related to compound arith operators(+=,-= etc...) (thx Jeff1)
 
-***2015-01-10	   ***
+***2015-01-10      ***
 ***version 3.1 RC 1***
 -added new header sqconfig.h for all optional type declarations(unicode, 64bits etc..)
 -added sq_setsharedforeignptr sq_getsharedforeignptr
@@ -32,7 +32,7 @@
 -fixed bug in switch statement when using locals as case values (thx mingodad)
 -fixed bug in print()(thx Lucas Cardellini)
 
-***2013-08-30		   ***
+***2013-08-30          ***
 ***version 3.1 beta 1***
 -added new scoping rule(root attached to closures)
 -added closure.setroot() closure.getroot()
@@ -44,7 +44,7 @@
 -fixed bug in sqstd_createfile() (thx mingodad)
 -minor buxfixes
 
-***2012-11-10		   ***
+***2012-11-10          ***
 ***version 3.0.4 stable***
 -sq_deleteslot slot now pops the key in case of failure
 -fixed bug when _get metamethod throws null
@@ -52,7 +52,7 @@
 -added some error handling
 -minor bugfixes
 
-***2012-06-19		   ***
+***2012-06-19          ***
 ***version 3.1.0 alpha 1***
 -changed in and instanceof operator precendence
 -root object in closures
@@ -75,7 +75,7 @@
 -fixed obscure bug in the compiler(thx yishin)
 -fixed some minor bug
 
-***2011-11-28		   ***
+***2011-11-28          ***
 ***version 3.0.2 stable***
 -added sq_gethash API
 -now array.sort() is implemented with heapsort
@@ -84,7 +84,7 @@
 -fixed some documentation
 -fixed bug in GC
 
-***2011-09-08		   ***
+***2011-09-08          ***
 ***version 3.0.1 stable***
 -added # as alternative symbol for "line comment"(mostly useful for shell scripts)
 -added sq_throwobject() to throw an arbitrary object from the C API
@@ -110,7 +110,7 @@
 -fixed bug when using SQUSEDOUBLE and 32bits intengers
 -fixed bug when invoking generators with closure.call() (thx huntercool)
 
-***2010-12-19					        ***
+***2010-12-19                           ***
 ***version 3.0 release candidate 1(RC 1)***
 -improved metamethods error handling
 -added parameter 'isstatic' to _newmember metamethod(thx G.Meyer)
@@ -213,7 +213,7 @@ will terminate the iteration but will not be returned as foreach iteration
 -fixed sq_cmp() (thx jyuill)
 -fixed minor bugs
 
-***2006-08-21		   ***
+***2006-08-21          ***
 ***version 2.1.1 stable***
 -vm refactoring
 -optimized internal function memory layout
@@ -225,7 +225,7 @@ will terminate the iteration but will not be returned as foreach iteration
 -sq_getlocal() now enumerates also outer values.
 -fixed regexp library for GCC users.
 
-***2006-03-19	     ***
+***2006-03-19        ***
 ***version 2.1 stable***
 -added static class fields, new keyword static
 -added 64bits architecture support
@@ -250,7 +250,7 @@ will terminate the iteration but will not be returned as foreach iteration
 -regular expressions operators (+,*) now have more POSIX greedyness behaviour
 -class constructors are now invoked as normal functions
 
-***2005-10-02	       ***
+***2005-10-02          ***
 ***version 2.0.5 stable***
 -fixed some 64bits incompatibilities (thx sarge)
 -fixed minor bug in the stdlib format() function (thx Rick)
@@ -258,7 +258,7 @@ will terminate the iteration but will not be returned as foreach iteration
 -added new API sq_poptop() & sq_getfreevariable()
 -some performance improvements
 
-***2005-08-14	       ***
+***2005-08-14          ***
 ***version 2.0.4 stable***
 -weak references and related API calls
 -added sq_objtobool()
@@ -269,30 +269,30 @@ will terminate the iteration but will not be returned as foreach iteration
 -fixed a bug in format()
 -fixed bug in string.tointeger() and string.tofloat()
 
-***2005-06-24	       ***
+***2005-06-24          ***
 ***version 2.0.3 stable***
 -dofile() and loadfile() in the iolib now can decode ASCII, UTF8 files UCS2 big-endian and little-endian
 -sq_setparamscheck() : now typemesk can check for null
 -added string escape sequence \xhhhh
 -fixed some C++ standard incompatibilities
 
-***2005-05-15	       ***
+***2005-05-15          ***
 ***version 2.0.2 stable***
 -performances improvements (expecially for GCC users)
 -removed all dependencies from C++ exception handling
 -various bugfixes
 
-***2005-04-12		 ***
+***2005-04-12        ***
 ***version 2.0.1 stable***
 -various bugfixes
 -sq_setparamscheck() now allows spaces in the typemask
 
-***2005-04-03		 ***
+***2005-04-03        ***
 ***version 2.0 stable***
 -added API sq_gettypetag()
 -added built-in function to the bool type(tointeger, tostring etc...)
 
-***2005-02-27							***
+***2005-02-27                           ***
 ***version 2.0 release candidate 1(RC 1)***
 -added API sq_reseterror()
 -modified sq_release()
@@ -398,16 +398,16 @@ will terminate the iteration but will not be returned as foreach iteration
 -the built in function collect_garbage() as been renamed collectgarbage() for consistency reasons
 -new standard libraries(sqlibs are now obsolete)
 
-***2004-02-20	     ***
+***2004-02-20        ***
 ***version 1.0 beta 1***
 -fixed a bug in the compiler (thanks Martin Kofler)
 -fixed bug in the switch case statement
 -fixed the _unm metamethod
 -fixed minor bugs in the API
 -fixed automatic stack resizing
--first beta version 
-	first pass code clean up in the VM and base lib
-	first pass code coverege test has been done on VM and built-in lib
+-first beta version
+    first pass code clean up in the VM and base lib
+    first pass code coverege test has been done on VM and built-in lib
 -new VM creation API sq_open() sq_close() (sq_newvm and sq_releasevm are now obsolete)
 -new api allows to specifiy a "print" function to output text(sq_printfunc)
 -added some small optimizations
@@ -487,7 +487,7 @@ will terminate the iteration but will not be returned as foreach iteration
 -optional Unicode core(define SQUNICODE or _UNICODE on Win32)
 -sq_compiler uses a new reader function SQLEXREADFUNC
 -the debug hook passes 'l' instead of 'line' for line callbacks
-	and 'c' instead of 'call' for call callbacks
+    and 'c' instead of 'call' for call callbacks
 -new array.extend() bulit-in function
 -new API sq_clone()
 

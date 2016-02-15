@@ -1,4 +1,4 @@
-/*	see copyright notice in squirrel.h */
+/*  see copyright notice in squirrel.h */
 #ifndef _SQSTD_STREAM_H_
 #define _SQSTD_STREAM_H_
 
