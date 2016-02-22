@@ -164,7 +164,7 @@ static SQInteger _file_close(HSQUIRRELVM v)
 
 //bindings
 #define _DECL_FILE_FUNC(name,nparams,typecheck) {_SC(#name),_file_##name,nparams,typecheck}
-static SQRegFunction _file_methods[] = {
+static const SQRegFunction _file_methods[] = {
     _DECL_FILE_FUNC(constructor,3,_SC("x")),
     _DECL_FILE_FUNC(_typeof,1,_SC("x")),
     _DECL_FILE_FUNC(close,1,_SC("x")),
@@ -241,7 +241,7 @@ SQInteger _read_two_bytes(IOBuffer *iobuffer)
 {
     if(iobuffer->ptr < iobuffer->size) {
         if(iobuffer->size < 2) return 0;
-        SQInteger ret = *((wchar_t*)&iobuffer->buffer[iobuffer->ptr]);
+        SQInteger ret = *((const wchar_t*)&iobuffer->buffer[iobuffer->ptr]);
         iobuffer->ptr += 2;
         return ret;
     }
@@ -249,7 +249,7 @@ SQInteger _read_two_bytes(IOBuffer *iobuffer)
         if( (iobuffer->size = sqstd_fread(iobuffer->buffer,1,IO_BUFFER_SIZE,iobuffer->file )) > 0 )
         {
             if(iobuffer->size < 2) return 0;
-            SQInteger ret = *((wchar_t*)&iobuffer->buffer[0]);
+            SQInteger ret = *((const wchar_t*)&iobuffer->buffer[0]);
             iobuffer->ptr = 2;
             return ret;
         }
@@ -281,7 +281,7 @@ static SQInteger _io_file_lexfeed_UTF8(SQUserPointer iobuf)
         3,                      /* 1110 : 3 bytes */
         4                       /* 1111 :4 bytes */
     };
-    static unsigned char byte_masks[5] = {0,0,0x1f,0x0f,0x07};
+    static const unsigned char byte_masks[5] = {0,0,0x1f,0x0f,0x07};
     unsigned char inchar;
     SQInteger c = 0;
     READ(iobuffer);
@@ -459,7 +459,7 @@ SQInteger _g_io_dofile(HSQUIRRELVM v)
 }
 
 #define _DECL_GLOBALIO_FUNC(name,nparams,typecheck) {_SC(#name),_g_io_##name,nparams,typecheck}
-static SQRegFunction iolib_funcs[]={
+static const SQRegFunction iolib_funcs[]={
     _DECL_GLOBALIO_FUNC(loadfile,-2,_SC(".sb")),
     _DECL_GLOBALIO_FUNC(dofile,-2,_SC(".sb")),
     _DECL_GLOBALIO_FUNC(writeclosuretofile,3,_SC(".sc")),

@@ -81,7 +81,7 @@ bool CompileTypemask(SQIntVec &res,const SQChar *typemask)
     return true;
 }
 
-SQTable *CreateDefaultDelegate(SQSharedState *ss,SQRegFunction *funcz)
+SQTable *CreateDefaultDelegate(SQSharedState *ss,const SQRegFunction *funcz)
 {
     SQInteger i=0;
     SQTable *t=SQTable::Create(ss,0);

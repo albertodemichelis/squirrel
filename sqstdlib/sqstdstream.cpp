@@ -238,7 +238,7 @@ SQInteger _stream_eos(HSQUIRRELVM v)
      return sq_throwerror(v,_SC("this object cannot be cloned"));
  }
 
-static SQRegFunction _stream_methods[] = {
+static const SQRegFunction _stream_methods[] = {
     _DECL_STREAM_FUNC(readblob,2,_SC("xn")),
     _DECL_STREAM_FUNC(readn,2,_SC("xn")),
     _DECL_STREAM_FUNC(writeblob,-2,_SC("xx")),
@@ -262,7 +262,7 @@ void init_streamclass(HSQUIRRELVM v)
         sq_settypetag(v,-1,(SQUserPointer)SQSTD_STREAM_TYPE_TAG);
         SQInteger i = 0;
         while(_stream_methods[i].name != 0) {
-            SQRegFunction &f = _stream_methods[i];
+            const SQRegFunction &f = _stream_methods[i];
             sq_pushstring(v,f.name,-1);
             sq_newclosure(v,f.f,0);
             sq_setparamscheck(v,f.nparamscheck,f.typemask);
@@ -283,7 +283,7 @@ void init_streamclass(HSQUIRRELVM v)
     sq_pop(v,1);
 }
 
-SQRESULT declare_stream(HSQUIRRELVM v,const SQChar* name,SQUserPointer typetag,const SQChar* reg_name,SQRegFunction *methods,SQRegFunction *globals)
+SQRESULT declare_stream(HSQUIRRELVM v,const SQChar* name,SQUserPointer typetag,const SQChar* reg_name,const SQRegFunction *methods,const SQRegFunction *globals)
 {
     if(sq_gettype(v,-1) != OT_TABLE)
         return sq_throwerror(v,_SC("table expected"));
@@ -298,7 +298,7 @@ SQRESULT declare_stream(HSQUIRRELVM v,const SQChar* name,SQUserPointer typetag,c
         sq_settypetag(v,-1,typetag);
         SQInteger i = 0;
         while(methods[i].name != 0) {
-            SQRegFunction &f = methods[i];
+            const SQRegFunction &f = methods[i];
             sq_pushstring(v,f.name,-1);
             sq_newclosure(v,f.f,0);
             sq_setparamscheck(v,f.nparamscheck,f.typemask);
@@ -312,7 +312,7 @@ SQRESULT declare_stream(HSQUIRRELVM v,const SQChar* name,SQUserPointer typetag,c
         i = 0;
         while(globals[i].name!=0)
         {
-            SQRegFunction &f = globals[i];
+            const SQRegFunction &f = globals[i];
             sq_pushstring(v,f.name,-1);
             sq_newclosure(v,f.f,0);
             sq_setparamscheck(v,f.nparamscheck,f.typemask);

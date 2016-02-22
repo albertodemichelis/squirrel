@@ -272,7 +272,7 @@ static SQInteger base_callee(HSQUIRRELVM v)
     return sq_throwerror(v,_SC("no closure in the calls stack"));
 }
 
-static SQRegFunction base_funcs[]={
+static const SQRegFunction base_funcs[]={
     //generic
     {_SC("seterrorhandler"),base_seterrorhandler,2, NULL},
     {_SC("setdebughook"),base_setdebughook,2, NULL},
@@ -464,7 +464,7 @@ static SQInteger table_getdelegate(HSQUIRRELVM v)
     return SQ_SUCCEEDED(sq_getdelegate(v,-1))?1:SQ_ERROR;
 }
 
-SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
+const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("t")},
     {_SC("rawget"),container_rawget,2, _SC("t")},
     {_SC("rawset"),container_rawset,3, _SC("t")},
@@ -773,7 +773,7 @@ static SQInteger array_slice(HSQUIRRELVM v)
 
 }
 
-SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
+const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("a")},
     {_SC("append"),array_append,2, _SC("a")},
     {_SC("extend"),array_extend,2, _SC("aa")},
@@ -853,7 +853,7 @@ static SQInteger string_find(HSQUIRRELVM v)
 STRING_TOFUNCZ(tolower)
 STRING_TOFUNCZ(toupper)
 
-SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
+const SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("s")},
     {_SC("tointeger"),default_delegate_tointeger,-1, _SC("sn")},
     {_SC("tofloat"),default_delegate_tofloat,1, _SC("s")},
@@ -867,7 +867,7 @@ SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
 };
 
 //INTEGER DEFAULT DELEGATE//////////////////////////
-SQRegFunction SQSharedState::_number_default_delegate_funcz[]={
+const SQRegFunction SQSharedState::_number_default_delegate_funcz[]={
     {_SC("tointeger"),default_delegate_tointeger,1, _SC("n|b")},
     {_SC("tofloat"),default_delegate_tofloat,1, _SC("n|b")},
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
@@ -972,7 +972,7 @@ static SQInteger closure_getinfos(HSQUIRRELVM v) {
 
 
 
-SQRegFunction SQSharedState::_closure_default_delegate_funcz[]={
+const SQRegFunction SQSharedState::_closure_default_delegate_funcz[]={
     {_SC("call"),closure_call,-1, _SC("c")},
     {_SC("pcall"),closure_pcall,-1, _SC("c")},
     {_SC("acall"),closure_acall,2, _SC("ca")},
@@ -998,7 +998,7 @@ static SQInteger generator_getstatus(HSQUIRRELVM v)
     return 1;
 }
 
-SQRegFunction SQSharedState::_generator_default_delegate_funcz[]={
+const SQRegFunction SQSharedState::_generator_default_delegate_funcz[]={
     {_SC("getstatus"),generator_getstatus,1, _SC("g")},
     {_SC("weakref"),obj_delegate_weakref,1, NULL },
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
@@ -1154,7 +1154,7 @@ static SQInteger thread_getstackinfos(HSQUIRRELVM v)
     return sq_throwerror(v,_SC("wrong parameter"));
 }
 
-SQRegFunction SQSharedState::_thread_default_delegate_funcz[] = {
+const SQRegFunction SQSharedState::_thread_default_delegate_funcz[] = {
     {_SC("call"), thread_call, -1, _SC("v")},
     {_SC("wakeup"), thread_wakeup, -1, _SC("v")},
     {_SC("wakeupthrow"), thread_wakeupthrow, -2, _SC("v.b")},
@@ -1217,7 +1217,7 @@ static SQInteger class_rawnewmember(HSQUIRRELVM v)
     return SQ_SUCCEEDED(sq_rawnewmember(v,-4,bstatic))?1:SQ_ERROR;
 }
 
-SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
+const SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
     {_SC("getattributes"), class_getattributes, 2, _SC("y.")},
     {_SC("setattributes"), class_setattributes, 3, _SC("y..")},
     {_SC("rawget"),container_rawget,2, _SC("y")},
@@ -1240,7 +1240,7 @@ static SQInteger instance_getclass(HSQUIRRELVM v)
     return SQ_ERROR;
 }
 
-SQRegFunction SQSharedState::_instance_default_delegate_funcz[] = {
+const SQRegFunction SQSharedState::_instance_default_delegate_funcz[] = {
     {_SC("getclass"), instance_getclass, 1, _SC("x")},
     {_SC("rawget"),container_rawget,2, _SC("x")},
     {_SC("rawset"),container_rawset,3, _SC("x")},
@@ -1257,7 +1257,7 @@ static SQInteger weakref_ref(HSQUIRRELVM v)
     return 1;
 }
 
-SQRegFunction SQSharedState::_weakref_default_delegate_funcz[] = {
+const SQRegFunction SQSharedState::_weakref_default_delegate_funcz[] = {
     {_SC("ref"),weakref_ref,1, _SC("r")},
     {_SC("weakref"),obj_delegate_weakref,1, NULL },
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},

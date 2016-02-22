@@ -110,7 +110,7 @@ SQRESULT sqstd_format(HSQUIRRELVM v,SQInteger nformatstringidx,SQInteger *outlen
                 size_t flen = scstrlen(fmt);
                 SQInteger fpos = flen - 1;
                 SQChar f = fmt[fpos];
-                SQChar *prec = (SQChar *)_PRINT_INT_PREC;
+                const SQChar *prec = (const SQChar *)_PRINT_INT_PREC;
                 while(*prec != _SC('\0')) {
                     fmt[fpos++] = *prec++;
                 }
@@ -432,7 +432,7 @@ static SQInteger _regexp__typeof(HSQUIRRELVM v)
 }
 
 #define _DECL_REX_FUNC(name,nparams,pmask) {_SC(#name),_regexp_##name,nparams,pmask}
-static SQRegFunction rexobj_funcs[]={
+static const SQRegFunction rexobj_funcs[]={
     _DECL_REX_FUNC(constructor,2,_SC(".s")),
     _DECL_REX_FUNC(search,-2,_SC("xsn")),
     _DECL_REX_FUNC(match,2,_SC("xs")),
@@ -444,7 +444,7 @@ static SQRegFunction rexobj_funcs[]={
 #undef _DECL_REX_FUNC
 
 #define _DECL_FUNC(name,nparams,pmask) {_SC(#name),_string_##name,nparams,pmask}
-static SQRegFunction stringlib_funcs[]={
+static const SQRegFunction stringlib_funcs[]={
     _DECL_FUNC(format,-2,_SC(".s")),
     _DECL_FUNC(strip,2,_SC(".s")),
     _DECL_FUNC(lstrip,2,_SC(".s")),
@@ -464,7 +464,7 @@ SQInteger sqstd_register_stringlib(HSQUIRRELVM v)
     sq_newclass(v,SQFalse);
     SQInteger i = 0;
     while(rexobj_funcs[i].name != 0) {
-        SQRegFunction &f = rexobj_funcs[i];
+        const SQRegFunction &f = rexobj_funcs[i];
         sq_pushstring(v,f.name,-1);
         sq_newclosure(v,f.f,0);
         sq_setparamscheck(v,f.nparamscheck,f.typemask);
