@@ -3,8 +3,8 @@ SQUIRREL= ..
 
 OUT= $(SQUIRREL)/lib/libsquirrel.a
 INCZ= -I$(SQUIRREL)/include -I. -Iinclude
-DEFS= 
-LIB=	
+DEFS=
+LIB=
 
 OBJS= \
 	sqapi.o \
@@ -19,7 +19,7 @@ OBJS= \
 	sqmem.o \
 	sqvm.o \
 	sqclass.o
-	
+
 SRCS= \
 	sqapi.cpp \
 	sqbaselib.cpp \
@@ -34,8 +34,8 @@ SRCS= \
 	sqvm.cpp \
 	sqclass.cpp
 
-	
-	
+
+
 sq32:
 	gcc -O2 -fno-exceptions -fno-rtti -Wall -fno-strict-aliasing -c $(SRCS) $(INCZ) $(DEFS)
 	ar rc $(OUT) *.o

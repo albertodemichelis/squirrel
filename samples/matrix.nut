@@ -23,7 +23,7 @@ function mmult(rows, cols,  m1, m2, m3) {
     for (j = 0; j < cols; j+=1) {
       val = 0;
       for (k = 0; k < cols; k+=1) {
-	val += m1[i][k] * m2[k][j];
+    val += m1[i][k] * m2[k][j];
       }
       m3[i][j] = val;
     }

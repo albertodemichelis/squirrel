@@ -1,4 +1,4 @@
-/*	see copyright notice in squirrel.h */
+/*  see copyright notice in squirrel.h */
 #ifndef _SQSTDBLOB_H_
 #define _SQSTDBLOB_H_
 

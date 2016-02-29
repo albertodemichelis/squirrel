@@ -1,10 +1,10 @@
-/*	see copyright notice in squirrel.h */
+/*  see copyright notice in squirrel.h */
 #ifndef _SQPCHEADER_H_
 #define _SQPCHEADER_H_
 
 #if defined(_MSC_VER) && defined(_DEBUG)
 #include <crtdbg.h>
-#endif 
+#endif
 
 #include <limits.h>
 #include <stdio.h>

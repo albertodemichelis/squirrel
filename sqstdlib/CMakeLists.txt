@@ -8,7 +8,7 @@ set(SQSTD_SRCS
     sqstdstream.cpp
     sqstdmath.cpp
     sqstdsystem.cpp
-    sqstdstring.cpp 
+    sqstdstring.cpp
     sqstdaux.cpp
     sqstdrex.cpp
 )

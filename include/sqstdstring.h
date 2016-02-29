@@ -1,4 +1,4 @@
-/*	see copyright notice in squirrel.h */
+/*  see copyright notice in squirrel.h */
 #ifndef _SQSTD_STRING_H_
 #define _SQSTD_STRING_H_
 
@@ -10,8 +10,8 @@ typedef unsigned int SQRexBool;
 typedef struct SQRex SQRex;
 
 typedef struct {
-	const SQChar *begin;
-	SQInteger len;
+    const SQChar *begin;
+    SQInteger len;
 } SQRexMatch;
 
 SQUIRREL_API SQRex *sqstd_rex_compile(const SQChar *pattern,const SQChar **error);
