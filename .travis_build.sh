@@ -13,7 +13,12 @@ find . \
     -type f -print0 | LC_ALL=C sort -z | \
 xargs -0r perl -n -e '
     if (m,[\r\x1a],) { print "ERROR: DOS EOL detected $ARGV: $_"; exit(1); }
-    if (m,[ \t]$,) { print "ERROR: trailing whitespace detected $ARGV: $_"; exit(1); }
+    if (m,([ \t]+)$,) {
+        # allow exactly two trailing spaces for GitHub flavoured Markdown
+        if ($1 ne "  " || $ARGV !~ m,\.md$,) {
+            print "ERROR: trailing whitespace detected $ARGV: $_"; exit(1);
+        }
+    }
     if (m,\t, && $ARGV !~ m,makefile,i) { print "ERROR: hard TAB detected $ARGV: $_"; exit(1); }
 ' || exit 1
 
