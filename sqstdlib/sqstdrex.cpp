@@ -550,7 +550,7 @@ static const SQChar *sqstd_rex_matchnode(SQRex* exp,SQRexNode *node,const SQChar
 /* public api */
 SQRex *sqstd_rex_compile(const SQChar *pattern,const SQChar **error)
 {
-    SQRex *exp = (SQRex *)sq_malloc(sizeof(SQRex));
+    SQRex * volatile exp = (SQRex *)sq_malloc(sizeof(SQRex)); // "volatile" is needed for setjmp()
     exp->_eol = exp->_bol = NULL;
     exp->_p = pattern;
     exp->_nallocated = (SQInteger)scstrlen(pattern) * sizeof(SQChar);

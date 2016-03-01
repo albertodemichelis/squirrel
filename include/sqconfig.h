@@ -60,10 +60,10 @@ typedef wchar_t SQChar;
 
 
 #define scstrcmp    wcscmp
-#ifdef _MSC_VER
+#ifdef _WIN32
 #define scsprintf   _snwprintf
 #else
-#define scsprintf   snwprintf
+#define scsprintf   swprintf
 #endif
 #define scstrlen    wcslen
 #define scstrtod    wcstod

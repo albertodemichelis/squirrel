@@ -94,9 +94,9 @@ SQRESULT sqstd_format(HSQUIRRELVM v,SQInteger nformatstringidx,SQInteger *outlen
             if(n < 0) return -1;
             SQInteger addlen = 0;
             SQInteger valtype = 0;
-            const SQChar *ts;
-            SQInteger ti;
-            SQFloat tf;
+            const SQChar *ts = NULL;
+            SQInteger ti = 0;
+            SQFloat tf = 0;
             switch(format[n]) {
             case 's':
                 if(SQ_FAILED(sq_getstring(v,nparam,&ts)))
