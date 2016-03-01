@@ -1,0 +1,66 @@
+##
+## travis
+##
+
+sudo: false
+language: cpp
+
+addons:
+  apt:
+    packages:
+    - g++-multilib
+    - gcc-multilib
+
+##
+## repository
+##
+
+branches:
+  only:
+    - travis
+
+##
+## build matrix
+##
+
+#os:
+#  - linux
+#  - osx
+
+compiler:
+  - clang
+  - gcc
+
+# Info: we use short variable names because this looks better in Travis' web interface
+# see "before_script" below
+#   B .. $BUILD_METHOD_AND_BUILD_TYPE
+#   A .. arch flags for both $CFLAGS and $CXXFLAGS
+#   D .. definitions for $CPPFLAGS
+env:
+  global:
+    - B= A= D=
+  matrix:
+    - B=cmake/debug   A=-m32
+    - B=cmake/debug   A=-m64
+    - B=cmake/debug   A=-m64 D="-DNO_COMPILER"
+    - B=cmake/debug   A=-m64 D="-DNO_GARBAGE_COLLECTOR"
+    - B=cmake/debug   A=-m64 D="-DNO_COMPILER -DNO_GARBAGE_COLLECTOR"
+    - B=cmake/release A=-m32
+    - B=cmake/release A=-m64
+    - B=cmake/release A=-m64 D="-DNO_COMPILER"
+    - B=cmake/release A=-m64 D="-DNO_GARBAGE_COLLECTOR"
+    - B=cmake/release A=-m64 D="-DNO_COMPILER -DNO_GARBAGE_COLLECTOR"
+
+##
+## build script
+##
+
+before_script:
+  - export BUILD_METHOD_AND_BUILD_TYPE="$B"
+  - export VERBOSE=
+  - export CFLAGS="$A"
+  - export CXXFLAGS="$A"
+  - export CPPFLAGS="$D"
+  - export BUILD_DIR="$TRAVIS_BUILD_DIR/build"
+script:
+  - bash "$TRAVIS_BUILD_DIR/.travis_build.sh"
