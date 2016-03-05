@@ -523,10 +523,10 @@ static const SQChar *sqstd_rex_matchnode(SQRex* exp,SQRexNode *node,const SQChar
         return NULL;
     case OP_MB:
         {
-            int cb = node->left; //char that opens a balanced expression
+            SQInteger cb = node->left; //char that opens a balanced expression
             if(*str != cb) return NULL; // string doesnt start with open char
-            int ce = node->right; //char that closes a balanced expression
-            int cont = 1;
+            SQInteger ce = node->right; //char that closes a balanced expression
+            SQInteger cont = 1;
             const SQChar *streol = exp->_eol;
             while (++str < streol) {
               if (*str == ce) {

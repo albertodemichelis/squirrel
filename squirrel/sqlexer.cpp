@@ -287,6 +287,65 @@ SQInteger SQLexer::GetIDType(const SQChar *s,SQInteger len)
     return TK_IDENTIFIER;
 }
 
+#ifdef SQUNICODE
+#if WCHAR_SIZE == 2
+SQInteger SQLexer::AddUTF16(SQUnsignedInteger ch)
+{
+    if (ch >= 0x10000)
+    {
+        SQUnsignedInteger code = (ch - 0x10000);
+        APPEND_CHAR((SQChar)(0xD800 | (code >> 10)));
+        APPEND_CHAR((SQChar)(0xDC00 | (code & 0x3FF)));
+        return 2;
+    }
+    else {
+        APPEND_CHAR((SQChar)ch);
+        return 1;
+    }
+}
+#endif
+#else
+SQInteger SQLexer::AddUTF8(SQUnsignedInteger ch)
+{
+    if (ch < 0x80) {
+        APPEND_CHAR((char)ch);
+        return 1;
+    }
+    if (ch < 0x800) {
+        APPEND_CHAR((SQChar)((ch >> 6) | 0xC0));
+        APPEND_CHAR((SQChar)((ch & 0x3F) | 0x80));
+        return 2;
+    }
+    if (ch < 0x10000) {
+        APPEND_CHAR((SQChar)((ch >> 12) | 0xE0));
+        APPEND_CHAR((SQChar)(((ch >> 6) & 0x3F) | 0x80));
+        APPEND_CHAR((SQChar)((ch & 0x3F) | 0x80));
+        return 3;
+    }
+    if (ch < 0x110000) {
+        APPEND_CHAR((SQChar)((ch >> 18) | 0xF0));
+        APPEND_CHAR((SQChar)(((ch >> 12) & 0x3F) | 0x80));
+        APPEND_CHAR((SQChar)(((ch >> 6) & 0x3F) | 0x80));
+        APPEND_CHAR((SQChar)((ch & 0x3F) | 0x80));
+        return 4;
+    }
+    return 0;
+}
+#endif
+
+SQInteger SQLexer::ProcessStringHexEscape(SQChar *dest, SQInteger maxdigits)
+{
+    NEXT();
+    if (!isxdigit(CUR_CHAR)) Error(_SC("hexadecimal number expected"));
+    SQInteger n = 0;
+    while (isxdigit(CUR_CHAR) && n < maxdigits) {
+        dest[n] = CUR_CHAR;
+        n++;
+        NEXT();
+    }
+    dest[n] = 0;
+    return n;
+}
 
 SQInteger SQLexer::ReadString(SQInteger ndelim,bool verbatim)
 {
@@ -295,7 +354,8 @@ SQInteger SQLexer::ReadString(SQInteger ndelim,bool verbatim)
     if(IS_EOB()) return -1;
     for(;;) {
         while(CUR_CHAR != ndelim) {
-            switch(CUR_CHAR) {
+            SQInteger x = CUR_CHAR;
+            switch (x) {
             case SQUIRREL_EOB:
                 Error(_SC("unfinished string"));
                 return -1;
@@ -311,19 +371,29 @@ SQInteger SQLexer::ReadString(SQInteger ndelim,bool verbatim)
                 else {
                     NEXT();
                     switch(CUR_CHAR) {
-                    case _SC('x'): NEXT(); {
-                        if(!isxdigit(CUR_CHAR)) Error(_SC("hexadecimal number expected"));
-                        const SQInteger maxdigits = 4;
-                        SQChar temp[maxdigits+1];
-                        SQInteger n = 0;
-                        while(isxdigit(CUR_CHAR) && n < maxdigits) {
-                            temp[n] = CUR_CHAR;
-                            n++;
-                            NEXT();
-                        }
-                        temp[n] = 0;
-                        SQChar *sTemp;
-                        APPEND_CHAR((SQChar)scstrtoul(temp,&sTemp,16));
+                    case _SC('x'):  {
+                        const SQInteger maxdigits = sizeof(SQChar) * 2;
+                        SQChar temp[maxdigits + 1];
+                        ProcessStringHexEscape(temp, maxdigits);
+                        SQChar *stemp;
+                        APPEND_CHAR((SQChar)scstrtoul(temp, &stemp, 16));
+                    }
+                    break;
+                    case _SC('U'):  
+                    case _SC('u'):  {
+                        const SQInteger maxdigits = x == 'u' ? 4 : 8;
+                        SQChar temp[8 + 1];
+                        ProcessStringHexEscape(temp, maxdigits);
+                        SQChar *stemp;
+#ifdef SQUNICODE
+#if WCHAR_SIZE == 2
+                        AddUTF16(scstrtoul(temp, &stemp, 16));
+#else
+                        ADD_CHAR((SQChar)scstrtoul(temp, &stemp, 16));
+#endif
+#else
+                        AddUTF8(scstrtoul(temp, &stemp, 16));
+#endif
                     }
                     break;
                     case _SC('t'): APPEND_CHAR(_SC('\t')); NEXT(); break;
