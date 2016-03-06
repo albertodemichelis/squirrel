@@ -1,39 +1,42 @@
-cmake_minimum_required(VERSION 2.8)
-project(squirrel)
-
-# get machine
-execute_process( COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE DUMP_MACHINE OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("Dump Machine       : ${DUMP_MACHINE}")
-
-# get architecture
-if(NOT DEFINED ARCHITECTURE)
-  string(FIND ${DUMP_MACHINE} "-" DUMP_MACHINE_STRIP)
-  string(SUBSTRING ${DUMP_MACHINE} 0 ${DUMP_MACHINE_STRIP} ARCHITECTURE)
-endif()
-message("Architecture       : ${ARCHITECTURE}")
-
-# global includes
-include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-)
-
-# global flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti -Wall -fno-strict-aliasing")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-exceptions -Wall -fno-strict-aliasing")
-
-set(SQGLOB_FLAGS_RELEASE "-O2")
-set(SQGLOB_FLAGS_DEBUG "-pg -pie -gstabs -g3")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${SQGLOB_FLAGS_RELEASE}")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_DEBUG} ${SQGLOB_FLAGS_DEBUG}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${SQGLOB_FLAGS_RELEASE}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG} ${SQGLOB_FLAGS_DEBUG}")
-
-if("${ARCHITECTURE}" STREQUAL "x86_64")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_SQ64")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_SQ64")
+if(MSVC)
+  cmake_minimum_required(VERSION 3.4)
+else()
+  cmake_minimum_required(VERSION 2.8)
 endif()
 
-# subdirectories
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}" CACHE PATH "")
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
+
+project(squirrel C CXX)
+
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+  set(SQ_FLAGS -fno-exceptions -fno-strict-aliasing -Wall -Wextra)
+
+  if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(SQ_FLAGS ${SQ_FLAGS} -O3)
+  else()
+    set(SQ_FLAGS ${SQ_FLAGS} -pg -pie -gstabs -g3)
+  endif()
+
+  if(CMAKE_VERSION VERSION_GREATER 3)
+    add_compile_options(${SQ_FLAGS})
+  else()
+    add_definitions(${SQ_FLAGS})
+  endif()
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+elseif(MSVC)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  add_definitions(-D_SQ64)
+endif()
+
 add_subdirectory(squirrel)
 add_subdirectory(sqstdlib)
 add_subdirectory(sq)
+
+install(FILES doc/squirrel3.pdf doc/sqstdlib3.pdf DESTINATION share/doc/squirrel3)

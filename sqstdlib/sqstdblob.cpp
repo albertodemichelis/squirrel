@@ -114,7 +114,7 @@ static SQInteger _blob__typeof(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger _blob_releasehook(SQUserPointer p, SQInteger size)
+static SQInteger _blob_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(size))
 {
     SQBlob *self = (SQBlob*)p;
     self->~SQBlob();
@@ -230,7 +230,7 @@ static const SQRegFunction bloblib_funcs[]={
     _DECL_GLOBALBLOB_FUNC(swap2,2,_SC(".n")),
     _DECL_GLOBALBLOB_FUNC(swap4,2,_SC(".n")),
     _DECL_GLOBALBLOB_FUNC(swapfloat,2,_SC(".n")),
-    {0,0}
+    {0,0,0,0}
 };
 
 SQRESULT sqstd_getblob(HSQUIRRELVM v,SQInteger idx,SQUserPointer *ptr)

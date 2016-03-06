@@ -350,7 +350,7 @@ static SQInteger _string_endswith(HSQUIRRELVM v)
     SQRex *self = NULL; \
     sq_getinstanceup(v,1,(SQUserPointer *)&self,0);
 
-static SQInteger _rexobj_releasehook(SQUserPointer p, SQInteger size)
+static SQInteger _rexobj_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(size))
 {
     SQRex *self = ((SQRex *)p);
     sqstd_rex_free(self);
@@ -452,7 +452,7 @@ static const SQRegFunction rexobj_funcs[]={
     _DECL_REX_FUNC(capture,-2,_SC("xsn")),
     _DECL_REX_FUNC(subexpcount,1,_SC("x")),
     _DECL_REX_FUNC(_typeof,1,_SC("x")),
-    {0,0}
+    {0,0,0,0}
 };
 #undef _DECL_REX_FUNC
 
@@ -466,7 +466,7 @@ static const SQRegFunction stringlib_funcs[]={
     _DECL_FUNC(escape,2,_SC(".s")),
     _DECL_FUNC(startswith,3,_SC(".ss")),
     _DECL_FUNC(endswith,3,_SC(".ss")),
-    {0,0}
+    {0,0,0,0}
 };
 #undef _DECL_FUNC
 

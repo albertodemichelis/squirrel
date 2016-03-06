@@ -249,7 +249,7 @@ static const SQRegFunction _stream_methods[] = {
     _DECL_STREAM_FUNC(eos,1,_SC("x")),
     _DECL_STREAM_FUNC(flush,1,_SC("x")),
     _DECL_STREAM_FUNC(_cloned,0,NULL),
-    {0,0}
+    {0,0,0,0}
 };
 
 void init_streamclass(HSQUIRRELVM v)

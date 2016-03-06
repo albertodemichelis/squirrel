@@ -1,24 +1,18 @@
-cmake_minimum_required(VERSION 2.8)
-project(libsquirrel)
+set(SQUIRREL_SRC sqapi.cpp
+                 sqbaselib.cpp
+                 sqfuncstate.cpp
+                 sqdebug.cpp
+                 sqlexer.cpp
+                 sqobject.cpp
+                 sqcompiler.cpp
+                 sqstate.cpp
+                 sqtable.cpp
+                 sqmem.cpp
+                 sqvm.cpp
+                 sqclass.cpp)
 
-# sources
-set(SQUIRREL_SRCS
-    sqapi.cpp
-    sqbaselib.cpp
-    sqfuncstate.cpp
-    sqdebug.cpp
-    sqlexer.cpp
-    sqobject.cpp
-    sqcompiler.cpp
-    sqstate.cpp
-    sqtable.cpp
-    sqmem.cpp
-    sqvm.cpp
-    sqclass.cpp
-)
+add_library(squirrel SHARED ${SQUIRREL_SRC})
+install(TARGETS squirrel LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 
-# shared lib
-add_library(squirrel SHARED ${SQUIRREL_SRCS})
-
-# static lib
-add_library(squirrel_static STATIC ${SQUIRREL_SRCS})
+add_library(squirrel_static STATIC ${SQUIRREL_SRC})
+install(TARGETS squirrel_static ARCHIVE DESTINATION lib)

@@ -1,22 +1,14 @@
-cmake_minimum_required(VERSION 2.8)
-project(libsquirrel)
+add_executable(sq sq.c)
+set_target_properties(sq PROPERTIES LINKER_LANGUAGE C)
+target_link_libraries(sq squirrel sqstd)
+install(TARGETS sq RUNTIME DESTINATION bin)
 
-# sources
-set(SQ_SRCS
-    sq.c
-)
+add_executable(sq_static sq.c)
+set_target_properties(sq_static PROPERTIES LINKER_LANGUAGE C)
+target_link_libraries(sq_static squirrel_static sqstd_static)
 
-# libs
-set(SQ_LIBS
-    sqstd
-    squirrel
-)
+if(CMAKE_COMPILER_IS_GNUCXX)
+  set_target_properties(sq_static PROPERTIES COMPILE_FLAGS "-static -Wl,-static")
+endif()
 
-# shared lib
-add_executable(sq ${SQ_SRCS})
-target_link_libraries(sq ${SQ_LIBS})
-
-# static lib
-add_executable(sq_static ${SQ_SRCS})
-set_target_properties(sq_static PROPERTIES COMPILE_FLAGS "-static -Wl,-static")
-target_link_libraries(sq_static ${SQ_LIBS})
+install(TARGETS sq_static RUNTIME DESTINATION bin)

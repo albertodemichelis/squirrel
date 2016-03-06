@@ -115,7 +115,7 @@ static SQInteger _file__typeof(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger _file_releasehook(SQUserPointer p, SQInteger size)
+static SQInteger _file_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(size))
 {
     SQFile *self = (SQFile*)p;
     self->~SQFile();
@@ -463,7 +463,7 @@ static const SQRegFunction iolib_funcs[]={
     _DECL_GLOBALIO_FUNC(loadfile,-2,_SC(".sb")),
     _DECL_GLOBALIO_FUNC(dofile,-2,_SC(".sb")),
     _DECL_GLOBALIO_FUNC(writeclosuretofile,3,_SC(".sc")),
-    {0,0}
+    {0,0,0,0}
 };
 
 SQRESULT sqstd_register_iolib(HSQUIRRELVM v)

@@ -46,7 +46,7 @@ SQInteger quit(HSQUIRRELVM v)
     return 0;
 }
 
-void printfunc(HSQUIRRELVM v,const SQChar *s,...)
+void printfunc(HSQUIRRELVM SQ_UNUSED_ARG(v),const SQChar *s,...)
 {
     va_list vl;
     va_start(vl, s);
@@ -54,7 +54,7 @@ void printfunc(HSQUIRRELVM v,const SQChar *s,...)
     va_end(vl);
 }
 
-void errorfunc(HSQUIRRELVM v,const SQChar *s,...)
+void errorfunc(HSQUIRRELVM SQ_UNUSED_ARG(v),const SQChar *s,...)
 {
     va_list vl;
     va_start(vl, s);
@@ -87,10 +87,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
 {
     int i;
     int compiles_only = 0;
-    static SQChar temp[500];
-    const SQChar *ret=NULL;
     char * output = NULL;
-    int lineinfo=0;
     *retval = 0;
     if(argc>1)
     {
@@ -307,7 +304,6 @@ int main(int argc, char* argv[])
 {
     HSQUIRRELVM v;
     SQInteger retval = 0;
-    const SQChar *filename=NULL;
 #if defined(_MSC_VER) && defined(_DEBUG)
     _CrtSetAllocHook(MemAllocHook);
 #endif

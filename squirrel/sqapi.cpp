@@ -180,7 +180,7 @@ SQBool sq_release(HSQUIRRELVM v,HSQOBJECT *po)
 #endif
 }
 
-SQUnsignedInteger sq_getvmrefcount(HSQUIRRELVM v, const HSQOBJECT *po)
+SQUnsignedInteger sq_getvmrefcount(HSQUIRRELVM SQ_UNUSED_ARG(v), const HSQOBJECT *po)
 {
     if (!ISREFCOUNTED(type(*po))) return 0;
     return po->_unVal.pRefCounted->_uiRef;
