@@ -46,20 +46,22 @@ SQInteger quit(HSQUIRRELVM v)
     return 0;
 }
 
-void printfunc(HSQUIRRELVM v,const SQChar *s,...)
+void printfunc(HSQUIRRELVM v, const SQChar *s,...)
 {
     va_list vl;
     va_start(vl, s);
     scvprintf(stdout, s, vl);
     va_end(vl);
+    (void)v; /* UNUSED */
 }
 
-void errorfunc(HSQUIRRELVM v,const SQChar *s,...)
+void errorfunc(HSQUIRRELVM v, const SQChar *s,...)
 {
     va_list vl;
     va_start(vl, s);
     scvprintf(stderr, s, vl);
     va_end(vl);
+    (void)v; /* UNUSED */
 }
 
 void PrintVersionInfos()

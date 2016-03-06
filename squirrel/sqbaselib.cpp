@@ -40,7 +40,7 @@ static bool str2num(const SQChar *s,SQObjectPtr &res,SQInteger base)
     return true;
 }
 
-static SQInteger base_dummy(HSQUIRRELVM v)
+static SQInteger base_dummy(HSQUIRRELVM /*v*/)
 {
     return 0;
 }
@@ -721,7 +721,7 @@ static bool _hsort_sift_down(HSQUIRRELVM v,SQArray *arr, SQInteger root, SQInteg
     return true;
 }
 
-static bool _hsort(HSQUIRRELVM v,SQObjectPtr &arr, SQInteger l, SQInteger r,SQInteger func)
+static bool _hsort(HSQUIRRELVM v,SQObjectPtr &arr, SQInteger /*l*/, SQInteger /*r*/, SQInteger func)
 {
     SQArray *a = _array(arr);
     SQInteger i;
