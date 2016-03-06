@@ -452,7 +452,7 @@ static const SQRegFunction rexobj_funcs[]={
     _DECL_REX_FUNC(capture,-2,_SC("xsn")),
     _DECL_REX_FUNC(subexpcount,1,_SC("x")),
     _DECL_REX_FUNC(_typeof,1,_SC("x")),
-    {0,0}
+    {NULL,(SQFUNCTION)0,0,NULL}
 };
 #undef _DECL_REX_FUNC
 
@@ -466,7 +466,7 @@ static const SQRegFunction stringlib_funcs[]={
     _DECL_FUNC(escape,2,_SC(".s")),
     _DECL_FUNC(startswith,3,_SC(".ss")),
     _DECL_FUNC(endswith,3,_SC(".ss")),
-    {0,0}
+    {NULL,(SQFUNCTION)0,0,NULL}
 };
 #undef _DECL_FUNC
 

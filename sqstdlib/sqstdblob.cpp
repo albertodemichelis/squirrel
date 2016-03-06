@@ -172,7 +172,7 @@ static const SQRegFunction _blob_methods[] = {
     _DECL_BLOB_FUNC(_typeof,1,_SC("x")),
     _DECL_BLOB_FUNC(_nexti,2,_SC("x")),
     _DECL_BLOB_FUNC(_cloned,2,_SC("xx")),
-    {0,0,0,0}
+    {NULL,(SQFUNCTION)0,0,NULL}
 };
 
 
@@ -230,7 +230,7 @@ static const SQRegFunction bloblib_funcs[]={
     _DECL_GLOBALBLOB_FUNC(swap2,2,_SC(".n")),
     _DECL_GLOBALBLOB_FUNC(swap4,2,_SC(".n")),
     _DECL_GLOBALBLOB_FUNC(swapfloat,2,_SC(".n")),
-    {0,0}
+    {NULL,(SQFUNCTION)0,0,NULL}
 };
 
 SQRESULT sqstd_getblob(HSQUIRRELVM v,SQInteger idx,SQUserPointer *ptr)

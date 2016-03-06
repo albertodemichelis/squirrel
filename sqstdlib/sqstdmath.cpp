@@ -78,7 +78,7 @@ static const SQRegFunction mathlib_funcs[] = {
     _DECL_FUNC(rand,1,NULL),
     _DECL_FUNC(fabs,2,_SC(".n")),
     _DECL_FUNC(abs,2,_SC(".n")),
-    {0,0},
+    {NULL,(SQFUNCTION)0,0,NULL}
 };
 #undef _DECL_FUNC
 
