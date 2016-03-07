@@ -251,7 +251,7 @@ void SQSharedState::MarkObject(SQObjectPtr &o,SQCollectable **chain)
 }
 
 
-void SQSharedState::RunMark(SQVM *vm,SQCollectable **tchain)
+void SQSharedState::RunMark(SQVM * /*vm*/, SQCollectable **tchain)
 {
     SQVM *vms = _thread(_root_vm);
 
