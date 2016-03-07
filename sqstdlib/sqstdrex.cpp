@@ -578,7 +578,7 @@ SQRex *sqstd_rex_compile(const SQChar *pattern,const SQChar **error)
                     scprintf(_SC("[%02d] %10s "),i,g_nnames[exp->_nodes[i].type-MAX_CHAR]);
                 else
                     scprintf(_SC("[%02d] %10c "),i,exp->_nodes[i].type);
-                scprintf(_SC("left %02d right %02d next %02d\n"),exp->_nodes[i].left,exp->_nodes[i].right,exp->_nodes[i].next);
+                scprintf(_SC("left %02d right %02d next %02d\n"), (SQInt32)exp->_nodes[i].left, (SQInt32)exp->_nodes[i].right, (SQInt32)exp->_nodes[i].next);
             }
             scprintf(_SC("\n"));
         }
