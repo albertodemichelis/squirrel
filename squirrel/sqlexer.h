@@ -30,7 +30,7 @@ private:
 #endif
 #else
     SQInteger AddUTF8(SQUnsignedInteger ch);
-#endif    
+#endif
     SQInteger ProcessStringHexEscape(SQChar *dest, SQInteger maxdigits);
     SQInteger _curtoken;
     SQTable *_keywords;

@@ -52,6 +52,7 @@ void printfunc(HSQUIRRELVM SQ_UNUSED_ARG(v),const SQChar *s,...)
     va_start(vl, s);
     scvprintf(stdout, s, vl);
     va_end(vl);
+    (void)v; /* UNUSED */
 }
 
 void errorfunc(HSQUIRRELVM SQ_UNUSED_ARG(v),const SQChar *s,...)
@@ -87,6 +88,9 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
 {
     int i;
     int compiles_only = 0;
+#ifdef SQUNICODE
+    static SQChar temp[500];
+#endif
     char * output = NULL;
     *retval = 0;
     if(argc>1)

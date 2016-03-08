@@ -12,7 +12,7 @@ project(squirrel C CXX)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-  set(SQ_FLAGS -fno-exceptions -fno-strict-aliasing -Wall -Wextra)
+  set(SQ_FLAGS -fno-exceptions -fno-strict-aliasing -Wall -Wextra -pedantic)
 
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(SQ_FLAGS ${SQ_FLAGS} -O3)
@@ -26,7 +26,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(${SQ_FLAGS})
   endif()
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -std=c++0x")
 elseif(MSVC)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()

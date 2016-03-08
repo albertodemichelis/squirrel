@@ -379,7 +379,7 @@ SQInteger SQLexer::ReadString(SQInteger ndelim,bool verbatim)
                         APPEND_CHAR((SQChar)scstrtoul(temp, &stemp, 16));
                     }
                     break;
-                    case _SC('U'):  
+                    case _SC('U'):
                     case _SC('u'):  {
                         const SQInteger maxdigits = x == 'u' ? 4 : 8;
                         SQChar temp[8 + 1];
