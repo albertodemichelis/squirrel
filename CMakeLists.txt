@@ -12,7 +12,7 @@ project(squirrel C CXX)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-  set(SQ_FLAGS -fno-exceptions -fno-strict-aliasing -Wall -Wextra -pedantic)
+  set(SQ_FLAGS -fno-exceptions -fno-strict-aliasing -Wall -Wextra -pedantic -Wcast-qual)
 
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(SQ_FLAGS ${SQ_FLAGS} -O3)
