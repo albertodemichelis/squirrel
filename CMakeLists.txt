@@ -35,8 +35,30 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   add_definitions(-D_SQ64)
 endif()
 
+if(NOT DEFINED INSTALL_BIN_DIR)
+  set(INSTALL_BIN_DIR bin)
+endif()
+
+if(NOT DEFINED INSTALL_LIB_DIR)
+  set(INSTALL_LIB_DIR lib)
+endif()
+
 add_subdirectory(squirrel)
 add_subdirectory(sqstdlib)
 add_subdirectory(sq)
 
-install(FILES doc/squirrel3.pdf doc/sqstdlib3.pdf DESTINATION share/doc/squirrel3)
+if(DEFINED INSTALL_DOC_DIR)
+  install(FILES doc/squirrel3.pdf doc/sqstdlib3.pdf DESTINATION ${INSTALL_DOC_DIR})
+endif()
+
+if(DEFINED INSTALL_INC_DIR)
+  set(SQ_PUB_HEADERS include/sqconfig.h
+                     include/sqstdaux.h
+                     include/sqstdblob.h
+                     include/sqstdio.h
+                     include/sqstdmath.h
+                     include/sqstdstring.h
+                     include/sqstdsystem.h
+                     include/squirrel.h)
+  install(FILES ${SQ_PUB_HEADERS} DESTINATION ${INSTALL_INC_DIR})
+endif()

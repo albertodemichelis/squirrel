@@ -1,15 +1,17 @@
-set(SQSTDLIB_SRC sqstdblob.cpp
+set(SQSTDLIB_SRC sqstdaux.cpp
+                 sqstdblob.cpp
                  sqstdio.cpp
-                 sqstdstream.cpp
                  sqstdmath.cpp
-                 sqstdsystem.cpp
+                 sqstdrex.cpp
+                 sqstdstream.cpp
                  sqstdstring.cpp
-                 sqstdaux.cpp
-                 sqstdrex.cpp)
+                 sqstdsystem.cpp)
 
 add_library(sqstdlib SHARED ${SQSTDLIB_SRC})
 target_link_libraries(sqstdlib squirrel)
-install(TARGETS sqstdlib RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+install(TARGETS sqstdlib RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+                         LIBRARY DESTINATION ${INSTALL_LIB_DIR}
+                         ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
 
 add_library(sqstdlib_static STATIC ${SQSTDLIB_SRC})
-install(TARGETS sqstdlib_static ARCHIVE DESTINATION lib)
+install(TARGETS sqstdlib_static ARCHIVE DESTINATION ${INSTALL_LIB_DIR})

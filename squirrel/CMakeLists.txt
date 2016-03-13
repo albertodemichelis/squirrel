@@ -1,18 +1,20 @@
 set(SQUIRREL_SRC sqapi.cpp
                  sqbaselib.cpp
-                 sqfuncstate.cpp
-                 sqdebug.cpp
-                 sqlexer.cpp
-                 sqobject.cpp
+                 sqclass.cpp
                  sqcompiler.cpp
+                 sqdebug.cpp
+                 sqfuncstate.cpp
+                 sqlexer.cpp
+                 sqmem.cpp
+                 sqobject.cpp
                  sqstate.cpp
                  sqtable.cpp
-                 sqmem.cpp
-                 sqvm.cpp
-                 sqclass.cpp)
+                 sqvm.cpp)
 
 add_library(squirrel SHARED ${SQUIRREL_SRC})
-install(TARGETS squirrel RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+install(TARGETS squirrel RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+                         LIBRARY DESTINATION ${INSTALL_LIB_DIR}
+                         ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
 
 add_library(squirrel_static STATIC ${SQUIRREL_SRC})
-install(TARGETS squirrel_static ARCHIVE DESTINATION lib)
+install(TARGETS squirrel_static ARCHIVE DESTINATION ${INSTALL_LIB_DIR})

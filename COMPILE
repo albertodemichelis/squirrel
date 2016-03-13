@@ -44,7 +44,23 @@ can change this behavior by calling CMake like this:
 
  $ cmake .. -DCMAKE_INSTALL_PREFIX=/some/path/on/your/system
 
-Under Windows, it is probably easiest to use the CMake GUI interface.
+With the INSTALL_BIN_DIR and INSTALL_LIB_DIR options, the directories
+the binaries & libraries will go in (relative to CMAKE_INSTALL_PREFIX)
+can be specified. For instance,
+
+ $ cmake .. -DINSTALL_LIB_DIR=lib64
+
+will install the libraries into a 'lib64' subdirectory in the top
+source directory. If INSTALL_DOC_DIR is set, the PDF documentation
+will be installed into the directory the value of INSTALL_DOC_DIR
+points to. There is no default directory - if you want only the
+binaries and no documentation, just don't specify INSTALL_DOC_DIR, and
+no documentation will be installed. The same applies for
+INSTALL_INC_DIR, which can install the public header files.
+
+Under Windows, it is probably easiest to use the CMake GUI interface,
+although invoking CMake from the command line as explained above
+should work as well.
 
 GCC USERS
 .........................................................
