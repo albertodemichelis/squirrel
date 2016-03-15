@@ -33,7 +33,7 @@ under Linux, type something like
  $ mkdir build # Create temporary build directory
  $ cd build
  $ cmake .. # CMake will determine all the necessary information,
-            # including the platform (32- vs. 64-Bit)
+            # including the platform (32- vs. 64-bit)
  $ make
  $ make install
  $ cd ..; rm -r build
@@ -51,12 +51,11 @@ can be specified. For instance,
  $ cmake .. -DINSTALL_LIB_DIR=lib64
 
 will install the libraries into a 'lib64' subdirectory in the top
-source directory. If INSTALL_DOC_DIR is set, the PDF documentation
-will be installed into the directory the value of INSTALL_DOC_DIR
+source directory. If INSTALL_INC_DIR is set, the public header files
+will be installed into the directory the value of INSTALL_INC_DIR
 points to. There is no default directory - if you want only the
-binaries and no documentation, just don't specify INSTALL_DOC_DIR, and
-no documentation will be installed. The same applies for
-INSTALL_INC_DIR, which can install the public header files.
+binaries and no headers, just don't specify INSTALL_INC_DIR, and no
+header files will be installed.
 
 Under Windows, it is probably easiest to use the CMake GUI interface,
 although invoking CMake from the command line as explained above

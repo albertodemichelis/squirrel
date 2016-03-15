@@ -51,10 +51,6 @@ add_subdirectory(squirrel)
 add_subdirectory(sqstdlib)
 add_subdirectory(sq)
 
-if(DEFINED INSTALL_DOC_DIR)
-  install(FILES doc/squirrel3.pdf doc/sqstdlib3.pdf DESTINATION ${INSTALL_DOC_DIR})
-endif()
-
 if(DEFINED INSTALL_INC_DIR)
   set(SQ_PUB_HEADERS include/sqconfig.h
                      include/sqstdaux.h
