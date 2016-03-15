@@ -51,6 +51,10 @@ add_subdirectory(squirrel)
 add_subdirectory(sqstdlib)
 add_subdirectory(sq)
 
+if(NOT WIN32)
+  set_target_properties(squirrel sqstdlib PROPERTIES SOVERSION 0 VERSION 0.0.0)
+endif()
+
 if(DEFINED INSTALL_INC_DIR)
   set(SQ_PUB_HEADERS include/sqconfig.h
                      include/sqstdaux.h

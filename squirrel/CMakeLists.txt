@@ -18,3 +18,8 @@ install(TARGETS squirrel RUNTIME DESTINATION ${INSTALL_BIN_DIR}
 
 add_library(squirrel_static STATIC ${SQUIRREL_SRC})
 install(TARGETS squirrel_static ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
+
+if(DEFINED LONG_OUTPUT_NAMES)
+  set_target_properties(squirrel PROPERTIES OUTPUT_NAME squirrel3)
+  set_target_properties(squirrel_static PROPERTIES OUTPUT_NAME squirrel3_static)
+endif()

@@ -15,3 +15,8 @@ install(TARGETS sqstdlib RUNTIME DESTINATION ${INSTALL_BIN_DIR}
 
 add_library(sqstdlib_static STATIC ${SQSTDLIB_SRC})
 install(TARGETS sqstdlib_static ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
+
+if(DEFINED LONG_OUTPUT_NAMES)
+  set_target_properties(sqstdlib PROPERTIES OUTPUT_NAME sqstdlib3)
+  set_target_properties(sqstdlib_static PROPERTIES OUTPUT_NAME sqstdlib3_static)
+endif()
