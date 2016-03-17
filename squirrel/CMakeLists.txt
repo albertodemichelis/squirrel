@@ -1,24 +1,30 @@
-cmake_minimum_required(VERSION 2.8)
-project(libsquirrel)
+set(SQUIRREL_SRC sqapi.cpp
+                 sqbaselib.cpp
+                 sqclass.cpp
+                 sqcompiler.cpp
+                 sqdebug.cpp
+                 sqfuncstate.cpp
+                 sqlexer.cpp
+                 sqmem.cpp
+                 sqobject.cpp
+                 sqstate.cpp
+                 sqtable.cpp
+                 sqvm.cpp)
 
-# sources
-set(SQUIRREL_SRCS
-    sqapi.cpp
-    sqbaselib.cpp
-    sqfuncstate.cpp
-    sqdebug.cpp
-    sqlexer.cpp
-    sqobject.cpp
-    sqcompiler.cpp
-    sqstate.cpp
-    sqtable.cpp
-    sqmem.cpp
-    sqvm.cpp
-    sqclass.cpp
-)
+add_library(squirrel SHARED ${SQUIRREL_SRC})
+install(TARGETS squirrel RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+                         LIBRARY DESTINATION ${INSTALL_LIB_DIR}
+                         ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
 
-# shared lib
-add_library(squirrel SHARED ${SQUIRREL_SRCS})
+if(NOT DEFINED DISABLE_STATIC)
+  add_library(squirrel_static STATIC ${SQUIRREL_SRC})
+  install(TARGETS squirrel_static ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
+endif()
 
-# static lib
-add_library(squirrel_static STATIC ${SQUIRREL_SRCS})
+if(DEFINED LONG_OUTPUT_NAMES)
+  set_target_properties(squirrel PROPERTIES OUTPUT_NAME squirrel3)
+
+  if(NOT DEFINED DISABLE_STATIC)
+    set_target_properties(squirrel_static PROPERTIES OUTPUT_NAME squirrel3_static)
+  endif()
+endif()

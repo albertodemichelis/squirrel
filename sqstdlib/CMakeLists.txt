@@ -1,20 +1,27 @@
-cmake_minimum_required(VERSION 2.8)
-project(sqstd)
+set(SQSTDLIB_SRC sqstdaux.cpp
+                 sqstdblob.cpp
+                 sqstdio.cpp
+                 sqstdmath.cpp
+                 sqstdrex.cpp
+                 sqstdstream.cpp
+                 sqstdstring.cpp
+                 sqstdsystem.cpp)
 
-# sources
-set(SQSTD_SRCS
-    sqstdblob.cpp
-    sqstdio.cpp
-    sqstdstream.cpp
-    sqstdmath.cpp
-    sqstdsystem.cpp
-    sqstdstring.cpp
-    sqstdaux.cpp
-    sqstdrex.cpp
-)
+add_library(sqstdlib SHARED ${SQSTDLIB_SRC})
+target_link_libraries(sqstdlib squirrel)
+install(TARGETS sqstdlib RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+                         LIBRARY DESTINATION ${INSTALL_LIB_DIR}
+                         ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
 
-# shared lib
-add_library(sqstd SHARED ${SQSTD_SRCS})
+if(NOT DEFINED DISABLE_STATIC)
+  add_library(sqstdlib_static STATIC ${SQSTDLIB_SRC})
+  install(TARGETS sqstdlib_static ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
+endif()
 
-# static lib
-add_library(sqstd_static STATIC ${SQSTD_SRCS})
+if(DEFINED LONG_OUTPUT_NAMES)
+  set_target_properties(sqstdlib PROPERTIES OUTPUT_NAME sqstdlib3)
+
+  if(NOT DEFINED DISABLE_STATIC)
+    set_target_properties(sqstdlib_static PROPERTIES OUTPUT_NAME sqstdlib3_static)
+  endif()
+endif()

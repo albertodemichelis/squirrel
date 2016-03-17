@@ -982,8 +982,8 @@ public:
             SQInteger val = _fs->PopTarget();
             SQInteger key = _fs->PopTarget();
             SQInteger attrs = hasattrs ? _fs->PopTarget():-1;
+            ((void)attrs);
             assert((hasattrs && (attrs == key-1)) || !hasattrs);
-            (void)attrs; // UNUSED
             unsigned char flags = (hasattrs?NEW_SLOT_ATTRIBUTES_FLAG:0)|(isstatic?NEW_SLOT_STATIC_FLAG:0);
             SQInteger table = _fs->TopTarget(); //<<BECAUSE OF THIS NO COMMON EMIT FUNC IS POSSIBLE
             if(separator == _SC(',')) { //hack recognizes a table from the separator

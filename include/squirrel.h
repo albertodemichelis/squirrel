@@ -392,6 +392,12 @@ SQUIRREL_API void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook);
 #define SQ_FAILED(res) (res<0)
 #define SQ_SUCCEEDED(res) (res>=0)
 
+#ifdef __GNUC__
+# define SQ_UNUSED_ARG(x) __attribute__((unused)) x
+#else
+# define SQ_UNUSED_ARG(x) x
+#endif
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
