@@ -6,7 +6,9 @@
 -added thread.wakeupthrow()
 -added sq_pushthread
 -added \u and \U escape sequence for UTF8,UTF16 or UCS4 characters
+-added CMake scripts(thx Fabian Wolff)
 -the escape character \x is based on sizeof(SQChar)
+-fixed several warnings(thx Markus Oberhumer)
 -fixed optimizer bug in compound arith oprators(+=,-= etc...)
 -fixed sq_getrefvmcount() (thx Gerrit)
 -fixed sq_getrefcount() when no references were added with sq_addref() (thx Gerrit)
