@@ -14,6 +14,10 @@ Squirrel API
 Global Symbols
 ++++++++++++++
 
+.. js:function:: endswith(str, cmp)
+
+    returns `true` if the end of the string `str`  matches a the string `cmp` otherwise returns `false`
+	
 .. js:function:: ecape(str)
 
     Returns a string with backslashes before characters that need to be escaped(`\",\a,\b,\t,\n,\v,\f,\r,\\,\",\',\0,\xnn`).
@@ -50,6 +54,11 @@ Global Symbols
         local a = split("1.2-3;4/5",".-/;");
         // the result will be  [1,2,3,4,5]
 
+
+.. js:function:: startswith(str, cmp)
+
+    returns `true` if the beginning of the string `str`  matches a the string `cmp` otherwise returns `false`
+	
 .. js:function:: strip(str)
 
     Strips white-space-only characters that might appear at the beginning or end of the given string and returns the new stripped string.
