@@ -78,7 +78,6 @@ VISUAL C++ USERS
 .........................................................
 Open squirrel.dsw from the root project directory and build(dho!)
 
-
 DOCUMENTATION GENERATION
 .........................................................
 To be able to compile the documentation, make sure that you have Python
