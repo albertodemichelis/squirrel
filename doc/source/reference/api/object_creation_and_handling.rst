@@ -177,7 +177,7 @@ gets the value of the integer at the idx position in the stack.
     :param SQInteger idx: an index in the stack pointing to the class
     :param HSQMEMBERHANDLE* handle: a pointer to the variable that will store the handle
     :returns: a SQRESULT
-    :remarks: This method works only with classes and instances. A handle retrieved through a class can be later used to set or get values from one of the class instances and vice-versa. Handles retrieved from base classes are still valid in derived classes and respect inheritance rules.
+    :remarks: This method works only with classes. A handle retrieved through a class can be later used to set or get values from one of the class instances. Handles retrieved from base classes are still valid in derived classes and respect inheritance rules.
 
 pops a value from the stack and uses it as index to fetch the handle of a class member. The handle can be later used to set or get the member value using sq_getbyhandle(),sq_setbyhandle().
 
