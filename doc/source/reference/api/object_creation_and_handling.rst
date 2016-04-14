@@ -455,7 +455,7 @@ pushes a null value into the stack
 
     :param HSQUIRRELVM v: the target VM
     :param const SQChar * s: pointer to the string that has to be pushed
-    :param SQInteger len: lenght of the string pointed by s
+    :param SQInteger len: length of the string pointed by s
     :remarks: if the parameter len is less than 0 the VM will calculate the length using strlen(s)
 
 pushes a string in the stack

@@ -83,7 +83,7 @@ The file class
 
 .. js:function:: file.len()
 
-    returns the lenght of the stream
+    returns the length of the stream
 
 .. js:function:: file.readblob(size)
 
