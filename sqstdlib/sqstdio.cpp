@@ -372,7 +372,7 @@ SQRESULT sqstd_loadfile(HSQUIRRELVM v,const SQChar *filename,SQBool printerror)
                     }
                     if(uc != 0xBF) {
                         sqstd_fclose(file);
-                        return sq_throwerror(v,_SC("Unrecognozed ecoding"));
+                        return sq_throwerror(v,_SC("Unrecognized encoding"));
                     }
 #ifdef SQUNICODE
                     func = _io_file_lexfeed_UTF8;
