@@ -64,7 +64,7 @@ _set
 
 invoked when the index idx is not present in the object or in its delegate chain.
 ``_set`` must 'throw null' to notify that a key wasn't found but the there were not runtime errors(clean failure).
-This allows the program to defferentieate between a runtime error and a 'index not found'.
+This allows the program to differentiate between a runtime error and a 'index not found'.
 
 ^^^^^
 _get
@@ -76,7 +76,7 @@ _get
 
 invoked when the index idx is not present in the object or in its delegate chain.
 _get must 'throw null' to notify that a key wasn't found but the there were not runtime errors(clean failure).
-This allows the program to defferentieate between a runtime error and a 'index not found'.
+This allows the program to differentiate between a runtime error and a 'index not found'.
 
 ^^^^^^^^^
 _newslot
