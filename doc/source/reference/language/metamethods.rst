@@ -72,7 +72,7 @@ _get
 
 ::
 
-    _get(idx,val)
+    _get(idx)
 
 invoked when the index idx is not present in the object or in its delegate chain.
 _get must 'throw null' to notify that a key wasn't found but the there were not runtime errors(clean failure).
