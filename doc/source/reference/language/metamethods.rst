@@ -6,11 +6,11 @@ Metamethods
 
 Metamethods are a mechanism that allows the customization of certain aspects of the
 language semantics. Those methods are normal functions placed in a table
-parent(delegate) or class declaration; Is possible to change many aspect of a table/class instance behavior by just defining
-a metamethod. Class objects(not instances) supports only 2 metamethods ``_newmember, _inherited`` .
+parent(delegate) or class declaration; It is possible to change many aspects of a table/class instance behavior by just defining
+a metamethod. Class objects (not instances) support only 2 metamethods ``_newmember, _inherited`` .
 
 For example when we use relational operators other than '==' on 2 tables, the VM will
-check if the table has a method in his parent called '_cmp' if so it will call it to determine
+check if the table has a method in his parent called '_cmp'; if so it will call it to determine
 the relation between the tables.::
 
     local comparable={
