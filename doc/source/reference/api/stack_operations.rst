@@ -13,7 +13,7 @@ Stack Operations
     :returns: == 0 if obj1==obj2
     :returns: < 0 if obj1<obj2
 
-compares 2 object from the stack and compares them.
+compares 2 object from the top of the stack. obj2 should be pushed before obj1.
 
 
 
