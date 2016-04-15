@@ -21,7 +21,7 @@ Global Symbols
 
 .. js:function:: date([time [, format]])
 
-    returns a table containing a date/time splitted in the slots:
+    returns a table containing a date/time split into the slots:
 
 +-------------+----------------------------------------+
 | sec         | Seconds after minute (0 - 59).         |

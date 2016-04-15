@@ -52,7 +52,7 @@ true and false
     single: true
     single: false
 
-Squirrel has a boolean type(bool) however like C++ it considers null, 0(integer) and 0.0(float)
+Squirrel has a boolean type (bool) however like C++ it considers null, 0(integer) and 0.0(float)
 as *false*, any other value is considered *true*.
 
 ^^^^^^^^^^^^^^^^^
@@ -326,7 +326,7 @@ try/catch
     stat:= 'try' stat 'catch' '(' id ')' stat
 
 The try statement encloses a block of code in which an exceptional condition can occur,
-such as a runtime error or a throw statement. The catch clause provides the exceptionhandling
+such as a runtime error or a throw statement. The catch clause provides the exception-handling
 code. When a catch clause catches an exception, its id is bound to that
 exception.
 

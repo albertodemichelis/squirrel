@@ -42,7 +42,7 @@ Global Symbols
     Strips white-space-only characters that might appear at the end of the given string
     and returns the new stripped string.
 
-.. js:function:: split(str, separtators)
+.. js:function:: split(str, separators)
 
     returns an array of strings split at each point where a separator character occurs in `str`.
     The separator is not returned as part of any array element.
@@ -69,7 +69,7 @@ The regexp class
 
 .. js:class:: regexp(pattern)
 
-    The regexp object rapresent a precompiled regular experssion pattern. The object is created
+    The regexp object represent a precompiled regular expression pattern. The object is created
     trough `regexp(patern)`.
 
 
@@ -140,19 +140,19 @@ The regexp class
 +---------------------+--------------------------------------+
 |      `\\d`          |  digits                              |
 +---------------------+--------------------------------------+
-|      `\\D`          |  non nondigits                       |
+|      `\\D`          |  non digits                          |
 +---------------------+--------------------------------------+
-|      `\\x`          |  exadecimal digits                   |
+|      `\\x`          |  hexadecimal digits                  |
 +---------------------+--------------------------------------+
-|      `\\X`          |  non exadecimal digits               |
+|      `\\X`          |  non hexadecimal digits              |
 +---------------------+--------------------------------------+
 |      `\\c`          |  control characters                  |
 +---------------------+--------------------------------------+
 |      `\\C`          |  non control characters              |
 +---------------------+--------------------------------------+
-|      `\\p`          |  punctation                          |
+|      `\\p`          |  punctuation                          |
 +---------------------+--------------------------------------+
-|      `\\P`          |  non punctation                      |
+|      `\\P`          |  non punctuation                      |
 +---------------------+--------------------------------------+
 |      `\\b`          |  word boundary                       |
 +---------------------+--------------------------------------+
@@ -195,7 +195,7 @@ The regexp class
 
 .. js:function:: regexp.search(str [, start])
 
-    returns a table containing two indexs("begin" and "end") of the first match of the regular expression in
+    returns a table containing two indexes ("begin" and "end") of the first match of the regular expression in
     the string `str`, otherwise if no match occurs returns null. The search starts from the index `start`
     of the string, if `start` is omitted the search starts from the beginning of the string.
 
@@ -275,7 +275,7 @@ Regular Expessions
     :param SQChar** out_end: a pointer to a string pointer that will be set with the end of the match
     :returns: SQTrue if successful otherwise SQFalse
 
-    searches the first match of the expressin in the string specified in the parameter text.
+    searches the first match of the expression in the string specified in the parameter text.
     if the match is found returns SQTrue and the sets out_begin to the beginning of the
     match and out_end at the end of the match; otherwise returns SQFalse.
 
@@ -288,7 +288,7 @@ Regular Expessions
     :param SQChar** out_end: a pointer to a string pointer that will be set with the end of the match
     :returns: SQTrue if successful otherwise SQFalse
 
-    searches the first match of the expressin in the string delimited
+    searches the first match of the expression in the string delimited
     by the parameter text_begin and text_end.
     if the match is found returns SQTrue and the sets out_begin to the beginning of the
     match and out_end at the end of the match; otherwise returns SQFalse.
@@ -308,4 +308,4 @@ Regular Expessions
     :returns: the function returns SQTrue if n is valid index otherwise SQFalse.
 
     retrieve the begin and and pointer to the length of the sub expression indexed
-    by n. The result is passed trhough the struct SQRexMatch.
+    by n. The result is passed through the struct SQRexMatch.

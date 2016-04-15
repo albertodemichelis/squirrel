@@ -18,7 +18,7 @@ through this type; even the environment, where "global" variables are stored, is
 Construction
 ------------------
 
-Tables are created through the table constructor (see :ref:`Table constructor <table_contructor>`)
+Tables are created through the table constructor (see :ref:`Table constructor <table_constructor>`)
 
 ------------------
 Slot creation

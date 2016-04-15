@@ -12,7 +12,7 @@ Weak References
 The weak references allows the programmers to create references to objects without
 influencing the lifetime of the object itself.
 In squirrel Weak references are first-class objects created through the built-in method obj.weakref().
-All types except null implement the weakref() method; however in bools,integers and float the method
+All types except null implement the weakref() method; however in bools, integers, and floats the method
 simply returns the object itself(this because this types are always passed by value).
 When a weak references is assigned to a container (table slot,array,class or
 instance) is treated differently than other objects; When a container slot that hold a weak

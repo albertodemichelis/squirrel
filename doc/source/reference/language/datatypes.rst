@@ -122,8 +122,7 @@ Class Instance
 --------------
 
 Class instances are created by calling a *class object*. Instances, as tables, are
-implemented as pair of key/value. Instances members cannot be dyncamically added or removed however
-the value of the members can be changed.
+implemented as pair of key/value. Instances members cannot be dynamically added or removed; however the value of the members can be changed.
 
 
 
@@ -152,7 +151,7 @@ Threads are objects that represents a cooperative thread of execution, also know
 Weak Reference
 --------------
 
-Weak References are objects that point to another(non scalar) object but do not own a strong reference to it.
+Weak References are objects that point to another (non-scalar) object but do not own a strong reference to it.
 (See :ref:`Weak References <weak_references>`).
 
 

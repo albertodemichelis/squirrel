@@ -24,7 +24,7 @@ adds a reference to an object handler.
     :param HSQOBJECT* o: pointer to an object handler
     :param SQUserPointer* typetag: a pointer to the variable that will store the tag
     :returns: a SQRESULT
-    :remarks: the function works also with instances. if the taget object is an instance, the typetag of it's base class is fetched.
+    :remarks: the function works also with instances. if the target object is an instance, the typetag of it's base class is fetched.
 
 gets the typetag of a raw object reference(userdata or class).
 
@@ -145,7 +145,7 @@ push an object referenced by an object handler into the stack.
     :param HSQUIRRELVM v: the target VM
     :param HSQOBJECT* po: pointer to an object handler
     :returns: SQTrue if the object handler released has lost all is references(the ones added with sq_addref). SQFalse otherwise.
-    :remarks: the function will reset the object handler to null when it losts all references.
+    :remarks: the function will reset the object handler to null when it loses all references.
 
 remove a reference from an object handler.
 

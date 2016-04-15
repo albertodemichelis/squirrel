@@ -23,7 +23,7 @@ When the function is called, the stackbase is the first parameter of the functio
 top is the last. In order to return a value the function has to push it in the stack and
 return 1.
 
-Function parameters are in the stack from postion 1 ('this') to *n*.
+Function parameters are in the stack from position 1 ('this') to *n*.
 *sq_gettop()* can be used to determinate the number of parameters.
 
 If the function has free variables, those will be in the stack after the explicit parameters

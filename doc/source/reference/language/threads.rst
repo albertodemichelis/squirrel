@@ -22,17 +22,17 @@ Using threads
 ------------------
 
 .. index::
-    single: Usign Threads
+    single: Using Threads
 
 Threads are created through the built-in function 'newthread(func)'; this function
-gets as parameter a squirrel function and bind it to the new thread objecs(will be the thread body).
+gets as parameter a squirrel function and bind it to the new thread objects (will be the thread body).
 The returned thread object is initially in 'idle' state. the thread can be started with the function
 'threadobj.call()'; the parameters passed to 'call' are passed to the thread function.
 
 A thread can be be suspended calling the function suspend(), when this happens the function
-that wokeup(or started) the thread returns (If a parametrer is passed to suspend() it will
+that wokeup(or started) the thread returns (If a parameter is passed to suspend() it will
 be the return value of the wakeup function , if no parameter is passed the return value will be null).
-A suspended thread can be resumed calling the funtion 'threadobj.wakeup', when this happens
+A suspended thread can be resumed calling the function 'threadobj.wakeup', when this happens
 the function that suspended the thread will return(if a parameter is passed to wakeup it will
 be the return value of the suspend function, if no parameter is passed the return value will be null).
 

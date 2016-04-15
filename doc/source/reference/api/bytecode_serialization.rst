@@ -29,4 +29,4 @@ serialize (read) a closure and pushes it on top of the stack, the source is user
     :returns: a SQRESULT
     :remarks: closures with free variables cannot be serialized
 
-serializes(writes) the closure on top of the stack, the desination is user defined through a write callback.
+serializes(writes) the closure on top of the stack, the destination is user defined through a write callback.

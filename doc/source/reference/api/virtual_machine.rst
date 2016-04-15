@@ -63,7 +63,7 @@ returns the current print function of the given Virtual machine. (see sq_setprin
     :param HSQUIRRELVM v: the target VM
     :returns: the current VMs shared foreign pointer
 
-Returns the shared foreign pointer of a group of friend VMs .
+Returns the shared foreign pointer of a group of friend VMs
 
 
 
@@ -76,7 +76,7 @@ Returns the shared foreign pointer of a group of friend VMs .
     :param HSQUIRRELVM v: the target VM
     :returns: the current VMs release hook.
 
-Returns the shared release hook of a group of friend VMs .
+Returns the shared release hook of a group of friend VMs
 
 
 
@@ -88,7 +88,7 @@ Returns the shared release hook of a group of friend VMs .
 
     :returns: version number of the vm(as in SQUIRREL_VERSION_NUMBER).
 
-returns the version number of the vm.
+returns the version number of the vm
 
 
 
@@ -101,7 +101,7 @@ returns the version number of the vm.
     :param HSQUIRRELVM v: the target VM
     :returns: the current VMs release hook.
 
-Returns the release hook of a VM instance.
+Returns the release hook of a VM instance
 
 
 
@@ -128,7 +128,7 @@ returns the execution state of a virtual machine
     :param HSQUIRRELVM src: the source VM
     :param SQInteger idx: the index in the source stack of the value that has to be moved
 
-pushes the object at the position 'idx' of the source vm stack in the destination vm stack.
+pushes the object at the position 'idx' of the source vm stack in the destination vm stack
 
 
 
@@ -297,7 +297,7 @@ Sets the release hook of a certain VM group. The release hook is invoked when th
     :param HSQUIRRELVM v: the target VM
     :param SQRELESEHOOK hook: The hook that has to be set
 
-Sets the release hook of a certain VM instance. The release hook is invoked when the vm is destroyed. The userpointer passed to the function is the vm foreignpointer(see sq_setforeignpointer())
+Sets the release hook of a certain VM instance. The release hook is invoked when the vm is destroyed. The userpointer passed to the function is the vm foreignpointer (see sq_setforeignpointer())
 
 
 
@@ -338,4 +338,4 @@ Suspends the execution of the specified vm.
     :param SQBool throwerror: if true, the vm will thow an exception as soon as is resumed. the exception payload must be set beforehand invoking sq_thowerror().
     :returns: an HRESULT.
 
-Wake up the execution a previously suspended virtual machine.
+wake up the execution a previously suspended virtual machine
