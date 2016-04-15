@@ -60,7 +60,7 @@ A blob can also be accessed byte by byte through the `[]` operator.
 
 .. js:function:: blob.len()
 
-    returns the lenght of the stream
+    returns the length of the stream
 
 .. js:function:: blob.readblob(size)
 

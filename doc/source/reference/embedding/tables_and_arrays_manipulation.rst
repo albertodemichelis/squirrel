@@ -47,7 +47,7 @@ To get a value from an array or table::
 
     SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx);
 
-To get or set a value from a table without employ delegation::
+To get or set a value from a table without employing delegation::
 
     SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx);
     SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx);

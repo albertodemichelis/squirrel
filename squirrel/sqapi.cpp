@@ -1128,7 +1128,7 @@ SQRESULT sq_reservestack(HSQUIRRELVM v,SQInteger nsize)
 {
     if (((SQUnsignedInteger)v->_top + nsize) > v->_stack.size()) {
         if(v->_nmetamethodscall) {
-            return sq_throwerror(v,_SC("cannot resize stack while in  a metamethod"));
+            return sq_throwerror(v,_SC("cannot resize stack while in a metamethod"));
         }
         v->_stack.resize(v->_stack.size() + ((v->_top + nsize) - v->_stack.size()));
     }

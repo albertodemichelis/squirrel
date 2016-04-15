@@ -13,7 +13,7 @@ Stack Operations
     :returns: == 0 if obj1==obj2
     :returns: < 0 if obj1<obj2
 
-compares 2 object from the stack and compares them.
+compares 2 object from the top of the stack. obj2 should be pushed before obj1.
 
 
 
@@ -91,7 +91,7 @@ removes an element from an arbitrary position in the stack
     :param SQInteger nsize: required stack size
     :returns: a SQRESULT
 
-ensure that the stack space left is at least of a specified size.If the stack is smaller it will automatically grow. if there's a memtamethod currently running the function will fail and the stack will not be resized, this situatuation has to be considered a "stack overflow".
+ensure that the stack space left is at least of a specified size.If the stack is smaller it will automatically grow. if there's a metamethod currently running the function will fail and the stack will not be resized, this situatuation has to be considered a "stack overflow".
 
 
 

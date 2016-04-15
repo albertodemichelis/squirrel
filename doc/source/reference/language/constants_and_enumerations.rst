@@ -37,17 +37,17 @@ Constants will shadow any global slot with the same name( the global slot will r
     local x = foobar * 2;
 
 ---------------
-Enumrations
+Enumerations
 ---------------
 
 .. index::
-    single: Enumrations
+    single: Enumerations
 
-As Constants, Enumerations bind a specific value to a name. Enumerations are also evaluated compile time
+As Constants, Enumerations bind a specific value to a name. Enumerations are also evaluated at compile time
 and their value cannot be changed.
 
 An enum declaration introduces a new enumeration into the program.
-Enumerations values can only be integers, floats or string literals. No expression are allowed.::
+Enumeration values can only be integers, floats or string literals. No expression are allowed.::
 
     enum Stuff {
       first, //this will be 0

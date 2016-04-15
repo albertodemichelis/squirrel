@@ -177,7 +177,7 @@ gets the value of the integer at the idx position in the stack.
     :param SQInteger idx: an index in the stack pointing to the class
     :param HSQMEMBERHANDLE* handle: a pointer to the variable that will store the handle
     :returns: a SQRESULT
-    :remarks: This method works only with classes and instances. A handle retrieved through a class can be later used to set or get values from one of the class instances and vice-versa. Handles retrieved from base classes are still valid in derived classes and respect inheritance rules.
+    :remarks: This method works only with classes. A handle retrieved through a class can be later used to set or get values from one of the class instances. Handles retrieved from base classes are still valid in derived classes and respect inheritance rules.
 
 pops a value from the stack and uses it as index to fetch the handle of a class member. The handle can be later used to set or get the member value using sq_getbyhandle(),sq_setbyhandle().
 
@@ -455,7 +455,7 @@ pushes a null value into the stack
 
     :param HSQUIRRELVM v: the target VM
     :param const SQChar * s: pointer to the string that has to be pushed
-    :param SQInteger len: lenght of the string pointed by s
+    :param SQInteger len: length of the string pointed by s
     :remarks: if the parameter len is less than 0 the VM will calculate the length using strlen(s)
 
 pushes a string in the stack
