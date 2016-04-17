@@ -13,11 +13,10 @@ Calls
     :param SQBool retval: if true the function will push the return value in the stack
     :param SQBool raiseerror: if true, if a runtime error occurs during the execution of the call, the vm will invoke the error handler.
     :returns: a SQRESULT
-    :remarks: the function pops all the parameters and leave the closure in the stack; if retval is true the return value of the closure is pushed. If the execution of the function is suspended through sq_suspendvm(), the closure and the arguments will not be automatically popped from the stack.
 
-calls a closure or a native closure.
+calls a closure or a native closure. The function pops all the parameters and leave the closure in the stack; if retval is true the return value of the closure is pushed. If the execution of the function is suspended through sq_suspendvm(), the closure and the arguments will not be automatically popped from the stack.
 
-
+When using to create an instance, push a dummy parameter to be filled with the newly-created instance for the constructor's 'this' parameter.
 
 
 
