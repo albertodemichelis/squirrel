@@ -9,9 +9,9 @@ Garbage Collector
 .. c:function:: SQInteger sq_collectgarbage(HSQUIRRELVM v)
 
     :param HSQUIRRELVM v: the target VM
-    :remarks: this api only works with gabage collector builds (NO_GARBAGE_COLLECTOR is not defined)
+    :remarks: this api only works with garbage collector builds (NO_GARBAGE_COLLECTOR is not defined)
 
-runs the garbage collector and returns the number of reference cycles found(and deleted)
+runs the garbage collector and returns the number of reference cycles found (and deleted)
 
 
 
@@ -22,6 +22,6 @@ runs the garbage collector and returns the number of reference cycles found(and 
 .. c:function:: SQRESULT sq_resurrectunreachable(HSQUIRRELVM v)
 
     :param HSQUIRRELVM v: the target VM
-    :remarks: this api only works with gabage collector builds (NO_GARBAGE_COLLECTOR is not defined)
+    :remarks: this api only works with garbage collector builds (NO_GARBAGE_COLLECTOR is not defined)
 
-runs the garbage collector and pushes an array in the stack containing all unreachable object found. If no unreachable object is found, null is pushed instead. This function is meant to help debugging reference cycles.
+runs the garbage collector and pushes an array in the stack containing all unreachable object found. If no unreachable object is found, null is pushed instead. This function is meant to help debug reference cycles.

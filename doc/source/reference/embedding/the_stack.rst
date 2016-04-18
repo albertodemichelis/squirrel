@@ -65,7 +65,7 @@ To force the stack to a certain size you can call *sq_settop* ::
 
     void sq_settop(HSQUIRRELVM v,SQInteger newtop);
 
-If the newtop is bigger than the previous one, the new posistions in the stack will be
+If the newtop is bigger than the previous one, the new positions in the stack will be
 filled with null values.
 
 The following function pushes a C value into the stack::

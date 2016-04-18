@@ -172,7 +172,7 @@ _tyoeof
 
     _tyoeof()
 
-invoked by the typeof operator on tables ,userdata and class instances
+invoked by the typeof operator on tables, userdata and class instances
 
 returns the type of ``this`` as string
 
@@ -206,7 +206,7 @@ _call
 
     _call(other)
 
-invoked when a table, userdata or class instance is called
+invoked when a table, userdata, or class instance is called
 
 ^^^^^^^^^^^^^^^^^^^^^^^^
 _cloned
@@ -239,7 +239,7 @@ _tostring
 
     _tostring(previdx)
 
-invoked when during string conacatenation or when the ``print`` function prints a table, instance or userdata.
+invoked when during string conacatenation or when the ``print`` function prints a table, instance, or userdata.
 The method is also invoked by the sq_tostring() api
 
 must return a string representation of the object.

@@ -50,7 +50,7 @@ with tables we can also use the '.' syntax::
     _table.foo
 
 Squirrel first checks if an identifier is a local variable (function arguments are local
-variables) if not looks up the environment object (this) and finally looksup
+variables) if not looks up the environment object (this) and finally looks up
 to the closure root.
 
 For instance:::

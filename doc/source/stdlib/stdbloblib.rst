@@ -4,7 +4,7 @@
 The Blob library
 ==================
 The blob library implements binary data manipulations routines. The library is
-based on `blob objects` that rapresent a buffer of arbitrary
+based on `blob objects` that represent a buffer of arbitrary
 binary data.
 
 ---------------
@@ -66,20 +66,20 @@ A blob can also be accessed byte by byte through the `[]` operator.
 
     :param int size: number of bytes to read
 
-    read n bytes from the stream and retuns them as blob
+    read n bytes from the stream and returns them as blob
 
 .. js:function:: blob.readn(type)
 
     :param int type: type of the number to read
 
-    reads a number from the stream according to the type pameter.
+    reads a number from the stream according to the type parameter.
 
     `type` can have the following values:
 
 +--------------+--------------------------------------------------------------------------------+----------------------+
 | parameter    | return description                                                             |  return type         |
 +==============+================================================================================+======================+
-| 'l'          | processor dependent, 32bits on 32bits processors, 64bits on 64bits prcessors   |  integer             |
+| 'l'          | processor dependent, 32bits on 32bits processors, 64bits on 64bits processors  |  integer             |
 +--------------+--------------------------------------------------------------------------------+----------------------+
 | 'i'          | 32bits number                                                                  |  integer             |
 +--------------+--------------------------------------------------------------------------------+----------------------+
@@ -98,7 +98,7 @@ A blob can also be accessed byte by byte through the `[]` operator.
 
 .. js:function:: blob.resize(size)
 
-    :param int size: the new size of the blobl in bytes
+    :param int size: the new size of the blob in bytes
 
     resizes the blob to the specified `size`
 
@@ -142,7 +142,7 @@ A blob can also be accessed byte by byte through the `[]` operator.
     :param number n: the value to be written
     :param int type: type of the number to write
 
-    writes a number in the stream formatted according to the `type` pameter
+    writes a number in the stream formatted according to the `type` parameter
 
     `type` can have the following values:
 

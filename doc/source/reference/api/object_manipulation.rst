@@ -25,7 +25,7 @@ pops a value from the stack and pushes it in the back of the array at the positi
 
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: index of the target array in the stack
-    :param SQInteger destpos: the postion in the array where the item has to be inserted
+    :param SQInteger destpos: the position in the array where the item has to be inserted
     :returns: a SQRESULT
     :remarks: Only works on arrays.
 
@@ -74,7 +74,7 @@ removes an item from an array
     :param SQInteger idx: index of the target array in the stack
     :param SQInteger newsize: requested size of the array
     :returns: a SQRESULT
-    :remarks: Only works on arrays.if newsize if greater than the current size the new array slots will be filled with nulls.
+    :remarks: Only works on arrays. If newsize if greater than the current size the new array slots will be filled with nulls.
 
 resizes the array at the position idx in the stack.
 
@@ -164,9 +164,9 @@ pops a key from the stack and delete the slot indexed by it from the table at po
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: index of the target object in the stack
     :returns: a SQRESULT
-    :remarks: this call will invokes the delegation system like a normal dereference it only works on tables, arrays and userdata. if the function fails nothing will be pushed in the stack.
+    :remarks: this call will invokes the delegation system like a normal dereference it only works on tables, arrays and userdata. If the function fails, nothing will be pushed in the stack.
 
-pops a key from the stack and performs a get operation on the object at the position idx in the stack, and pushes the result in the stack.
+pops a key from the stack and performs a get operation on the object at the position idx in the stack; and pushes the result in the stack.
 
 
 
@@ -180,7 +180,7 @@ pops a key from the stack and performs a get operation on the object at the posi
     :param SQInteger idx: index of the target class in the stack
     :returns: a SQRESULT
 
-Gets the attribute of a class mameber. The function pops a key from the stack and pushes the attribute of the class member indexed by they key from class at position idx in the stack. If key is null the function gets the class level attribute.
+Gets the attribute of a class member. The function pops a key from the stack and pushes the attribute of the class member indexed by they key from a class at position idx in the stack. If key is null the function gets the class level attribute.
 
 
 
@@ -267,7 +267,7 @@ pushes the object pointed by the weak reference at position idx in the stack.
     :returns: SQTrue if the instance at position -2 in the stack is an instance of the class object at position -1 in the stack.
     :remarks: The function doesn't pop any object from the stack.
 
-Determintes if an object is an instance of a certain class. Expects an istance and a class in the stack.
+Determines if an object is an instance of a certain class. Expects an instance and a class in the stack.
 
 
 
@@ -283,7 +283,7 @@ Determintes if an object is an instance of a certain class. Expects an istance a
     :returns: a SQRESULT
     :remarks: Invokes the _newmember metamethod in the class. it only works on classes.
 
-pops a key, a value and an object(that will be set as attribute of the member) from the stack and performs a new slot operation on the class that is at position idx in the stack, if the slot does not exits it will be created.
+pops a key, a value and an object (which will be set as attribute of the member) from the stack and performs a new slot operation on the class that is at position idx in the stack; if the slot does not exits it will be created.
 
 
 
@@ -313,7 +313,7 @@ pops a key and a value from the stack and performs a set operation on the table 
     :param SQInteger idx: index of the target object in the stack
     :returns: a SQRESULT
 
-Pushes in the stack the next key and value of an array, table or class slot. To start the iteration this function expects a null value on top of the stack; at every call the function will substitute the null value with an iterator and push key and value of the container slot. Every iteration the application has to pop the previous key and value but leave the iterator(that is used as reference point for the next iteration). The function will fail when all slots have been iterated(see Tables and arrays manipulation).
+Pushes in the stack the next key and value of an array, table, or class slot. To start the iteration this function expects a null value on top of the stack; at every call the function will substitute the null value with an iterator and push key and value of the container slot. Every iteration the application has to pop the previous key and value but leave the iterator(that is used as reference point for the next iteration). The function will fail when all slots have been iterated(see Tables and arrays manipulation).
 
 
 
@@ -328,7 +328,7 @@ Pushes in the stack the next key and value of an array, table or class slot. To 
     :param SQBool pushval: if this param is true the function will push the value of the deleted slot.
     :returns: a SQRESULT
 
-Deletes a slot from a table without employing the _delslot metamethod. pops a key from the stack and delete the slot indexed by it from the table at position idx in the stack, if the slot does not exits nothing happens.
+Deletes a slot from a table without employing the _delslot metamethod. Pops a key from the stack and delete the slot indexed by it from the table at position idx in the stack, if the slot does not exits nothing happens.
 
 
 
@@ -403,7 +403,7 @@ pops a key and a value from the stack and performs a set operation on the object
     :param SQInteger idx: index of the target class in the stack.
     :returns: a SQRESULT
 
-Sets the attribute of a class mameber. The function pops a key and a value from the stack and sets the attribute (indexed by they key) on the class at position idx in the stack. If key is null the function sets the class level attribute. If the function succeed, the old attribute value is pushed in the stack.
+Sets the attribute of a class member. The function pops a key and a value from the stack and sets the attribute (indexed by the key) on the class at position idx in the stack. If key is null the function sets the class level attribute. If the function succeed, the old attribute value is pushed in the stack.
 
 
 
@@ -416,9 +416,9 @@ Sets the attribute of a class mameber. The function pops a key and a value from 
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: index of the target object in the stack
     :returns: a SQRESULT
-    :remarks: to remove the delgate from an object is necessary to use null as delegate instead of a table.
+    :remarks: to remove the delegate from an object, set a null value.
 
-pops a table from the stack and sets it as delegate of the object at the position idx in the stack.
+pops a table from the stack and sets it as the delegate of the object at the position idx in the stack.
 
 
 
@@ -433,7 +433,7 @@ pops a table from the stack and sets it as delegate of the object at the positio
     :param SQInteger nval: 0 based index of the free variable(relative to the closure).
     :returns: a SQRESULT
 
-pops a value from the stack and sets it as free variable of the closure at the position idx in the stack.
+pops a value from the stack and sets it as a free variable of the closure at the position idx in the stack.
 
 
 

@@ -13,7 +13,7 @@ Object creation and handling
     :returns: a SQRESULT
     :remarks: the cloned closure holds the environment object as weak reference
 
-pops an object from the stack(must be a table,instance or class) clones the closure at position idx in the stack and sets the popped object as environment of the cloned closure. Then pushes the new cloned closure on top of the stack.
+pops an object from the stack (must be a table, instance, or class); clones the closure at position idx in the stack and sets the popped object as environment of the cloned closure. Then pushes the new cloned closure on top of the stack.
 
 
 
@@ -54,8 +54,8 @@ gets the value of the bool at the idx position in the stack.
 .. c:function:: SQRESULT sq_getbyhandle(HSQUIRRELVM v, SQInteger idx, HSQMEMBERHANDLE* handle)
 
     :param HSQUIRRELVM v: the target VM
-    :param SQInteger idx: an index in the stack pointing to the class
-    :param HSQMEMBERHANDLE* handle: a pointer the member handle
+    :param SQInteger idx: an index in the stack pointing to the class or instance
+    :param HSQMEMBERHANDLE* handle: a pointer to the member handle
     :returns: a SQRESULT
 
 pushes the value of a class or instance member using a member handle (see sq_getmemberhandle)
@@ -88,7 +88,7 @@ retrieves number of parameters and number of freevariables from a squirrel closu
     :param SQInteger idx: index of the target closure
     :returns: an SQRESULT
 
-pushes the name of the closure at poistion idx in the stack. Note that the name can be a string or null if the closure is anonymous or a native closure with no name assigned to it.
+pushes the name of the closure at position idx in the stack. Note that the name can be a string or null if the closure is anonymous or a native closure with no name assigned to it.
 
 
 
@@ -179,7 +179,7 @@ gets the value of the integer at the idx position in the stack.
     :returns: a SQRESULT
     :remarks: This method works only with classes. A handle retrieved through a class can be later used to set or get values from one of the class instances. Handles retrieved from base classes are still valid in derived classes and respect inheritance rules.
 
-pops a value from the stack and uses it as index to fetch the handle of a class member. The handle can be later used to set or get the member value using sq_getbyhandle(),sq_setbyhandle().
+pops a value from the stack and uses it as index to fetch the handle of a class member. The handle can be later used to set or get the member value using sq_getbyhandle(), sq_setbyhandle().
 
 
 
@@ -220,9 +220,9 @@ returns a pointer to a memory buffer that is at least as big as minsize.
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: an index in the stack
     :returns: the size of the value at the position idx in the stack
-    :remarks: this function only works with strings,arrays,tables,classes,instances and userdata if the value is not a valid type types the function will return -1.
+    :remarks: this function only works with strings, arrays, tables, classes, instances, and userdata if the value is not a valid type, the function will return -1.
 
-returns the size of a value at the idx position in the stack, if the value is a class or a class instance the size returned is the size of the userdata buffer(see sq_setclassudsize).
+returns the size of a value at the idx position in the stack. If the value is a class or a class instance the size returned is the size of the userdata buffer (see sq_setclassudsize).
 
 
 
@@ -252,7 +252,7 @@ gets a pointer to the string at the idx position in the stack.
     :param HSQUIRRELVM* v: A pointer to the variable that will store the thread pointer
     :returns: a SQRESULT
 
-gets a a pointer to the thread the idx position in the stack.
+gets a pointer to the thread the idx position in the stack.
 
 
 
@@ -282,7 +282,7 @@ returns the type of the value at the position idx in the stack
     :returns: a SQRESULT
     :remarks: the function works also with instances. if the taget object is an instance, the typetag of it's base class is fetched.
 
-gets the typetag of the object(userdata or class) at position idx in the stack.
+gets the typetag of the object (userdata or class) at position idx in the stack.
 
 
 
@@ -379,7 +379,7 @@ creates a new table and pushes it in the stack
     :param HSQUIRRELVM v: the target VM
     :param SQInteger initialcapacity: number of key/value pairs to preallocate
 
-creates a new table and pushes it in the stack. This function allows to specify the initial capacity of the table to prevent unnecessary rehashing when the number of slots required is known at creation-time.
+creates a new table and pushes it in the stack. This function allows you to specify the initial capacity of the table to prevent unnecessary rehashing when the number of slots required is known at creation-time.
 
 
 
@@ -431,7 +431,7 @@ pushes a float into the stack
     :param HSQUIRRELVM v: the target VM
     :param SQInteger n: the integer that has to be pushed
 
-pushes a integer into the stack
+pushes an integer into the stack
 
 
 
@@ -501,7 +501,7 @@ pops a value from the stack and sets it to a class or instance member using a me
     :param SQInteger udsize: size in bytes reserved for user data
     :returns: a SQRESULT
 
-Sets the user data size of a class. If a class 'user data size' is greater than 0. When an instance of the class is created additional space will is reserved at the end of the memory chunk where the instance is stored. The userpointer of the instance will also be automatically set to this memory area. This allows to minimize allocations in applications that have to carry data along with the class instance.
+Sets the user data size of a class. If a class 'user data size' is greater than 0. When an instance of the class is created additional space will be reserved at the end of the memory chunk where the instance is stored. The userpointer of the instance will also be automatically set to this memory area. This allows you to minimize allocations in applications that have to carry data along with the class instance.
 
 
 
@@ -515,7 +515,7 @@ Sets the user data size of a class. If a class 'user data size' is greater than 
     :param SQInteger idx: index of the target closure
     :returns: an SQRESULT
 
-pops a table from the stack and sets it as root of the closre at position idx in the stack
+pops a table from the stack and sets it as root of the closure at position idx in the stack
 
 
 
@@ -545,7 +545,7 @@ sets the userpointer of the class instance at position idx in the stack.
     :param const SQChar * name: the name that has to be set
     :returns: an SQRESULT
 
-sets the name of the native closure at the position idx in the stack. the name of a native closure is purely for debug pourposes. The name is retieved trough the function sq_stackinfos() while the closure is in the call stack.
+sets the name of the native closure at the position idx in the stack. The name of a native closure is purely for debug purposes. The name is retrieved trough the function sq_stackinfos() while the closure is in the call stack.
 
 
 
@@ -556,11 +556,11 @@ sets the name of the native closure at the position idx in the stack. the name o
 .. c:function:: SQRESULT sq_setparamscheck(HSQUIRRELVM v, SQInteger nparamscheck, const SQChar * typemask)
 
     :param HSQUIRRELVM v: the target VM
-    :param SQInteger nparamscheck: defines the parameters number check policy(0 disable the param checking). if nparamscheck is greater than 0 the VM ensures that the number of parameters is exactly the number specified in nparamscheck(eg. if nparamscheck == 3 the function can only be called with 3 parameters). if nparamscheck is less than 0 the VM ensures that the closure is called with at least the absolute value of the number specified in nparamcheck(eg. nparamscheck == -3 will check that the function is called with at least 3 parameters). the hidden paramater 'this' is included in this number free variables aren't. If SQ_MATCHTYPEMASKSTRING is passed instead of the number of parameters, the function will automatically extrapolate the number of parameters to check from the typemask(eg. if the typemask is ".sn" is like passing 3).
-    :param const SQChar * typemask: defines a mask to validate the parametes types passed to the function. if the parameter is NULL no typechecking is applyed(default).
-    :remarks: The typemask consists in a zero teminated string that represent the expected parameter type. The types are expressed as follows: 'o' null, 'i' integer, 'f' float, 'n' integer or float, 's' string, 't' table, 'a' array, 'u' userdata, 'c' closure and nativeclosure, 'g' generator, 'p' userpointer, 'v' thread, 'x' instance(class instance), 'y' class, 'b' bool. and '.' any type. The symbol '|' can be used as 'or' to accept multiple types on the same parameter. There isn't any limit on the number of 'or' that can be used. Spaces are ignored so can be inserted between types to increase readbility. For instance to check a function that espect a table as 'this' a string as first parameter and a number or a userpointer as second parameter, the string would be "tsn|p" (table,string,number or userpointer). If the parameters mask is contains less parameters than 'nparamscheck' the remaining parameters will not be typechecked.
+    :param SQInteger nparamscheck: defines the parameters number check policy (0 disables the param checking). If nparamscheck is greater than 0, the VM ensures that the number of parameters is exactly the number specified in nparamscheck (eg. if nparamscheck == 3 the function can only be called with 3 parameters). If nparamscheck is less than 0 the VM ensures that the closure is called with at least the absolute value of the number specified in nparamcheck (eg. nparamscheck == -3 will check that the function is called with at least 3 parameters). The hidden parameter 'this' is included in this number; free variables aren't. If SQ_MATCHTYPEMASKSTRING is passed instead of the number of parameters, the function will automatically infer the number of parameters to check from the typemask (eg. if the typemask is ".sn", it is like passing 3).
+    :param const SQChar * typemask: defines a mask to validate the parametes types passed to the function. If the parameter is NULL, no typechecking is applied (default).
+    :remarks: The typemask consists in a zero terminated string that represent the expected parameter type. The types are expressed as follows: 'o' null, 'i' integer, 'f' float, 'n' integer or float, 's' string, 't' table, 'a' array, 'u' userdata, 'c' closure and nativeclosure, 'g' generator, 'p' userpointer, 'v' thread, 'x' instance(class instance), 'y' class, 'b' bool. and '.' any type. The symbol '|' can be used as 'or' to accept multiple types on the same parameter. There isn't any limit on the number of 'or' that can be used. Spaces are ignored so can be inserted between types to increase readability. For instance to check a function that expect a table as 'this' a string as first parameter and a number or a userpointer as second parameter, the string would be "tsn|p" (table,string,number or userpointer). If the parameters mask is contains fewer parameters than 'nparamscheck', the remaining parameters will not be typechecked.
 
-Sets the parameters validation scheme for the native closure at the top position in the stack. Allows to validate the number of parameters accepted by the function and optionally their types. If the function call do not comply with the parameter schema set by sq_setparamscheck, an exception is thrown.
+Sets the parameter validation scheme for the native closure at the top position in the stack. Allows you to validate the number of parameters accepted by the function and optionally their types. If the function call does not comply with the parameter schema set by sq_setparamscheck, an exception is thrown.
 
 *.eg*
 
@@ -572,7 +572,7 @@ Sets the parameters validation scheme for the native closure at the top position
         SQUserPointer p;
         const SQChar *s;
         SQInteger i;
-        //no type checking, if the call comply to the mask
+        //no type checking, if the call complies with the mask
         //surely the functions will succeed.
         sq_getuserdata(v,1,&p,NULL);
         sq_getstring(v,2,&s);
@@ -603,7 +603,7 @@ Sets the parameters validation scheme for the native closure at the top position
     :param SQRELEASEHOOK hook: a function pointer to the hook(see sample below)
     :remarks: the function hook is called by the VM before the userdata memory is deleted.
 
-sets the release hook of the userdata, class instance or class at position idx in the stack.
+sets the release hook of the userdata, class instance, or class at position idx in the stack.
 
 *.eg*
 
@@ -632,7 +632,7 @@ sets the release hook of the userdata, class instance or class at position idx i
     :param SQUserPointer typetag: an arbitrary SQUserPointer
     :returns: a SQRESULT
 
-sets the typetag of the object(userdata or class) at position idx in the stack.
+sets the typetag of the object (userdata or class) at position idx in the stack.
 
 
 
@@ -645,7 +645,7 @@ sets the typetag of the object(userdata or class) at position idx in the stack.
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: an index in the stack
     :param SQBool * b: A pointer to the bool that will store the value
-    :remarks: if the object is not a bool the function converts the value too bool according to squirrel's rules. For instance the number 1 will result in true, and the number 0 in false.
+    :remarks: if the object is not a bool the function converts the value to bool according to squirrel's rules. For instance the number 1 will result in true, and the number 0 in false.
 
 gets the value at position idx in the stack as bool.
 
@@ -674,7 +674,7 @@ converts the object at position idx in the stack to string and pushes the result
     :param SQInteger idx: an index in the stack
     :returns: a SQRESULT
 
-pushes the type name of the value at the position idx in the stack, it also invokes the _typeof metamethod for tables and class instances that implement it; in that case the pushed object could be something other than a string (is up to the _typeof implementation).
+pushes the type name of the value at the position idx in the stack. It also invokes the _typeof metamethod for tables and class instances that implement it; in that case the pushed object could be something other than a string (is up to the _typeof implementation).
 
 
 
