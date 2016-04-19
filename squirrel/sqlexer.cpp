@@ -389,7 +389,7 @@ SQInteger SQLexer::ReadString(SQInteger ndelim,bool verbatim)
 #if WCHAR_SIZE == 2
                         AddUTF16(scstrtoul(temp, &stemp, 16));
 #else
-                        ADD_CHAR((SQChar)scstrtoul(temp, &stemp, 16));
+                        APPEND_CHAR((SQChar)scstrtoul(temp, &stemp, 16));
 #endif
 #else
                         AddUTF8(scstrtoul(temp, &stemp, 16));
