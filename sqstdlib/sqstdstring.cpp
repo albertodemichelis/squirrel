@@ -473,6 +473,8 @@ static const SQRegFunction stringlib_funcs[]={
 
 SQInteger sqstd_register_stringlib(HSQUIRRELVM v)
 {
+    if(sq_gettype(v,-1) != OT_TABLE)
+        return sq_throwerror(v,_SC("table expected"));
     sq_pushstring(v,_SC("regexp"),-1);
     sq_newclass(v,SQFalse);
     SQInteger i = 0;

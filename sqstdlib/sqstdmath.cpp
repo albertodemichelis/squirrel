@@ -88,6 +88,8 @@ static const SQRegFunction mathlib_funcs[] = {
 
 SQRESULT sqstd_register_mathlib(HSQUIRRELVM v)
 {
+    if(sq_gettype(v,-1) != OT_TABLE)
+        return sq_throwerror(v,_SC("table expected"));	
     SQInteger i=0;
     while(mathlib_funcs[i].name!=0) {
         sq_pushstring(v,mathlib_funcs[i].name,-1);
