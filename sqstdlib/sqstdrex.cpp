@@ -153,6 +153,9 @@ static SQInteger sqstd_rex_charnode(SQRex *exp,SQBool isclass)
                      exp->_nodes[node].right = ce;
                      return node;
                 }
+            case 0:
+                sqstd_rex_error(exp,_SC("letter expected for argument of escape sequence"));
+                break;                
             case 'b':
             case 'B':
                 if(!isclass) {
