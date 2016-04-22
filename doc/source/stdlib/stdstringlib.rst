@@ -69,8 +69,8 @@ The regexp class
 
 .. js:class:: regexp(pattern)
 
-    The regexp object represent a precompiled regular expression pattern. The object is created
-    trough `regexp(patern)`.
+    The regexp object represents a precompiled regular expression pattern. The object is created
+    through `regexp(pattern)`.
 
 
 +---------------------+--------------------------------------+
