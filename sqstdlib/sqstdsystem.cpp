@@ -132,8 +132,6 @@ static const SQRegFunction systemlib_funcs[]={
 
 SQInteger sqstd_register_systemlib(HSQUIRRELVM v)
 {
-    if(sq_gettype(v,-1) != OT_TABLE)
-        return sq_throwerror(v,_SC("table expected"));
     SQInteger i=0;
     while(systemlib_funcs[i].name!=0)
     {

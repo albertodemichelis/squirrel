@@ -472,8 +472,6 @@ static const SQRegFunction iolib_funcs[]={
 
 SQRESULT sqstd_register_iolib(HSQUIRRELVM v)
 {
-    if(sq_gettype(v,-1) != OT_TABLE)
-        return sq_throwerror(v,_SC("table expected"));	
     SQInteger top = sq_gettop(v);
     //create delegate
     declare_stream(v,_SC("file"),(SQUserPointer)SQSTD_FILE_TYPE_TAG,_SC("std_file"),_file_methods,iolib_funcs);
