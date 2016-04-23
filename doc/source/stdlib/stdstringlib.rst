@@ -57,7 +57,7 @@ Global Symbols
 
 .. js:function:: startswith(str, cmp)
 
-    returns `true` if the beginning of the string `str`  matches a the string `cmp` otherwise returns `false`
+    returns `true` if the beginning of the string `str` matches the string `cmp`; otherwise returns `false`
 	
 .. js:function:: strip(str)
 
@@ -162,13 +162,13 @@ The regexp class
 
 .. js:function:: regexp.capture(str [, start])
 
-    returns an array of tables containing two indexs("begin" and "end")of
+    returns an array of tables containing two indexes ("begin" and "end") of
     the first match of the regular expression in the string `str`.
     An array entry is created for each captured sub expressions. If no match occurs returns null.
     The search starts from the index `start`
-    of the string, if `start` is omitted the search starts from the beginning of the string.
+    of the string; if `start` is omitted the search starts from the beginning of the string.
 
-    the first element of the returned array(index 0) always contains the complete match.
+    The first element of the returned array(index 0) always contains the complete match.
 
     ::
 
@@ -197,7 +197,7 @@ The regexp class
 
     returns a table containing two indexes ("begin" and "end") of the first match of the regular expression in
     the string `str`, otherwise if no match occurs returns null. The search starts from the index `start`
-    of the string, if `start` is omitted the search starts from the beginning of the string.
+    of the string; if `start` is omitted the search starts from the beginning of the string.
 
     ::
 
@@ -290,7 +290,7 @@ Regular Expessions
 
     searches the first match of the expression in the string delimited
     by the parameter text_begin and text_end.
-    if the match is found returns SQTrue and the sets out_begin to the beginning of the
+    if the match is found returns SQTrue and sets out_begin to the beginning of the
     match and out_end at the end of the match; otherwise returns SQFalse.
 
 .. c:function:: SQInteger sqstd_rex_getsubexpcount(SQRex * exp)
@@ -305,7 +305,7 @@ Regular Expessions
     :param SQRex* exp: a compiled expression
     :param SQInteger n: the index of the submatch(0 is the complete match)
     :param SQRexMatch* a: pointer to structure that will store the result
-    :returns: the function returns SQTrue if n is valid index otherwise SQFalse.
+    :returns: the function returns SQTrue if n is a valid index; otherwise SQFalse.
 
     retrieve the begin and and pointer to the length of the sub expression indexed
     by n. The result is passed through the struct SQRexMatch.
