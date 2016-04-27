@@ -301,7 +301,7 @@ bool SQVM::ToString(const SQObjectPtr &o,SQObjectPtr &res)
             SQObjectPtr closure;
             if(_delegable(o)->GetMetaMethod(this, MT_TOSTRING, closure)) {
                 Push(o);
-                if(CallMetaMethod(closure,MT_TOSTRING,1,res)) {;
+                if(CallMetaMethod(closure,MT_TOSTRING,1,res)) {
                     if(type(res) == OT_STRING)
                         return true;
                 }
