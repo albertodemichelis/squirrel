@@ -63,7 +63,7 @@ _set
     _set(idx,val)
 
 invoked when the index idx is not present in the object or in its delegate chain.
-``_set`` must 'throw null' to notify that a key wasn't found but the there were not runtime errors(clean failure).
+``_set`` must 'throw null' to notify that a key wasn't found but the there were not runtime errors (clean failure).
 This allows the program to differentiate between a runtime error and a 'index not found'.
 
 ^^^^^
@@ -75,7 +75,7 @@ _get
     _get(idx)
 
 invoked when the index idx is not present in the object or in its delegate chain.
-_get must 'throw null' to notify that a key wasn't found but the there were not runtime errors(clean failure).
+_get must 'throw null' to notify that a key wasn't found but the there were not runtime errors (clean failure).
 This allows the program to differentiate between a runtime error and a 'index not found'.
 
 ^^^^^^^^^
@@ -165,16 +165,16 @@ _unm
 the unary minus operator
 
 ^^^^^^^^^^^^^^^^^^^^^^^^
-_tyoeof
+_typeof
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-    _tyoeof()
+    _typeof()
 
-invoked by the typeof operator on tables, userdata and class instances
+invoked by the typeof operator on tables, userdata, and class instances.
 
-returns the type of ``this`` as string
+Returns the type of ``this`` as string
 
 ^^^^^^^^^^^^^^^^^^^^^^^^
 _cmp
@@ -228,7 +228,7 @@ _nexti
 
 invoked when a userdata or class instance is iterated by a foreach loop
 
-if previdx==null it means that it is the first iteration.
+If previdx==null it means that it is the first iteration.
 The function has to return the index of the 'next' value.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -239,10 +239,10 @@ _tostring
 
     _tostring(previdx)
 
-invoked when during string conacatenation or when the ``print`` function prints a table, instance, or userdata.
-The method is also invoked by the sq_tostring() api
+invoked when during string concatenation or when the ``print`` function prints a table, instance, or userdata.
+The method is also invoked by the sq_tostring() API
 
-must return a string representation of the object.
+Must return a string representation of the object.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^
 _inherited
@@ -252,10 +252,10 @@ _inherited
 
     _inherited(attributes)
 
-invoked when a class object inherits from the class implementing ``_inherited``
-the ``this`` contains the new class.
+invoked when a class object inherits from the class implementing ``_inherited``.
+The ``this`` contains the new class.
 
-return value is ignored.
+Return value is ignored.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^
 _newmember
@@ -265,6 +265,6 @@ _newmember
 
     _newmember(index,value,attributes,isstatic)
 
-invoked for each member declared in a class body(at declaration time).
+invoked for each member declared in a class body (at declaration time).
 
-if the function is implemented, members will not be added to the class.
+If the function is implemented, members will not be added to the class.
