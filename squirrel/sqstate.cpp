@@ -12,12 +12,6 @@
 #include "squserdata.h"
 #include "sqclass.h"
 
-//SQObjectPtr _null_;
-//SQObjectPtr _true_(true);
-//SQObjectPtr _false_(false);
-//SQObjectPtr _one_((SQInteger)1);
-//SQObjectPtr _minusone_((SQInteger)-1);
-
 SQSharedState::SQSharedState()
 {
     _compilererrorhandler = NULL;
@@ -41,31 +35,29 @@ SQSharedState::SQSharedState()
 bool CompileTypemask(SQIntVec &res,const SQChar *typemask)
 {
     SQInteger i = 0;
-
     SQInteger mask = 0;
     while(typemask[i] != 0) {
-
-        switch(typemask[i]){
-                case 'o': mask |= _RT_NULL; break;
-                case 'i': mask |= _RT_INTEGER; break;
-                case 'f': mask |= _RT_FLOAT; break;
-                case 'n': mask |= (_RT_FLOAT | _RT_INTEGER); break;
-                case 's': mask |= _RT_STRING; break;
-                case 't': mask |= _RT_TABLE; break;
-                case 'a': mask |= _RT_ARRAY; break;
-                case 'u': mask |= _RT_USERDATA; break;
-                case 'c': mask |= (_RT_CLOSURE | _RT_NATIVECLOSURE); break;
-                case 'b': mask |= _RT_BOOL; break;
-                case 'g': mask |= _RT_GENERATOR; break;
-                case 'p': mask |= _RT_USERPOINTER; break;
-                case 'v': mask |= _RT_THREAD; break;
-                case 'x': mask |= _RT_INSTANCE; break;
-                case 'y': mask |= _RT_CLASS; break;
-                case 'r': mask |= _RT_WEAKREF; break;
-                case '.': mask = -1; res.push_back(mask); i++; mask = 0; continue;
-                case ' ': i++; continue; //ignores spaces
-                default:
-                    return false;
+        switch(typemask[i]) {
+            case 'o': mask |= _RT_NULL; break;
+            case 'i': mask |= _RT_INTEGER; break;
+            case 'f': mask |= _RT_FLOAT; break;
+            case 'n': mask |= (_RT_FLOAT | _RT_INTEGER); break;
+            case 's': mask |= _RT_STRING; break;
+            case 't': mask |= _RT_TABLE; break;
+            case 'a': mask |= _RT_ARRAY; break;
+            case 'u': mask |= _RT_USERDATA; break;
+            case 'c': mask |= (_RT_CLOSURE | _RT_NATIVECLOSURE); break;
+            case 'b': mask |= _RT_BOOL; break;
+            case 'g': mask |= _RT_GENERATOR; break;
+            case 'p': mask |= _RT_USERPOINTER; break;
+            case 'v': mask |= _RT_THREAD; break;
+            case 'x': mask |= _RT_INSTANCE; break;
+            case 'y': mask |= _RT_CLASS; break;
+            case 'r': mask |= _RT_WEAKREF; break;
+            case '.': mask = -1; res.push_back(mask); i++; mask = 0; continue;
+            case ' ': i++; continue; //ignores spaces
+            default:
+                return false;
         }
         i++;
         if(typemask[i] == '|') {
@@ -160,7 +152,6 @@ void SQSharedState::Init()
     _class_default_delegate = CreateDefaultDelegate(this,_class_default_delegate_funcz);
     _instance_default_delegate = CreateDefaultDelegate(this,_instance_default_delegate_funcz);
     _weakref_default_delegate = CreateDefaultDelegate(this,_weakref_default_delegate_funcz);
-
 }
 
 SQSharedState::~SQSharedState()
@@ -282,7 +273,6 @@ SQInteger SQSharedState::ResurrectUnreachable(SQVM *vm)
 
     SQCollectable *resurrected = _gc_chain;
     SQCollectable *t = resurrected;
-    //SQCollectable *nx = NULL;
 
     _gc_chain = tchain;
 

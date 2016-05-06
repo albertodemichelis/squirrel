@@ -1367,9 +1367,8 @@ SQInteger SQVM::FallBackSet(const SQObjectPtr &self,const SQObjectPtr &key,const
                 return FALLBACK_OK;
             }
             else {
+                Pop(3);
                 if(type(_lasterror) != OT_NULL) { //NULL means "clean failure" (not found)
-                    //error
-                    Pop(3);
                     return FALLBACK_ERROR;
                 }
             }
