@@ -15,6 +15,8 @@
 #include "sqclass.h"
 
 #define TOP() (_stack._vals[_top-1])
+#define TARGET _stack._vals[_stackbase+arg0]
+#define STK(a) _stack._vals[_stackbase+(a)]
 
 bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2)
 {
