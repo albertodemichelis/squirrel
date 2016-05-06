@@ -135,7 +135,7 @@ Clones the table, array or class instance at the position idx, clones it and pus
     :returns: a SQRESULT
     :remarks: invoke the _newslot metamethod in the table delegate. it only works on tables. [this function is deperecated since version 2.0.5 use sq_newslot() instead]
 
-pops a key and a value from the stack and performs a set operation on the table or class that is at position idx in the stack, if the slot does not exits it will be created.
+pops a key and a value from the stack and performs a set operation on the table or class that is at position idx in the stack; if the slot does not exist, it will be created.
 
 
 
@@ -151,7 +151,7 @@ pops a key and a value from the stack and performs a set operation on the table 
     :returns: a SQRESULT
     :remarks: invoke the _delslot metamethod in the table delegate. it only works on tables.
 
-pops a key from the stack and delete the slot indexed by it from the table at position idx in the stack, if the slot does not exits nothing happens.
+pops a key from the stack and delete the slot indexed by it from the table at position idx in the stack; if the slot does not exist, nothing happens.
 
 
 
@@ -164,7 +164,7 @@ pops a key from the stack and delete the slot indexed by it from the table at po
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: index of the target object in the stack
     :returns: a SQRESULT
-    :remarks: this call will invokes the delegation system like a normal dereference it only works on tables, arrays and userdata. If the function fails, nothing will be pushed in the stack.
+    :remarks: this call will invokes the delegation system like a normal dereference it only works on tables, arrays and userdata; if the function fails, nothing will be pushed in the stack.
 
 pops a key from the stack and performs a get operation on the object at the position idx in the stack; and pushes the result in the stack.
 
@@ -283,7 +283,7 @@ Determines if an object is an instance of a certain class. Expects an instance a
     :returns: a SQRESULT
     :remarks: Invokes the _newmember metamethod in the class. it only works on classes.
 
-pops a key, a value and an object (which will be set as attribute of the member) from the stack and performs a new slot operation on the class that is at position idx in the stack; if the slot does not exits it will be created.
+pops a key, a value and an object (which will be set as attribute of the member) from the stack and performs a new slot operation on the class that is at position idx in the stack; if the slot does not exist, it will be created.
 
 
 
@@ -299,7 +299,7 @@ pops a key, a value and an object (which will be set as attribute of the member)
     :returns: a SQRESULT
     :remarks: Invokes the _newslot metamethod in the table delegate. it only works on tables and classes.
 
-pops a key and a value from the stack and performs a set operation on the table or class that is at position idx in the stack, if the slot does not exits it will be created.
+pops a key and a value from the stack and performs a set operation on the table or class that is at position idx in the stack, if the slot does not exist it will be created.
 
 
 
@@ -328,7 +328,7 @@ Pushes in the stack the next key and value of an array, table, or class slot. To
     :param SQBool pushval: if this param is true the function will push the value of the deleted slot.
     :returns: a SQRESULT
 
-Deletes a slot from a table without employing the _delslot metamethod. Pops a key from the stack and delete the slot indexed by it from the table at position idx in the stack, if the slot does not exits nothing happens.
+Deletes a slot from a table without employing the _delslot metamethod. Pops a key from the stack and delete the slot indexed by it from the table at position idx in the stack; if the slot does not exist nothing happens.
 
 
 
@@ -359,7 +359,7 @@ pops a key from the stack and performs a get operation on the object at position
     :returns: a SQRESULT
     :remarks: it only works on classes.
 
-pops a key, a value and an object(that will be set as attribute of the member) from the stack and performs a new slot operation on the class that is at position idx in the stack, if the slot does not exits it will be created.
+pops a key, a value and an object(that will be set as attribute of the member) from the stack and performs a new slot operation on the class that is at position idx in the stack; if the slot does not exist it will be created.
 
 
 
