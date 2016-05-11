@@ -156,6 +156,12 @@ typedef struct tagSQObject
     SQObjectValue _unVal;
 }SQObject;
 
+typedef struct tagSQPString
+{
+    SQInteger len;
+    SQChar* str;
+} SQPString;
+
 typedef struct  tagSQMemberHandle{
     SQBool _static;
     SQInteger _index;
@@ -259,6 +265,7 @@ SQUIRREL_API SQBool sq_instanceof(HSQUIRRELVM v);
 SQUIRREL_API SQRESULT sq_tostring(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API void sq_tobool(HSQUIRRELVM v, SQInteger idx, SQBool *b);
 SQUIRREL_API SQRESULT sq_getstring(HSQUIRRELVM v,SQInteger idx,const SQChar **c);
+SQUIRREL_API SQRESULT sq_getpstring(HSQUIRRELVM v,SQInteger idx,SQPString *pstr);
 SQUIRREL_API SQRESULT sq_getinteger(HSQUIRRELVM v,SQInteger idx,SQInteger *i);
 SQUIRREL_API SQRESULT sq_getfloat(HSQUIRRELVM v,SQInteger idx,SQFloat *f);
 SQUIRREL_API SQRESULT sq_getbool(HSQUIRRELVM v,SQInteger idx,SQBool *b);
