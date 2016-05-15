@@ -92,6 +92,7 @@ the result can be one of the following values: ::
 The following functions convert a squirrel value in the stack to a C value::
 
     SQRESULT sq_getstring(HSQUIRRELVM v,SQInteger idx,const SQChar **c);
+    SQRESULT sq_getstringandsize(HSQUIRRELVM v,SQInteger idx,const SQChar **c,SQInteger size);
     SQRESULT sq_getinteger(HSQUIRRELVM v,SQInteger idx,SQInteger *i);
     SQRESULT sq_getfloat(HSQUIRRELVM v,SQInteger idx,SQFloat *f);
     SQRESULT sq_getuserpointer(HSQUIRRELVM v,SQInteger idx,SQUserPointer *p);
