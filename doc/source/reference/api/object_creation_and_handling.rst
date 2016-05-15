@@ -243,6 +243,21 @@ gets a pointer to the string at the idx position in the stack.
 
 
 
+.. _sq_getstringandsize:
+
+.. c:function:: SQRESULT sq_getstringandsize(HSQUIRRELVM v, SQInteger idx, const SQChar ** c, SQInteger* size)
+
+    :param HSQUIRRELVM v: the target VM
+    :param SQInteger idx: an index in the stack
+    :param const SQChar ** c: a pointer to the pointer that will point to the string
+    :param SQInteger * size: a pointer to a SQInteger which will receive the size of the string
+    :returns: a SQRESULT
+
+gets a pointer to the string at the idx position in the stack; additionally retrieves its size.
+
+
+
+
 .. _sq_getthread:
 
 .. c:function:: SQRESULT sq_getthread(HSQUIRRELVM v, SQInteger idx, HSQUIRRELVM* v)
