@@ -150,6 +150,19 @@ SQRESULT sqstd_format(HSQUIRRELVM v,SQInteger nformatstringidx,SQInteger *outlen
     return SQ_OK;
 }
 
+static SQInteger _string_printf(HSQUIRRELVM v)
+{
+    SQChar *dest = NULL;
+    SQInteger length = 0;
+    if(SQ_FAILED(sqstd_format(v,2,&length,&dest)))
+        return -1;
+    
+    SQPRINTFUNCTION printfunc = sq_getprintfunc(v);
+    if(printfunc) printfunc(v,dest);
+
+    return 0;
+}
+
 static SQInteger _string_format(HSQUIRRELVM v)
 {
     SQChar *dest = NULL;
@@ -459,6 +472,7 @@ static const SQRegFunction rexobj_funcs[]={
 #define _DECL_FUNC(name,nparams,pmask) {_SC(#name),_string_##name,nparams,pmask}
 static const SQRegFunction stringlib_funcs[]={
     _DECL_FUNC(format,-2,_SC(".s")),
+    _DECL_FUNC(printf,-2,_SC(".s")),
     _DECL_FUNC(strip,2,_SC(".s")),
     _DECL_FUNC(lstrip,2,_SC(".s")),
     _DECL_FUNC(rstrip,2,_SC(".s")),
