@@ -52,7 +52,7 @@ returns the const table of the VM.
 
 .. js:function:: setconsttable(table)
 
-sets the const table of the VM. And returns the previous const table.
+sets the const table of the VM; returns the previous const table.
 
 .. js:function:: assert(exp)
 
@@ -60,7 +60,7 @@ throws an exception if exp is null
 
 .. js:function:: print(x)
 
-prints x in the standard output
+prints x to the standard output
 
 .. js:function:: error(x)
 
