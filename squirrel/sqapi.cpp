@@ -680,12 +680,12 @@ SQRESULT sq_getbool(HSQUIRRELVM v,SQInteger idx,SQBool *b)
     return SQ_ERROR;
 }
 
-SQRESULT sq_getpstring(HSQUIRRELVM v,SQInteger idx,SQPString *pstr)
+SQRESULT sq_getstringandsize(HSQUIRRELVM v,SQInteger idx,const SQChar **c,SQInteger *size)
 {
     SQObjectPtr *o = NULL;
     _GETSAFE_OBJ(v, idx, OT_STRING,o);
-    pstr->len = _stringlen(*o);
-    pstr->str = _stringval(*o);
+    *c = _stringval(*o);
+    *size = _stringlen(*o);
     return SQ_OK;
 }
 
