@@ -685,7 +685,7 @@ SQRESULT sq_getstringandsize(HSQUIRRELVM v,SQInteger idx,const SQChar **c,SQInte
     SQObjectPtr *o = NULL;
     _GETSAFE_OBJ(v, idx, OT_STRING,o);
     *c = _stringval(*o);
-    *size = _stringlen(*o);
+    *size = _string(*o)->_len;
     return SQ_OK;
 }
 
