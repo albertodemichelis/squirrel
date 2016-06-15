@@ -105,7 +105,7 @@ returns the stack informations of a given call stack level. returns a table form
         }
     }
 
-level = 0 is the current function, level = 1 is the caller and so on. If the stack level doesn't exist the function returns null.
+level = 0 is getstackinfos() itself! level = 1 is the current function, level = 2 is the caller of the current function, and so on. If the stack level doesn't exist the function returns null.
 
 .. js:function:: newthread(threadfunc)
 

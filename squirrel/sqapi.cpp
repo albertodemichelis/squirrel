@@ -510,7 +510,7 @@ SQRESULT sq_setclosureroot(HSQUIRRELVM v,SQInteger idx)
         v->Pop();
         return SQ_OK;
     }
-    return sq_throwerror(v, _SC("ivalid type"));
+    return sq_throwerror(v, _SC("invalid type"));
 }
 
 SQRESULT sq_getclosureroot(HSQUIRRELVM v,SQInteger idx)
@@ -558,7 +558,7 @@ SQRESULT sq_setroottable(HSQUIRRELVM v)
         v->Pop();
         return SQ_OK;
     }
-    return sq_throwerror(v, _SC("ivalid type"));
+    return sq_throwerror(v, _SC("invalid type"));
 }
 
 SQRESULT sq_setconsttable(HSQUIRRELVM v)
@@ -569,7 +569,7 @@ SQRESULT sq_setconsttable(HSQUIRRELVM v)
         v->Pop();
         return SQ_OK;
     }
-    return sq_throwerror(v, _SC("ivalid type, expected table"));
+    return sq_throwerror(v, _SC("invalid type, expected table"));
 }
 
 void sq_setforeignptr(HSQUIRRELVM v,SQUserPointer p)
@@ -1164,7 +1164,7 @@ SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool raiseerror)
     if(v->Call(v->GetUp(-(params+1)),params,v->_top-params,res,raiseerror?true:false)){
 
         if(!v->_suspended) {
-            v->Pop(params);//pop closure and args
+            v->Pop(params);//pop args
         }
         if(retval){
             v->Push(res); return SQ_OK;

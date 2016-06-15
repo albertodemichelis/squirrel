@@ -91,7 +91,7 @@ resizes the array at the position idx in the stack.
     :returns: a SQRESULT
     :remarks: Only works on arrays.
 
-reverse an array in place.
+reverses an array in place.
 
 
 
@@ -106,7 +106,7 @@ reverse an array in place.
     :returns: a SQRESULT
     :remarks: Only works on tables and arrays.
 
-clears all the element of the table/array at position idx in the stack.
+clears all the elements of the table/array at position idx in the stack.
 
 
 
@@ -120,7 +120,7 @@ clears all the element of the table/array at position idx in the stack.
     :param SQInteger idx: index of the target object in the stack
     :returns: a SQRESULT
 
-Clones the table, array or class instance at the position idx, clones it and pushes the new object in the stack.
+pushes a clone of the table, array, or class instance at the position idx.
 
 
 
