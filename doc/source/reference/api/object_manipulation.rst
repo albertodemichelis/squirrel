@@ -446,6 +446,6 @@ pops a value from the stack and sets it as a free variable of the closure at the
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: index to the target object in the stack
     :returns: a SQRESULT
-    :remarks: if the object at idx position is an integer,float,bool or null the object itself is pushed instead of a weak ref.
+    :remarks: if the object at idx position is one of (integer, float, bool, null), the object itself is pushed instead of a weak ref.
 
 pushes a weak reference to the object at position idx in the stack.
