@@ -435,52 +435,52 @@ Performs a linear search for the value in the array. Returns the index of the va
 Function
 ^^^^^^^^
 
-.. js:function:: array.call(_this,args...)
+.. js:function:: function.call(_this,args...)
 
 calls the function with the specified environment object('this') and parameters
 
 
-.. js:function:: array.pcall(_this,args...)
+.. js:function:: function.pcall(_this,args...)
 
 calls the function with the specified environment object('this') and parameters, this function will not invoke the error callback in case of failure(pcall stays for 'protected call')
 
 
-.. js:function:: array.acall(array_args)
+.. js:function:: function.acall(array_args)
 
 calls the function with the specified environment object('this') and parameters. The function accepts an array containing the parameters that will be passed to the called function.Where array_args has to contain the required 'this' object at the [0] position.
 
 
-.. js:function:: array.pacall(array_args)
+.. js:function:: function.pacall(array_args)
 
 calls the function with the specified environment object('this') and parameters. The function accepts an array containing the parameters that will be passed to the called function.Where array_args has to contain the required 'this' object at the [0] position. This function will not invoke the error callback in case of failure(pacall stays for 'protected array call')
 
 
-.. js:function:: array.weakref()
+.. js:function:: function.weakref()
 
 returns a weak reference to the object.
 
 
-.. js:function:: array.tostring()
+.. js:function:: function.tostring()
 
 returns the string "(closure : pointer)".
 
 
-.. js:function:: array.setroot(table)
+.. js:function:: function.setroot(table)
 
 sets the root table of a closure
 
 
-.. js:function:: array.getroot()
+.. js:function:: function.getroot()
 
 returns the root table of the closure
 
 
-.. js:function:: array.bindenv(env)
+.. js:function:: function.bindenv(env)
 
 clones the function(aka closure) and bind the environment object to it(table,class or instance). the this parameter of the newly create function will always be set to env. Note that the created function holds a weak reference to its environment object so cannot be used to control its lifetime.
 
 
-.. js:function:: array.getinfos()
+.. js:function:: function.getinfos()
 
 returns a table containing informations about the function, like parameters, name and source name; ::
 
