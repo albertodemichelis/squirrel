@@ -140,19 +140,31 @@ Function calls
 The expression is evaluated in this order: derefexp after the explist (arguments) and at
 the end the call.
 
-Every function call in Squirrel passes the environment object *this* as hidden parameter
-to the called function. The 'this' parameter is the object where the function was indexed
-from.
+A function call in Squirrel passes the current environment object *this* as a hidden parameter.
+But when the function was immediately indexed from an object, *this* shall be the object 
+which was indexed, instead.
 
-If we call a function with this syntax::
+If we call a function with the syntax::
 
-    table.foo(a)
+    mytable.foo(x,y)
 
-the environment object passed to foo will be 'table'::
+the environment object passed to 'foo' as *this* will be 'mytable' (since 'foo' was immediately indexed from 'mytable')
 
-    foo(x,y) // equivalent to this.foo(x,y)
+Whereas with the syntax::
 
-The environment object will be *this* (the same of the caller function).
+    foo(x,y) // implicitly equivalent to this.foo(x,y)
+
+the environment object will be the current *this* (that is, propagated from the caller's *this*).
+
+It may help to remember the rules in the following way: 
+
+    foo(x,y) ---> this.foo(x,y)
+    table.foo(x,y) ---> call foo with (table,x,y)
+
+It may also help to consider why it works this way: it's designed to assist with object-oriented style.
+When calling 'foo(x,y)' it's assumed you're calling another member of the object (or of the file) and
+so should operate on the same object.
+When calling 'mytable.foo(x,y)' it's written plainly that you're calling a member of a different object.
 
 ---------------------------------------------
 Binding an environment to a function
