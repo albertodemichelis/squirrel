@@ -226,7 +226,7 @@ _nexti
 
     _nexti(previdx)
 
-invoked when a userdata or class instance is iterated by a foreach loop
+invoked when a userdata or class instance is iterated by a foreach loop.
 
 If previdx==null it means that it is the first iteration.
 The function has to return the index of the 'next' value.
@@ -237,10 +237,10 @@ _tostring
 
 ::
 
-    _tostring(previdx)
+    _tostring()
 
-invoked when during string concatenation or when the ``print`` function prints a table, instance, or userdata.
-The method is also invoked by the sq_tostring() API
+Invoked when during string concatenation or when the ``print`` function prints a table, instance, or userdata.
+The method is also invoked by the sq_tostring() API.
 
 Must return a string representation of the object.
 
