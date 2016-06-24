@@ -13,11 +13,11 @@ Identifiers
 
 .. index:: single: identifiers
 
-Identifiers start with a alphabetic character or '_' followed by any number of alphabetic
-characters, '_' or digits ([0-9]). Squirrel is a case sensitive language, this means that the
-lowercase and uppercase representation of the same alphabetic character are considered
-different characters. For instance "foo", "Foo" and "fOo" will be treated as 3 distinct
-identifiers.
+Identifiers start with an alphabetic character or the symbol '_' followed by any number
+of alphabetic characters, '_' or digits ([0-9]). Squirrel is a case sensitive language
+meaning that the lowercase and uppercase representation of the same alphabetic
+character are considered different characters. For instance, "foo", "Foo" and "fOo" are
+treated as 3 distinct identifiers.
 
 -----------
 Keywords
@@ -25,7 +25,7 @@ Keywords
 
 .. index:: single: keywords
 
-The following words are reserved words by the language and cannot be used as identifiers:
+The following words are reserved and cannot be used as identifiers:
 
 +------------+------------+-----------+------------+------------+-------------+
 | base       | break      | case      | catch      | class      | clone       |
@@ -69,7 +69,7 @@ Other tokens
     single: delimiters
     single: other tokens
 
-Other used tokens are:
+Other significant tokens are:
 
 +----------+----------+----------+----------+----------+----------+
 | ``{``    | ``}``    | ``[``    | ``]``    | ``.``    | ``:``    |
@@ -86,7 +86,7 @@ Literals
     single: string literals
     single: numeric literals
 
-Squirrel accepts integer numbers, floating point numbers and strings literals.
+Squirrel accepts integer numbers, floating point numbers and string literals.
 
 +-------------------------------+------------------------------------------+
 | ``34``                        | Integer number(base 10)                  |
@@ -131,7 +131,7 @@ A comment is text that the compiler ignores but that is useful for programmers.
 Comments are normally used to embed annotations in the code. The compiler
 treats them as white space.
 
-The ``/*`` (slash, asterisk) characters, followed by any
+A comment can be ``/*`` (slash, asterisk) characters, followed by any
 sequence of characters (including new lines),
 followed by the ``*/`` characters. This syntax is the same as ANSI C.::
 
@@ -141,9 +141,9 @@ followed by the ``*/`` characters. This syntax is the same as ANSI C.::
     this lines will be ignored by the compiler
     */
 
-The ``//`` (two slashes) characters, followed by any sequence of characters.
-A new line not immediately preceded by a backslash terminates this form of comment.
-It is commonly called a *"single-line comment."*::
+A comment can also be ``//`` (two slashes) characters, followed by any sequence of
+characters.  A new line not immediately preceded by a backslash terminates this form of
+comment.  It is commonly called a *"single-line comment."*::
 
     //this is a single line comment. this line will be ignored by the compiler
 
@@ -152,5 +152,3 @@ The character ``#`` is an alternative syntax for single line comment.::
     # this is also a single line comment.
 
 This to facilitate the use of squirrel in UNIX-style shell scripts.
-
-
