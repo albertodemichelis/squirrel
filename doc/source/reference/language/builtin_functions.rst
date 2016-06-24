@@ -16,8 +16,7 @@ Global Symbols
 
 .. js:function:: array(size,[fill])
 
-create and returns array of a specified size.if the optional parameter fill is specified its
-value will be used to fill the new array's slots. If the fill parameter is omitted null is used instead.
+creates and returns array of a specified size. If the optional parameter fill is specified its value will be used to fill the new array's slots. If the fill parameter is omitted, null is used instead.
 
 .. js:function:: seterrorhandler(func)
 
@@ -76,11 +75,11 @@ compiles a string containing a squirrel script into a function and returns it::
 
 .. js:function:: collectgarbage()
 
-    runs the garbage collector and returns the number of reference cycles found(and deleted) This function only works on garbage collector builds.
+    Runs the garbage collector and returns the number of reference cycles found (and deleted). This function only works on garbage collector builds.
 
 .. js:function:: resurrectunreachable()
 
-runs the garbage collector and returns an array containing all unreachable object found. If no unreachable object is found, null is returned instead. This function is meant to help debugging reference cycles. This function only works on garbage collector builds.
+Runs the garbage collector and returns an array containing all unreachable object found. If no unreachable object is found, null is returned instead. This function is meant to help debugging reference cycles. This function only works on garbage collector builds.
 
 .. js:function:: type(obj)
 
@@ -113,7 +112,7 @@ creates a new cooperative thread object(coroutine) and returns it
 
 .. js:data:: _versionnumber_
 
-integer values describing the version of VM and compiler. eg. for Squirrel 3.0.1 this value will be 301
+integer values describing the version of VM and compiler. e.g. for Squirrel 3.0.1 this value will be 301
 
 .. js:data:: _version_
 
@@ -153,7 +152,7 @@ converts the number to string and returns it
 
 .. js:function:: integer.tointeger()
 
-returns the value of the integer(dummy function)
+dummy function; returns the value of the integer.
 
 
 .. js:function:: integer.tochar()
@@ -163,7 +162,7 @@ returns a string containing a single character represented by the integer.
 
 .. js:function:: integer.weakref()
 
-dummy function, returns the integer itself.
+dummy function; returns the integer itself.
 
 ^^^^^
 Float
@@ -191,7 +190,7 @@ returns a string containing a single character represented by the integer part o
 
 .. js:function:: float.weakref()
 
-dummy function, returns the float itself.
+dummy function; returns the float itself.
 
 ^^^^
 Bool
@@ -209,12 +208,12 @@ returns 1 for true 0 for false
 
 .. js:function:: bool.tostring()
 
-returns "true" for true "false" for false
+returns "true" for true and "false" for false
 
 
 .. js:function:: bool.weakref()
 
-dummy function, returns the bool itself.
+dummy function; returns the bool itself.
 
 ^^^^^^
 String
@@ -227,7 +226,7 @@ returns the string length
 
 .. js:function:: string.tointeger([base])
 
-converts the string to integer and returns it.An optional parameter base can be specified, if a base is not specified it defaults to base 10
+Converts the string to integer and returns it. An optional parameter base can be specified--if a base is not specified, it defaults to base 10.
 
 
 .. js:function:: string.tofloat()
@@ -237,7 +236,7 @@ converts the string to float and returns it
 
 .. js:function:: string.tostring()
 
-returns the string(dummy function)
+returns the string (really, a dummy function)
 
 
 .. js:function:: string.slice(start,[end])
@@ -247,7 +246,7 @@ returns a section of the string as new string. Copies from start to the end (not
 
 .. js:function:: string.find(substr,[startidx])
 
-search a sub string(substr) starting from the index startidx and returns the index of its first occurrence. If startidx is omitted the search operation starts from the beginning of the string. The function returns null if substr is not found.
+Searches a sub string (substr) starting from the index startidx and returns the index of its first occurrence. If startidx is omitted the search operation starts from the beginning of the string. The function returns null if substr is not found.
 
 
 .. js:function:: string.tolower()
@@ -280,12 +279,12 @@ tries to get a value from the slot 'key' without employing delegation
 
 .. js:function:: table.rawset(key,val)
 
-sets the slot 'key' with the value 'val' without employing delegation. If the slot does not exists , it will be created.
+Sets the slot 'key' with the value 'val' without employing delegation. If the slot does not exists, it will be created.
 
 
 .. js:function:: table.rawdelete()
 
-deletes the slot key without employing delegation and returns his value. if the slo does not exists returns always null.
+Deletes the slot key without employing delegation and returns its value. If the slot does not exists, returns null.
 
 
 .. js:function:: table.rawin(key)
@@ -300,17 +299,17 @@ returns a weak reference to the object.
 
 .. js:function:: table.tostring()
 
-tries to invoke the _tostring metamethod, if failed. returns "(table : pointer)".
+Tries to invoke the _tostring metamethod. If that fails, it returns "(table : pointer)".
 
 
 .. js:function:: table.clear()
 
-removes all the slot from the table
+removes all the slots from the table
 
 
 .. js:function:: table.setdelegate(table)
 
-sets the delegate of the table, to remove a delegate 'null' must be passed to the function. The function returns the table itself (eg. a.setdelegate(b) in this case 'a' is the return value).
+Sets the delegate of the table. To remove a delegate, 'null' must be passed to the function. The function returns the table itself (e.g. a.setdelegate(b) -- in this case 'a' is the return value).
 
 
 .. js:function:: table.getdelegate()
@@ -363,12 +362,12 @@ removes the value at the position 'idx' in the array
 
 .. js:function:: array.resize(size,[fill])
 
-resizes the array, if the optional parameter fill is specified its value will be used to fill the new array's slots (if the size specified is bigger than the previous size). If the fill parameter is omitted null is used instead.
+Resizes the array. If the optional parameter 'fill' is specified, its value will be used to fill the new array's slots when the size specified is bigger than the previous size. If the fill parameter is omitted, null is used instead.
 
 
 .. js:function:: array.sort([compare_func])
 
-sorts the array. A custom compare function can be optionally passed. The function prototype as to be the following.::
+Sorts the array. A custom compare function can be optionally passed. The function prototype as to be the following.::
 
     function custom_compare(a,b)
     {
@@ -390,7 +389,7 @@ reverse the elements of the array in place
 
 .. js:function:: array.slice(start,[end])
 
-returns a section of the array as new array. Copies from start to the end (not included). If start is negative the index is calculated as length + start, if end is negative the index is calculated as length + end. If end is omitted end is equal to the array length.
+Returns a section of the array as new array. Copies from start to the end (not included). If start is negative the index is calculated as length + start, if end is negative the index is calculated as length + end. If end is omitted end is equal to the array length.
 
 
 .. js:function:: array.weakref()
@@ -410,7 +409,7 @@ removes all the items from the array
 
 .. js:function:: array.map(func(a))
 
-creates a new array of the same size. for each element in the original array invokes the function 'func' and assigns the return value of the function to the corresponding element of the newly created array.
+Creates a new array of the same size. For each element in the original array invokes the function 'func' and assigns the return value of the function to the corresponding element of the newly created array.
 
 
 .. js:function:: array.apply(func(a))
@@ -436,52 +435,52 @@ Performs a linear search for the value in the array. Returns the index of the va
 Function
 ^^^^^^^^
 
-.. js:function:: array.call(_this,args...)
+.. js:function:: function.call(_this,args...)
 
 calls the function with the specified environment object('this') and parameters
 
 
-.. js:function:: array.pcall(_this,args...)
+.. js:function:: function.pcall(_this,args...)
 
 calls the function with the specified environment object('this') and parameters, this function will not invoke the error callback in case of failure(pcall stays for 'protected call')
 
 
-.. js:function:: array.acall(array_args)
+.. js:function:: function.acall(array_args)
 
 calls the function with the specified environment object('this') and parameters. The function accepts an array containing the parameters that will be passed to the called function.Where array_args has to contain the required 'this' object at the [0] position.
 
 
-.. js:function:: array.pacall(array_args)
+.. js:function:: function.pacall(array_args)
 
 calls the function with the specified environment object('this') and parameters. The function accepts an array containing the parameters that will be passed to the called function.Where array_args has to contain the required 'this' object at the [0] position. This function will not invoke the error callback in case of failure(pacall stays for 'protected array call')
 
 
-.. js:function:: array.weakref()
+.. js:function:: function.weakref()
 
 returns a weak reference to the object.
 
 
-.. js:function:: array.tostring()
+.. js:function:: function.tostring()
 
 returns the string "(closure : pointer)".
 
 
-.. js:function:: array.setroot(table)
+.. js:function:: function.setroot(table)
 
 sets the root table of a closure
 
 
-.. js:function:: array.getroot()
+.. js:function:: function.getroot()
 
 returns the root table of the closure
 
 
-.. js:function:: array.bindenv(env)
+.. js:function:: function.bindenv(env)
 
 clones the function(aka closure) and bind the environment object to it(table,class or instance). the this parameter of the newly create function will always be set to env. Note that the created function holds a weak reference to its environment object so cannot be used to control its lifetime.
 
 
-.. js:function:: array.getinfos()
+.. js:function:: function.getinfos()
 
 returns a table containing informations about the function, like parameters, name and source name; ::
 

@@ -1337,11 +1337,11 @@ public:
                     val._unVal.fFloat = -_lex._fvalue;
                 break;
                 default:
-                    Error(_SC("scalar expected : integer,float"));
+                    Error(_SC("scalar expected : integer, float"));
                 }
                 break;
             default:
-                Error(_SC("scalar expected : integer,float or string"));
+                Error(_SC("scalar expected : integer, float, or string"));
         }
         Lex();
         return val;
