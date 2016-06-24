@@ -657,6 +657,10 @@ SQRESULT sq_getinteger(HSQUIRRELVM v,SQInteger idx,SQInteger *i)
         *i = tointeger(o);
         return SQ_OK;
     }
+    if(sq_isbool(o)) {
+        *i = SQVM::IsFalse(o)?SQFalse:SQTrue;
+        return SQ_OK;
+    }
     return SQ_ERROR;
 }
 
