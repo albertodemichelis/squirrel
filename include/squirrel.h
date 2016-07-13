@@ -22,6 +22,10 @@ THE SOFTWARE.
 #ifndef _SQUIRREL_H_
 #define _SQUIRREL_H_
 
+#ifdef _SQ_CONFIG_INCLUDE
+#include _SQ_CONFIG_INCLUDE
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -1243,7 +1243,7 @@ SQRESULT sq_writeclosure(HSQUIRRELVM v,SQWRITEFUNC w,SQUserPointer up)
     _GETSAFE_OBJ(v, -1, OT_CLOSURE,o);
     unsigned short tag = SQ_BYTECODE_STREAM_TAG;
     if(_closure(*o)->_function->_noutervalues)
-        return sq_throwerror(v,_SC("a closure with free valiables bound it cannot be serialized"));
+        return sq_throwerror(v,_SC("a closure with free variables bound cannot be serialized"));
     if(w(up,&tag,2) != 2)
         return sq_throwerror(v,_SC("io error"));
     if(!_closure(*o)->Save(v,up,w))
