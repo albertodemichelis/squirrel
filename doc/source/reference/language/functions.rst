@@ -196,7 +196,7 @@ Lambda Expressions
 
     exp := '@' '(' paramlist ')' exp
 
-Lambda expressions are a synctactic sugar to quickly define a function that consists of a single expression.
+Lambda expressions are a syntactic sugar to quickly define a function that consists of a single expression.
 This feature comes handy when functional programming patterns are applied, like map/reduce or passing a compare method to
 array.sort().
 
