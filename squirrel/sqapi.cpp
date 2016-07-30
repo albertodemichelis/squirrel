@@ -510,7 +510,7 @@ SQRESULT sq_setclosureroot(HSQUIRRELVM v,SQInteger idx)
         v->Pop();
         return SQ_OK;
     }
-    return sq_throwerror(v, _SC("ivalid type"));
+    return sq_throwerror(v, _SC("invalid type"));
 }
 
 SQRESULT sq_getclosureroot(HSQUIRRELVM v,SQInteger idx)
@@ -558,7 +558,7 @@ SQRESULT sq_setroottable(HSQUIRRELVM v)
         v->Pop();
         return SQ_OK;
     }
-    return sq_throwerror(v, _SC("ivalid type"));
+    return sq_throwerror(v, _SC("invalid type"));
 }
 
 SQRESULT sq_setconsttable(HSQUIRRELVM v)
@@ -569,7 +569,7 @@ SQRESULT sq_setconsttable(HSQUIRRELVM v)
         v->Pop();
         return SQ_OK;
     }
-    return sq_throwerror(v, _SC("ivalid type, expected table"));
+    return sq_throwerror(v, _SC("invalid type, expected table"));
 }
 
 void sq_setforeignptr(HSQUIRRELVM v,SQUserPointer p)
@@ -655,6 +655,10 @@ SQRESULT sq_getinteger(HSQUIRRELVM v,SQInteger idx,SQInteger *i)
     SQObjectPtr &o = stack_get(v, idx);
     if(sq_isnumeric(o)) {
         *i = tointeger(o);
+        return SQ_OK;
+    }
+    if(sq_isbool(o)) {
+        *i = SQVM::IsFalse(o)?SQFalse:SQTrue;
         return SQ_OK;
     }
     return SQ_ERROR;
@@ -1164,7 +1168,7 @@ SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool raiseerror)
     if(v->Call(v->GetUp(-(params+1)),params,v->_top-params,res,raiseerror?true:false)){
 
         if(!v->_suspended) {
-            v->Pop(params);//pop closure and args
+            v->Pop(params);//pop args
         }
         if(retval){
             v->Push(res); return SQ_OK;
@@ -1239,7 +1243,7 @@ SQRESULT sq_writeclosure(HSQUIRRELVM v,SQWRITEFUNC w,SQUserPointer up)
     _GETSAFE_OBJ(v, -1, OT_CLOSURE,o);
     unsigned short tag = SQ_BYTECODE_STREAM_TAG;
     if(_closure(*o)->_function->_noutervalues)
-        return sq_throwerror(v,_SC("a closure with free valiables bound it cannot be serialized"));
+        return sq_throwerror(v,_SC("a closure with free variables bound cannot be serialized"));
     if(w(up,&tag,2) != 2)
         return sq_throwerror(v,_SC("io error"));
     if(!_closure(*o)->Save(v,up,w))

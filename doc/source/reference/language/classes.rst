@@ -46,7 +46,7 @@ For instance: ::
 
     }
 
-the previous code examples is a syntactic sugar for: ::
+the previous code example is a syntactic sugar for: ::
 
     Foo <- class {
         //constructor
@@ -67,7 +67,7 @@ the previous code examples is a syntactic sugar for: ::
 
     }
 
-in order to emulate namespaces, is also possible to declare something like this::
+in order to emulate namespaces, it is also possible to declare something like this::
 
     //just 2 regular nested tables
     FakeNamespace <- {

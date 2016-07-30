@@ -91,7 +91,7 @@ resizes the array at the position idx in the stack.
     :returns: a SQRESULT
     :remarks: Only works on arrays.
 
-reverse an array in place.
+reverses an array in place.
 
 
 
@@ -106,7 +106,7 @@ reverse an array in place.
     :returns: a SQRESULT
     :remarks: Only works on tables and arrays.
 
-clears all the element of the table/array at position idx in the stack.
+clears all the elements of the table/array at position idx in the stack.
 
 
 
@@ -120,7 +120,7 @@ clears all the element of the table/array at position idx in the stack.
     :param SQInteger idx: index of the target object in the stack
     :returns: a SQRESULT
 
-Clones the table, array or class instance at the position idx, clones it and pushes the new object in the stack.
+pushes a clone of the table, array, or class instance at the position idx.
 
 
 
@@ -446,6 +446,6 @@ pops a value from the stack and sets it as a free variable of the closure at the
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: index to the target object in the stack
     :returns: a SQRESULT
-    :remarks: if the object at idx position is an integer,float,bool or null the object itself is pushed instead of a weak ref.
+    :remarks: if the object at idx position is one of (integer, float, bool, null), the object itself is pushed instead of a weak ref.
 
 pushes a weak reference to the object at position idx in the stack.

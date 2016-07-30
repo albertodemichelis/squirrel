@@ -22,6 +22,10 @@ THE SOFTWARE.
 #ifndef _SQUIRREL_H_
 #define _SQUIRREL_H_
 
+#ifdef _SQ_CONFIG_INCLUDE
+#include _SQ_CONFIG_INCLUDE
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -396,7 +400,7 @@ SQUIRREL_API void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook);
 #ifdef __GNUC__
 # define SQ_UNUSED_ARG(x) __attribute__((unused)) x
 #else
-# define SQ_UNUSED_ARG(x) x
+# define SQ_UNUSED_ARG(x)
 #endif
 
 #ifdef __cplusplus
