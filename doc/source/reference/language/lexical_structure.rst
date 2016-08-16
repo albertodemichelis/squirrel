@@ -13,11 +13,9 @@ Identifiers
 
 .. index:: single: identifiers
 
-Identifiers start with an alphabetic character or the symbol '_' followed by any number
-of alphabetic characters, '_' or digits ([0-9]). Squirrel is a case sensitive language
-meaning that the lowercase and uppercase representation of the same alphabetic
-character are considered different characters. For instance, "foo", "Foo" and "fOo" are
-treated as 3 distinct identifiers.
+Identifiers must start with an alphabetic character or an underline followed by any number
+of alphabetic characters, underlines or digits (0-9). Squirrel is a case-sensitive language, "foo" and "Foo" are
+treated as two different identifiers.
 
 -----------
 Keywords
@@ -127,28 +125,17 @@ Comments
 
 .. index:: single: comments
 
-A comment is text that the compiler ignores but that is useful for programmers.
-Comments are normally used to embed annotations in the code. The compiler
-treats them as white space.
-
-A comment can be ``/*`` (slash, asterisk) characters, followed by any
-sequence of characters (including new lines),
-followed by the ``*/`` characters. This syntax is the same as ANSI C.::
+A comment is an annotation that is ignored by the compiler. Squirrel supports the traditional C-style comments.
+Block comments are delimited by ``/*`` and ``*/`` and can span multiple lines.::
 
     /*
-    this is
-    a multiline comment.
-    this lines will be ignored by the compiler
+    This is a multiline comment,
+    these lines will be ignored.
     */
 
-A comment can also be ``//`` (two slashes) characters, followed by any sequence of
-characters.  A new line not immediately preceded by a backslash terminates this form of
-comment.  It is commonly called a *"single-line comment."*::
+Line comments are delimited by two slashes ``//``.::
 
-    //this is a single line comment. this line will be ignored by the compiler
+    //This is a line comment.
 
-The character ``#`` is an alternative syntax for single line comment.::
-
-    # this is also a single line comment.
-
-This to facilitate the use of squirrel in UNIX-style shell scripts.
+You can also use the number sign ``#`` as an alternative delimiter for line comments.
+It allows you to start your Squirrel script with a shebang.
