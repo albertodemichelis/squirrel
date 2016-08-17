@@ -13,8 +13,8 @@ Identifiers
 
 .. index:: single: identifiers
 
-Identifiers must start with an alphabetic character or an underline followed by any number
-of alphabetic characters, underlines or digits (0-9). Squirrel is a case-sensitive language, "foo" and "Foo" are
+Identifiers must start with an alphabetic character or an underscore followed by any number
+of alphabetic characters, underscores or digits (0-9). Squirrel is a case-sensitive language, "foo" and "Foo" are
 treated as two different identifiers.
 
 -----------
