@@ -972,8 +972,10 @@ SQRESULT sq_setdelegate(HSQUIRRELVM v,SQInteger idx)
     case OT_TABLE:
         if(type(mt) == OT_TABLE) {
             if(!_table(self)->SetDelegate(_table(mt))) {
-                return sq_throwerror(v, _SC("delagate cycle")); v->Pop();}
+                return sq_throwerror(v, _SC("delagate cycle"));
             }
+            v->Pop();
+        }
         else if(type(mt)==OT_NULL) {
             _table(self)->SetDelegate(NULL); v->Pop(); }
         else return sq_aux_invalidtype(v,type);
