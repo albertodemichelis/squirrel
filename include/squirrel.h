@@ -398,7 +398,7 @@ SQUIRREL_API void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook);
 #define SQ_SUCCEEDED(res) (res>=0)
 
 #ifdef __GNUC__
-# define SQ_UNUSED_ARG(x) __attribute__((unused)) x
+# define SQ_UNUSED_ARG(x) x __attribute__((__unused__))
 #else
 # define SQ_UNUSED_ARG(x) x
 #endif
