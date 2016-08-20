@@ -156,7 +156,7 @@ static SQInteger _string_printf(HSQUIRRELVM v)
     SQInteger length = 0;
     if(SQ_FAILED(sqstd_format(v,2,&length,&dest)))
         return -1;
-    
+
     SQPRINTFUNCTION printfunc = sq_getprintfunc(v);
     if(printfunc) printfunc(v,dest);
 
