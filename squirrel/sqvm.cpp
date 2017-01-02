@@ -1330,6 +1330,7 @@ bool SQVM::Set(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr 
             return false;
         }
         return true;
+	case OT_USERDATA: break; // must fall back
     default:
         Raise_Error(_SC("trying to set '%s'"),GetTypeName(self));
         return false;
@@ -1717,10 +1718,10 @@ void SQVM::dumpstack(SQInteger stackbase,bool dumpall)
     for(SQInteger i=0;i<size;i++){
         SQObjectPtr &obj=_stack[i];
         if(stackbase==i)scprintf(_SC(">"));else scprintf(_SC(" "));
-        scprintf(_SC("[%d]:"),n);
+        scprintf(_SC("[" _PRINT_INT_FMT "]:"),n);
         switch(type(obj)){
         case OT_FLOAT:          scprintf(_SC("FLOAT %.3f"),_float(obj));break;
-        case OT_INTEGER:        scprintf(_SC("INTEGER %d"),_integer(obj));break;
+        case OT_INTEGER:        scprintf(_SC("INTEGER " _PRINT_INT_FMT),_integer(obj));break;
         case OT_BOOL:           scprintf(_SC("BOOL %s"),_integer(obj)?"true":"false");break;
         case OT_STRING:         scprintf(_SC("STRING %s"),_stringval(obj));break;
         case OT_NULL:           scprintf(_SC("NULL"));  break;
