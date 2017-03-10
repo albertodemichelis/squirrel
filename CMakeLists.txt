@@ -9,7 +9,7 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
 project(squirrel C CXX)
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
   set(SQ_FLAGS -fno-exceptions -fno-strict-aliasing -Wall -Wextra -pedantic -Wcast-qual)
