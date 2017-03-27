@@ -39,19 +39,21 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   add_definitions(-D_SQ64)
 endif()
 
-if(NOT DEFINED INSTALL_BIN_DIR)
-  set(INSTALL_BIN_DIR bin)
-endif()
+if(NOT DEFINED SQ_DISABLE_INSTALLER)
+  if(NOT DEFINED INSTALL_BIN_DIR)
+    set(INSTALL_BIN_DIR bin)
+  endif()
 
-if(NOT DEFINED INSTALL_LIB_DIR)
-  set(INSTALL_LIB_DIR lib)
+  if(NOT DEFINED INSTALL_LIB_DIR)
+    set(INSTALL_LIB_DIR lib)
+  endif()
 endif()
 
 add_subdirectory(squirrel)
 add_subdirectory(sqstdlib)
 add_subdirectory(sq)
 
-if(NOT WIN32)
+if(NOT WIN32 AND NOT DEFINED DISABLE_DYNAMIC)
   set_target_properties(squirrel sqstdlib PROPERTIES SOVERSION 0 VERSION 0.0.0)
 endif()
 
