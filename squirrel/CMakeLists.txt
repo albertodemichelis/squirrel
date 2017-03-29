@@ -12,15 +12,19 @@ set(SQUIRREL_SRC sqapi.cpp
                  sqvm.cpp)
 
 if(NOT DEFINED DISABLE_DYNAMIC)
-add_library(squirrel SHARED ${SQUIRREL_SRC})
-install(TARGETS squirrel RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+  add_library(squirrel SHARED ${SQUIRREL_SRC})
+  if(NOT DEFINED SQ_DISABLE_INSTALLER)
+    install(TARGETS squirrel RUNTIME DESTINATION ${INSTALL_BIN_DIR}
                          LIBRARY DESTINATION ${INSTALL_LIB_DIR}
                          ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
+  endif()
 endif()
 
 if(NOT DEFINED DISABLE_STATIC)
   add_library(squirrel_static STATIC ${SQUIRREL_SRC})
-  install(TARGETS squirrel_static ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
+  if(NOT DEFINED SQ_DISABLE_INSTALLER)
+    install(TARGETS squirrel_static ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
+  endif()
 endif()
 
 if(DEFINED LONG_OUTPUT_NAMES)
