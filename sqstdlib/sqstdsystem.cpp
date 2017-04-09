@@ -3,6 +3,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sqstdaux.h>
 #include <sqstdsystem.h>
 
 #ifdef SQUNICODE
@@ -132,15 +133,6 @@ static const SQRegFunction systemlib_funcs[]={
 
 SQInteger sqstd_register_systemlib(HSQUIRRELVM v)
 {
-    SQInteger i=0;
-    while(systemlib_funcs[i].name!=0)
-    {
-        sq_pushstring(v,systemlib_funcs[i].name,-1);
-        sq_newclosure(v,systemlib_funcs[i].f,0);
-        sq_setparamscheck(v,systemlib_funcs[i].nparamscheck,systemlib_funcs[i].typemask);
-        sq_setnativeclosurename(v,-1,systemlib_funcs[i].name);
-        sq_newslot(v,-3,SQFalse);
-        i++;
-    }
+	sqstd_registerfunctions(v,systemlib_funcs);
     return 1;
 }

@@ -1,13 +1,12 @@
 /* see copyright notice in squirrel.h */
 #include <new>
 #include <squirrel.h>
+#include <sqstdaux.h>
 #include <sqstdio.h>
 #include <string.h>
 #include <sqstdblob.h>
 #include "sqstdstream.h"
 #include "sqstdblobimpl.h"
-
-#define SQSTD_BLOB_TYPE_TAG ((SQUnsignedInteger)(SQSTD_STREAM_TYPE_TAG | 0x00000002))
 
 //Blob
 
@@ -116,16 +115,14 @@ static SQInteger _blob__nexti(HSQUIRRELVM v)
 
 static SQInteger _blob__typeof(HSQUIRRELVM v)
 {
-    sq_pushstring(v,_SC("blob"),-1);
+    sq_pushstring(v,_std_blob_decl.name,-1);
     return 1;
 }
 
-static SQInteger _blob_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(size))
+SQFILE sqstd_blob(SQInteger size)
 {
-    SQBlob *self = (SQBlob*)p;
-    self->~SQBlob();
-    sq_free(self,sizeof(SQBlob));
-    return 1;
+    SQBlob *b = new (sq_malloc(sizeof(SQBlob)))SQBlob(size);
+	return (SQFILE)b;
 }
 
 static SQInteger _blob_constructor(HSQUIRRELVM v)
@@ -140,11 +137,10 @@ static SQInteger _blob_constructor(HSQUIRRELVM v)
 
     SQBlob *b = new (sq_malloc(sizeof(SQBlob)))SQBlob(size);
     if(SQ_FAILED(sq_setinstanceup(v,1,b))) {
-        b->~SQBlob();
-        sq_free(b,sizeof(SQBlob));
+		b->_Release();
         return sq_throwerror(v, _SC("cannot create blob"));
     }
-    sq_setreleasehook(v,1,_blob_releasehook);
+    sq_setreleasehook(v,1,__sqstd_stream_releasehook);
     return 0;
 }
 
@@ -159,11 +155,10 @@ static SQInteger _blob__cloned(HSQUIRRELVM v)
     SQBlob *thisone = new (sq_malloc(sizeof(SQBlob)))SQBlob(other->Len());
     memcpy(thisone->GetBuf(),other->GetBuf(),thisone->Len());
     if(SQ_FAILED(sq_setinstanceup(v,1,thisone))) {
-        thisone->~SQBlob();
-        sq_free(thisone,sizeof(SQBlob));
+		thisone->_Release();
         return sq_throwerror(v, _SC("cannot clone blob"));
     }
-    sq_setreleasehook(v,1,_blob_releasehook);
+    sq_setreleasehook(v,1,__sqstd_stream_releasehook);
     return 0;
 }
 
@@ -239,6 +234,15 @@ static const SQRegFunction bloblib_funcs[]={
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
+const SQRegClass _std_blob_decl = {
+	&_sqstd_stream_decl,	// base_class
+    _SC("std_blob"),	// reg_name
+    _SC("blob"),		// name
+	NULL,				// members
+	_blob_methods,		// methods
+	bloblib_funcs,		// globals
+};
+
 SQRESULT sqstd_getblob(HSQUIRRELVM v,SQInteger idx,SQUserPointer *ptr)
 {
     SQBlob *blob;
@@ -260,7 +264,7 @@ SQUserPointer sqstd_createblob(HSQUIRRELVM v, SQInteger size)
 {
     SQInteger top = sq_gettop(v);
     sq_pushregistrytable(v);
-    sq_pushstring(v,_SC("std_blob"),-1);
+    sq_pushstring(v,_std_blob_decl.reg_name,-1);
     if(SQ_SUCCEEDED(sq_get(v,-2))) {
         sq_remove(v,-2); //removes the registry
         sq_push(v,1); // push the this
@@ -278,6 +282,11 @@ SQUserPointer sqstd_createblob(HSQUIRRELVM v, SQInteger size)
 
 SQRESULT sqstd_register_bloblib(HSQUIRRELVM v)
 {
-    return declare_stream(v,_SC("blob"),(SQUserPointer)SQSTD_BLOB_TYPE_TAG,_SC("std_blob"),_blob_methods,bloblib_funcs);
+	if(SQ_SUCCEEDED(sqstd_registerclass(v,&_std_blob_decl)))
+	{
+		sq_poptop(v);
+		return SQ_OK;
+	}
+	return SQ_ERROR;
 }
 

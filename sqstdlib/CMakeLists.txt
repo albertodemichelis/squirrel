@@ -3,9 +3,12 @@ set(SQSTDLIB_SRC sqstdaux.cpp
                  sqstdio.cpp
                  sqstdmath.cpp
                  sqstdrex.cpp
+                 sqstdsquirrelio.cpp
                  sqstdstream.cpp
+                 sqstdstreamreader.cpp
                  sqstdstring.cpp
-                 sqstdsystem.cpp)
+                 sqstdsystem.cpp
+                 sqstdtextio.cpp)
 
 if(NOT DEFINED DISABLE_DYNAMIC)
   add_library(sqstdlib SHARED ${SQSTDLIB_SRC})

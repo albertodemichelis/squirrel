@@ -10,6 +10,9 @@ OBJS= \
 	sqstdblob.o \
 	sqstdio.o \
 	sqstdstream.o \
+	sqstdsquirrelio.o \
+	sqstdstreamreader.o \
+	sqstdtextio.o \
 	sqstdmath.o \
 	sqstdsystem.o \
 	sqstdstring.o \
@@ -20,6 +23,9 @@ SRCS= \
 	sqstdblob.cpp \
 	sqstdio.cpp \
 	sqstdstream.cpp \
+	sqstdsquirrelio.cpp \
+	sqstdstreamreader.cpp \
+	sqstdtextio.cpp \
 	sqstdmath.cpp \
 	sqstdsystem.cpp \
 	sqstdstring.cpp \

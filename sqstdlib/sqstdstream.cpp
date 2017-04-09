@@ -4,10 +4,68 @@
 #include <stdlib.h>
 #include <string.h>
 #include <squirrel.h>
+#include <sqstdaux.h>
 #include <sqstdio.h>
 #include <sqstdblob.h>
 #include "sqstdstream.h"
-#include "sqstdblobimpl.h"
+
+// basic stream API
+
+SQInteger sqstd_fread(void* buffer, SQInteger size, SQFILE file)
+{
+	SQStream *self = (SQStream *)file;
+	return self->Read( buffer, size);
+}
+
+SQInteger sqstd_fwrite(const SQUserPointer buffer, SQInteger size, SQFILE file)
+{
+	SQStream *self = (SQStream *)file;
+	return self->Write( buffer, size);
+}
+
+SQInteger sqstd_fseek(SQFILE file, SQInteger offset, SQInteger origin)
+{
+	SQStream *self = (SQStream *)file;
+	return self->Seek( offset, origin);
+}
+
+SQInteger sqstd_ftell(SQFILE file)
+{
+	SQStream *self = (SQStream *)file;
+	return self->Tell();
+}
+
+SQInteger sqstd_fflush(SQFILE file)
+{
+	SQStream *self = (SQStream *)file;
+	return self->Flush();
+}
+
+SQInteger sqstd_feof(SQFILE file)
+{
+	SQStream *self = (SQStream *)file;
+	return self->EOS();
+}
+
+SQInteger sqstd_fclose(SQFILE file)
+{
+	SQStream *self = (SQStream *)file;
+	SQInteger r = self->Close();
+	return r;
+}
+
+void sqstd_frelease(SQFILE file)
+{
+	SQStream *self = (SQStream *)file;
+	self->Close();
+	self->_Release();
+}
+
+SQInteger __sqstd_stream_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(size))
+{
+	sqstd_frelease( (SQFILE)p);
+    return 1;
+}
 
 #define SETUP_STREAM(v) \
     SQStream *self = NULL; \
@@ -22,9 +80,7 @@ SQInteger _stream_readblob(HSQUIRRELVM v)
     SQUserPointer data,blobp;
     SQInteger size,res;
     sq_getinteger(v,2,&size);
-    if(size > self->Len()) {
-        size = self->Len();
-    }
+
     data = sq_getscratchpad(v,size);
     res = self->Read(data,size);
     if(res <= 0)
@@ -32,6 +88,40 @@ SQInteger _stream_readblob(HSQUIRRELVM v)
     blobp = sqstd_createblob(v,res);
     memcpy(blobp,data,res);
     return 1;
+}
+
+SQInteger _stream_readline(HSQUIRRELVM v)
+{
+    SETUP_STREAM(v);
+	SQChar *buf = NULL;
+	SQInteger buf_len = 0;
+	SQInteger buf_pos = 0;
+	SQInteger res;
+	SQChar c = 0;
+
+	while(1)
+	{
+		if( buf_pos >= buf_len)
+		{
+			buf_len += 1024;
+			buf = sq_getscratchpad(v,buf_len);
+		}
+		
+		res = self->Read( &c, sizeof(c));
+
+		if( res != sizeof(c))
+			break;
+		else {
+			buf[buf_pos] = c;
+			buf_pos++;
+			if( c == _SC('\n'))
+				break;
+		}
+	}
+	
+	sq_pushstring(v,buf,buf_pos);
+	
+	return 1;
 }
 
 #define SAFE_READN(ptr,len) { \
@@ -106,6 +196,19 @@ SQInteger _stream_writeblob(HSQUIRRELVM v)
         return sq_throwerror(v,_SC("invalid parameter"));
     size = sqstd_getblobsize(v,2);
     if(self->Write(data,size) != size)
+        return sq_throwerror(v,_SC("io error"));
+    sq_pushinteger(v,size);
+    return 1;
+}
+
+SQInteger _stream_print(HSQUIRRELVM v)
+{
+    const SQChar *data;
+    SQInteger size;
+    SETUP_STREAM(v);
+    sq_getstring(v,2,&data);
+    size = sq_getsize(v,2) * sizeof(*data);
+    if(self->Write((const void*)data,size) != size)
         return sq_throwerror(v,_SC("io error"));
     sq_pushinteger(v,size);
     return 1;
@@ -233,104 +336,40 @@ SQInteger _stream_eos(HSQUIRRELVM v)
     return 1;
 }
 
- SQInteger _stream__cloned(HSQUIRRELVM v)
- {
-     return sq_throwerror(v,_SC("this object cannot be cloned"));
- }
+static SQInteger _stream_close(HSQUIRRELVM v)
+{
+    SETUP_STREAM(v);
+    sq_pushinteger(v, self->Close());
+    return 1;
+}
+
+SQInteger _stream__cloned(HSQUIRRELVM v)
+{
+	 return sq_throwerror(v,_SC("this object cannot be cloned"));
+}
 
 static const SQRegFunction _stream_methods[] = {
     _DECL_STREAM_FUNC(readblob,2,_SC("xn")),
+	_DECL_STREAM_FUNC(readline,1,_SC("x")),
     _DECL_STREAM_FUNC(readn,2,_SC("xn")),
     _DECL_STREAM_FUNC(writeblob,-2,_SC("xx")),
+	_DECL_STREAM_FUNC(print,2,_SC("xs")),
     _DECL_STREAM_FUNC(writen,3,_SC("xnn")),
     _DECL_STREAM_FUNC(seek,-2,_SC("xnn")),
     _DECL_STREAM_FUNC(tell,1,_SC("x")),
     _DECL_STREAM_FUNC(len,1,_SC("x")),
     _DECL_STREAM_FUNC(eos,1,_SC("x")),
     _DECL_STREAM_FUNC(flush,1,_SC("x")),
+    _DECL_STREAM_FUNC(close,1,_SC("x")),
     _DECL_STREAM_FUNC(_cloned,0,NULL),
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
-void init_streamclass(HSQUIRRELVM v)
-{
-    sq_pushregistrytable(v);
-    sq_pushstring(v,_SC("std_stream"),-1);
-    if(SQ_FAILED(sq_get(v,-2))) {
-        sq_pushstring(v,_SC("std_stream"),-1);
-        sq_newclass(v,SQFalse);
-        sq_settypetag(v,-1,(SQUserPointer)((SQUnsignedInteger)SQSTD_STREAM_TYPE_TAG));
-        SQInteger i = 0;
-        while(_stream_methods[i].name != 0) {
-            const SQRegFunction &f = _stream_methods[i];
-            sq_pushstring(v,f.name,-1);
-            sq_newclosure(v,f.f,0);
-            sq_setparamscheck(v,f.nparamscheck,f.typemask);
-            sq_newslot(v,-3,SQFalse);
-            i++;
-        }
-        sq_newslot(v,-3,SQFalse);
-        sq_pushroottable(v);
-        sq_pushstring(v,_SC("stream"),-1);
-        sq_pushstring(v,_SC("std_stream"),-1);
-        sq_get(v,-4);
-        sq_newslot(v,-3,SQFalse);
-        sq_pop(v,1);
-    }
-    else {
-        sq_pop(v,1); //result
-    }
-    sq_pop(v,1);
-}
-
-SQRESULT declare_stream(HSQUIRRELVM v,const SQChar* name,SQUserPointer typetag,const SQChar* reg_name,const SQRegFunction *methods,const SQRegFunction *globals)
-{
-    if(sq_gettype(v,-1) != OT_TABLE)
-        return sq_throwerror(v,_SC("table expected"));
-    SQInteger top = sq_gettop(v);
-    //create delegate
-    init_streamclass(v);
-    sq_pushregistrytable(v);
-    sq_pushstring(v,reg_name,-1);
-    sq_pushstring(v,_SC("std_stream"),-1);
-    if(SQ_SUCCEEDED(sq_get(v,-3))) {
-        sq_newclass(v,SQTrue);
-        sq_settypetag(v,-1,typetag);
-        SQInteger i = 0;
-        while(methods[i].name != 0) {
-            const SQRegFunction &f = methods[i];
-            sq_pushstring(v,f.name,-1);
-            sq_newclosure(v,f.f,0);
-            sq_setparamscheck(v,f.nparamscheck,f.typemask);
-            sq_setnativeclosurename(v,-1,f.name);
-            sq_newslot(v,-3,SQFalse);
-            i++;
-        }
-        sq_newslot(v,-3,SQFalse);
-        sq_pop(v,1);
-
-        i = 0;
-        while(globals[i].name!=0)
-        {
-            const SQRegFunction &f = globals[i];
-            sq_pushstring(v,f.name,-1);
-            sq_newclosure(v,f.f,0);
-            sq_setparamscheck(v,f.nparamscheck,f.typemask);
-            sq_setnativeclosurename(v,-1,f.name);
-            sq_newslot(v,-3,SQFalse);
-            i++;
-        }
-        //register the class in the target table
-        sq_pushstring(v,name,-1);
-        sq_pushregistrytable(v);
-        sq_pushstring(v,reg_name,-1);
-        sq_get(v,-2);
-        sq_remove(v,-2);
-        sq_newslot(v,-3,SQFalse);
-
-        sq_settop(v,top);
-        return SQ_OK;
-    }
-    sq_settop(v,top);
-    return SQ_ERROR;
-}
+const SQRegClass _sqstd_stream_decl = {
+	NULL,				// base_class
+    _SC("std_stream"),	// reg_name
+    _SC("stream"),		// name
+	NULL,				// members
+	_stream_methods,	// methods
+	NULL,		// globals
+};
