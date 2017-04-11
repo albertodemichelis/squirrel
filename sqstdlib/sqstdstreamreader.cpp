@@ -183,14 +183,16 @@ static SQInteger _srdr_constructor(HSQUIRRELVM v)
 {
 	SQTStreamReader *srdr;
 	SQFILE stream;
-	SQBool owns;
+	SQBool owns = SQFlase;
 	SQInteger buffer_size = 0;
     if( SQ_FAILED( sq_getinstanceup( v,2,(SQUserPointer*)&stream,(SQUserPointer)SQSTD_STREAM_TYPE_TAG))) {
         return sq_throwerror(v,_SC("invalid argument type"));
 	}
-	sq_getbool(v,3,&owns);
-	if( sq_gettop(v) > 3) {
-		sq_getinteger(v, 4, &buffer_size);
+	if( sq_gettop(v) > 2) {
+		sq_getbool(v,3,&owns);
+		if( sq_gettop(v) > 3) {
+			sq_getinteger(v, 4, &buffer_size);
+		}
 	}
 	srdr = (SQTStreamReader*)sqstd_streamreader(stream,owns,buffer_size);
 	if( srdr != NULL) {
@@ -245,7 +247,7 @@ static SQInteger _srdr_close(HSQUIRRELVM v)
 //bindings
 #define _DECL_SRDR_FUNC(name,nparams,typecheck) {_SC(#name),_srdr_##name,nparams,typecheck}
 static const SQRegFunction _srdr_methods[] = {
-    _DECL_SRDR_FUNC(constructor,-3,_SC("xxbi")),
+    _DECL_SRDR_FUNC(constructor,-2,_SC("xxbi")),
     _DECL_SRDR_FUNC(_typeof,1,_SC("x")),
     _DECL_SRDR_FUNC(mark,2,_SC("xi")),
     _DECL_SRDR_FUNC(reset,1,_SC("x")),

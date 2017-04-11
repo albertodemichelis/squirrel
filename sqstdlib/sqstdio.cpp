@@ -50,10 +50,12 @@ struct SQFile : public SQStream {
     }
     SQInteger Len() {
         SQInteger prevpos=Tell();
-        Seek(0,SQ_SEEK_END);
-        SQInteger size=Tell();
-        Seek(prevpos,SQ_SEEK_SET);
-        return size;
+        if( Seek(0,SQ_SEEK_END) == 0) {
+			SQInteger size=Tell();
+			Seek(prevpos,SQ_SEEK_SET);
+			return size;
+		}
+		return -1;
     }
     SQInteger Seek(SQInteger offset, SQInteger origin)  {
 		int realorigin;

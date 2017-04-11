@@ -26,6 +26,10 @@ Global Symbols
     UTF8 with and without prefix and UCS-2 prefixed(both big endian an little endian).
     If the source stream is not prefixed UTF8 encoding is used as default.
 
+.. js:function:: dofile(stream, [raiseerror,buffer_size,encoding,guess])
+
+	Same as above function but operates on stream
+
 .. js:function:: loadfile(path, [raiseerror])
 
     compiles a squirrel script or loads a precompiled one an returns it as as function.
@@ -36,11 +40,18 @@ Global Symbols
     UTF8 with and without prefix and UCS-2 prefixed(both big endian an little endian).
     If the source stream is not prefixed UTF8 encoding is used as default.
 
+.. js:function:: loadfile(stream, [raiseerror,buffer_size,encoding,guess])
+
+	Same as above function but operates on stream
+
 .. js:function:: writeclosuretofile(destpath, closure)
 
     serializes a closure to a bytecode file (destpath). The serialized file can be loaded
     using loadfile() and dofile().
 
+.. js:function:: writeclosuretofile(stream, closure)
+
+	Same as above function but operates on stream
 
 .. js:data:: stderr
 
@@ -56,42 +67,48 @@ Global Symbols
 
 
 ++++++++++++++
-The file class
+The stream class
 ++++++++++++++
 
-    The file object implements a stream on a operating system file.
+    The stream class generalizes sources or sinks of data.
 
-.. js:class:: file(path, patten)
+.. js:function:: stream.close()
 
-    It's constructor imitates the behaviour of the C runtime function fopen for eg. ::
+    closes the stream.
 
-        local myfile = file("test.xxx","wb+");
-
-    creates a file with read/write access in the current directory.
-
-.. js:function:: file.close()
-
-    closes the file.
-
-.. js:function:: file.eos()
+.. js:function:: stream.eos()
 
     returns a non null value if the read/write pointer is at the end of the stream.
 
-.. js:function:: file.flush()
+.. js:function:: stream.flush()
 
-    flushes the stream.return a value != null if succeeded, otherwise returns null
+    flushes the stream. Return a value != null if succeeded, otherwise returns null
 
-.. js:function:: file.len()
+.. js:function:: stream.len()
 
-    returns the length of the stream
+    returns the length of the stream. If stream is not seekable result is -1
 
-.. js:function:: file.readblob(size)
+.. js:function:: stream.print(text)
+
+    :param string text: a string to be writen
+	
+    writes a string to the stream.
+	
+.. note:: How text is encoded depends on squirrel configuration. (See textwriter and textwriter)
+
+.. js:function:: stream.readblob(size)
 
     :param int size: number of bytes to read
 
     read n bytes from the stream and returns them as blob
 
-.. js:function:: file.readn(type)
+.. js:function:: stream.readline()
+
+    read a line of text from the stream and returns it as string
+	
+.. note:: How text is encoded depends on squirrel configuration. (See textwriter and textwriter)
+
+.. js:function:: stream.readn(type)
 
     :param int type: type of the number to read
 
@@ -119,13 +136,7 @@ The file class
 | 'd'          | 64bits float                                                                   |  float               |
 +--------------+--------------------------------------------------------------------------------+----------------------+
 
-.. js:function:: file.resize(size)
-
-    :param int size: the new size of the blob in bytes
-
-    resizes the blob to the specified `size`
-
-.. js:function:: file.seek(offset [,origin])
+.. js:function:: stream.seek(offset [,origin])
 
     :param int offset: indicates the number of bytes from `origin`.
     :param int origin: origin of the seek
@@ -142,17 +153,17 @@ The file class
 
 .. note:: If origin is omitted the parameter is defaulted as 'b'(beginning of the stream).
 
-.. js:function:: file.tell()
+.. js:function:: stream.tell()
 
     returns the read/write pointer absolute position
 
-.. js:function:: file.writeblob(src)
+.. js:function:: stream.writeblob(src)
 
     :param blob src: the source blob containing the data to be written
 
     writes a blob in the stream
 
-.. js:function:: file.writen(n, type)
+.. js:function:: stream.writen(n, type)
 
     :param number n: the value to be written
     :param int type: type of the number to write
@@ -179,6 +190,72 @@ The file class
 | 'd'          | 64bits float                                                                   |
 +--------------+--------------------------------------------------------------------------------+
 
+
+++++++++++++++
+The file class
+++++++++++++++
+
+    The file class implements a stream on a operating system file. All methods of stream class are applicable.
+
+.. js:class:: file(path, patten)
+
+    It's constructor imitates the behaviour of the C runtime function fopen for eg. ::
+
+        local myfile = file("test.xxx","wb+");
+
+    creates a file with read/write access in the current directory.
+
+++++++++++++++
+The streamreader class
+++++++++++++++
+
+    The streamreader class implements an abstract read only stream. Streamreaded can buffer read access to other stream.
+
+.. js:class:: streamreader(source[,owns,buffer_size])
+
+    :param stream source: stream to read from
+    :param bool owns: if source stream will be closed when streamreader is closed. Default is false.
+    :param int buffer_size: buffer size to be used while reading source stream. Default is 0 - no buffering.
+	
+.. js:function:: streamreader.mark(readAheadLimit)
+
+    :param int readAheadLimit: Limit on the number of characters that may be read while still preserving the mark. After reading more than this many characters, attempting to reset the stream may fail.
+
+    Marks the present position in the stream. Subsequent calls to reset() will attempt to reposition the stream to this point.
+
+.. js:function:: streamreader.reset()
+
+    If the stream has been marked, then attempt to reposition it at the mark. Return value is 0.
+    If the stream has not been marked or readAheadLimit is reached, nothing is done. Return value is 1.
+
+++++++++++++++
+The textreader class
+++++++++++++++
+
+	The textreader class implements an abstract read only stream. It is used to read text with arbitrary encoding from a stream.
+
+.. js:class:: textreader(source[,owns,encoding,guess])
+
+    :param stream source: stream to read from
+    :param bool owns: if source stream will be closed when textreader is closed. Default is false.
+    :param string encoding: encoding name. Default is "UTF-8".
+    :param bool guess: try to guess encoding from BOM in source stream, in this case `encoding` is used as fallback. Default is false.
+
+    Currently supported encodings are: ASCII; UTF-8; UTF-16, UTF-16BE, UCS-2BE; UCS-2, UCS-2LE, UTF-16LE. Encoding UCS-2 is supported only as alias for UTF-16.
+
+++++++++++++++
+The textwriter class
+++++++++++++++
+
+	The textwriter class implements an abstract write only stream. It is used to write text with arbitrary encoding to a stream.
+
+.. js:class:: textwriter(destination[,owns,encoding])
+
+    :param stream destination: stream to write to
+    :param bool owns: if destination stream will be closed when textwriter is closed. Default is false.
+    :param string encoding: encoding name. Default is "UTF-8".
+
+    For encodings see textreader.
 
 --------------
 C API
