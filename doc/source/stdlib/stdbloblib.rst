@@ -44,80 +44,19 @@ a file stream, it has a read/write pointer and it automatically grows if data
 is written out of his boundary.
 A blob can also be accessed byte by byte through the `[]` operator.
 
+    The blob class extends class stream.
+
 .. js:class:: blob(size)
 
     :param int size: initial size of the blob
 
     returns a new instance of a blob class of the specified size in bytes
 
-.. js:function:: blob.eos()
-
-    returns a non null value if the read/write pointer is at the end of the stream.
-
-.. js:function:: blob.flush()
-
-    flushes the stream.return a value != null if succeded, otherwise returns null
-
-.. js:function:: blob.len()
-
-    returns the length of the stream
-
-.. js:function:: blob.readblob(size)
-
-    :param int size: number of bytes to read
-
-    read n bytes from the stream and returns them as blob
-
-.. js:function:: blob.readn(type)
-
-    :param int type: type of the number to read
-
-    reads a number from the stream according to the type parameter.
-
-    `type` can have the following values:
-
-+--------------+--------------------------------------------------------------------------------+----------------------+
-| parameter    | return description                                                             |  return type         |
-+==============+================================================================================+======================+
-| 'l'          | processor dependent, 32bits on 32bits processors, 64bits on 64bits processors  |  integer             |
-+--------------+--------------------------------------------------------------------------------+----------------------+
-| 'i'          | 32bits number                                                                  |  integer             |
-+--------------+--------------------------------------------------------------------------------+----------------------+
-| 's'          | 16bits signed integer                                                          |  integer             |
-+--------------+--------------------------------------------------------------------------------+----------------------+
-| 'w'          | 16bits unsigned integer                                                        |  integer             |
-+--------------+--------------------------------------------------------------------------------+----------------------+
-| 'c'          | 8bits signed integer                                                           |  integer             |
-+--------------+--------------------------------------------------------------------------------+----------------------+
-| 'b'          | 8bits unsigned integer                                                         |  integer             |
-+--------------+--------------------------------------------------------------------------------+----------------------+
-| 'f'          | 32bits float                                                                   |  float               |
-+--------------+--------------------------------------------------------------------------------+----------------------+
-| 'd'          | 64bits float                                                                   |  float               |
-+--------------+--------------------------------------------------------------------------------+----------------------+
-
 .. js:function:: blob.resize(size)
 
     :param int size: the new size of the blob in bytes
 
     resizes the blob to the specified `size`
-
-.. js:function:: blob.seek(offset [,origin])
-
-    :param int offset: indicates the number of bytes from `origin`.
-    :param int origin: origin of the seek
-
-                        +--------------+-------------------------------------------+
-                        |  'b'         |  beginning of the stream                  |
-                        +--------------+-------------------------------------------+
-                        |  'c'         |  current location                         |
-                        +--------------+-------------------------------------------+
-                        |  'e'         |  end of the stream                        |
-                        +--------------+-------------------------------------------+
-
-    Moves the read/write pointer to a specified location.
-
-.. note:: If origin is omitted the parameter is defaulted as 'b'(beginning of the stream).
 
 .. js:function:: blob.swap2()
 
@@ -126,44 +65,6 @@ A blob can also be accessed byte by byte through the `[]` operator.
 .. js:function:: blob.swap4()
 
     swaps the byte order of the blob content as it would be an array of `32bits integers`
-
-.. js:function:: blob.tell()
-
-    returns the read/write pointer absolute position
-
-.. js:function:: blob.writeblob(src)
-
-    :param blob src: the source blob containing the data to be written
-
-    writes a blob in the stream
-
-.. js:function:: blob.writen(n, type)
-
-    :param number n: the value to be written
-    :param int type: type of the number to write
-
-    writes a number in the stream formatted according to the `type` parameter
-
-    `type` can have the following values:
-
-+--------------+--------------------------------------------------------------------------------+
-| parameter    | return description                                                             |
-+==============+================================================================================+
-| 'i'          | 32bits number                                                                  |
-+--------------+--------------------------------------------------------------------------------+
-| 's'          | 16bits signed integer                                                          |
-+--------------+--------------------------------------------------------------------------------+
-| 'w'          | 16bits unsigned integer                                                        |
-+--------------+--------------------------------------------------------------------------------+
-| 'c'          | 8bits signed integer                                                           |
-+--------------+--------------------------------------------------------------------------------+
-| 'b'          | 8bits unsigned integer                                                         |
-+--------------+--------------------------------------------------------------------------------+
-| 'f'          | 32bits float                                                                   |
-+--------------+--------------------------------------------------------------------------------+
-| 'd'          | 64bits float                                                                   |
-+--------------+--------------------------------------------------------------------------------+
-
 
 ------
 C API

@@ -183,7 +183,7 @@ static SQInteger _srdr_constructor(HSQUIRRELVM v)
 {
 	SQTStreamReader *srdr;
 	SQFILE stream;
-	SQBool owns = SQFlase;
+	SQBool owns = SQFalse;
 	SQInteger buffer_size = 0;
     if( SQ_FAILED( sq_getinstanceup( v,2,(SQUserPointer*)&stream,(SQUserPointer)SQSTD_STREAM_TYPE_TAG))) {
         return sq_throwerror(v,_SC("invalid argument type"));
@@ -269,11 +269,11 @@ const SQRegClass _sqstd_streamreader_decl = {
 	NULL,				// globals
 };
 
-SQUIRREL_API SQRESULT sqstd_register_streamreader(HSQUIRRELVM v)
-{
-	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_streamreader_decl))) {
-		return SQ_ERROR;
-	}
- 	sq_poptop(v);
-	return SQ_OK;
-}
+// SQUIRREL_API SQRESULT sqstd_register_streamreader(HSQUIRRELVM v)
+// {
+// 	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_streamreader_decl))) {
+// 		return SQ_ERROR;
+// 	}
+//  	sq_poptop(v);
+// 	return SQ_OK;
+// }

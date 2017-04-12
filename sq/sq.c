@@ -318,8 +318,6 @@ int main(int argc, char* argv[])
 
     sqstd_register_bloblib(v);
     sqstd_register_iolib(v);
-	sqstd_register_streamreader(v);
-	sqstd_register_textreader(v);
 	sqstd_register_squirrelio(v);
     sqstd_register_systemlib(v);
     sqstd_register_mathlib(v);

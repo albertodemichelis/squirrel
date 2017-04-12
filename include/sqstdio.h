@@ -67,6 +67,7 @@ SQUIRREL_API SQInteger sqstd_srdrmark(SQSRDR srdr,SQInteger readAheadLimit);
 SQUIRREL_API SQInteger sqstd_srdrreset(SQSRDR srdr);
 SQUIRREL_API const SQChar *sqstd_guessencoding_srdr(SQSRDR srdr);
 SQUIRREL_API SQFILE sqstd_textreader_srdr(SQSRDR srdr,SQBool owns_close,SQBool owns_release,const SQChar *encoding,SQBool guess);
+
 //compiler helpers
 SQUIRREL_API SQRESULT sqstd_compilestream(HSQUIRRELVM v,SQFILE stream,const SQChar *sourcename,SQBool raiseerror);
 SQUIRREL_API SQRESULT sqstd_writeclosurestream(HSQUIRRELVM vm,SQFILE stream);
@@ -78,8 +79,8 @@ SQUIRREL_API SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM v,const SQChar *filen
 
 SQUIRREL_API SQRESULT sqstd_register_iolib(HSQUIRRELVM v);
 SQUIRREL_API SQRESULT sqstd_register_squirrelio(HSQUIRRELVM v);
-SQUIRREL_API SQRESULT sqstd_register_textreader(HSQUIRRELVM v);
-SQUIRREL_API SQRESULT sqstd_register_streamreader(HSQUIRRELVM v);
+//SQUIRREL_API SQRESULT sqstd_register_textreader(HSQUIRRELVM v);
+//SQUIRREL_API SQRESULT sqstd_register_streamreader(HSQUIRRELVM v);
 
 #ifdef __cplusplus
 } /*extern "C"*/

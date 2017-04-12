@@ -848,19 +848,19 @@ const SQRegClass _sqstd_textwriter_decl = {
 		Register
 ==================================== */
 
-SQUIRREL_API SQRESULT sqstd_register_textreader(HSQUIRRELVM v)
-{
-	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_textreader_decl)))
-	{
-		return SQ_ERROR;
-	}
- 	sq_poptop(v);
-
-	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_textwriter_decl)))
-	{
-		return SQ_ERROR;
-	}
- 	sq_poptop(v);
-
-	return SQ_OK;
-}
+// SQUIRREL_API SQRESULT sqstd_register_textreader(HSQUIRRELVM v)
+// {
+// 	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_textreader_decl)))
+// 	{
+// 		return SQ_ERROR;
+// 	}
+//  	sq_poptop(v);
+//
+// 	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_textwriter_decl)))
+// 	{
+// 		return SQ_ERROR;
+// 	}
+//  	sq_poptop(v);
+//
+// 	return SQ_OK;
+// }

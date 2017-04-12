@@ -66,11 +66,13 @@ Global Symbols
     File object bound on the os *standard output* stream
 
 
-++++++++++++++
+++++++++++++++++
 The stream class
-++++++++++++++
+++++++++++++++++
 
-    The stream class generalizes sources or sinks of data.
+    The stream class is an abstract class generalizing sources or sinks of data.
+    
+    The stream class is the base class of: blob, file, streamreader, textreader and textwriter.
 
 .. js:function:: stream.close()
 
@@ -195,7 +197,9 @@ The stream class
 The file class
 ++++++++++++++
 
-    The file class implements a stream on a operating system file. All methods of stream class are applicable.
+    The file class implements a stream on a operating system file.
+    
+    File class extends class stream.
 
 .. js:class:: file(path, patten)
 
@@ -205,17 +209,21 @@ The file class
 
     creates a file with read/write access in the current directory.
 
-++++++++++++++
+++++++++++++++++++++++
 The streamreader class
-++++++++++++++
+++++++++++++++++++++++
 
-    The streamreader class implements an abstract read only stream. Streamreaded can buffer read access to other stream.
+    The streamreader class implements an abstract read only stream.
+    
+    The streamreader class extends class stream.
 
 .. js:class:: streamreader(source[,owns,buffer_size])
 
     :param stream source: stream to read from
     :param bool owns: if source stream will be closed when streamreader is closed. Default is false.
     :param int buffer_size: buffer size to be used while reading source stream. Default is 0 - no buffering.
+
+    If successfully created textreader instance will reference the `source` stream.
 	
 .. js:function:: streamreader.mark(readAheadLimit)
 
@@ -228,11 +236,13 @@ The streamreader class
     If the stream has been marked, then attempt to reposition it at the mark. Return value is 0.
     If the stream has not been marked or readAheadLimit is reached, nothing is done. Return value is 1.
 
-++++++++++++++
+++++++++++++++++++++
 The textreader class
-++++++++++++++
+++++++++++++++++++++
 
 	The textreader class implements an abstract read only stream. It is used to read text with arbitrary encoding from a stream.
+
+    The textreader class extends class stream.
 
 .. js:class:: textreader(source[,owns,encoding,guess])
 
@@ -241,19 +251,25 @@ The textreader class
     :param string encoding: encoding name. Default is "UTF-8".
     :param bool guess: try to guess encoding from BOM in source stream, in this case `encoding` is used as fallback. Default is false.
 
+    If successfully created textreader instance will reference the `source` stream.
+    
     Currently supported encodings are: ASCII; UTF-8; UTF-16, UTF-16BE, UCS-2BE; UCS-2, UCS-2LE, UTF-16LE. Encoding UCS-2 is supported only as alias for UTF-16.
 
-++++++++++++++
+++++++++++++++++++++
 The textwriter class
-++++++++++++++
+++++++++++++++++++++
 
 	The textwriter class implements an abstract write only stream. It is used to write text with arbitrary encoding to a stream.
 
+    The textwriter class extends class stream.
+    
 .. js:class:: textwriter(destination[,owns,encoding])
 
     :param stream destination: stream to write to
     :param bool owns: if destination stream will be closed when textwriter is closed. Default is false.
     :param string encoding: encoding name. Default is "UTF-8".
+    
+    If successfully created textwriter instance will reference the `destination` stream.
 
     For encodings see textreader.
 
@@ -271,29 +287,177 @@ C API
 
     initialize and register the io library in the given VM.
 
+++++++++++++++++
+The stream class
+++++++++++++++++
+
+    The stream object is represented by opaque structure SQFILE.
+
+.. c:function:: SQInteger sqstd_fread(void* buffer, SQInteger size, SQFILE file)
+
+    :param void* buffer: buffer to read to
+    :param SQInteger size: size in bytes to read from the stream
+    :param SQFILE stream: the stream to read from
+	:returns: the number of bytes read or -1 on error
+    
+    Reads `size` bytes from `stream` and stores them to `buffer`.
+	
+.. c:function:: SQInteger sqstd_fwrite(const SQUserPointer buffer, SQInteger size, SQFILE stream)
+
+    :param const void* buffer: buffer with data to be writen
+    :param SQInteger size: size in bytes to write from to stream
+    :param SQFILE stream: the stream to write to
+	:returns: the number of bytes writen or -1 on error
+
+    Writes `size` bytes stored in `buffer` to `stream`.
+
+.. c:function:: sqstd_fseek(SQFILE stream, SQInteger offset, SQInteger origin)
+
+    :param SQFILE stream: the stream
+    :param SQInteger offset: offset in file relative to `origin`
+    :param SQInteger origin: origin of `offset`
+    :returns: 0 on success or -1 on error.
+
+    Sets position in the stream.
+    `origin` can be one of:
+
+        +--------------+-------------------------------------------+
+        |  SQ_SEEK_SET |  beginning of the stream                  |
+        +--------------+-------------------------------------------+
+        |  SQ_SEEK_CUR |  current location                         |
+        +--------------+-------------------------------------------+
+        |  SQ_SEEK_END |  end of the stream                        |
+        +--------------+-------------------------------------------+
+
+.. c:function:: SQInteger sqstd_ftell(SQFILE stream)
+
+    :param SQFILE stream: the stream
+    :returns: the position in the stream or -1 on error.
+
+.. c:function:: SQInteger sqstd_fflush(SQFILE stream)
+
+    :param SQFILE stream: the stream
+    :returns: 0 on success or -1 on error.
+
+    Flushes the stream
+
+.. c:function:: SQInteger sqstd_feof(SQFILE stream)
+
+    :param SQFILE stream: the stream
+    :returns: non-zero if end of stream is reached, zero if not.
+    
+    Checks if end of stream was reached.
+    
+.. c:function:: SQInteger sqstd_fclose(SQFILE stream)
+
+    :param SQFILE stream: the stream
+    :returns: 0 on success or -1 on error.
+    
+    Closes the stream. Returns zero on success or non-zeto on failure.
+
+.. c:function:: void sqstd_frelease(SQFILE stream)
+
+    :param SQFILE stream: the stream
+
+    Releases (frees) the stream object. All stream objects must be released.
+
 ++++++++++++++
 File Object
 ++++++++++++++
 
-.. c:function:: SQRESULT sqstd_createfile(HSQUIRRELVM v, SQFILE file, SQBool owns)
+.. c:function:: SQFILE sqstd_fopen(const SQChar *filename ,const SQChar *mode)
+
+    :param const SQChar *filename: file name
+    :param const SQChar *mode: I/O mode
+    :returns: a stream object representing file
+    
+    Opens file `filename` in mode `mode` and returns a stream object bounded to opened file.
+    
+    Stream must be released by call to sqstd_frelease.
+
+.. c:function:: SQRESULT sqstd_createfile( HSQUIRRELVM v, SQUserPointer file, SQBool owns)
 
     :param HSQUIRRELVM v: the target VM
-    :param SQFILE file: the stream that will be rapresented by the file object
+    :param SQUserPointer file: the stream that will be represented by the file object
     :param SQBool owns: if different true the stream will be automatically closed when the newly create file object is destroyed.
     :returns: an SQRESULT
 
-    creates a file object bound to the SQFILE passed as parameter
-    and pushes it in the stack
+    creates a stream object bound to the FILE passed as parameter `file` and pushes it in the stack
 
-.. c:function:: SQRESULT sqstd_getfile(HSQUIRRELVM v, SQInteger idx, SQFILE* file)
+.. c:function:: SQRESULT sqstd_getfile(HSQUIRRELVM v, SQInteger idx, SQUserPointer* file)
 
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: and index in the stack
-    :param SQFILE* file: A pointer to a SQFILE handle that will store the result
+    :param SQUserPointer* file: A pointer to a FILE handle that will store the result
     :returns: an SQRESULT
 
-    retrieve the pointer of a stream handle from an arbitrary
+    retrieve the pointer of a FILE handle from an arbitrary
     position in the stack.
+
+
++++++++++++++++++++
+Streamreader Object
++++++++++++++++++++
+
+    The streamreader object is represented by opaque structure SQSRDR. SQSRDR can be freely casted to SQFILE.
+    
+.. c:function:: SQSRDR sqstd_streamreader( SQFILE source,SQBool owns,SQInteger buffer_size)
+
+    :param SQFILE source: a stream to read from
+    :param SQBool owns: tells if stream `source` will be closed when streamreader is closed
+    :param SQInteger buffer_size: buffer size to be used while reading source stream.
+    :returns: a streamreader object
+    
+    Creates a streamreader to read from stream `source`. If `buffer_size` is 0 no buffering is used.
+    
+    Streamreader must be released by call to sqstd_frelease.
+    
+.. note:: Releasing streamreader does NOT release the `source` stream.
+
+.. c:function:: SQInteger sqstd_srdrmark(SQSRDR srdr,SQInteger readAheadLimit)
+
+    :param SQSRDR srdr: streamreader object
+    :param SQInteger readAheadLimit: read ahead limit
+
+    Marks the present position in the stream. Subsequent calls to reset() will attempt to reposition the stream to this point.
+
+.. c:function:: SQInteger sqstd_srdrreset(SQSRDR srdr)
+
+    :param SQSRDR srdr: streamreader object
+    :returns: zero on success, non-zero otherwise.
+
+    Repositions streamreader to marked position.
+
++++++++++++++++++++
+Textreader and Textwriter Objects
++++++++++++++++++++
+
+.. c:function:: SQFILE sqstd_textreader(SQFILE source,SQBool owns,const SQChar *encoding,SQBool guess)
+
+    :param SQFILE source: stream object to read from
+    :param SQBool owns: tells if stream `source` will be closed when textreader is closed
+    :param const SQChar *encoding: encoding name. If NULL default encoding "UTF-8" is used.
+    :param SQBool guess: If non-zero - try to guess encoding by reading BOM from `source`.
+    :returns: a stream representing textreader object
+    
+    Creates textreader to read from `source` stream.
+    
+    Textreader must be released by call to sqstd_frelease.
+    
+.. note:: Releasing textreader does NOT release the `source` stream.
+
+.. c:function:: SQFILE sqstd_textwriter(SQFILE destination,SQBool owns,const SQChar *encoding)
+
+    :param SQFILE destination: stream object to write to
+    :param SQBool owns: tells if stream `destination` will be closed when textwriter is closed
+    :param const SQChar *encoding: encoding name. If NULL default encoding "UTF-8" is used.
+    :returns: a stream representing textwriter object
+
+    Creates textwriter to write to `destination` stream.
+    
+    Textwriter must be released by call to sqstd_frelease.
+    
+.. note:: Releasing textwriter does NOT release the `destination` stream.
 
 ++++++++++++++++++++++++++++++++
 Script loading and serialization

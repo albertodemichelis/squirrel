@@ -181,23 +181,24 @@ SQRESULT sqstd_getfile(HSQUIRRELVM v, SQInteger idx, SQUserPointer *file)
     return sq_throwerror(v,_SC("not a file"));
 }
 
-SQRESULT sqstd_register_iolib(HSQUIRRELVM v)
-{
-    SQInteger top = sq_gettop(v);
-	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_file_decl)))
-	{
-		return SQ_ERROR;
-	}
-	sq_poptop(v);
-    sq_pushstring(v,_SC("stdout"),-1);
-    sqstd_createfile(v,stdout,SQFalse);
-    sq_newslot(v,-3,SQFalse);
-    sq_pushstring(v,_SC("stdin"),-1);
-    sqstd_createfile(v,stdin,SQFalse);
-    sq_newslot(v,-3,SQFalse);
-    sq_pushstring(v,_SC("stderr"),-1);
-    sqstd_createfile(v,stderr,SQFalse);
-    sq_newslot(v,-3,SQFalse);
-    sq_settop(v,top);
-    return SQ_OK;
-}
+// SQRESULT sqstd_register_fileiolib(HSQUIRRELVM v)
+// {
+//     SQInteger top = sq_gettop(v);
+// 	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_file_decl)))
+// 	{
+// 		return SQ_ERROR;
+// 	}
+// 	sq_poptop(v);
+//     sq_pushstring(v,_SC("stdout"),-1);
+//     sqstd_createfile(v,stdout,SQFalse);
+//     sq_newslot(v,-3,SQFalse);
+//     sq_pushstring(v,_SC("stdin"),-1);
+//     sqstd_createfile(v,stdin,SQFalse);
+//     sq_newslot(v,-3,SQFalse);
+//     sq_pushstring(v,_SC("stderr"),-1);
+//     sqstd_createfile(v,stderr,SQFalse);
+//     sq_newslot(v,-3,SQFalse);
+//     
+//     sq_settop(v,top);
+//     return SQ_OK;
+// }
