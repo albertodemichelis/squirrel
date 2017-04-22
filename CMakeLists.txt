@@ -9,7 +9,7 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
 project(squirrel C CXX)
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
   set(SQ_FLAGS -fno-exceptions -fno-strict-aliasing -Wall -Wextra -pedantic -Wcast-qual)
@@ -33,25 +33,28 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -std=c++0x")
 elseif(MSVC)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   add_definitions(-D_SQ64)
 endif()
 
-if(NOT DEFINED INSTALL_BIN_DIR)
-  set(INSTALL_BIN_DIR bin)
-endif()
+if(NOT DEFINED SQ_DISABLE_INSTALLER)
+  if(NOT DEFINED INSTALL_BIN_DIR)
+    set(INSTALL_BIN_DIR bin)
+  endif()
 
-if(NOT DEFINED INSTALL_LIB_DIR)
-  set(INSTALL_LIB_DIR lib)
+  if(NOT DEFINED INSTALL_LIB_DIR)
+    set(INSTALL_LIB_DIR lib)
+  endif()
 endif()
 
 add_subdirectory(squirrel)
 add_subdirectory(sqstdlib)
 add_subdirectory(sq)
 
-if(NOT WIN32)
+if(NOT WIN32 AND NOT DEFINED DISABLE_DYNAMIC)
   set_target_properties(squirrel sqstdlib PROPERTIES SOVERSION 0 VERSION 0.0.0)
 endif()
 
