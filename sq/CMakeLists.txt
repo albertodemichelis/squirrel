@@ -1,4 +1,7 @@
 if(NOT DEFINED DISABLE_DYNAMIC)
+  if(CMAKE_COMPILER_IS_GNUCXX)
+    set_source_files_properties(sq.c PROPERTIES COMPILE_FLAGS -std=c99)
+  endif()
   add_executable(sq sq.c)
   set_target_properties(sq PROPERTIES LINKER_LANGUAGE C)
   target_link_libraries(sq squirrel sqstdlib)
