@@ -459,6 +459,7 @@ public:
         _es.donot_get = false;
         (this->*f)();
         _es = es;
+	  _es.etype     = EXPR;
     }
     template<typename T> void BIN_EXP(SQOpcode op, T f,SQInteger op3 = 0)
     {
