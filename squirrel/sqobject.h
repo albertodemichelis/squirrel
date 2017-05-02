@@ -3,6 +3,7 @@
 #define _SQOBJECT_H_
 
 #include "squtils.h"
+#include <assert.h>
 
 #ifdef _SQ64
 #define UINT_MINUS_ONE (0xFFFFFFFFFFFFFFFF)
