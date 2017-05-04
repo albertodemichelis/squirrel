@@ -736,6 +736,7 @@ exception_restore:
                     continue;
                 }
                               }
+                break;
             case _OP_CALL: {
                     SQObjectPtr clo = STK(arg1);
                     switch (type(clo)) {
