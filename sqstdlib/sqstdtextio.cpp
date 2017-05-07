@@ -50,13 +50,16 @@ struct TextConverter
 		_BytesUser = user;
 		_BytesReadChar = &TextConverter::Read_UTF8;
 		_BytesWriteChar = &TextConverter::Write_UTF8;
+        _bad_char = '?';
+        isRdBigEndian = SQTrue;	// Default is Big Endian
+        isWrBigEndian = SQTrue;	// Default is Big Endian
 	}
 
 	SQTCReadFct BytesRead;
 	SQTCWriteFct BytesWrite;
 	SQUserPointer _BytesUser;
 
-	uint32_t _bad_char = '?';
+	uint32_t _bad_char;
 
 	SQInteger (TextConverter::*_BytesReadChar)( uint32_t *pwc);
 	SQInteger (TextConverter::*_BytesWriteChar)( uint32_t wc);
@@ -93,7 +96,7 @@ struct TextConverter
 		return SQ_ERROR;
 	}
 
-	SQBool isRdBigEndian = SQTrue;	// Default is Big Endian
+	SQBool isRdBigEndian;
 
 	SQInteger BytesReadU16( uint16_t *pc) { if( !isRdBigEndian) return BytesReadU16LE(pc); else return BytesReadU16BE(pc); };
 
@@ -124,7 +127,7 @@ struct TextConverter
 		return SQ_ERROR;
 	}
 
-	SQBool isWrBigEndian = SQTrue;	// Default is Big Endian
+	SQBool isWrBigEndian;
 
 	SQInteger BytesWriteU16( uint16_t c) { if( !isWrBigEndian) return BytesWriteU16LE(c); else return BytesWriteU16BE(c); };
 
