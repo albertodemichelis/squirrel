@@ -68,7 +68,7 @@ struct SQFile : public SQStream {
 		return fseek( _handle, (long)offset, (int)realorigin);
     }
     bool IsValid() { return _handle?true:false; }
-    bool EOS() { return feof( _handle); }
+    bool EOS() { return feof( _handle)?true:false; }
     FILE *GetHandle() {return _handle;}
 protected:
     FILE *_handle;
