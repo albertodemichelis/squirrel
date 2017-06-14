@@ -1,10 +1,10 @@
 version: 0.0.{build}
 
-platform: 
+platform:
  - x86
  - x64
 
-configuration: 
+configuration:
  - Debug
  - Release
 
