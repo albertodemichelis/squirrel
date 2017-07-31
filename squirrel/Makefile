@@ -1,9 +1,9 @@
 SQUIRREL= ..
 
 
-OUT= $(SQUIRREL)/lib/libsquirrel.a
-INCZ= -I$(SQUIRREL)/include -I. -Iinclude
-DEFS=
+OUT?= $(SQUIRREL)/lib/libsquirrel.a
+INCZ?= -I$(SQUIRREL)/include -I. -Iinclude
+DEFS= $(CC_EXTRA_FLAGS)
 LIB=
 
 OBJS= \
