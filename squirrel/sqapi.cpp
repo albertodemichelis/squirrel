@@ -188,7 +188,7 @@ SQUnsignedInteger sq_getvmrefcount(HSQUIRRELVM SQ_UNUSED_ARG(v), const HSQOBJECT
 
 const SQChar *sq_objtostring(const HSQOBJECT *o)
 {
-    if(sq_type(*o) == OT_STRING) {
+    if(sqtype(*o) == OT_STRING) {
         return _stringval(*o);
     }
     return NULL;

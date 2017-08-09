@@ -386,7 +386,6 @@ SQUIRREL_API void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook);
 #define sq_isinstance(o) ((o)._type==OT_INSTANCE)
 #define sq_isbool(o) ((o)._type==OT_BOOL)
 #define sq_isweakref(o) ((o)._type==OT_WEAKREF)
-#define sq_type(o) ((o)._type)
 
 /* deprecated */
 #define sq_createslot(v,n) sq_newslot(v,n,SQFalse)
