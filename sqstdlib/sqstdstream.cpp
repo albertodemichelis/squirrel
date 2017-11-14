@@ -11,13 +11,13 @@
 
 // basic stream API
 
-SQInteger sqstd_fread(void* buffer, SQInteger size, SQFILE file)
+SQInteger sqstd_fread(SQUserPointer buffer, SQInteger size, SQFILE file)
 {
 	SQStream *self = (SQStream *)file;
 	return self->Read( buffer, size);
 }
 
-SQInteger sqstd_fwrite(const SQUserPointer buffer, SQInteger size, SQFILE file)
+SQInteger sqstd_fwrite(SQUserPointer buffer, SQInteger size, SQFILE file)
 {
 	SQStream *self = (SQStream *)file;
 	return self->Write( buffer, size);

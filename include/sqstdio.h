@@ -42,7 +42,7 @@ extern SQUIRREL_API_VAR const struct tagSQRegClass _sqstd_streamreader_decl;
 typedef struct SQFILE_tag *SQFILE;	// SQFILE represents SQStream
 
 SQUIRREL_API SQInteger sqstd_fread(SQUserPointer, SQInteger, SQFILE);
-SQUIRREL_API SQInteger sqstd_fwrite(const SQUserPointer, SQInteger, SQFILE);
+SQUIRREL_API SQInteger sqstd_fwrite(SQUserPointer, SQInteger, SQFILE);
 SQUIRREL_API SQInteger sqstd_fseek(SQFILE , SQInteger , SQInteger);
 SQUIRREL_API SQInteger sqstd_ftell(SQFILE);
 SQUIRREL_API SQInteger sqstd_fflush(SQFILE);
