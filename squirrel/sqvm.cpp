@@ -1747,7 +1747,7 @@ void SQVM::dumpstack(SQInteger stackbase,bool dumpall)
         SQObjectPtr &obj=_stack[i];
         if(stackbase==i)scprintf(_SC(">"));else scprintf(_SC(" "));
         scprintf(_SC("[" _PRINT_INT_FMT "]:"),n);
-        switch(type(obj)){
+        switch(sq_type(obj)){
         case OT_FLOAT:          scprintf(_SC("FLOAT %.3f"),_float(obj));break;
         case OT_INTEGER:        scprintf(_SC("INTEGER " _PRINT_INT_FMT),_integer(obj));break;
         case OT_BOOL:           scprintf(_SC("BOOL %s"),_integer(obj)?"true":"false");break;

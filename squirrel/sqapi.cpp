@@ -1197,7 +1197,7 @@ SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool raiseerror)
 SQRESULT sq_tailcall(HSQUIRRELVM v, SQInteger nparams)
 {
 	SQObjectPtr &res = v->GetUp(-(nparams + 1));
-	if (type(res) != OT_CLOSURE) {
+	if (sq_type(res) != OT_CLOSURE) {
 		return sq_throwerror(v, _SC("only closure can be tail called"));
 	}
 	SQClosure *clo = _closure(res);
