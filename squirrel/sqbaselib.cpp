@@ -885,7 +885,12 @@ static SQInteger closure_pcall(HSQUIRRELVM v)
 
 static SQInteger closure_call(HSQUIRRELVM v)
 {
-    return SQ_SUCCEEDED(sq_call(v,sq_gettop(v)-1,SQTrue,SQTrue))?1:SQ_ERROR;
+	SQObjectPtr &c = stack_get(v, -1);
+	if (type(c) == OT_CLOSURE && (_closure(c)->_function->_bgenerator == false))
+	{
+		return sq_tailcall(v, sq_gettop(v) - 1);
+	}
+	return SQ_SUCCEEDED(sq_call(v, sq_gettop(v) - 1, SQTrue, SQTrue)) ? 1 : SQ_ERROR;
 }
 
 static SQInteger _closure_acall(HSQUIRRELVM v,SQBool raiseerror)
