@@ -355,7 +355,7 @@ creates a new array and pushes it in the stack
     :param SQBool hasbase: if the parameter is true the function expects a base class on top of the stack.
     :returns: a SQRESULT
 
-creates a new class object. If the parameter 'hasbase' is different than 0, the function pops a class from the stack and inherits the new created class from it.
+creates a new class object. If the parameter 'hasbase' is different than 0, the function pops a class from the stack and inherits the new created class from it. The new class is pushed in the stack.
 
 
 

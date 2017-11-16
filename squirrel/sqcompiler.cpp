@@ -191,7 +191,7 @@ public:
         }
         else {
             if(_raiseerror && _ss(_vm)->_compilererrorhandler) {
-                _ss(_vm)->_compilererrorhandler(_vm, _compilererror, type(_sourcename) == OT_STRING?_stringval(_sourcename):_SC("unknown"),
+                _ss(_vm)->_compilererrorhandler(_vm, _compilererror, sq_type(_sourcename) == OT_STRING?_stringval(_sourcename):_SC("unknown"),
                     _lex._currentline, _lex._currentcolumn);
             }
             _vm->_lasterror = SQString::Create(_ss(_vm), _compilererror, -1);
@@ -466,7 +466,7 @@ public:
         INVOKE_EXP(f);
         SQInteger op1 = _fs->PopTarget();SQInteger op2 = _fs->PopTarget();
         _fs->AddInstruction(op, _fs->PushTarget(), op1, op2, op3);
-		_es.etype = EXPR;
+        _es.etype = EXPR;
     }
     void LogicalOrExp()
     {
@@ -483,7 +483,7 @@ public:
             if(trg != second_exp) _fs->AddInstruction(_OP_MOVE, trg, second_exp);
             _fs->SnoozeOpt();
             _fs->SetIntructionParam(jpos, 1, (_fs->GetCurrentPos() - jpos));
-			_es.etype = EXPR;
+            _es.etype = EXPR;
             break;
         }else return;
     }
@@ -503,7 +503,7 @@ public:
             if(trg != second_exp) _fs->AddInstruction(_OP_MOVE, trg, second_exp);
             _fs->SnoozeOpt();
             _fs->SetIntructionParam(jpos, 1, (_fs->GetCurrentPos() - jpos));
-			_es.etype = EXPR;
+            _es.etype = EXPR;
             break;
             }
 
@@ -765,7 +765,7 @@ public:
                     /* Handle named constant */
                     SQObjectPtr constval;
                     SQObject    constid;
-                    if(type(constant) == OT_TABLE) {
+                    if(sq_type(constant) == OT_TABLE) {
                         Expect('.');
                         constid = Expect(TK_IDENTIFIER);
                         if(!_table(constant)->Get(constid, constval)) {
@@ -779,7 +779,7 @@ public:
                     _es.epos = _fs->PushTarget();
 
                     /* generate direct or literal function depending on size */
-                    SQObjectType ctype = type(constval);
+                    SQObjectType ctype = sq_type(constval);
                     switch(ctype) {
                         case OT_INTEGER: EmitLoadConstInt(_integer(constval),_es.epos); break;
                         case OT_FLOAT: EmitLoadConstFloat(_float(constval),_es.epos); break;

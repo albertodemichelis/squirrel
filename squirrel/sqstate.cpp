@@ -212,7 +212,7 @@ SQSharedState::~SQSharedState()
 
 SQInteger SQSharedState::GetMetaMethodIdxByName(const SQObjectPtr &name)
 {
-    if(type(name) != OT_STRING)
+    if(sq_type(name) != OT_STRING)
         return -1;
     SQObjectPtr ret;
     if(_table(_metamethodsmap)->Get(name,ret)) {
@@ -225,7 +225,7 @@ SQInteger SQSharedState::GetMetaMethodIdxByName(const SQObjectPtr &name)
 
 void SQSharedState::MarkObject(SQObjectPtr &o,SQCollectable **chain)
 {
-    switch(type(o)){
+    switch(sq_type(o)){
     case OT_TABLE:_table(o)->Mark(chain);break;
     case OT_ARRAY:_array(o)->Mark(chain);break;
     case OT_USERDATA:_userdata(o)->Mark(chain);break;
@@ -413,7 +413,7 @@ void RefTable::Mark(SQCollectable **chain)
 {
     RefNode *nodes = (RefNode *)_nodes;
     for(SQUnsignedInteger n = 0; n < _numofslots; n++) {
-        if(type(nodes->obj) != OT_NULL) {
+        if(sq_type(nodes->obj) != OT_NULL) {
             SQSharedState::MarkObject(nodes->obj,chain);
         }
         nodes++;
@@ -475,7 +475,7 @@ void RefTable::Resize(SQUnsignedInteger size)
     //rehash
     SQUnsignedInteger nfound = 0;
     for(SQUnsignedInteger n = 0; n < oldnumofslots; n++) {
-        if(type(t->obj) != OT_NULL) {
+        if(sq_type(t->obj) != OT_NULL) {
             //add back;
             assert(t->refs != 0);
             RefNode *nn = Add(::HashObj(t->obj)&(_numofslots-1),t->obj);
@@ -508,7 +508,7 @@ RefTable::RefNode *RefTable::Get(SQObject &obj,SQHash &mainpos,RefNode **prev,bo
     mainpos = ::HashObj(obj)&(_numofslots-1);
     *prev = NULL;
     for (ref = _buckets[mainpos]; ref; ) {
-        if(_rawval(ref->obj) == _rawval(obj) && type(ref->obj) == type(obj))
+        if(_rawval(ref->obj) == _rawval(obj) && sq_type(ref->obj) == sq_type(obj))
             break;
         *prev = ref;
         ref = ref->next;
