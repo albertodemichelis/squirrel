@@ -155,7 +155,6 @@ SQInteger sqstd_registermembers(HSQUIRRELVM v,const SQRegMember *membs)
 {
     if( membs != 0) {
 		const SQRegMember	*m = membs;
-		SQInteger top = sq_gettop(v);
 		while( m->name != 0) {
             SQBool bstatic = SQFalse;
 			SQBool handle_only= SQFalse;
@@ -169,8 +168,7 @@ SQInteger sqstd_registermembers(HSQUIRRELVM v,const SQRegMember *membs)
 				sq_pushstring(v,name,-1);					// class, name
 				sq_pushnull(v);								// class, name, value
 				sq_pushnull(v);								// class, name, value, attribute
-				sq_newmember(v,-4,bstatic);					// class, [name, value, attribute] - bay be a bug (name, value, attribute not poped)
-				sq_settop(v,top);							// class                           - workaround
+				sq_newmember(v,-4,bstatic);					// class
 			}
 			if( m->phandle != 0) {
 				sq_pushstring(v,name,-1);				// class, name
