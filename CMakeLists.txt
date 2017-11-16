@@ -53,6 +53,7 @@ endif()
 add_subdirectory(squirrel)
 add_subdirectory(sqstdlib)
 add_subdirectory(sq)
+add_subdirectory(sqtestdoc)
 
 if(NOT WIN32 AND NOT DEFINED DISABLE_DYNAMIC)
   set_target_properties(squirrel sqstdlib PROPERTIES SOVERSION 0 VERSION 0.0.0)
