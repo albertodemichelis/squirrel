@@ -15,3 +15,8 @@ static void reference_embedding_calling_a_function_example_1(HSQUIRRELVM v)
 {
 	#include "reference/embedding/calling_a_function_example_1.h"
 }
+
+int main(void)
+{
+	return 0;
+}
