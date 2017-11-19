@@ -9,4 +9,4 @@ a handle to a squirrel object(any type). The object handle can be used to contro
 of an object by adding or removing references to it( see sq_addref() and sq_release()).
 The object can be also re-pushed in the VM stack using sq_pushobject().
 
-.. literalinclude:: references_from_c_example_1.h
+.. literalinclude:: references_from_c_code_1.h

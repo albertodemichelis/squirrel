@@ -9,7 +9,7 @@ parameters and then call the function sq_call.
 The function will pop the parameters and push the return value if the last sq_call
 parameter is > 0.
 
-.. literalinclude:: calling_a_function_example_1.h
+.. literalinclude:: calling_a_function_code_1.h
 
 this is equivalent to the following Squirrel code::
 
