@@ -11,7 +11,7 @@ The object can be also re-pushed in the VM stack using sq_pushobject().::
 
     HSQOBJECT obj;
 
-    sq_resetobject(&obj) //initialize the handle
+    sq_resetobject(&obj); //initialize the handle
     sq_getstackobj(v,-2,&obj); //retrieve an object handle from the pos -2
     sq_addref(v,&obj); //adds a reference to the object
 

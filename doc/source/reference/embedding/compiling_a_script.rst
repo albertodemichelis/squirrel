@@ -8,7 +8,7 @@ You can compile a Squirrel script with the function *sq_compile*.::
 
     typedef SQInteger (*SQLEXREADFUNC)(SQUserPointer userdata);
 
-    SQRESULT sq_compile(HSQUIRRELVM v,SQREADFUNC read,SQUserPointer p,
+    SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,
                 const SQChar *sourcename,SQBool raiseerror);
 
 In order to compile a script is necessary for the host application to implement a reader
