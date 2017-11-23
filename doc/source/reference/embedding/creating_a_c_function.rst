@@ -39,3 +39,4 @@ number of arguments.
 Here an example of how to register a function
 
 .. literalinclude:: creating_a_c_function_code_2.h
+

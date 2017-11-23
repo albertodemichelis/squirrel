@@ -6,4 +6,5 @@ int main(int argc, char* argv[])
     //do some stuff with squirrel here
 
     sq_close(v);
+	return 0;
 }
