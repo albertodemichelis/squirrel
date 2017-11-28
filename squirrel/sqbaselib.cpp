@@ -542,9 +542,13 @@ static SQInteger array_resize(HSQUIRRELVM v)
     SQObject &nsize = stack_get(v, 2);
     SQObjectPtr fill;
     if(sq_isnumeric(nsize)) {
+        SQInteger sz = tointeger(nsize);
+        if (sz<0)
+          return sq_throwerror(v, _SC("resizing to negative length"));
+
         if(sq_gettop(v) > 2)
             fill = stack_get(v, 3);
-        _array(o)->Resize(tointeger(nsize),fill);
+        _array(o)->Resize(sz,fill);
         return 0;
     }
     return sq_throwerror(v, _SC("size must be a number"));
