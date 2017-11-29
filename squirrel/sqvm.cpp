@@ -827,10 +827,18 @@ exception_restore:
                     _Swap(TARGET,temp_reg);//TARGET = temp_reg;
                 }
                 continue;
-            case _OP_GETK:
-                if (!Get(STK(arg2), ci->_literals[arg1], temp_reg, 0,arg2)) { SQ_THROW();}
+            case _OP_GETK:{
+                if (arg3 & OP_GET_FLAG_NULL_PROPAGATION) {
+                    if (!Get(STK(arg2), ci->_literals[arg1], temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR, DONT_FALL_BACK))
+                        temp_reg.Null();
+                } else {
+                    if (!Get(STK(arg2), ci->_literals[arg1], temp_reg, 0, arg2)) {
+                        SQ_THROW();
+                    }
+                }
                 _Swap(TARGET,temp_reg);//TARGET = temp_reg;
                 continue;
+            }
             case _OP_MOVE: TARGET = STK(arg1); continue;
             case _OP_NEWSLOT:
                 _GUARD(NewSlot(STK(arg1), STK(arg2), STK(arg3),false));
@@ -841,10 +849,18 @@ exception_restore:
                 if (!Set(STK(arg1), STK(arg2), STK(arg3),arg1)) { SQ_THROW(); }
                 if (arg0 != 0xFF) TARGET = STK(arg3);
                 continue;
-            case _OP_GET:
-                if (!Get(STK(arg1), STK(arg2), temp_reg, 0,arg1)) { SQ_THROW(); }
+            case _OP_GET:{
+                if (arg3 & OP_GET_FLAG_NULL_PROPAGATION) {
+                    if (!Get(STK(arg1), STK(arg2), temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR, DONT_FALL_BACK))
+                        temp_reg.Null();
+                } else {
+                    if (!Get(STK(arg1), STK(arg2), temp_reg, 0, arg1)) {
+                        SQ_THROW();
+                    }
+                }
                 _Swap(TARGET,temp_reg);//TARGET = temp_reg;
                 continue;
+            }
             case _OP_EQ:{
                 bool res;
                 if(!IsEqual(STK(arg2),COND_LITERAL,res)) { SQ_THROW(); }
@@ -986,6 +1002,12 @@ exception_restore:
                 continue;
             case _OP_OR:
                 if(!IsFalse(STK(arg2))) {
+                    TARGET = STK(arg2);
+                    ci->_ip += (sarg1);
+                }
+                continue;
+            case _OP_NULLCOALESCE:
+                if (!sq_isnull(STK(arg2))) {
                     TARGET = STK(arg2);
                     ci->_ip += (sarg1);
                 }

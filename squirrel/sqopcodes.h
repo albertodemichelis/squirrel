@@ -99,7 +99,8 @@ enum SQOpcode
     _OP_THROW=              0x39,
     _OP_NEWSLOTA=           0x3A,
     _OP_GETBASE=            0x3B,
-    _OP_CLOSE=              0x3C
+    _OP_CLOSE=              0x3C,
+    _OP_NULLCOALESCE=       0x3D
 };
 
 struct SQInstructionDesc {
@@ -128,5 +129,6 @@ typedef sqvector<SQInstruction> SQInstructionVec;
 
 #define NEW_SLOT_ATTRIBUTES_FLAG    0x01
 #define NEW_SLOT_STATIC_FLAG        0x02
+#define OP_GET_FLAG_NULL_PROPAGATION    0x01
 
 #endif // _SQOPCODES_H_

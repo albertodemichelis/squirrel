@@ -73,6 +73,7 @@ SQInstructionDesc g_InstrDesc[]={
     {_SC("_OP_NEWSLOTA")},
     {_SC("_OP_GETBASE")},
     {_SC("_OP_CLOSE")},
+    {_SC("_OP_NULLCOALESCE")},
 };
 #endif
 void DumpLiteral(SQObjectPtr &o)
@@ -485,7 +486,7 @@ void SQFuncState::AddInstruction(SQInstruction &i)
                 pi._arg2 = (unsigned char)i._arg1;
                 pi.op = _OP_GETK;
                 pi._arg0 = i._arg0;
-
+                pi._arg3 = i._arg3;
                 return;
             }
         break;
