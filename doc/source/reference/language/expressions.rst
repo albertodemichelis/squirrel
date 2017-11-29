@@ -52,6 +52,67 @@ Operators
 
 conditionally evaluate an expression depending on the result of an expression.
 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+?? Null-coalescing operator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index::
+    pair: ?? Operator; Operators
+
+::
+
+    exp := exp1 '??' exp2
+
+
+Conditionally evaluate an expression2 depending on the result of an expression1.
+Given code is equivalent to:
+
+::
+
+    exp := (exp1 '!=' null) '?' exp1 ':' exp2
+
+
+C#-like ?? syntax was chosen over Elvis operator ?: which is common in other languages because it is not equivalent to visually similar ternary ? : operator (which checks for falsiness, not null).
+
+It evaluates expressions until the first non-null value (just like || operators for the first 'true' one).
+
+Operator precendence is also follows C# design, so that ?? has lower priority than ||.
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+?. and ?[] - Null-propagation operators
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index::
+    pair: ?. and ?[] Operators; Operators
+
+::
+
+    exp := value '?.' key
+
+::
+
+    exp := value '?[' key ']'
+
+If key exists, return result of 'get' operations, else return null.
+
+::
+    local tbl = {bar=123}
+
+    tbl.bar     // returns 123
+    tbl.baz     // throws an error
+    tbl?.bar    // returns 123
+    tbl?.baz    // returns null
+    null.bar    // throws an error
+    null?.bar   // returns null
+    tbl?["bar"] // returns 123
+    tbl?[4567]  // returns null
+
+This works for any type (internally done via SQVM::Get(), like an 'in' operator), including null.
+Therefore operator can be chained
+::
+    local x = tbl?.foo?.bar?.baz?["spam"]
+
 ^^^^^^^^^^^^^
 Arithmetic
 ^^^^^^^^^^^^^
@@ -252,6 +313,10 @@ Operators precedence
 | ``^``                                 |           |
 +---------------------------------------+-----------+
 | ``&&, in``                            |           |
++---------------------------------------+-----------+
+| ``||``                                |           |
++---------------------------------------+-----------+
+| ``??``                                |           |
 +---------------------------------------+-----------+
 | ``+=, =, -=, /=, *=, %=``             | ...       |
 +---------------------------------------+-----------+
