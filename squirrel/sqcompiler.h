@@ -71,6 +71,9 @@ struct SQVM;
 #define TK_ENUM 323
 #define TK_CONST 324
 #define TK_RAWCALL 325
+#define TK_NULLGETSTR 326
+#define TK_NULLGETOBJ 327
+#define TK_NULLCOALESCE 328
 
 
 

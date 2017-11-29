@@ -374,7 +374,7 @@ public:
         _es.etype     = EXPR;
         _es.epos      = -1;
         _es.donot_get = false;
-        LogicalOrExp();
+        LogicalNullCoalesceExp();
         switch(_token)  {
         case _SC('='):
         case TK_NEWSLOT:
@@ -467,6 +467,25 @@ public:
         SQInteger op1 = _fs->PopTarget();SQInteger op2 = _fs->PopTarget();
         _fs->AddInstruction(op, _fs->PushTarget(), op1, op2, op3);
         _es.etype = EXPR;
+    }
+    void LogicalNullCoalesceExp()
+    {
+        LogicalOrExp();
+        for(;;) if(_token == TK_NULLCOALESCE) {
+            SQInteger first_exp = _fs->PopTarget();
+            SQInteger trg = _fs->PushTarget();
+            _fs->AddInstruction(_OP_NULLCOALESCE, trg, 0, first_exp, 0);
+            SQInteger jpos = _fs->GetCurrentPos();
+            if(trg != first_exp) _fs->AddInstruction(_OP_MOVE, trg, first_exp);
+            Lex(); INVOKE_EXP(&SQCompiler::LogicalNullCoalesceExp);
+            _fs->SnoozeOpt();
+            SQInteger second_exp = _fs->PopTarget();
+            if(trg != second_exp) _fs->AddInstruction(_OP_MOVE, trg, second_exp);
+            _fs->SnoozeOpt();
+            _fs->SetIntructionParam(jpos, 1, (_fs->GetCurrentPos() - jpos));
+            _es.etype = EXPR;
+            break;
+        }else return;
     }
     void LogicalOrExp()
     {
@@ -617,40 +636,46 @@ public:
         for(;;) {
             switch(_token) {
             case _SC('.'):
+            case TK_NULLGETSTR: {
+                SQOpcode op = (_token==_SC('.')) ? _OP_GET : _OP_NULLGET;
                 pos = -1;
                 Lex();
 
                 _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(Expect(TK_IDENTIFIER)));
                 if(_es.etype==BASE) {
-                    Emit2ArgsOP(_OP_GET);
+                    Emit2ArgsOP(op);
                     pos = _fs->TopTarget();
                     _es.etype = EXPR;
                     _es.epos   = pos;
                 }
                 else {
                     if(NeedGet()) {
-                        Emit2ArgsOP(_OP_GET);
+                        Emit2ArgsOP(op);
                     }
                     _es.etype = OBJECT;
                 }
                 break;
+            }
             case _SC('['):
+            case TK_NULLGETOBJ: {
+                SQOpcode op = (_token==_SC('[')) ? _OP_GET : _OP_NULLGET;
                 if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot brake deref/or comma needed after [exp]=exp slot declaration"));
                 Lex(); Expression(); Expect(_SC(']'));
                 pos = -1;
                 if(_es.etype==BASE) {
-                    Emit2ArgsOP(_OP_GET);
+                    Emit2ArgsOP(op);
                     pos = _fs->TopTarget();
                     _es.etype = EXPR;
                     _es.epos   = pos;
                 }
                 else {
                     if(NeedGet()) {
-                        Emit2ArgsOP(_OP_GET);
+                        Emit2ArgsOP(op);
                     }
                     _es.etype = OBJECT;
                 }
                 break;
+            }
             case TK_MINUSMINUS:
             case TK_PLUSPLUS:
                 {
