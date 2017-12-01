@@ -53,9 +53,9 @@ returns the const table of the VM.
 
 sets the const table of the VM; returns the previous const table.
 
-.. js:function:: assert(exp)
+.. js:function:: assert(exp, [message])
 
-throws an exception if exp is null
+throws an exception if exp is null or false. Throws "assertion failed" string by default, or message if specified.
 
 .. js:function:: print(x)
 

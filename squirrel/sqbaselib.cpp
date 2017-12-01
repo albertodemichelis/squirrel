@@ -156,7 +156,14 @@ static SQInteger base_getstackinfos(HSQUIRRELVM v)
 static SQInteger base_assert(HSQUIRRELVM v)
 {
     if(SQVM::IsFalse(stack_get(v,2))){
-        return sq_throwerror(v,_SC("assertion failed"));
+        SQInteger top = sq_gettop(v);
+        if (top>2 && SQ_SUCCEEDED(sq_tostring(v,3))) {
+            const SQChar *str = 0;
+            if (SQ_SUCCEEDED(sq_getstring(v,-1,&str))) {
+                return sq_throwerror(v, str);
+            }
+        }
+        return sq_throwerror(v, _SC("assertion failed"));
     }
     return 0;
 }
@@ -283,7 +290,7 @@ static const SQRegFunction base_funcs[]={
     {_SC("setroottable"),base_setroottable,2, NULL},
     {_SC("getconsttable"),base_getconsttable,1, NULL},
     {_SC("setconsttable"),base_setconsttable,2, NULL},
-    {_SC("assert"),base_assert,2, NULL},
+    {_SC("assert"),base_assert,-2, NULL},
     {_SC("print"),base_print,2, NULL},
     {_SC("error"),base_error,2, NULL},
     {_SC("compilestring"),base_compilestring,-2, _SC(".ss")},
