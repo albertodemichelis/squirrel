@@ -6,6 +6,8 @@
 #include <squirrel.h>
 #include <sqstdaux.h>
 #include <sqstdio.h>
+#include <sqstdstreamreader.h>
+#include <sqstdtextio.h>
 
 #define SQTC_TOOFEW	(-2)
 #define SQTC_ILSEQ	(1)
@@ -362,11 +364,11 @@ const SQChar *sqstd_guessencoding_srdr(SQSRDR srdr)
 	uint8_t buf[3];
 
 	sqstd_srdrmark(srdr,sizeof(buf));
-	if( sqstd_fread( buf, 2, (SQFILE)srdr) == 2) {
+	if( sqstd_sread( buf, 2, (SQSTREAM)srdr) == 2) {
 		if( (buf[0] == 0xFE) && (buf[1] == 0xFF))		return _SC("UTF-16BE");
 		else if( (buf[0] == 0xFF) && (buf[1] == 0xFE))	return _SC("UTF-16LE");
 		else if( (buf[0] == 0xEF) && (buf[1] == 0xBB)) {
-			if( sqstd_fread( buf+2, 1, (SQFILE)srdr) == 1) {
+			if( sqstd_sread( buf+2, 1, (SQSTREAM)srdr) == 1) {
 				if( buf[2] == 0xBF)						return _SC("UTF-8");
 			}
 		}
@@ -502,7 +504,7 @@ SQInteger SQTextReaderWrite( SQUserPointer user, const uint8_t *p, SQInteger n)
 // ------------------------------------
 // TextReader API
 
-SQFILE sqstd_textreader_srdr(SQSRDR srdr,SQBool owns_close,SQBool owns_release,const SQChar *encoding,SQBool guess)
+SQSTREAM sqstd_textreader_srdr(SQSRDR srdr,SQBool owns_close,SQBool owns_release,const SQChar *encoding,SQBool guess)
 {
 	if( guess) {
 		const SQChar *genc = sqstd_guessencoding_srdr(srdr);
@@ -516,16 +518,16 @@ SQFILE sqstd_textreader_srdr(SQSRDR srdr,SQBool owns_close,SQBool owns_release,c
 			return NULL;
 		}
 	}
-	return (SQFILE)rdr;
+	return (SQSTREAM)rdr;
 }
 
-SQFILE sqstd_textreader(SQFILE stream,SQBool owns,const SQChar *encoding,SQBool guess)
+SQSTREAM sqstd_textreader(SQSTREAM stream,SQBool owns,const SQChar *encoding,SQBool guess)
 {
 	SQBool owns_release = SQFalse;
 	if( guess) {
 		SQSRDR srdr = sqstd_streamreader(stream,owns,0);
 		if( srdr == NULL) return NULL;
-		stream = (SQFILE)srdr;
+		stream = (SQSTREAM)srdr;
 		owns = SQTrue;
 		owns_release = SQTrue;
 	}
@@ -544,7 +546,7 @@ static SQInteger _textreader__typeof(HSQUIRRELVM v)
 static SQInteger _textreader_constructor(HSQUIRRELVM v)
 {
 	SQInteger top = sq_gettop(v);
-	SQFILE stream;
+	SQSTREAM stream;
 	SQBool owns = SQFalse;
 	const SQChar *encoding = NULL;
 	SQBool guess = SQFalse;
@@ -565,7 +567,7 @@ static SQInteger _textreader_constructor(HSQUIRRELVM v)
 		}
 	}
 
-	SQFILE rdr;
+	SQSTREAM rdr;
 	if( stream_is_reader) {
 		rdr = sqstd_textreader_srdr((SQSRDR)stream,owns,SQFalse,encoding,guess);
 	}
@@ -576,7 +578,7 @@ static SQInteger _textreader_constructor(HSQUIRRELVM v)
 		return sq_throwerror(v, _SC("cannot create textreader"));
 
     if(SQ_FAILED(sq_setinstanceup(v,1,rdr))) {
-		sqstd_frelease(rdr);
+		sqstd_srelease(rdr);
         return sq_throwerror(v, _SC("cannot create textreader instance"));
     }
 
@@ -769,7 +771,7 @@ SQInteger SQTextWriterWrite( SQUserPointer user, const uint8_t *p, SQInteger n)
 // ------------------------------------
 // TextWriter API
 
-SQFILE sqstd_textwriter(SQFILE stream,SQBool owns,const SQChar *encoding)
+SQSTREAM sqstd_textwriter(SQSTREAM stream,SQBool owns,const SQChar *encoding)
 {
 	SQTextWriter *wrt = new (sq_malloc(sizeof(SQTextWriter)))SQTextWriter( (SQStream*)stream, owns);
 	if( encoding) {
@@ -778,7 +780,7 @@ SQFILE sqstd_textwriter(SQFILE stream,SQBool owns,const SQChar *encoding)
 			return NULL;
 		}
 	}
-	return (SQFILE)wrt;
+	return (SQSTREAM)wrt;
 }
 
 // ------------------------------------
@@ -793,7 +795,7 @@ static SQInteger _textwriter__typeof(HSQUIRRELVM v)
 static SQInteger _textwriter_constructor(HSQUIRRELVM v)
 {
 	SQInteger top = sq_gettop(v);
-	SQFILE stream;
+	SQSTREAM stream;
 	SQBool owns = SQFalse;
 	const SQChar *encoding = NULL;
 
@@ -808,12 +810,12 @@ static SQInteger _textwriter_constructor(HSQUIRRELVM v)
 		}
 	}
 
-	SQFILE wrt = sqstd_textwriter(stream,owns,encoding);
+	SQSTREAM wrt = sqstd_textwriter(stream,owns,encoding);
 	if( wrt == NULL)
 		return sq_throwerror(v, _SC("cannot create textwriter"));
 
     if(SQ_FAILED(sq_setinstanceup(v,1,wrt))) {
-		sqstd_frelease(wrt);
+		sqstd_srelease(wrt);
         return sq_throwerror(v, _SC("cannot create textwriter instance"));
     }
 
@@ -851,19 +853,19 @@ const SQRegClass _sqstd_textwriter_decl = {
 		Register
 ==================================== */
 
-// SQUIRREL_API SQRESULT sqstd_register_textreader(HSQUIRRELVM v)
-// {
-// 	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_textreader_decl)))
-// 	{
-// 		return SQ_ERROR;
-// 	}
-//  	sq_poptop(v);
-//
-// 	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_textwriter_decl)))
-// 	{
-// 		return SQ_ERROR;
-// 	}
-//  	sq_poptop(v);
-//
-// 	return SQ_OK;
-// }
+SQUIRREL_API SQRESULT sqstd_register_textiolib(HSQUIRRELVM v)
+{
+	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_textreader_decl)))
+	{
+		return SQ_ERROR;
+	}
+ 	sq_poptop(v);
+
+	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_textwriter_decl)))
+	{
+		return SQ_ERROR;
+	}
+ 	sq_poptop(v);
+
+	return SQ_OK;
+}

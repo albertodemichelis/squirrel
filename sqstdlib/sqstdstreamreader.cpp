@@ -4,7 +4,8 @@
 #include <string.h>
 #include <squirrel.h>
 #include <sqstdaux.h>
-#include <sqstdio.h>
+#include <sqstdstream.h>
+#include <sqstdstreamreader.h>
 
 static HSQMEMBERHANDLE srdr__stream_handle;
 
@@ -147,7 +148,7 @@ protected:
 	unsigned char *_buf;
 };
 
-SQSRDR sqstd_streamreader(SQFILE stream,SQBool owns,SQInteger buffer_size)
+SQSRDR sqstd_streamreader(SQSTREAM stream,SQBool owns,SQInteger buffer_size)
 {
 	SQTStreamReader *srdr;
 
@@ -182,7 +183,7 @@ static SQInteger _srdr__typeof(HSQUIRRELVM v)
 static SQInteger _srdr_constructor(HSQUIRRELVM v)
 {
 	SQTStreamReader *srdr;
-	SQFILE stream;
+	SQSTREAM stream;
 	SQBool owns = SQFalse;
 	SQInteger buffer_size = 0;
     if( SQ_FAILED( sq_getinstanceup( v,2,(SQUserPointer*)&stream,(SQUserPointer)SQSTD_STREAM_TYPE_TAG))) {
@@ -269,11 +270,11 @@ const SQRegClass _sqstd_streamreader_decl = {
 	NULL,				// globals
 };
 
-// SQUIRREL_API SQRESULT sqstd_register_streamreader(HSQUIRRELVM v)
-// {
-// 	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_streamreader_decl))) {
-// 		return SQ_ERROR;
-// 	}
-//  	sq_poptop(v);
-// 	return SQ_OK;
-// }
+SQRESULT sqstd_register_streamreaderlib(HSQUIRRELVM v)
+{
+	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_streamreader_decl))) {
+		return SQ_ERROR;
+	}
+ 	sq_poptop(v);
+	return SQ_OK;
+}

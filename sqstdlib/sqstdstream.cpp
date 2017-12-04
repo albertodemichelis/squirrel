@@ -7,64 +7,78 @@
 #include <sqstdaux.h>
 #include <sqstdio.h>
 #include <sqstdblob.h>
-#include "sqstdstream.h"
+#include <sqstdstream.h>
 
 // basic stream API
 
-SQInteger sqstd_fread(SQUserPointer buffer, SQInteger size, SQFILE file)
+SQInteger sqstd_sread(SQUserPointer buffer, SQInteger size, SQSTREAM stream)
 {
-	SQStream *self = (SQStream *)file;
+	SQStream *self = (SQStream *)stream;
 	return self->Read( buffer, size);
 }
 
-SQInteger sqstd_fwrite(SQUserPointer buffer, SQInteger size, SQFILE file)
+SQInteger sqstd_swrite(SQUserPointer buffer, SQInteger size, SQSTREAM stream)
 {
-	SQStream *self = (SQStream *)file;
+	SQStream *self = (SQStream *)stream;
 	return self->Write( buffer, size);
 }
 
-SQInteger sqstd_fseek(SQFILE file, SQInteger offset, SQInteger origin)
+SQInteger sqstd_sseek(SQSTREAM stream, SQInteger offset, SQInteger origin)
 {
-	SQStream *self = (SQStream *)file;
+	SQStream *self = (SQStream *)stream;
 	return self->Seek( offset, origin);
 }
 
-SQInteger sqstd_ftell(SQFILE file)
+SQInteger sqstd_stell(SQSTREAM stream)
 {
-	SQStream *self = (SQStream *)file;
+	SQStream *self = (SQStream *)stream;
 	return self->Tell();
 }
 
-SQInteger sqstd_fflush(SQFILE file)
+SQInteger sqstd_sflush(SQSTREAM stream)
 {
-	SQStream *self = (SQStream *)file;
+	SQStream *self = (SQStream *)stream;
 	return self->Flush();
 }
 
-SQInteger sqstd_feof(SQFILE file)
+SQInteger sqstd_seof(SQSTREAM stream)
 {
-	SQStream *self = (SQStream *)file;
+	SQStream *self = (SQStream *)stream;
 	return self->EOS();
 }
 
-SQInteger sqstd_fclose(SQFILE file)
+SQInteger sqstd_sclose(SQSTREAM stream)
 {
-	SQStream *self = (SQStream *)file;
+	SQStream *self = (SQStream *)stream;
 	SQInteger r = self->Close();
 	return r;
 }
 
-void sqstd_frelease(SQFILE file)
+void sqstd_srelease(SQSTREAM stream)
 {
-	SQStream *self = (SQStream *)file;
+	SQStream *self = (SQStream *)stream;
 	self->Close();
 	self->_Release();
 }
 
 SQInteger __sqstd_stream_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(size))
 {
-	sqstd_frelease( (SQFILE)p);
+	sqstd_srelease( (SQSTREAM)p);
     return 1;
+}
+
+SQInteger sqstd_STREAMWRITEFUNC(SQUserPointer user,SQUserPointer buf,SQInteger size)
+{
+	SQFILE s = (SQSTREAM)user;
+    return sqstd_swrite( buf, size, s);
+}
+
+SQInteger sqstd_STREAMREADFUNC(SQUserPointer user,SQUserPointer buf,SQInteger size)
+{
+	SQFILE s = (SQSTREAM)user;
+    SQInteger ret;
+    if( (ret = sqstd_sread( buf, size, s))!=0 ) return ret;
+    return -1;
 }
 
 #define SETUP_STREAM(v) \
@@ -74,7 +88,7 @@ SQInteger __sqstd_stream_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(si
     if(!self || !self->IsValid())  \
         return sq_throwerror(v,_SC("the stream is invalid"));
 
-SQInteger _stream_readblob(HSQUIRRELVM v)
+static SQInteger _stream_readblob(HSQUIRRELVM v)
 {
     SETUP_STREAM(v);
     SQUserPointer data,blobp;
@@ -90,7 +104,7 @@ SQInteger _stream_readblob(HSQUIRRELVM v)
     return 1;
 }
 
-SQInteger _stream_readline(HSQUIRRELVM v)
+static SQInteger _stream_readline(HSQUIRRELVM v)
 {
     SETUP_STREAM(v);
 	SQChar *buf = NULL;
@@ -127,7 +141,7 @@ SQInteger _stream_readline(HSQUIRRELVM v)
 #define SAFE_READN(ptr,len) { \
     if(self->Read(ptr,len) != len) return sq_throwerror(v,_SC("io error")); \
     }
-SQInteger _stream_readn(HSQUIRRELVM v)
+static SQInteger _stream_readn(HSQUIRRELVM v)
 {
     SETUP_STREAM(v);
     SQInteger format;
@@ -187,7 +201,7 @@ SQInteger _stream_readn(HSQUIRRELVM v)
     return 1;
 }
 
-SQInteger _stream_writeblob(HSQUIRRELVM v)
+static SQInteger _stream_writeblob(HSQUIRRELVM v)
 {
     SQUserPointer data;
     SQInteger size;
@@ -201,7 +215,7 @@ SQInteger _stream_writeblob(HSQUIRRELVM v)
     return 1;
 }
 
-SQInteger _stream_print(HSQUIRRELVM v)
+static SQInteger _stream_print(HSQUIRRELVM v)
 {
     const SQChar *data;
     SQInteger size;
@@ -214,7 +228,7 @@ SQInteger _stream_print(HSQUIRRELVM v)
     return 1;
 }
 
-SQInteger _stream_writen(HSQUIRRELVM v)
+static SQInteger _stream_writen(HSQUIRRELVM v)
 {
     SETUP_STREAM(v);
     SQInteger format, ti;
@@ -283,7 +297,7 @@ SQInteger _stream_writen(HSQUIRRELVM v)
     return 0;
 }
 
-SQInteger _stream_seek(HSQUIRRELVM v)
+static SQInteger _stream_seek(HSQUIRRELVM v)
 {
     SETUP_STREAM(v);
     SQInteger offset, origin = SQ_SEEK_SET;
@@ -302,21 +316,21 @@ SQInteger _stream_seek(HSQUIRRELVM v)
     return 1;
 }
 
-SQInteger _stream_tell(HSQUIRRELVM v)
+static SQInteger _stream_tell(HSQUIRRELVM v)
 {
     SETUP_STREAM(v);
     sq_pushinteger(v, self->Tell());
     return 1;
 }
 
-SQInteger _stream_len(HSQUIRRELVM v)
+static SQInteger _stream_len(HSQUIRRELVM v)
 {
     SETUP_STREAM(v);
     sq_pushinteger(v, self->Len());
     return 1;
 }
 
-SQInteger _stream_flush(HSQUIRRELVM v)
+static SQInteger _stream_flush(HSQUIRRELVM v)
 {
     SETUP_STREAM(v);
     if(!self->Flush())
@@ -326,7 +340,7 @@ SQInteger _stream_flush(HSQUIRRELVM v)
     return 1;
 }
 
-SQInteger _stream_eos(HSQUIRRELVM v)
+static SQInteger _stream_eos(HSQUIRRELVM v)
 {
     SETUP_STREAM(v);
     if(self->EOS())
@@ -343,12 +357,20 @@ static SQInteger _stream_close(HSQUIRRELVM v)
     return 1;
 }
 
-SQInteger _stream__cloned(HSQUIRRELVM v)
+static SQInteger _stream__cloned(HSQUIRRELVM v)
 {
-	 return sq_throwerror(v,_SC("this object cannot be cloned"));
+	 return sq_throwerror(v,_SC("stream object cannot be cloned"));
 }
 
+static SQInteger _stream_constructor(HSQUIRRELVM v)
+{
+	 return sq_throwerror(v,_SC("stream object cannot be constructed"));
+}
+
+#define _DECL_STREAM_FUNC(name,nparams,typecheck) {_SC(#name),_stream_##name,nparams,typecheck}
+
 static const SQRegFunction _stream_methods[] = {
+    _DECL_STREAM_FUNC(constructor,-1,_SC("x")),
     _DECL_STREAM_FUNC(readblob,2,_SC("xn")),
 	_DECL_STREAM_FUNC(readline,1,_SC("x")),
     _DECL_STREAM_FUNC(readn,2,_SC("xn")),
@@ -374,42 +396,67 @@ const SQRegClass _sqstd_stream_decl = {
 	NULL,		// globals
 };
 
-SQRESULT sqstd_register_iolib(HSQUIRRELVM v)
+// bindings
+static SQInteger _g_stream_loadstream(HSQUIRRELVM v)
 {
-    SQInteger top = sq_gettop(v);
-	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_file_decl)))
+	SQSTREAM stream = NULL;
+    const SQChar *sourcename;
+    SQBool printerror = SQFalse;
+    if( SQ_FAILED( sq_getinstanceup( v,2,(SQUserPointer*)&stream,(SQUserPointer)SQSTD_STREAM_TYPE_TAG))) {
+        return sq_throwerror(v,_SC("invalid argument type"));
+	}
+    sq_getstring(v,3,&sourcename);
+    if(sq_gettop(v) > 3) {
+        sq_getbool(v,4,&printerror);
+    }
+	if(SQ_SUCCEEDED(sqstd_loadstream(v,stream,sourcename,printerror))) {
+		return 1;
+	}
+    return SQ_ERROR; //propagates the error
+}
+
+static SQInteger _g_stream_writeclosuretostream(HSQUIRRELVM v)
+{
+	SQSTREAM stream = NULL;
+    if( SQ_FAILED( sq_getinstanceup( v,2,(SQUserPointer*)&stream,(SQUserPointer)SQSTD_STREAM_TYPE_TAG))) {
+        return sq_throwerror(v,_SC("invalid argument type"));
+	}
+	if(SQ_SUCCEEDED(sqstd_writeclosuretostream(v,stream))) {
+		return 1;
+	}
+    return SQ_ERROR; //propagates the error
+}
+
+static SQInteger _g_stream_dostream(HSQUIRRELVM v)
+{
+	if( SQ_SUCCEEDED(_g_stream_loadstream(v))) {
+	    sq_push(v,1); //repush the this
+        if(SQ_SUCCEEDED(sq_call(v,1,SQTrue,SQTrue))) {
+            sq_remove(v,-2); //removes the closure
+            return 1;
+        }
+        sq_pop(v,1); //removes the closure
+	}
+	return SQ_ERROR;
+}
+
+#define _DECL_GLOBALSTREAM_FUNC(name,nparams,typecheck) {_SC(#name),_g_stream_##name,nparams,typecheck}
+static const SQRegFunction streamlib_funcs[]={
+    _DECL_GLOBALSTREAM_FUNC(loadstream,-3,_SC(".xsb")),
+    _DECL_GLOBALSTREAM_FUNC(dostream,-3,_SC(".xsb")),
+    _DECL_GLOBALSTREAM_FUNC(writeclosuretostream,3,_SC(".xc")),
+    {NULL,(SQFUNCTION)0,0,NULL}
+};
+
+SQRESULT sqstd_register_streamlib(HSQUIRRELVM v)
+{
+	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_stream_decl)))
 	{
 		return SQ_ERROR;
 	}
 	sq_poptop(v);
-
-	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_streamreader_decl))) {
-		return SQ_ERROR;
-	}
- 	sq_poptop(v);
     
-	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_textreader_decl)))
-	{
-		return SQ_ERROR;
-	}
- 	sq_poptop(v);
-
-	if(SQ_FAILED(sqstd_registerclass(v,&_sqstd_textwriter_decl)))
-	{
-		return SQ_ERROR;
-	}
- 	sq_poptop(v);
-
-    sq_pushstring(v,_SC("stdout"),-1);
-    sqstd_createfile(v,stdout,SQFalse);
-    sq_newslot(v,-3,SQFalse);
-    sq_pushstring(v,_SC("stdin"),-1);
-    sqstd_createfile(v,stdin,SQFalse);
-    sq_newslot(v,-3,SQFalse);
-    sq_pushstring(v,_SC("stderr"),-1);
-    sqstd_createfile(v,stderr,SQFalse);
-    sq_newslot(v,-3,SQFalse);
+	sqstd_registerfunctions(v,streamlib_funcs);
     
-    sq_settop(v,top);
     return SQ_OK;
 }

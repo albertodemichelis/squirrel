@@ -6,6 +6,9 @@
 extern "C" {
 #endif
 
+extern SQUIRREL_API_VAR const struct tagSQRegClass _std_blob_decl;
+#define SQSTD_BLOB_TYPE_TAG ((SQUserPointer)(SQHash)&_std_blob_decl)
+
 SQUIRREL_API SQUserPointer sqstd_createblob(HSQUIRRELVM v, SQInteger size);
 SQUIRREL_API SQRESULT sqstd_getblob(HSQUIRRELVM v,SQInteger idx,SQUserPointer *ptr);
 SQUIRREL_API SQInteger sqstd_getblobsize(HSQUIRRELVM v,SQInteger idx);

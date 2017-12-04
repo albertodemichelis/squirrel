@@ -5,7 +5,7 @@
 #include <sqstdio.h>
 #include <string.h>
 #include <sqstdblob.h>
-#include "sqstdstream.h"
+#include <sqstdstream.h>
 #include "sqstdblobimpl.h"
 
 //Blob
@@ -119,10 +119,10 @@ static SQInteger _blob__typeof(HSQUIRRELVM v)
     return 1;
 }
 
-SQFILE sqstd_blob(SQInteger size)
+SQSTREAM sqstd_blob(SQInteger size)
 {
     SQBlob *b = new (sq_malloc(sizeof(SQBlob)))SQBlob(size);
-	return (SQFILE)b;
+	return (SQSTREAM)b;
 }
 
 static SQInteger _blob_constructor(HSQUIRRELVM v)
