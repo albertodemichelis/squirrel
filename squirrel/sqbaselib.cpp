@@ -472,6 +472,34 @@ static SQInteger table_getdelegate(HSQUIRRELVM v)
     return SQ_SUCCEEDED(sq_getdelegate(v,-1))?1:SQ_ERROR;
 }
 
+static SQInteger table_filter(HSQUIRRELVM v)
+{
+    SQObject &o = stack_get(v,1);
+    SQTable *tbl = _table(o);
+    SQObjectPtr ret = SQTable::Create(_ss(v),0);
+
+    SQObjectPtr itr, key, val;
+    SQInteger nitr;
+    while((nitr = tbl->Next(false, itr, key, val)) != -1) {
+        itr = (SQInteger)nitr;
+
+        v->Push(o);
+        v->Push(key);
+        v->Push(val);
+        if(SQ_FAILED(sq_call(v,3,SQTrue,SQFalse))) {
+            return SQ_ERROR;
+        }
+        if(!SQVM::IsFalse(v->GetUp(-1))) {
+            _table(ret)->NewSlot(key, val);
+        }
+        v->Pop();
+    }
+
+    v->Push(ret);
+    return 1;
+}
+
+
 const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("t")},
     {_SC("rawget"),container_rawget,2, _SC("t")},
@@ -483,6 +511,7 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("clear"),obj_clear,1, _SC(".")},
     {_SC("setdelegate"),table_setdelegate,2, _SC(".t|o")},
     {_SC("getdelegate"),table_getdelegate,1, _SC(".")},
+    {_SC("filter"),table_filter,2, _SC("tc")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
