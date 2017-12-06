@@ -49,6 +49,8 @@ SQUIRREL_API SQRESULT sqstd_readclosurestream(HSQUIRRELVM vm,SQSTREAM stream);
 SQUIRREL_API SQRESULT sqstd_loadstream(HSQUIRRELVM v, SQSTREAM stream, const SQChar *sourcename, SQBool printerror);
 SQUIRREL_API SQRESULT sqstd_dostream(HSQUIRRELVM v, SQSTREAM stream, const SQChar *sourcename, SQBool retval, SQBool printerror);
 
+SQUIRREL_API SQSTREAM sqstd_blob(SQInteger size);
+
 SQUIRREL_API SQRESULT sqstd_register_streamlib(HSQUIRRELVM v);
 
 #ifdef __cplusplus

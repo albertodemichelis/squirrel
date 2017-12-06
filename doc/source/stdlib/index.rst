@@ -32,8 +32,11 @@ THE SOFTWARE.
    introduction.rst
    stdiolib.rst
    stdbloblib.rst
+   stdstreamlib.rst
    stdmathlib.rst
    stdsystemlib.rst
    stdstringlib.rst
    stdauxlib.rst
+   stdstreamreaderlib.rst
+   stdtextiolib.rst
 

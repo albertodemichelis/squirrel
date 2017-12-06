@@ -213,7 +213,7 @@ SQRESULT sqstd_createfile(HSQUIRRELVM v, SQUserPointer file,SQBool own)
     return sqstd_createsqfile(v,f,SQTrue);
 }
 
-SQUIRREL_API SQRESULT sqstd_getsqfile(HSQUIRRELVM v, SQInteger idx, SQFILE *file)
+SQRESULT sqstd_getsqfile(HSQUIRRELVM v, SQInteger idx, SQFILE *file)
 {
     SQFile *fileobj = NULL;
     if(SQ_SUCCEEDED(sq_getinstanceup(v,idx,(SQUserPointer*)&fileobj,(SQUserPointer)SQSTD_FILE_TYPE_TAG))) {

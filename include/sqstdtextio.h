@@ -1,3 +1,4 @@
+/*  see copyright notice in sqstdtextio.cpp */
 #ifndef _SQSTDTEXTIO_H_
 #define _SQSTDTEXTIO_H_
 

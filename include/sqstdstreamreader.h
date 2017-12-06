@@ -1,3 +1,4 @@
+/*  see copyright notice in sqstdstreamreader.cpp */
 #ifndef _SQSTDSTREAMREADER_H_
 #define _SQSTDSTREAMREADER_H_
 
