@@ -1085,7 +1085,10 @@ public:
          for(SQInteger i = 0; i < (nargs - 1); i++) _fs->PopTarget();
          SQInteger stackbase = _fs->PopTarget();
          SQInteger closure = _fs->PopTarget();
-         _fs->AddInstruction(nullcall ? _OP_NULLCALL : _OP_CALL, _fs->PushTarget(), closure, stackbase, nargs);
+         SQInteger target = _fs->PushTarget();
+         assert(target >= -1);
+         assert(target < 255);
+         _fs->AddInstruction(nullcall ? _OP_NULLCALL : _OP_CALL, target, closure, stackbase, nargs);
     }
     bool CheckMemberUniqueness(sqvector<SQObject> &vec, SQObject &obj) {
         for (SQUnsignedInteger i=0, n=vec.size(); i<n; ++i) {
