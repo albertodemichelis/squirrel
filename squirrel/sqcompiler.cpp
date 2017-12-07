@@ -939,7 +939,10 @@ public:
          for(SQInteger i = 0; i < (nargs - 1); i++) _fs->PopTarget();
          SQInteger stackbase = _fs->PopTarget();
          SQInteger closure = _fs->PopTarget();
-         _fs->AddInstruction(_OP_CALL, _fs->PushTarget(), closure, stackbase, nargs);
+         SQInteger target = _fs->PushTarget();
+         assert(target >= -1);
+         assert(target < 255);
+         _fs->AddInstruction(_OP_CALL, target, closure, stackbase, nargs);
     }
     void ParseTableOrClass(SQInteger separator,SQInteger terminator)
     {
