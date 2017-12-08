@@ -1,5 +1,10 @@
 The programming language SQUIRREL 3.1 stable
 
+Build status
+==============
+
+[![Build status](https://travis-ci.org/albertodemichelis/squirrel.svg?branch=master)](https://travis-ci.org/albertodemichelis/squirrel)
+
 --------------------------------------------------
 This project has successfully been compiled and run on
  * Windows (x86 and amd64)
