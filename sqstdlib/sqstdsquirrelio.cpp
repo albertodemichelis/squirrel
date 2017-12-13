@@ -11,9 +11,9 @@
 static SQInteger _sqstd_SQLEXREADFUNC(SQUserPointer user)
 {
 	SQSTREAM s = (SQSTREAM)user;
-	unsigned char c;
-	if( sqstd_sread( &c, 1, s) == 1)
-		return c;
+	SQChar c;
+	if( sqstd_sread( &c, sizeof(SQChar), s) == sizeof(SQChar))
+		return (SQInteger)c;
 	return 0;
 }
 
@@ -67,7 +67,7 @@ SQRESULT sqstd_loadstreamex(HSQUIRRELVM v,SQSTREAM stream, const SQChar *sourcen
 		}
 		sqstd_srelease( (SQSTREAM)srdr);
 	}
-    return sq_throwerror(v,_SC("cannot load the file"));
+    return sq_throwerror(v,_SC("cannot load the stream"));
 }
 
 SQRESULT sqstd_loadstream(HSQUIRRELVM v, SQSTREAM stream, const SQChar *sourcename, SQBool printerror)

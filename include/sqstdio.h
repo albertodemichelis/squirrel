@@ -24,9 +24,9 @@ SQUIRREL_API SQInteger sqstd_fwrite(const SQUserPointer, SQInteger, SQInteger, S
 #define sqstd_ftell(_f)         sqstd_stell((SQSTREAM)(_f))
 //SQUIRREL_API SQInteger sqstd_fflush(SQFILE);
 #define sqstd_fflush(_f)        sqstd_sflush((SQSTREAM)(_f))
-//SQUIRREL_API SQInteger sqstd_fclose(SQFILE);
-#define sqstd_feof(_f)          sqstd_seof((SQSTREAM)(_f))
 //SQUIRREL_API SQInteger sqstd_feof(SQFILE);
+#define sqstd_feof(_f)          sqstd_seof((SQSTREAM)(_f))
+SQUIRREL_API SQInteger sqstd_fclose(SQFILE);
 
 SQUIRREL_API SQRESULT sqstd_createfile(HSQUIRRELVM v, SQUserPointer file,SQBool own);
 SQUIRREL_API SQRESULT sqstd_getfile(HSQUIRRELVM v, SQInteger idx, SQUserPointer *file);

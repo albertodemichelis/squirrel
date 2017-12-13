@@ -76,9 +76,7 @@ SQInteger sqstd_STREAMWRITEFUNC(SQUserPointer user,SQUserPointer buf,SQInteger s
 SQInteger sqstd_STREAMREADFUNC(SQUserPointer user,SQUserPointer buf,SQInteger size)
 {
 	SQFILE s = (SQSTREAM)user;
-    SQInteger ret;
-    if( (ret = sqstd_sread( buf, size, s))!=0 ) return ret;
-    return -1;
+    return sqstd_sread( buf, size, s);
 }
 
 #define SETUP_STREAM(v) \
