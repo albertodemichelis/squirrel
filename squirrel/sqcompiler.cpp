@@ -1365,6 +1365,7 @@ public:
             if(_token == _SC('=')) {
                 Lex();
                 val = ExpectScalar();
+                nval = _integer(val)+1;
             }
             else {
                 val._type = OT_INTEGER;
