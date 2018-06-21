@@ -279,7 +279,7 @@ tries to get a value from the slot 'key' without employing delegation
 
 .. js:function:: table.rawset(key,val)
 
-Sets the slot 'key' with the value 'val' without employing delegation. If the slot does not exists, it will be created.
+Sets the slot 'key' with the value 'val' without employing delegation. If the slot does not exists, it will be created. Returns table itself.
 
 
 .. js:function:: table.rawdelete()
@@ -304,7 +304,7 @@ Tries to invoke the _tostring metamethod. If that fails, it returns "(table : po
 
 .. js:function:: table.clear()
 
-removes all the slots from the table
+removes all the slots from the table. Returns table itself.
 
 
 .. js:function:: table.setdelegate(table)
@@ -332,17 +332,17 @@ returns the length of the array
 
 .. js:function:: array.append(val)
 
-appends the value 'val' at the end of the array
+appends the value 'val' at the end of the array. Returns array itself.
 
 
 .. js:function:: array.push(val)
 
-appends the value 'val' at the end of the array
+appends the value 'val' at the end of the array. Returns array itself.
 
 
 .. js:function:: array.extend(array)
 
-Extends the array by appending all the items in the given array.
+Extends the array by appending all the items in the given array. Returns array itself.
 
 
 .. js:function:: array.pop()
@@ -357,22 +357,22 @@ returns the value of the array with the higher index
 
 .. js:function:: array.insert(idx,val)
 
-inserts the value 'val' at the position 'idx' in the array
+inserts the value 'val' at the position 'idx' in the array. Returns array itself.
 
 
 .. js:function:: array.remove(idx)
 
-removes the value at the position 'idx' in the array
+removes the value at the position 'idx' in the array and returns its value.
 
 
 .. js:function:: array.resize(size,[fill])
 
-Resizes the array. If the optional parameter 'fill' is specified, its value will be used to fill the new array's slots when the size specified is bigger than the previous size. If the fill parameter is omitted, null is used instead.
+Resizes the array. If the optional parameter 'fill' is specified, its value will be used to fill the new array's slots when the size specified is bigger than the previous size. If the fill parameter is omitted, null is used instead. Returns array itself.
 
 
 .. js:function:: array.sort([compare_func])
 
-Sorts the array. A custom compare function can be optionally passed. The function prototype as to be the following.::
+Sorts the array in-place. A custom compare function can be optionally passed. The function prototype as to be the following.::
 
     function custom_compare(a,b)
     {
@@ -385,11 +385,11 @@ a more compact version of a custom compare can be written using a lambda express
 
     arr.sort(@(a,b) a <=> b);
 
-
+Returns array itself.
 
 .. js:function:: array.reverse()
 
-reverse the elements of the array in place
+reverse the elements of the array in place. Returns array itself.
 
 
 .. js:function:: array.slice(start,[end])

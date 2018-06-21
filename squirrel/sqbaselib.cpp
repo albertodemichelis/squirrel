@@ -413,7 +413,7 @@ static SQInteger obj_delegate_weakref(HSQUIRRELVM v)
 
 static SQInteger obj_clear(HSQUIRRELVM v)
 {
-    return sq_clear(v,-1);
+    return SQ_SUCCEEDED(sq_clear(v,-1)) ? 1 : SQ_ERROR;
 }
 
 
@@ -450,7 +450,7 @@ static SQInteger container_rawexists(HSQUIRRELVM v)
 
 static SQInteger container_rawset(HSQUIRRELVM v)
 {
-    return sq_rawset(v,-3);
+    return SQ_SUCCEEDED(sq_rawset(v,-3)) ? 1 : SQ_ERROR;
 }
 
 
@@ -519,18 +519,19 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
 
 static SQInteger array_append(HSQUIRRELVM v)
 {
-    return sq_arrayappend(v,-2);
+    return SQ_SUCCEEDED(sq_arrayappend(v,-2)) ? 1 : SQ_ERROR;
 }
 
 static SQInteger array_extend(HSQUIRRELVM v)
 {
     _array(stack_get(v,1))->Extend(_array(stack_get(v,2)));
-    return 0;
+    sq_pop(v,1);
+    return 1;
 }
 
 static SQInteger array_reverse(HSQUIRRELVM v)
 {
-    return sq_arrayreverse(v,-1);
+    return SQ_SUCCEEDED(sq_arrayreverse(v,-1)) ? 1 : SQ_ERROR;
 }
 
 static SQInteger array_pop(HSQUIRRELVM v)
@@ -555,7 +556,8 @@ static SQInteger array_insert(HSQUIRRELVM v)
     SQObject &val=stack_get(v,3);
     if(!_array(o)->Insert(tointeger(idx),val))
         return sq_throwerror(v,_SC("index out of range"));
-    return 0;
+    sq_pop(v,2);
+    return 1;
 }
 
 static SQInteger array_remove(HSQUIRRELVM v)
@@ -585,7 +587,8 @@ static SQInteger array_resize(HSQUIRRELVM v)
         if(sq_gettop(v) > 2)
             fill = stack_get(v, 3);
         _array(o)->Resize(sz,fill);
-        return 0;
+        sq_settop(v, 1);
+        return 1;
     }
     return sq_throwerror(v, _SC("size must be a number"));
 }
@@ -622,7 +625,8 @@ static SQInteger array_apply(HSQUIRRELVM v)
     SQObject &o = stack_get(v,1);
     if(SQ_FAILED(__map_array(_array(o),_array(o),v)))
         return SQ_ERROR;
-    return 0;
+    sq_pop(v,1);
+    return 1;
 }
 
 static SQInteger array_reduce(HSQUIRRELVM v)
@@ -789,7 +793,8 @@ static SQInteger array_sort(HSQUIRRELVM v)
             return SQ_ERROR;
 
     }
-    return 0;
+    sq_settop(v,1);
+    return 1;
 }
 
 static SQInteger array_slice(HSQUIRRELVM v)
