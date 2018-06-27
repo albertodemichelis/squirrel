@@ -383,7 +383,8 @@ bool SQVM::StartCall(SQClosure *closure,SQInteger target,SQInteger args,SQIntege
     {
         paramssize--;
         if (nargs < paramssize) {
-            Raise_Error(_SC("wrong number of parameters"));
+            Raise_Error(_SC("wrong number of parameters (%d passed, at least %d required)"),
+              (int)nargs, (int)paramssize);
             return false;
         }
 
@@ -409,7 +410,8 @@ bool SQVM::StartCall(SQClosure *closure,SQInteger target,SQInteger args,SQIntege
             }
         }
         else {
-            Raise_Error(_SC("wrong number of parameters"));
+            Raise_Error(_SC("wrong number of parameters (%d passed, %d required)"),
+              (int)nargs, (int)paramssize);
             return false;
         }
     }
@@ -1358,7 +1360,7 @@ bool SQVM::Set(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr 
             return false;
         }
         return true;
-    case OT_USERDATA: break; // must fall back
+  	case OT_USERDATA: break; // must fall back
     default:
         Raise_Error(_SC("trying to set '%s'"),GetTypeName(self));
         return false;
