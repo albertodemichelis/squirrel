@@ -4,6 +4,9 @@ else()
   cmake_minimum_required(VERSION 2.8)
 endif()
 
+option(DISABLE_STATIC "Avoid building/installing static libraries.")
+option(LONG_OUTPUT_NAMES "Use longer names for binaries and libraries: squirrel3 (not sq).")
+
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}" CACHE PATH "")
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
