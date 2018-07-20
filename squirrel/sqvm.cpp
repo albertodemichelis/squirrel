@@ -828,11 +828,12 @@ exception_restore:
                 }
                 continue;
             case _OP_GETK:{
+                SQUnsignedInteger getFlagsByOp = (arg3 & OP_GET_FLAG_ALLOW_DEF_DELEGATE) ? 0 : GET_FLAG_NO_DEF_DELEGATE;
                 if (arg3 & OP_GET_FLAG_NULL_PROPAGATION) {
-                    if (!Get(STK(arg2), ci->_literals[arg1], temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR, DONT_FALL_BACK))
+                    if (!Get(STK(arg2), ci->_literals[arg1], temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR | getFlagsByOp, DONT_FALL_BACK))
                         temp_reg.Null();
                 } else {
-                    if (!Get(STK(arg2), ci->_literals[arg1], temp_reg, 0, arg2)) {
+                    if (!Get(STK(arg2), ci->_literals[arg1], temp_reg, getFlagsByOp, arg2)) {
                         SQ_THROW();
                     }
                 }
@@ -850,11 +851,12 @@ exception_restore:
                 if (arg0 != 0xFF) TARGET = STK(arg3);
                 continue;
             case _OP_GET:{
+                SQUnsignedInteger getFlagsByOp = (arg3 & OP_GET_FLAG_ALLOW_DEF_DELEGATE) ? 0 : GET_FLAG_NO_DEF_DELEGATE;
                 if (arg3 & OP_GET_FLAG_NULL_PROPAGATION) {
-                    if (!Get(STK(arg1), STK(arg2), temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR, DONT_FALL_BACK))
+                    if (!Get(STK(arg1), STK(arg2), temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR | getFlagsByOp, DONT_FALL_BACK))
                         temp_reg.Null();
                 } else {
-                    if (!Get(STK(arg1), STK(arg2), temp_reg, 0, arg1)) {
+                    if (!Get(STK(arg1), STK(arg2), temp_reg, getFlagsByOp, arg1)) {
                         SQ_THROW();
                     }
                 }
@@ -1300,6 +1302,9 @@ bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &des
             case FALLBACK_NO_MATCH: break; //keep falling back
             case FALLBACK_ERROR: return false; // the metamethod failed
         }
+    }
+    if (!(getflags & (GET_FLAG_RAW | GET_FLAG_NO_DEF_DELEGATE)))
+    {
         if(InvokeDefaultDelegate(self,key,dest)) {
             return true;
         }
