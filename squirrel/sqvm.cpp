@@ -296,6 +296,9 @@ bool SQVM::ToString(const SQObjectPtr &o,SQObjectPtr &res)
     case OT_BOOL:
         scsprintf(_sp(sq_rsl(6)),sq_rsl(6),_integer(o)?_SC("true"):_SC("false"));
         break;
+    case OT_NULL:
+        scsprintf(_sp(sq_rsl(5)),sq_rsl(5),_SC("null"));
+        break;
     case OT_TABLE:
     case OT_USERDATA:
     case OT_INSTANCE:
