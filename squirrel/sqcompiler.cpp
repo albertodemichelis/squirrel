@@ -1005,6 +1005,11 @@ public:
             _fs->SetInstructionParam(tpos, 1, nkeys);
         Lex();
     }
+    void CheckDuplicateLocalVariable(const SQObject &name)
+    {
+        if (_fs->GetLocalVariable(name) >= 0)
+            Error(_SC("Local variable '%s' already exists"), _string(name)->_val);
+    }
     void LocalDeclStatement()
     {
         SQObject varname;
@@ -1012,6 +1017,7 @@ public:
         if( _token == TK_FUNCTION) {
             Lex();
             varname = Expect(TK_IDENTIFIER);
+            CheckDuplicateLocalVariable(varname);
             Expect(_SC('('));
             CreateFunction(varname,false);
             _fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1, 0);
@@ -1022,6 +1028,7 @@ public:
 
         do {
             varname = Expect(TK_IDENTIFIER);
+            CheckDuplicateLocalVariable(varname);
             if(_token == _SC('=')) {
                 Lex(); Expression();
                 SQInteger src = _fs->PopTarget();
@@ -1180,9 +1187,12 @@ public:
     {
         SQObject idxname, valname;
         Lex(); Expect(_SC('(')); valname = Expect(TK_IDENTIFIER);
+        CheckDuplicateLocalVariable(valname);
+
         if(_token == _SC(',')) {
             idxname = valname;
             Lex(); valname = Expect(TK_IDENTIFIER);
+            CheckDuplicateLocalVariable(valname);
         }
         else{
             idxname = _fs->CreateString(_SC("@INDEX@"));
