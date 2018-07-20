@@ -130,7 +130,7 @@ static const SQRegFunction systemlib_funcs[]={
 };
 #undef _DECL_FUNC
 
-SQInteger sqstd_register_systemlib(HSQUIRRELVM v)
+SQRESULT sqstd_register_systemlib(HSQUIRRELVM v)
 {
     SQInteger i=0;
     while(systemlib_funcs[i].name!=0)
@@ -142,5 +142,5 @@ SQInteger sqstd_register_systemlib(HSQUIRRELVM v)
         sq_newslot(v,-3,SQFalse);
         i++;
     }
-    return 1;
+    return SQ_OK;
 }

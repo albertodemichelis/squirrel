@@ -488,7 +488,7 @@ static const SQRegFunction stringlib_funcs[]={
 #undef _DECL_FUNC
 
 
-SQInteger sqstd_register_stringlib(HSQUIRRELVM v)
+SQRESULT sqstd_register_stringlib(HSQUIRRELVM v)
 {
     sq_pushstring(v,_SC("regexp"),-1);
     sq_newclass(v,SQFalse);
@@ -514,5 +514,5 @@ SQInteger sqstd_register_stringlib(HSQUIRRELVM v)
         sq_newslot(v,-3,SQFalse);
         i++;
     }
-    return 1;
+    return SQ_OK;
 }
