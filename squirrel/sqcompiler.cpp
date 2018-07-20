@@ -443,8 +443,8 @@ public:
             Expression();
             SQInteger second_exp = _fs->PopTarget();
             if(trg != second_exp) _fs->AddInstruction(_OP_MOVE, trg, second_exp);
-            _fs->SetIntructionParam(jmppos, 1, _fs->GetCurrentPos() - jmppos);
-            _fs->SetIntructionParam(jzpos, 1, endfirstexp - jzpos + 1);
+            _fs->SetInstructionParam(jmppos, 1, _fs->GetCurrentPos() - jmppos);
+            _fs->SetInstructionParam(jzpos, 1, endfirstexp - jzpos + 1);
             _fs->SnoozeOpt();
             }
             break;
@@ -482,7 +482,7 @@ public:
             SQInteger second_exp = _fs->PopTarget();
             if(trg != second_exp) _fs->AddInstruction(_OP_MOVE, trg, second_exp);
             _fs->SnoozeOpt();
-            _fs->SetIntructionParam(jpos, 1, (_fs->GetCurrentPos() - jpos));
+            _fs->SetInstructionParam(jpos, 1, (_fs->GetCurrentPos() - jpos));
             _es.etype = EXPR;
             break;
         }else return;
@@ -502,7 +502,7 @@ public:
             SQInteger second_exp = _fs->PopTarget();
             if(trg != second_exp) _fs->AddInstruction(_OP_MOVE, trg, second_exp);
             _fs->SnoozeOpt();
-            _fs->SetIntructionParam(jpos, 1, (_fs->GetCurrentPos() - jpos));
+            _fs->SetInstructionParam(jpos, 1, (_fs->GetCurrentPos() - jpos));
             _es.etype = EXPR;
             break;
             }
@@ -834,7 +834,7 @@ public:
                     _fs->AddInstruction(_OP_APPENDARRAY, array, val, AAT_STACK);
                     key++;
                 }
-                _fs->SetIntructionParam(apos, 1, key);
+                _fs->SetInstructionParam(apos, 1, key);
                 Lex();
             }
             break;
@@ -1002,7 +1002,7 @@ public:
             }
         }
         if(separator == _SC(',')) //hack recognizes a table from the separator
-            _fs->SetIntructionParam(tpos, 1, nkeys);
+            _fs->SetInstructionParam(tpos, 1, nkeys);
         Lex();
     }
     void LocalDeclStatement()
@@ -1092,9 +1092,9 @@ public:
             //Statement(); if(_lex._prevtoken != _SC('}')) OptionalSemicolon();
             IfBlock();
             //END_SCOPE();
-            _fs->SetIntructionParam(jmppos, 1, _fs->GetCurrentPos() - jmppos);
+            _fs->SetInstructionParam(jmppos, 1, _fs->GetCurrentPos() - jmppos);
         }
-        _fs->SetIntructionParam(jnepos, 1, endifblock - jnepos + (haselse?1:0));
+        _fs->SetInstructionParam(jnepos, 1, endifblock - jnepos + (haselse?1:0));
     }
     void WhileStatement()
     {
@@ -1111,7 +1111,7 @@ public:
 
         END_SCOPE();
         _fs->AddInstruction(_OP_JMP, 0, jmppos - _fs->GetCurrentPos() - 1);
-        _fs->SetIntructionParam(jzpos, 1, _fs->GetCurrentPos() - jzpos);
+        _fs->SetInstructionParam(jzpos, 1, _fs->GetCurrentPos() - jzpos);
 
         END_BREAKBLE_BLOCK(jmppos);
     }
@@ -1170,7 +1170,7 @@ public:
                 _fs->AddInstruction(exp[i]);
         }
         _fs->AddInstruction(_OP_JMP, 0, jmppos - _fs->GetCurrentPos() - 1, 0);
-        if(jzpos>  0) _fs->SetIntructionParam(jzpos, 1, _fs->GetCurrentPos() - jzpos);
+        if(jzpos>  0) _fs->SetInstructionParam(jzpos, 1, _fs->GetCurrentPos() - jzpos);
         
         END_BREAKBLE_BLOCK(continuetrg);
 
@@ -1211,8 +1211,8 @@ public:
         BEGIN_BREAKBLE_BLOCK()
         Statement();
         _fs->AddInstruction(_OP_JMP, 0, jmppos - _fs->GetCurrentPos() - 1);
-        _fs->SetIntructionParam(foreachpos, 1, _fs->GetCurrentPos() - foreachpos);
-        _fs->SetIntructionParam(foreachpos + 1, 1, _fs->GetCurrentPos() - foreachpos);
+        _fs->SetInstructionParam(foreachpos, 1, _fs->GetCurrentPos() - foreachpos);
+        _fs->SetInstructionParam(foreachpos + 1, 1, _fs->GetCurrentPos() - foreachpos);
         END_BREAKBLE_BLOCK(foreachpos - 1);
         //restore the local variable stack(remove index,val and ref idx)
         _fs->PopTarget();
@@ -1232,7 +1232,7 @@ public:
             if(!bfirst) {
                 _fs->AddInstruction(_OP_JMP, 0, 0);
                 skipcondjmp = _fs->GetCurrentPos();
-                _fs->SetIntructionParam(tonextcondjmp, 1, _fs->GetCurrentPos() - tonextcondjmp);
+                _fs->SetInstructionParam(tonextcondjmp, 1, _fs->GetCurrentPos() - tonextcondjmp);
             }
             //condition
             Lex(); Expression(); Expect(_SC(':'));
@@ -1250,7 +1250,7 @@ public:
 
             //end condition
             if(skipcondjmp != -1) {
-                _fs->SetIntructionParam(skipcondjmp, 1, (_fs->GetCurrentPos() - skipcondjmp));
+                _fs->SetInstructionParam(skipcondjmp, 1, (_fs->GetCurrentPos() - skipcondjmp));
             }
             tonextcondjmp = _fs->GetCurrentPos();
             BEGIN_SCOPE();
@@ -1259,7 +1259,7 @@ public:
             bfirst = false;
         }
         if(tonextcondjmp != -1)
-            _fs->SetIntructionParam(tonextcondjmp, 1, _fs->GetCurrentPos() - tonextcondjmp);
+            _fs->SetInstructionParam(tonextcondjmp, 1, _fs->GetCurrentPos() - tonextcondjmp);
         if(_token == TK_DEFAULT) {
             Lex(); Expect(_SC(':'));
             BEGIN_SCOPE();
@@ -1403,14 +1403,14 @@ public:
         if(_fs->_continuetargets.size()) _fs->_continuetargets.top()--;
         _fs->AddInstruction(_OP_JMP, 0, 0);
         SQInteger jmppos = _fs->GetCurrentPos();
-        _fs->SetIntructionParam(trappos, 1, (_fs->GetCurrentPos() - trappos));
+        _fs->SetInstructionParam(trappos, 1, (_fs->GetCurrentPos() - trappos));
         Expect(TK_CATCH); Expect(_SC('(')); exid = Expect(TK_IDENTIFIER); Expect(_SC(')'));
         {
             BEGIN_SCOPE();
             SQInteger ex_target = _fs->PushLocalVariable(exid);
-            _fs->SetIntructionParam(trappos, 0, ex_target);
+            _fs->SetInstructionParam(trappos, 0, ex_target);
             Statement();
-            _fs->SetIntructionParams(jmppos, 0, (_fs->GetCurrentPos() - jmppos), 0);
+            _fs->SetInstructionParams(jmppos, 0, (_fs->GetCurrentPos() - jmppos), 0);
             END_SCOPE();
         }
     }
@@ -1548,7 +1548,7 @@ public:
             SQInteger pos = funcstate->_unresolvedbreaks.back();
             funcstate->_unresolvedbreaks.pop_back();
             //set the jmp instruction
-            funcstate->SetIntructionParams(pos, 0, funcstate->GetCurrentPos() - pos, 0);
+            funcstate->SetInstructionParams(pos, 0, funcstate->GetCurrentPos() - pos, 0);
             ntoresolve--;
         }
     }
@@ -1558,7 +1558,7 @@ public:
             SQInteger pos = funcstate->_unresolvedcontinues.back();
             funcstate->_unresolvedcontinues.pop_back();
             //set the jmp instruction
-            funcstate->SetIntructionParams(pos, 0, targetpos - pos, 0);
+            funcstate->SetInstructionParams(pos, 0, targetpos - pos, 0);
             ntoresolve--;
         }
     }
