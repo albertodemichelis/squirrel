@@ -129,6 +129,8 @@ typedef sqvector<SQInstruction> SQInstructionVec;
 
 #define NEW_SLOT_ATTRIBUTES_FLAG    0x01
 #define NEW_SLOT_STATIC_FLAG        0x02
+
 #define OP_GET_FLAG_NULL_PROPAGATION    0x01
+#define OP_GET_FLAG_ALLOW_DEF_DELEGATE  0x02
 
 #endif // _SQOPCODES_H_

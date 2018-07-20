@@ -643,7 +643,11 @@ public:
                 pos = -1;
                 Lex();
 
-                _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(Expect(TK_IDENTIFIER)));
+                SQObjectPtr constant = Expect(TK_IDENTIFIER);
+                if (CanBeDefaultDelegate(constant))
+                    flags |= OP_GET_FLAG_ALLOW_DEF_DELEGATE;
+
+                _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(constant));
                 if(_es.etype==BASE) {
                     Emit2ArgsOP(_OP_GET, flags);
                     pos = _fs->TopTarget();
@@ -1591,6 +1595,33 @@ public:
             ntoresolve--;
         }
     }
+
+    bool CanBeDefaultDelegate(const SQObjectPtr &key)
+    {
+        if (sq_type(key) != OT_STRING)
+            return false;
+
+        // this can be optimized by keeping joined list/table of used keys
+        SQTable *delegTbls[] = {
+            _table(_fs->_sharedstate->_table_default_delegate),
+            _table(_fs->_sharedstate->_array_default_delegate),
+            _table(_fs->_sharedstate->_string_default_delegate),
+            _table(_fs->_sharedstate->_number_default_delegate),
+            _table(_fs->_sharedstate->_generator_default_delegate),
+            _table(_fs->_sharedstate->_closure_default_delegate),
+            _table(_fs->_sharedstate->_thread_default_delegate),
+            _table(_fs->_sharedstate->_class_default_delegate),
+            _table(_fs->_sharedstate->_instance_default_delegate),
+            _table(_fs->_sharedstate->_weakref_default_delegate)
+        };
+        SQObjectPtr tmp;
+        for (SQInteger i=0; i<sizeof(delegTbls)/sizeof(delegTbls[0]); ++i) {
+            if (delegTbls[i]->Get(key, tmp))
+                return true;
+        }
+        return false;
+    }
+
 private:
     SQInteger _token;
     SQFuncState *_fs;
