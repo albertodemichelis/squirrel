@@ -1198,7 +1198,14 @@ bool SQVM::CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newb
     if(nparamscheck && (((nparamscheck > 0) && (nparamscheck != nargs)) ||
         ((nparamscheck < 0) && (nargs < (-nparamscheck)))))
     {
-        Raise_Error(_SC("wrong number of parameters"));
+        if (nparamscheck > 0) {
+            Raise_Error(_SC("wrong number of parameters (%d passed, %d required)"),
+                (int)nargs, (int)nparamscheck);
+        } else {
+            Raise_Error(_SC("wrong number of parameters (%d passed, at least %d required)"),
+                (int)nargs, (int)-nparamscheck);
+        }
+
         return false;
     }
 
