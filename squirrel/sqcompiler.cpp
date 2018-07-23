@@ -716,15 +716,23 @@ public:
                 return;
                 break;
             case _SC('('):
+            case TK_NULLCALL: {
+                SQInteger nullcall = _token==TK_NULLCALL;
                 switch(_es.etype) {
                     case OBJECT: {
-                        SQInteger key     = _fs->PopTarget();  /* location of the key */
-                        SQInteger table   = _fs->PopTarget();  /* location of the object */
-                        SQInteger closure = _fs->PushTarget(); /* location for the closure */
-                        SQInteger ttarget = _fs->PushTarget(); /* location for 'this' pointer */
-                        _fs->AddInstruction(_OP_PREPCALL, closure, key, table, ttarget);
+                        if (!nullcall) {
+                            SQInteger key     = _fs->PopTarget();  /* location of the key */
+                            SQInteger table   = _fs->PopTarget();  /* location of the object */
+                            SQInteger closure = _fs->PushTarget(); /* location for the closure */
+                            SQInteger ttarget = _fs->PushTarget(); /* location for 'this' pointer */
+                            _fs->AddInstruction(_OP_PREPCALL, closure, key, table, ttarget);
+                        } else {
+                            SQInteger self = _fs->GetUpTarget(1);  /* location of the object */
+                            Emit2ArgsOP(_OP_GET, OP_GET_FLAG_NULL_PROPAGATION);
+                            _fs->AddInstruction(_OP_MOVE, _fs->PushTarget(), self);
                         }
                         break;
+                    }
                     case BASE:
                         //Emit2ArgsOP(_OP_GET);
                         _fs->AddInstruction(_OP_MOVE, _fs->PushTarget(), 0);
@@ -738,8 +746,9 @@ public:
                 }
                 _es.etype = EXPR;
                 Lex();
-                FunctionCallArgs();
+                FunctionCallArgs(false, nullcall);
                 break;
+            }
             default: return;
             }
         }
@@ -895,7 +904,7 @@ public:
         case TK_TYPEOF : Lex() ;UnaryOP(_OP_TYPEOF); break;
         case TK_RESUME : Lex(); UnaryOP(_OP_RESUME); break;
         case TK_CLONE : Lex(); UnaryOP(_OP_CLONE); break;
-        case TK_RAWCALL: Lex(); Expect('('); FunctionCallArgs(true); break;
+        case TK_RAWCALL: Lex(); Expect('('); FunctionCallArgs(true, false); break;
         case TK_MINUSMINUS :
         case TK_PLUSPLUS :PrefixIncDec(_token); break;
         case TK_DELETE : DeleteExpr(); break;
@@ -941,7 +950,7 @@ public:
     bool NeedGet()
     {
         switch(_token) {
-        case _SC('='): case _SC('('): case TK_NEWSLOT: case TK_MODEQ: case TK_MULEQ:
+        case _SC('='): case _SC('('): case TK_NULLCALL: case TK_NEWSLOT: case TK_MODEQ: case TK_MULEQ:
         case TK_DIVEQ: case TK_MINUSEQ: case TK_PLUSEQ:
             return false;
         case TK_PLUSPLUS: case TK_MINUSMINUS:
@@ -952,7 +961,7 @@ public:
         }
         return (!_es.donot_get || ( _es.donot_get && (_token == _SC('.') || _token == _SC('['))));
     }
-    void FunctionCallArgs(bool rawcall = false)
+    void FunctionCallArgs(bool rawcall, bool nullcall)
     {
         SQInteger nargs = 1;//this
          while(_token != _SC(')')) {
@@ -972,7 +981,7 @@ public:
          for(SQInteger i = 0; i < (nargs - 1); i++) _fs->PopTarget();
          SQInteger stackbase = _fs->PopTarget();
          SQInteger closure = _fs->PopTarget();
-         _fs->AddInstruction(_OP_CALL, _fs->PushTarget(), closure, stackbase, nargs);
+         _fs->AddInstruction(nullcall ? _OP_NULLCALL : _OP_CALL, _fs->PushTarget(), closure, stackbase, nargs);
     }
     void ParseTableOrClass(SQInteger separator,SQInteger terminator)
     {

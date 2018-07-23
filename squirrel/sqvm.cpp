@@ -738,8 +738,11 @@ exception_restore:
                     continue;
                 }
                               }
-            case _OP_CALL: {
+            case _OP_CALL:
+            case _OP_NULLCALL:
+            {
                     SQObjectPtr clo = STK(arg1);
+                    bool nullcall = (_i_.op == _OP_NULLCALL);
                     switch (sq_type(clo)) {
                     case OT_CLOSURE:
                         _GUARD(StartCall(_closure(clo), sarg0, arg3, _stackbase+arg2, false));
@@ -802,8 +805,14 @@ exception_restore:
                         //SQ_THROW();
                       }
                     default:
-                        Raise_Error(_SC("attempt to call '%s'"), GetTypeName(clo));
-                        SQ_THROW();
+                        if (nullcall && sq_type(clo)==OT_NULL) {
+                            if(sarg0 != -1) {
+                                STK(sarg0).Null();
+                            }
+                        } else {
+                            Raise_Error(_SC("attempt to call '%s'"), GetTypeName(clo));
+                            SQ_THROW();
+                        }
                     }
                 }
                   continue;
