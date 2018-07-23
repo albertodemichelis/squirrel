@@ -223,6 +223,7 @@ SQInteger SQLexer::Lex()
             {NEXT();
             if (CUR_CHAR == _SC('.')) { NEXT(); RETURN_TOKEN(TK_NULLGETSTR); }
             if (CUR_CHAR == _SC('[')) { NEXT(); RETURN_TOKEN(TK_NULLGETOBJ); }
+            if (CUR_CHAR == _SC('(')) { NEXT(); RETURN_TOKEN(TK_NULLCALL); }
             if (CUR_CHAR == _SC('?')) { NEXT(); RETURN_TOKEN(TK_NULLCOALESCE); }
             RETURN_TOKEN('?'); }
         case _SC('.'):
