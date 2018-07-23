@@ -738,8 +738,11 @@ exception_restore:
                     continue;
                 }
                               }
-            case _OP_CALL: {
+            case _OP_CALL:
+            case _OP_NULLCALL:
+            {
                     SQObjectPtr clo = STK(arg1);
+                    bool nullcall = (_i_.op == _OP_NULLCALL);
                     switch (sq_type(clo)) {
                     case OT_CLOSURE:
                         _GUARD(StartCall(_closure(clo), sarg0, arg3, _stackbase+arg2, false));
@@ -802,8 +805,14 @@ exception_restore:
                         //SQ_THROW();
                       }
                     default:
-                        Raise_Error(_SC("attempt to call '%s'"), GetTypeName(clo));
-                        SQ_THROW();
+                        if (nullcall && sq_type(clo)==OT_NULL) {
+                            if(sarg0 != -1) {
+                                STK(sarg0).Null();
+                            }
+                        } else {
+                            Raise_Error(_SC("attempt to call '%s'"), GetTypeName(clo));
+                            SQ_THROW();
+                        }
                     }
                 }
                   continue;
@@ -818,10 +827,19 @@ exception_restore:
                     _Swap(TARGET,temp_reg);//TARGET = temp_reg;
                 }
                 continue;
-            case _OP_GETK:
-                if (!Get(STK(arg2), ci->_literals[arg1], temp_reg, 0,arg2)) { SQ_THROW();}
+            case _OP_GETK:{
+                SQUnsignedInteger getFlagsByOp = (arg3 & OP_GET_FLAG_ALLOW_DEF_DELEGATE) ? 0 : GET_FLAG_NO_DEF_DELEGATE;
+                if (arg3 & OP_GET_FLAG_NULL_PROPAGATION) {
+                    if (!Get(STK(arg2), ci->_literals[arg1], temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR | getFlagsByOp, DONT_FALL_BACK))
+                        temp_reg.Null();
+                } else {
+                    if (!Get(STK(arg2), ci->_literals[arg1], temp_reg, getFlagsByOp, arg2)) {
+                        SQ_THROW();
+                    }
+                }
                 _Swap(TARGET,temp_reg);//TARGET = temp_reg;
                 continue;
+            }
             case _OP_MOVE: TARGET = STK(arg1); continue;
             case _OP_NEWSLOT:
                 _GUARD(NewSlot(STK(arg1), STK(arg2), STK(arg3),false));
@@ -832,10 +850,19 @@ exception_restore:
                 if (!Set(STK(arg1), STK(arg2), STK(arg3),arg1)) { SQ_THROW(); }
                 if (arg0 != 0xFF) TARGET = STK(arg3);
                 continue;
-            case _OP_GET:
-                if (!Get(STK(arg1), STK(arg2), temp_reg, 0,arg1)) { SQ_THROW(); }
+            case _OP_GET:{
+                SQUnsignedInteger getFlagsByOp = (arg3 & OP_GET_FLAG_ALLOW_DEF_DELEGATE) ? 0 : GET_FLAG_NO_DEF_DELEGATE;
+                if (arg3 & OP_GET_FLAG_NULL_PROPAGATION) {
+                    if (!Get(STK(arg1), STK(arg2), temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR | getFlagsByOp, DONT_FALL_BACK))
+                        temp_reg.Null();
+                } else {
+                    if (!Get(STK(arg1), STK(arg2), temp_reg, getFlagsByOp, arg1)) {
+                        SQ_THROW();
+                    }
+                }
                 _Swap(TARGET,temp_reg);//TARGET = temp_reg;
                 continue;
+            }
             case _OP_EQ:{
                 bool res;
                 if(!IsEqual(STK(arg2),COND_LITERAL,res)) { SQ_THROW(); }
@@ -977,6 +1004,12 @@ exception_restore:
                 continue;
             case _OP_OR:
                 if(!IsFalse(STK(arg2))) {
+                    TARGET = STK(arg2);
+                    ci->_ip += (sarg1);
+                }
+                continue;
+            case _OP_NULLCOALESCE:
+                if (!sq_isnull(STK(arg2))) {
                     TARGET = STK(arg2);
                     ci->_ip += (sarg1);
                 }
@@ -1268,6 +1301,9 @@ bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &des
             case FALLBACK_NO_MATCH: break; //keep falling back
             case FALLBACK_ERROR: return false; // the metamethod failed
         }
+    }
+    if (!(getflags & (GET_FLAG_RAW | GET_FLAG_NO_DEF_DELEGATE)))
+    {
         if(InvokeDefaultDelegate(self,key,dest)) {
             return true;
         }

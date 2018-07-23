@@ -374,7 +374,7 @@ public:
         _es.etype     = EXPR;
         _es.epos      = -1;
         _es.donot_get = false;
-        LogicalOrExp();
+        LogicalNullCoalesceExp();
         switch(_token)  {
         case _SC('='):
         case TK_NEWSLOT:
@@ -467,6 +467,25 @@ public:
         SQInteger op1 = _fs->PopTarget();SQInteger op2 = _fs->PopTarget();
         _fs->AddInstruction(op, _fs->PushTarget(), op1, op2, op3);
         _es.etype = EXPR;
+    }
+    void LogicalNullCoalesceExp()
+    {
+        LogicalOrExp();
+        for(;;) if(_token == TK_NULLCOALESCE) {
+            SQInteger first_exp = _fs->PopTarget();
+            SQInteger trg = _fs->PushTarget();
+            _fs->AddInstruction(_OP_NULLCOALESCE, trg, 0, first_exp, 0);
+            SQInteger jpos = _fs->GetCurrentPos();
+            if(trg != first_exp) _fs->AddInstruction(_OP_MOVE, trg, first_exp);
+            Lex(); INVOKE_EXP(&SQCompiler::LogicalNullCoalesceExp);
+            _fs->SnoozeOpt();
+            SQInteger second_exp = _fs->PopTarget();
+            if(trg != second_exp) _fs->AddInstruction(_OP_MOVE, trg, second_exp);
+            _fs->SnoozeOpt();
+            _fs->SetInstructionParam(jpos, 1, (_fs->GetCurrentPos() - jpos));
+            _es.etype = EXPR;
+            break;
+        }else return;
     }
     void LogicalOrExp()
     {
@@ -617,40 +636,54 @@ public:
         for(;;) {
             switch(_token) {
             case _SC('.'):
+            case TK_NULLGETSTR: {
+                SQInteger flags = 0;
+                if (_token == TK_NULLGETSTR)
+                    flags = OP_GET_FLAG_NULL_PROPAGATION;
                 pos = -1;
                 Lex();
 
-                _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(Expect(TK_IDENTIFIER)));
+                SQObjectPtr constant = Expect(TK_IDENTIFIER);
+                if (CanBeDefaultDelegate(constant))
+                    flags |= OP_GET_FLAG_ALLOW_DEF_DELEGATE;
+
+                _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(constant));
                 if(_es.etype==BASE) {
-                    Emit2ArgsOP(_OP_GET);
+                    Emit2ArgsOP(_OP_GET, flags);
                     pos = _fs->TopTarget();
                     _es.etype = EXPR;
                     _es.epos   = pos;
                 }
                 else {
                     if(NeedGet()) {
-                        Emit2ArgsOP(_OP_GET);
+                        Emit2ArgsOP(_OP_GET, flags);
                     }
                     _es.etype = OBJECT;
                 }
                 break;
+            }
             case _SC('['):
+            case TK_NULLGETOBJ: {
+                SQInteger flags = 0;
+                if (_token == TK_NULLGETOBJ)
+                    flags = OP_GET_FLAG_NULL_PROPAGATION;
                 if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot brake deref/or comma needed after [exp]=exp slot declaration"));
                 Lex(); Expression(); Expect(_SC(']'));
                 pos = -1;
                 if(_es.etype==BASE) {
-                    Emit2ArgsOP(_OP_GET);
+                    Emit2ArgsOP(_OP_GET, flags);
                     pos = _fs->TopTarget();
                     _es.etype = EXPR;
                     _es.epos   = pos;
                 }
                 else {
                     if(NeedGet()) {
-                        Emit2ArgsOP(_OP_GET);
+                        Emit2ArgsOP(_OP_GET, flags);
                     }
                     _es.etype = OBJECT;
                 }
                 break;
+            }
             case TK_MINUSMINUS:
             case TK_PLUSPLUS:
                 {
@@ -683,15 +716,23 @@ public:
                 return;
                 break;
             case _SC('('):
+            case TK_NULLCALL: {
+                SQInteger nullcall = _token==TK_NULLCALL;
                 switch(_es.etype) {
                     case OBJECT: {
-                        SQInteger key     = _fs->PopTarget();  /* location of the key */
-                        SQInteger table   = _fs->PopTarget();  /* location of the object */
-                        SQInteger closure = _fs->PushTarget(); /* location for the closure */
-                        SQInteger ttarget = _fs->PushTarget(); /* location for 'this' pointer */
-                        _fs->AddInstruction(_OP_PREPCALL, closure, key, table, ttarget);
+                        if (!nullcall) {
+                            SQInteger key     = _fs->PopTarget();  /* location of the key */
+                            SQInteger table   = _fs->PopTarget();  /* location of the object */
+                            SQInteger closure = _fs->PushTarget(); /* location for the closure */
+                            SQInteger ttarget = _fs->PushTarget(); /* location for 'this' pointer */
+                            _fs->AddInstruction(_OP_PREPCALL, closure, key, table, ttarget);
+                        } else {
+                            SQInteger self = _fs->GetUpTarget(1);  /* location of the object */
+                            Emit2ArgsOP(_OP_GET, OP_GET_FLAG_NULL_PROPAGATION);
+                            _fs->AddInstruction(_OP_MOVE, _fs->PushTarget(), self);
                         }
                         break;
+                    }
                     case BASE:
                         //Emit2ArgsOP(_OP_GET);
                         _fs->AddInstruction(_OP_MOVE, _fs->PushTarget(), 0);
@@ -705,8 +746,9 @@ public:
                 }
                 _es.etype = EXPR;
                 Lex();
-                FunctionCallArgs();
+                FunctionCallArgs(false, nullcall);
                 break;
+            }
             default: return;
             }
         }
@@ -862,7 +904,7 @@ public:
         case TK_TYPEOF : Lex() ;UnaryOP(_OP_TYPEOF); break;
         case TK_RESUME : Lex(); UnaryOP(_OP_RESUME); break;
         case TK_CLONE : Lex(); UnaryOP(_OP_CLONE); break;
-        case TK_RAWCALL: Lex(); Expect('('); FunctionCallArgs(true); break;
+        case TK_RAWCALL: Lex(); Expect('('); FunctionCallArgs(true, false); break;
         case TK_MINUSMINUS :
         case TK_PLUSPLUS :PrefixIncDec(_token); break;
         case TK_DELETE : DeleteExpr(); break;
@@ -908,7 +950,7 @@ public:
     bool NeedGet()
     {
         switch(_token) {
-        case _SC('='): case _SC('('): case TK_NEWSLOT: case TK_MODEQ: case TK_MULEQ:
+        case _SC('='): case _SC('('): case TK_NULLCALL: case TK_NEWSLOT: case TK_MODEQ: case TK_MULEQ:
         case TK_DIVEQ: case TK_MINUSEQ: case TK_PLUSEQ:
             return false;
         case TK_PLUSPLUS: case TK_MINUSMINUS:
@@ -919,7 +961,7 @@ public:
         }
         return (!_es.donot_get || ( _es.donot_get && (_token == _SC('.') || _token == _SC('['))));
     }
-    void FunctionCallArgs(bool rawcall = false)
+    void FunctionCallArgs(bool rawcall, bool nullcall)
     {
         SQInteger nargs = 1;//this
          while(_token != _SC(')')) {
@@ -939,7 +981,7 @@ public:
          for(SQInteger i = 0; i < (nargs - 1); i++) _fs->PopTarget();
          SQInteger stackbase = _fs->PopTarget();
          SQInteger closure = _fs->PopTarget();
-         _fs->AddInstruction(_OP_CALL, _fs->PushTarget(), closure, stackbase, nargs);
+         _fs->AddInstruction(nullcall ? _OP_NULLCALL : _OP_CALL, _fs->PushTarget(), closure, stackbase, nargs);
     }
     void ParseTableOrClass(SQInteger separator,SQInteger terminator)
     {
@@ -1562,6 +1604,33 @@ public:
             ntoresolve--;
         }
     }
+
+    bool CanBeDefaultDelegate(const SQObjectPtr &key)
+    {
+        if (sq_type(key) != OT_STRING)
+            return false;
+
+        // this can be optimized by keeping joined list/table of used keys
+        SQTable *delegTbls[] = {
+            _table(_fs->_sharedstate->_table_default_delegate),
+            _table(_fs->_sharedstate->_array_default_delegate),
+            _table(_fs->_sharedstate->_string_default_delegate),
+            _table(_fs->_sharedstate->_number_default_delegate),
+            _table(_fs->_sharedstate->_generator_default_delegate),
+            _table(_fs->_sharedstate->_closure_default_delegate),
+            _table(_fs->_sharedstate->_thread_default_delegate),
+            _table(_fs->_sharedstate->_class_default_delegate),
+            _table(_fs->_sharedstate->_instance_default_delegate),
+            _table(_fs->_sharedstate->_weakref_default_delegate)
+        };
+        SQObjectPtr tmp;
+        for (SQInteger i=0; i<sizeof(delegTbls)/sizeof(delegTbls[0]); ++i) {
+            if (delegTbls[i]->Get(key, tmp))
+                return true;
+        }
+        return false;
+    }
+
 private:
     SQInteger _token;
     SQFuncState *_fs;
