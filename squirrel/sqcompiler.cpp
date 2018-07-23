@@ -941,9 +941,23 @@ public:
          SQInteger closure = _fs->PopTarget();
          _fs->AddInstruction(_OP_CALL, _fs->PushTarget(), closure, stackbase, nargs);
     }
+    bool CheckMemberUniqueness(sqvector<SQObject> &vec, SQObject &obj) {
+        for (SQUnsignedInteger i=0, n=vec.size(); i<n; ++i) {
+            if (vec[i]._type == obj._type && vec[i]._unVal.raw == obj._unVal.raw) {
+                if (sq_isstring(obj))
+                    Error(_SC("duplicate key '%s'"), sq_objtostring(&obj));
+                else
+                    Error(_SC("duplicate key"));
+                return false;
+            }
+        }
+        vec.push_back(obj);
+        return true;
+    }
     void ParseTableOrClass(SQInteger separator,SQInteger terminator)
     {
         SQInteger tpos = _fs->GetCurrentPos(),nkeys = 0;
+        sqvector<SQObject> memberConstantKeys;
         while(_token != terminator) {
             bool hasattrs = false;
             bool isstatic = false;
@@ -965,25 +979,46 @@ public:
                 SQInteger tk = _token;
                 Lex();
                 SQObject id = tk == TK_FUNCTION ? Expect(TK_IDENTIFIER) : _fs->CreateString(_SC("constructor"));
+                CheckMemberUniqueness(memberConstantKeys, id);
                 Expect(_SC('('));
                 _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
                 CreateFunction(id);
                 _fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1, 0);
                                 }
                                 break;
-            case _SC('['):
-                Lex(); CommaExpr(); Expect(_SC(']'));
+            case _SC('['): {
+                Lex();
+
+                SQObjectPtr firstId;
+                SQUnsignedInteger prevInstrSize = _fs->_instructions.size();
+                if (_token == TK_STRING_LITERAL)
+                    firstId = _fs->CreateString(_lex._svalue,_lex._longstr.size()-1);
+                else if (_token == TK_INTEGER)
+                    firstId = SQObjectPtr(_lex._nvalue);
+                CommaExpr();
+                if (!sq_isnull(firstId) && _fs->_instructions.size() == prevInstrSize+1) {
+                    unsigned char op = _fs->_instructions.back().op;
+                    if (op == _OP_LOAD || op == _OP_LOADINT)
+                        CheckMemberUniqueness(memberConstantKeys, firstId);
+                }
+                Expect(_SC(']'));
                 Expect(_SC('=')); Expression();
                 break;
+            }
             case TK_STRING_LITERAL: //JSON
                 if(separator == ',') { //only works for tables
-                    _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(Expect(TK_STRING_LITERAL)));
+                    SQObject id = Expect(TK_STRING_LITERAL);
+                    CheckMemberUniqueness(memberConstantKeys, id);
+                    _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
                     Expect(_SC(':')); Expression();
                     break;
                 }
-            default :
-                _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(Expect(TK_IDENTIFIER)));
+            default : {
+                SQObject id = Expect(TK_IDENTIFIER);
+                CheckMemberUniqueness(memberConstantKeys, id);
+                _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
                 Expect(_SC('=')); Expression();
+            }
             }
             if(_token == separator) Lex();//optional comma/semicolon
             nkeys++;
