@@ -100,7 +100,8 @@ enum SQOpcode
     _OP_NEWSLOTA=           0x3A,
     _OP_GETBASE=            0x3B,
     _OP_CLOSE=              0x3C,
-    _OP_NULLCOALESCE=       0x3D
+    _OP_NULLCOALESCE=       0x3D,
+    _OP_NULLCALL=           0x3E
 };
 
 struct SQInstructionDesc {
