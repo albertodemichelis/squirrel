@@ -1181,7 +1181,7 @@ SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool raiseerror)
             v->Pop(params);//pop args
         }
         if(retval){
-            v->Push(res); return SQ_OK;
+            v->Push(res);
         }
         return SQ_OK;
     }
