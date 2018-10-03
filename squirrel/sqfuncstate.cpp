@@ -120,7 +120,7 @@ void SQFuncState::Dump(SQFunctionProto *func)
     scprintf(_SC("SQInstruction sizeof %d\n"),(SQInt32)sizeof(SQInstruction));
     scprintf(_SC("SQObject sizeof %d\n"), (SQInt32)sizeof(SQObject));
     scprintf(_SC("--------------------------------------------------------------------\n"));
-    scprintf(_SC("*****FUNCTION [%s]\n"),type(func->_name)==OT_STRING?_stringval(func->_name):_SC("unknown"));
+    scprintf(_SC("*****FUNCTION [%s]\n"),sq_type(func->_name)==OT_STRING?_stringval(func->_name):_SC("unknown"));
     scprintf(_SC("-----LITERALS\n"));
     SQObjectPtr refidx,key,val;
     SQInteger idx;
@@ -238,7 +238,7 @@ SQInteger SQFuncState::GetConstant(const SQObject &cons)
     return _integer(val);
 }
 
-void SQFuncState::SetIntructionParams(SQInteger pos,SQInteger arg0,SQInteger arg1,SQInteger arg2,SQInteger arg3)
+void SQFuncState::SetInstructionParams(SQInteger pos,SQInteger arg0,SQInteger arg1,SQInteger arg2,SQInteger arg3)
 {
     _instructions[pos]._arg0=(unsigned char)*((SQUnsignedInteger *)&arg0);
     _instructions[pos]._arg1=(SQInt32)*((SQUnsignedInteger *)&arg1);
@@ -246,7 +246,7 @@ void SQFuncState::SetIntructionParams(SQInteger pos,SQInteger arg0,SQInteger arg
     _instructions[pos]._arg3=(unsigned char)*((SQUnsignedInteger *)&arg3);
 }
 
-void SQFuncState::SetIntructionParam(SQInteger pos,SQInteger arg,SQInteger val)
+void SQFuncState::SetInstructionParam(SQInteger pos,SQInteger arg,SQInteger val)
 {
     switch(arg){
         case 0:_instructions[pos]._arg0=(unsigned char)*((SQUnsignedInteger *)&val);break;

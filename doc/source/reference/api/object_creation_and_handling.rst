@@ -66,12 +66,12 @@ pushes the value of a class or instance member using a member handle (see sq_get
 
 .. _sq_getclosureinfo:
 
-.. c:function:: SQRESULT sq_getclosureinfo(HSQUIRRELVM v, SQInteger idx, SQUnsignedInteger * nparams, SQUnsignedInteger * nfreevars)
+.. c:function:: SQRESULT sq_getclosureinfo(HSQUIRRELVM v, SQInteger idx, SQInteger * nparams, SQInteger * nfreevars)
 
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: index of the target closure
-    :param SQUnsignedInteger * nparams: a pointer to an unsigned integer that will store the number of parameters
-    :param SQUnsignedInteger * nfreevars: a pointer to an unsigned integer that will store the number of free variables
+    :param SQInteger * nparams: a pointer to an integer that will store the number of parameters
+    :param SQInteger * nfreevars: a pointer to an integer that will store the number of free variables
     :returns: an SQRESULT
 
 retrieves number of parameters and number of freevariables from a squirrel closure.
@@ -355,7 +355,7 @@ creates a new array and pushes it in the stack
     :param SQBool hasbase: if the parameter is true the function expects a base class on top of the stack.
     :returns: a SQRESULT
 
-creates a new class object. If the parameter 'hasbase' is different than 0, the function pops a class from the stack and inherits the new created class from it.
+creates a new class object. If the parameter 'hasbase' is different than 0, the function pops a class from the stack and inherits the new created class from it. The new class is pushed in the stack.
 
 
 

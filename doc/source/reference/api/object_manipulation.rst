@@ -164,7 +164,7 @@ pops a key from the stack and delete the slot indexed by it from the table at po
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: index of the target object in the stack
     :returns: a SQRESULT
-    :remarks: this call will invokes the delegation system like a normal dereference it only works on tables, arrays and userdata; if the function fails, nothing will be pushed in the stack.
+    :remarks: this call will invokes the delegation system like a normal dereference it only works on tables, arrays, classes, instances and userdata; if the function fails, nothing will be pushed in the stack.
 
 pops a key from the stack and performs a get operation on the object at the position idx in the stack; and pushes the result in the stack.
 
