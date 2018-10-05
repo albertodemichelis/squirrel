@@ -94,20 +94,14 @@ SQInteger sqstd_fread(void* buffer, SQInteger size, SQInteger count, SQFILE file
 {
     SQFile *self = (SQFile*)file;
 	SQInteger ret = self->Read( buffer, size * count);
-    if( ret > 0) {
-        ret %= size;
-    }
-    return ret;
+    return ret / size;
 }
 
 SQInteger sqstd_fwrite(SQUserPointer buffer, SQInteger size, SQInteger count, SQFILE file)
 {
     SQFile *self = (SQFile*)file;
 	SQInteger ret = self->Write( buffer, size * count);
-    if( ret > 0) {
-        ret %= size;
-    }
-    return ret;
+    return ret / size;
 }
 
 SQInteger sqstd_fclose(SQFILE file)
