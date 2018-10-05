@@ -394,21 +394,21 @@ void sq_newclosure(HSQUIRRELVM v,SQFUNCTION func,SQUnsignedInteger nfreevars)
     v->Push(SQObjectPtr(nc));
 }
 
-SQRESULT sq_getclosureinfo(HSQUIRRELVM v,SQInteger idx,SQUnsignedInteger *nparams,SQUnsignedInteger *nfreevars)
+SQRESULT sq_getclosureinfo(HSQUIRRELVM v,SQInteger idx,SQInteger *nparams,SQInteger *nfreevars)
 {
     SQObject o = stack_get(v, idx);
     if(sq_type(o) == OT_CLOSURE) {
         SQClosure *c = _closure(o);
         SQFunctionProto *proto = c->_function;
-        *nparams = (SQUnsignedInteger)proto->_nparameters;
-        *nfreevars = (SQUnsignedInteger)proto->_noutervalues;
+        *nparams = proto->_nparameters;
+        *nfreevars = proto->_noutervalues;
         return SQ_OK;
     }
     else if(sq_type(o) == OT_NATIVECLOSURE)
     {
         SQNativeClosure *c = _nativeclosure(o);
-        *nparams = (SQUnsignedInteger)c->_nparamscheck;
-        *nfreevars = c->_noutervalues;
+        *nparams = c->_nparamscheck;
+        *nfreevars = (SQInteger)c->_noutervalues;
         return SQ_OK;
     }
     return sq_throwerror(v,_SC("the object is not a closure"));

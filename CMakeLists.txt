@@ -4,8 +4,13 @@ else()
   cmake_minimum_required(VERSION 2.8)
 endif()
 
+option(DISABLE_STATIC "Avoid building/installing static libraries.")
+option(LONG_OUTPUT_NAMES "Use longer names for binaries and libraries: squirrel3 (not sq).")
+
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}" CACHE PATH "")
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release")
+endif ()
 
 project(squirrel C CXX)
 
@@ -40,12 +45,12 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   add_definitions(-D_SQ64)
 endif()
 
-if(NOT DEFINED SQ_DISABLE_INSTALLER)
-  if(NOT DEFINED INSTALL_BIN_DIR)
+if(NOT SQ_DISABLE_INSTALLER)
+  if(NOT INSTALL_BIN_DIR)
     set(INSTALL_BIN_DIR bin)
   endif()
 
-  if(NOT DEFINED INSTALL_LIB_DIR)
+  if(NOT INSTALL_LIB_DIR)
     set(INSTALL_LIB_DIR lib)
   endif()
 endif()
@@ -54,11 +59,11 @@ add_subdirectory(squirrel)
 add_subdirectory(sqstdlib)
 add_subdirectory(sq)
 
-if(NOT WIN32 AND NOT DEFINED DISABLE_DYNAMIC)
+if(NOT WIN32 AND NOT DISABLE_DYNAMIC)
   set_target_properties(squirrel sqstdlib PROPERTIES SOVERSION 0 VERSION 0.0.0)
 endif()
 
-if(DEFINED INSTALL_INC_DIR)
+if(INSTALL_INC_DIR)
   set(SQ_PUB_HEADERS include/sqconfig.h
                      include/sqstdaux.h
                      include/sqstdblob.h
