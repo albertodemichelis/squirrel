@@ -3,4 +3,4 @@ bin/
 lib/
 
 # Folders created at documentation generation
-doc/
+doc/build/
