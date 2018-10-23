@@ -641,6 +641,12 @@ bool SQVM::CLASS_OP(SQObjectPtr &target,SQInteger baseclass,SQInteger attributes
 
 bool SQVM::IsEqual(const SQObjectPtr &o1,const SQObjectPtr &o2,bool &res)
 {
+    //if we have to floats, the normal IEEE semantics should apply; ensure this by using C to compare two floats rather then memcmping them
+    //without this 0.0==-0.0 //false
+    if(sq_isfloat(o1) && sq_isfloat(o2)) {
+        res = _float(o1) == _float(o2);
+        return true;
+    }
     if(sq_type(o1) == sq_type(o2)) {
         res = (_rawval(o1) == _rawval(o2));
     }
