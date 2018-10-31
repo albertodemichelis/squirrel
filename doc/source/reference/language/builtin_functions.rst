@@ -412,12 +412,13 @@ returns the string "(array : pointer)".
 removes all the items from the array
 
 
-.. js:function:: array.map(func(a))
+.. js:function:: array.map(func(item_value, [item_index], [array_ref]))
 
 Creates a new array of the same size. For each element in the original array invokes the function 'func' and assigns the return value of the function to the corresponding element of the newly created array.
+Provided func can accept up to 3 arguments: array item value (required), array item index (optional), reference to array itself (optional).
 
 
-.. js:function:: array.apply(func(a))
+.. js:function:: array.apply(func([item_value, [item_index], [array_ref]))
 
 for each element in the array invokes the function 'func' and replace the original value of the element with the return value of the function.
 
