@@ -423,9 +423,20 @@ Provided func can accept up to 3 arguments: array item value (required), array i
 for each element in the array invokes the function 'func' and replace the original value of the element with the return value of the function.
 
 
-.. js:function:: array.reduce(func(prevval,curval))
+.. js:function:: array.reduce(func(prevval,curval), [initializer])
 
-Reduces an array to a single value. For each element in the array invokes the function 'func' passing the initial value (or value from the previous callback call) and the value of the current element. the return value of the function is then used as 'prevval' for the next element. Given an array of length 0, returns null. Given an array of length 1, returns the first element. Given an array with 2 or more elements calls the function with the first two elements as the parameters, gets that result, then calls the function with that result and the third element, gets that result, calls the function with that result and the fourth parameter and so on until all element have been processed. Finally, returns the return value of the last invocation of func.
+Reduces an array to a single value. For each element in the array invokes the function 'func' passing
+the initial value (or value from the previous callback call) and the value of the current element.
+The return value of the function is then used as 'prevval' for the next element.
+If the optional initializer is present, it is placed before the items of the array in the calculation,
+and serves as a default when the sequence is empty.
+If initializer is not given then for sequence contains only one item, reduce() returns the first item,
+and for empty sequence returns null.
+
+Given an sequence with 2 or more elements (including initializer) calls the function with the first two elements as the parameters,
+gets that result, then calls the function with that result and the third element, gets that result,
+calls the function with that result and the fourth parameter and so on until all element have been processed.
+Finally, returns the return value of the last invocation of func.
 
 
 .. js:function:: array.filter(func(index,val))

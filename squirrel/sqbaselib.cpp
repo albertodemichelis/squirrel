@@ -654,14 +654,21 @@ static SQInteger array_reduce(HSQUIRRELVM v)
     SQObject &o = stack_get(v,1);
     SQArray *a = _array(o);
     SQInteger size = a->Size();
-    if(size == 0) {
-        return 0;
-    }
     SQObjectPtr res;
-    a->Get(0,res);
-    if(size > 1) {
+    SQInteger iterStart;
+    if (sq_gettop(v)>2) {
+        res = stack_get(v,3);
+        iterStart = 0;
+    } else if (size==0) {
+        return 0;
+    } else {
+        a->Get(0,res);
+        iterStart = 1;
+    }
+    if (size > iterStart) {
         SQObjectPtr other;
-        for(SQInteger n = 1; n < size; n++) {
+        v->Push(stack_get(v,2));
+        for (SQInteger n = iterStart; n < size; n++) {
             a->Get(n,other);
             v->Push(o);
             v->Push(res);
@@ -672,6 +679,7 @@ static SQInteger array_reduce(HSQUIRRELVM v)
             res = v->GetUp(-1);
             v->Pop();
         }
+        v->Pop();
     }
     v->Push(res);
     return 1;
@@ -857,7 +865,7 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("clear"),obj_clear,1, _SC(".")},
     {_SC("map"),array_map,2, _SC("ac")},
     {_SC("apply"),array_apply,2, _SC("ac")},
-    {_SC("reduce"),array_reduce,2, _SC("ac")},
+    {_SC("reduce"),array_reduce,-2, _SC("ac.")},
     {_SC("filter"),array_filter,2, _SC("ac")},
     {_SC("find"),array_find,2, _SC("a.")},
     {NULL,(SQFUNCTION)0,0,NULL}
