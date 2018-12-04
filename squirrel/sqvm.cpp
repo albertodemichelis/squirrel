@@ -740,32 +740,33 @@ exception_restore:
                               }
             case _OP_CALL: {
                     SQObjectPtr clo = STK(arg1);
+                    int tgt0 = arg0 == 255 ? -1 : arg0;
                     switch (sq_type(clo)) {
                     case OT_CLOSURE:
-                        _GUARD(StartCall(_closure(clo), sarg0, arg3, _stackbase+arg2, false));
+                        _GUARD(StartCall(_closure(clo), tgt0, arg3, _stackbase+arg2, false));
                         continue;
                     case OT_NATIVECLOSURE: {
                         bool suspend;
 						bool tailcall;
-                        _GUARD(CallNative(_nativeclosure(clo), arg3, _stackbase+arg2, clo, (SQInt32)sarg0, suspend, tailcall));
+                        _GUARD(CallNative(_nativeclosure(clo), arg3, _stackbase+arg2, clo, tgt0, suspend, tailcall));
                         if(suspend){
                             _suspended = SQTrue;
-                            _suspended_target = sarg0;
+                            _suspended_target = tgt0;
                             _suspended_root = ci->_root;
                             _suspended_traps = traps;
                             outres = clo;
                             return true;
                         }
-                        if(sarg0 != -1 && !tailcall) {
-                            STK(arg0) = clo;
+                        if(tgt0 != -1 && !tailcall) {
+                            STK(tgt0) = clo;
                         }
                                            }
                         continue;
                     case OT_CLASS:{
                         SQObjectPtr inst;
                         _GUARD(CreateClassInstance(_class(clo),inst,clo));
-                        if(sarg0 != -1) {
-                            STK(arg0) = inst;
+                        if(tgt0 != -1) {
+                            STK(tgt0) = inst;
                         }
                         SQInteger stkbase;
                         switch(sq_type(clo)) {
@@ -792,8 +793,8 @@ exception_restore:
                             Push(clo);
                             for (SQInteger i = 0; i < arg3; i++) Push(STK(arg2 + i));
                             if(!CallMetaMethod(closure, MT_CALL, arg3+1, clo)) SQ_THROW();
-                            if(sarg0 != -1) {
-                                STK(arg0) = clo;
+                            if(tgt0 != -1) {
+                                STK(tgt0) = clo;
                             }
                             break;
                         }
