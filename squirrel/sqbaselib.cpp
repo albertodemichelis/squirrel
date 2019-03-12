@@ -499,6 +499,30 @@ static SQInteger table_filter(HSQUIRRELVM v)
     return 1;
 }
 
+#define TABLE_TO_ARRAY_FUNC(_funcname_,_valname_) static SQInteger _funcname_(HSQUIRRELVM v) \
+{ \
+	SQObject &o = stack_get(v, 1); \
+	SQTable *t = _table(o); \
+	SQObjectPtr itr, key, val; \
+	SQObjectPtr _null; \
+	SQInteger nitr, n = 0; \
+	SQInteger nitems = t->CountUsed(); \
+	SQArray *a = SQArray::Create(_ss(v), nitems); \
+	a->Resize(nitems, _null); \
+	if (nitems) { \
+		while ((nitr = t->Next(false, itr, key, val)) != -1) { \
+			itr = (SQInteger)nitr; \
+			a->Set(n, _valname_); \
+			n++; \
+		} \
+	} \
+	v->Push(a); \
+	return 1; \
+}
+
+TABLE_TO_ARRAY_FUNC(table_keys, key)
+TABLE_TO_ARRAY_FUNC(table_values, val)
+
 
 const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("t")},
@@ -512,6 +536,8 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("setdelegate"),table_setdelegate,2, _SC(".t|o")},
     {_SC("getdelegate"),table_getdelegate,1, _SC(".")},
     {_SC("filter"),table_filter,2, _SC("tc")},
+	{_SC("keys"),table_keys,1, _SC("t") },
+	{_SC("values"),table_values,1, _SC("t") },
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 

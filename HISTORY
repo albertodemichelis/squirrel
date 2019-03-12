@@ -1,6 +1,11 @@
 ***version 3.2 stable***
 -added sq_tailcall
 -added rawcall keyword
+-added post call initializer syntax
+-added table.keys() and table.values()
+-added table.filter()
+-additional parameters in array.map() and array.apply()
+-additional optional initializer in array.reduce()
 -closure.call() is now a "native tailcall" and the invoked function can now be suspended
 -fixed sq_newmember and sq_rawnewmember properly pop parameters
 -fixed capturing free variable on for loop counter before a break statement
@@ -9,7 +14,7 @@
 
 ***version 3.1.1 stable***
 -sq_gettypetag doesn't set last error(it's treated as SQBool function but keeps a SQRESULT for backward compatibility)
--fixed _set method in userdata deelegates
+-fixed _set method in userdata delegates
 -fixed some warnings
 
 ***version 3.1 stable***
