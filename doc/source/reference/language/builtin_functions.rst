@@ -53,9 +53,9 @@ returns the const table of the VM.
 
 sets the const table of the VM; returns the previous const table.
 
-.. js:function:: assert(exp)
+.. js:function:: assert(exp, [message])
 
-throws an exception if exp is null
+throws an exception if exp is null or false. Throws "assertion failed" string by default, or message if specified.
 
 .. js:function:: print(x)
 
@@ -279,7 +279,7 @@ tries to get a value from the slot 'key' without employing delegation
 
 .. js:function:: table.rawset(key,val)
 
-Sets the slot 'key' with the value 'val' without employing delegation. If the slot does not exists, it will be created.
+Sets the slot 'key' with the value 'val' without employing delegation. If the slot does not exists, it will be created. Returns table itself.
 
 
 .. js:function:: table.rawdelete()
@@ -304,7 +304,7 @@ Tries to invoke the _tostring metamethod. If that fails, it returns "(table : po
 
 .. js:function:: table.clear()
 
-removes all the slots from the table
+removes all the slots from the table. Returns table itself.
 
 
 .. js:function:: table.setdelegate(table)
@@ -315,6 +315,11 @@ Sets the delegate of the table. To remove a delegate, 'null' must be passed to t
 .. js:function:: table.getdelegate()
 
 returns the table's delegate or null if no delegate was set.
+
+
+.. js:function:: table.filter(func(key,val))
+
+Creates a new table with all values that pass the test implemented by the provided function. In detail, it creates a new table, invokes the specified function for each key-value pair in the original table; if the function returns 'true', then the value is added to the newly created table at the same key.
 
 ^^^^^^
 Array
@@ -327,17 +332,17 @@ returns the length of the array
 
 .. js:function:: array.append(val)
 
-appends the value 'val' at the end of the array
+appends the value 'val' at the end of the array. Returns array itself.
 
 
 .. js:function:: array.push(val)
 
-appends the value 'val' at the end of the array
+appends the value 'val' at the end of the array. Returns array itself.
 
 
 .. js:function:: array.extend(array)
 
-Extends the array by appending all the items in the given array.
+Extends the array by appending all the items in the given array. Returns array itself.
 
 
 .. js:function:: array.pop()
@@ -352,22 +357,22 @@ returns the value of the array with the higher index
 
 .. js:function:: array.insert(idx,val)
 
-inserts the value 'val' at the position 'idx' in the array
+inserts the value 'val' at the position 'idx' in the array. Returns array itself.
 
 
 .. js:function:: array.remove(idx)
 
-removes the value at the position 'idx' in the array
+removes the value at the position 'idx' in the array and returns its value.
 
 
 .. js:function:: array.resize(size,[fill])
 
-Resizes the array. If the optional parameter 'fill' is specified, its value will be used to fill the new array's slots when the size specified is bigger than the previous size. If the fill parameter is omitted, null is used instead.
+Resizes the array. If the optional parameter 'fill' is specified, its value will be used to fill the new array's slots when the size specified is bigger than the previous size. If the fill parameter is omitted, null is used instead. Returns array itself.
 
 
 .. js:function:: array.sort([compare_func])
 
-Sorts the array. A custom compare function can be optionally passed. The function prototype as to be the following.::
+Sorts the array in-place. A custom compare function can be optionally passed. The function prototype as to be the following.::
 
     function custom_compare(a,b)
     {
@@ -380,11 +385,11 @@ a more compact version of a custom compare can be written using a lambda express
 
     arr.sort(@(a,b) a <=> b);
 
-
+Returns array itself.
 
 .. js:function:: array.reverse()
 
-reverse the elements of the array in place
+reverse the elements of the array in place. Returns array itself.
 
 
 .. js:function:: array.slice(start,[end])
@@ -407,19 +412,31 @@ returns the string "(array : pointer)".
 removes all the items from the array
 
 
-.. js:function:: array.map(func(a))
+.. js:function:: array.map(func(item_value, [item_index], [array_ref]))
 
 Creates a new array of the same size. For each element in the original array invokes the function 'func' and assigns the return value of the function to the corresponding element of the newly created array.
+Provided func can accept up to 3 arguments: array item value (required), array item index (optional), reference to array itself (optional).
 
 
-.. js:function:: array.apply(func(a))
+.. js:function:: array.apply(func([item_value, [item_index], [array_ref]))
 
 for each element in the array invokes the function 'func' and replace the original value of the element with the return value of the function.
 
 
-.. js:function:: array.reduce(func(prevval,curval))
+.. js:function:: array.reduce(func(prevval,curval), [initializer])
 
-Reduces an array to a single value. For each element in the array invokes the function 'func' passing the initial value (or value from the previous callback call) and the value of the current element. the return value of the function is then used as 'prevval' for the next element. Given an array of length 0, returns null. Given an array of length 1, returns the first element. Given an array with 2 or more elements calls the function with the first two elements as the parameters, gets that result, then calls the function with that result and the third element, gets that result, calls the function with that result and the fourth parameter and so on until all element have been processed. Finally, returns the return value of the last invocation of func.
+Reduces an array to a single value. For each element in the array invokes the function 'func' passing
+the initial value (or value from the previous callback call) and the value of the current element.
+The return value of the function is then used as 'prevval' for the next element.
+If the optional initializer is present, it is placed before the items of the array in the calculation,
+and serves as a default when the sequence is empty.
+If initializer is not given then for sequence contains only one item, reduce() returns the first item,
+and for empty sequence returns null.
+
+Given an sequence with 2 or more elements (including initializer) calls the function with the first two elements as the parameters,
+gets that result, then calls the function with that result and the third element, gets that result,
+calls the function with that result and the fourth parameter and so on until all element have been processed.
+Finally, returns the return value of the last invocation of func.
 
 
 .. js:function:: array.filter(func(index,val))
