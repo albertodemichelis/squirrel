@@ -1,3 +1,12 @@
+***version 3.2 stable***
+-added sq_tailcall
+-added rawcall keyword
+-closure.call() is now a "native tailcall" and the invoked function can now be suspended
+-fixed sq_newmember and sq_rawnewmember properly pop parameters
+-fixed capturing free variable on for loop counter before a break statement
+-fixed \u in lexer
+-various bugfixes
+
 ***version 3.1.1 stable***
 -sq_gettypetag doesn't set last error(it's treated as SQBool function but keeps a SQRESULT for backward compatibility)
 -fixed _set method in userdata deelegates
