@@ -1146,7 +1146,7 @@ begin:
     } else if (r<0) {
         v->_lasterror=SQString::Create(_ss(v),_SC("@failed to generate formatted error message"));
     } else {
-        v->_lasterror=SQString::Create(_ss(v),b,n);
+        v->_lasterror=SQString::Create(_ss(v),b,r);
     }
     return SQ_ERROR;
 }
