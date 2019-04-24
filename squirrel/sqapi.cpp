@@ -13,8 +13,6 @@
 #include "sqfuncstate.h"
 #include "sqclass.h"
 
-#include <stdarg.h>
-
 static bool sq_aux_gettypedarg(HSQUIRRELVM v,SQInteger idx,SQObjectType type,SQObjectPtr **o)
 {
     *o = &stack_get(v,idx);
@@ -1128,26 +1126,6 @@ void sq_resetobject(HSQOBJECT *po)
 SQRESULT sq_throwerror(HSQUIRRELVM v,const SQChar *err)
 {
     v->_lasterror=SQString::Create(_ss(v),err);
-    return SQ_ERROR;
-}
-
-SQRESULT sq_throwerrorf(HSQUIRRELVM v,const SQChar *err,...)
-{
-    SQInteger n=256;
-    va_list args;
-begin:
-    va_start(args,err);
-    SQChar *b=_ss(v)->GetScratchPad(n);
-    SQInteger r=scvsprintf(b,n,err,args);
-    va_end(args);
-    if (r>=n) {
-        n=r+1;//required+null
-        goto begin;
-    } else if (r<0) {
-        v->_lasterror=SQString::Create(_ss(v),_SC("@failed to generate formatted error message"));
-    } else {
-        v->_lasterror=SQString::Create(_ss(v),b,r);
-    }
     return SQ_ERROR;
 }
 
