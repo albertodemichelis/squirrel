@@ -539,6 +539,97 @@ static SQInteger table_filter(HSQUIRRELVM v)
 TABLE_TO_ARRAY_FUNC(table_keys, key)
 TABLE_TO_ARRAY_FUNC(table_values, val)
 
+static SQInteger __map_table(SQTable *dest, SQTable *src, HSQUIRRELVM v) {
+    SQObjectPtr temp;
+    SQObject &closure = stack_get(v, 2);
+    v->Push(closure);
+
+    SQInteger nArgs = get_allowed_args_count(closure, 4);
+
+    SQObjectPtr itr, key, val;
+    SQInteger nitr;
+    while ((nitr = src->Next(false, itr, key, val)) != -1) {
+        itr = (SQInteger)nitr;
+        v->Push(src);
+        v->Push(val);
+        if (nArgs >= 3)
+            v->Push(key);
+        if (nArgs >= 4)
+            v->Push(src);
+        if (SQ_FAILED(sq_call(v, nArgs, SQTrue, SQFalse))) {
+            return SQ_ERROR;
+        }
+        dest->NewSlot(key, v->GetUp(-1));
+        v->Pop();
+    }
+
+    v->Pop();
+    return 0;
+}
+
+static SQInteger table_map(HSQUIRRELVM v)
+{
+    SQObject &o = stack_get(v, 1);
+    SQObjectPtr ret = SQTable::Create(_ss(v), _table(o)->CountUsed());
+    if(SQ_FAILED(__map_table(_table(ret), _table(o), v)))
+        return SQ_ERROR;
+    v->Push(ret);
+    return 1;
+}
+
+
+static SQInteger table_reduce(HSQUIRRELVM v)
+{
+    SQObject &o = stack_get(v,1);
+    SQTable *tbl = _table(o);
+    SQObject &closure = stack_get(v, 2);
+
+    bool gotAccum = false;
+    SQObjectPtr accum;
+
+    SQInteger nArgs = get_allowed_args_count(closure, 5);
+
+    if (sq_gettop(v) > 2) {
+        accum = stack_get(v, 3);
+        gotAccum = true;
+    }
+
+    SQObjectPtr itr, key, val;
+    SQInteger nitr;
+    while ((nitr = tbl->Next(false, itr, key, val)) != -1) {
+        itr = (SQInteger)nitr;
+
+        if (!gotAccum) {
+            accum = val;
+            gotAccum = true;
+        } else {
+            int prevTop = sq_gettop(v);
+            v->Push(closure);
+            v->Push(o);
+            v->Push(accum);
+            v->Push(val);
+            if (nArgs >= 4)
+                v->Push(key);
+            if (nArgs >= 5)
+                v->Push(tbl);
+
+            if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
+                return SQ_ERROR;
+            }
+
+            accum = v->GetUp(-1);
+            v->Pop(2);
+            assert(prevTop == sq_gettop(v));
+        }
+    }
+
+    if (!gotAccum)
+        return 0;
+
+    v->Push(accum);
+    return 1;
+}
+
 
 const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("t")},
@@ -551,7 +642,9 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("clear"),obj_clear,1, _SC(".")},
     {_SC("setdelegate"),table_setdelegate,2, _SC(".t|o")},
     {_SC("getdelegate"),table_getdelegate,1, _SC(".")},
+    {_SC("map"),table_map,2, _SC("tc")},
     {_SC("filter"),table_filter,2, _SC("tc")},
+    {_SC("reduce"),table_reduce, -2, _SC("tc")},
     {_SC("getfuncinfos"),delegable_getfuncinfos,1, _SC("t")},
 	{_SC("keys"),table_keys,1, _SC("t") },
 	{_SC("values"),table_values,1, _SC("t") },

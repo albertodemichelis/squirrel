@@ -329,6 +329,21 @@ returns an array containing all the keys of the table slots.
 
 returns an array containing all the values of the table slots.
 
+
+.. js:function:: table.map(func(slot_value, [slot_key], [table_ref]))
+
+Creates a new table of the same size. For each element in the original table invokes the function 'func' and assigns the return value of the function to the corresponding slot of the newly created table.
+Provided func can accept up to 3 arguments: slot value (required), slot key in table (optional), reference to table itself (optional).
+
+.. js:function:: table.reduce(func(accumulator, slot_value, [slot_key], [table_ref]), [initializer])
+
+Reduces a table to a single value (similar to array.reduce()).
+For each table slot invokes the function 'func' passing the initial value
+(or value from the previous callback call) and the value of the current element.
+Callback function can also take optional parameters: key in table for current value and reference to table itself.
+Iteration order is not determined.
+
+
 ^^^^^^
 Array
 ^^^^^^
