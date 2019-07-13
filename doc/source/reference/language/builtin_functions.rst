@@ -431,10 +431,11 @@ Provided func can accept up to 3 arguments: array item value (required), array i
 for each element in the array invokes the function 'func' and replace the original value of the element with the return value of the function.
 
 
-.. js:function:: array.reduce(func(prevval,curval), [initializer])
+.. js:function:: array.reduce(func(prevval,curval,[index],[array_ref]), [initializer])
 
 Reduces an array to a single value. For each element in the array invokes the function 'func' passing
 the initial value (or value from the previous callback call) and the value of the current element.
+Callback can optionally accept index of current value and reference to array itself.
 The return value of the function is then used as 'prevval' for the next element.
 If the optional initializer is present, it is placed before the items of the array in the calculation,
 and serves as a default when the sequence is empty.

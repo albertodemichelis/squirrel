@@ -46,6 +46,23 @@ static bool str2num(const SQChar *s,SQObjectPtr &res,SQInteger base)
 }
 
 
+static SQInteger get_allowed_args_count(SQObject &closure, SQInteger num_supported)
+{
+    if(sq_type(closure) == OT_CLOSURE) {
+        return _closure(closure)->_function->_nparameters;
+    }
+    else if (sq_type(closure) == OT_NATIVECLOSURE) {
+        SQInteger nParamsCheck = _nativeclosure(closure)->_nparamscheck;
+        if (nParamsCheck > 0)
+            return nParamsCheck;
+        else // push all params when there is no check or only minimal count set
+            return num_supported;
+    }
+    assert(false);
+    return -1;
+}
+
+
 #ifndef NO_GARBAGE_COLLECTOR
 static SQInteger base_collectgarbage(HSQUIRRELVM v)
 {
@@ -625,17 +642,7 @@ static SQInteger __map_array(SQArray *dest,SQArray *src,HSQUIRRELVM v) {
     SQObject &closure = stack_get(v, 2);
     v->Push(closure);
 
-    SQInteger nArgs;
-    if(sq_type(closure) == OT_CLOSURE) {
-        nArgs = _closure(closure)->_function->_nparameters;
-    }
-    else if (sq_type(closure) == OT_NATIVECLOSURE) {
-        SQInteger nParamsCheck = _nativeclosure(closure)->_nparamscheck;
-        if (nParamsCheck > 0)
-            nArgs = nParamsCheck;
-        else // push all params when there is no check or only minimal count set
-            nArgs = 4;
-    }
+    SQInteger nArgs = get_allowed_args_count(closure, 4);
 
     for(SQInteger n = 0; n < size; n++) {
         src->Get(n,temp);
@@ -691,15 +698,23 @@ static SQInteger array_reduce(HSQUIRRELVM v)
         a->Get(0,res);
         iterStart = 1;
     }
+
+    SQObject &closure = stack_get(v, 2);
+    SQInteger nArgs = get_allowed_args_count(closure, 5);
+
     if (size > iterStart) {
         SQObjectPtr other;
-        v->Push(stack_get(v,2));
+        v->Push(closure);
         for (SQInteger n = iterStart; n < size; n++) {
             a->Get(n,other);
             v->Push(o);
             v->Push(res);
             v->Push(other);
-            if(SQ_FAILED(sq_call(v,3,SQTrue,SQFalse))) {
+            if (nArgs >= 4)
+                v->Push(SQObjectPtr(n));
+            if (nArgs >= 5)
+                v->Push(o);
+            if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
                 return SQ_ERROR;
             }
             res = v->GetUp(-1);
