@@ -4,3 +4,9 @@ lib/
 
 # Folders created at documentation generation
 doc/build/
+
+Release/
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
