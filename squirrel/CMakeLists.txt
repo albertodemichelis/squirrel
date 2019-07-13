@@ -3,6 +3,7 @@ set(SQUIRREL_SRC sqapi.cpp
                  sqclass.cpp
                  sqcompiler.cpp
                  sqdebug.cpp
+                 sqdirect.cpp
                  sqfuncstate.cpp
                  sqlexer.cpp
                  sqmem.cpp
