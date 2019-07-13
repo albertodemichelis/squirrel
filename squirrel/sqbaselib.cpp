@@ -45,10 +45,6 @@ static bool str2num(const SQChar *s,SQObjectPtr &res,SQInteger base)
     return true;
 }
 
-static SQInteger base_dummy(HSQUIRRELVM SQ_UNUSED_ARG(v))
-{
-    return 0;
-}
 
 #ifndef NO_GARBAGE_COLLECTOR
 static SQInteger base_collectgarbage(HSQUIRRELVM v)
@@ -303,7 +299,6 @@ static const SQRegFunction base_funcs[]={
     {_SC("array"),base_array,-2, _SC(".n")},
     {_SC("type"),base_type,2, NULL},
     {_SC("callee"),base_callee,0,NULL},
-    {_SC("dummy"),base_dummy,0,NULL},
 #ifndef NO_GARBAGE_COLLECTOR
     {_SC("collectgarbage"),base_collectgarbage,0, NULL},
     {_SC("resurrectunreachable"),base_resurectureachable,0, NULL},
