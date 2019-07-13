@@ -103,6 +103,8 @@ public:
     static const SQRegFunction _instance_default_delegate_funcz[];
     SQObjectPtr _weakref_default_delegate;
     static const SQRegFunction _weakref_default_delegate_funcz[];
+    SQObjectPtr _userdata_default_delegate;
+    static const SQRegFunction _userdata_default_delegate_funcz[];
 
     SQCOMPILERERROR _compilererrorhandler;
     SQPRINTFUNCTION _printfunc;
@@ -129,6 +131,7 @@ private:
 #define _class_ddel     _table(_sharedstate->_class_default_delegate)
 #define _instance_ddel  _table(_sharedstate->_instance_default_delegate)
 #define _weakref_ddel   _table(_sharedstate->_weakref_default_delegate)
+#define _userdata_ddel  _table(_sharedstate->_userdata_default_delegate)
 
 bool CompileTypemask(SQIntVec &res,const SQChar *typemask);
 

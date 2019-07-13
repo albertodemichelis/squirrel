@@ -13,6 +13,10 @@
 #include <stdarg.h>
 #include <ctype.h>
 
+static SQInteger delegable_getfuncinfos(HSQUIRRELVM v);
+static SQInteger class_getfuncinfos(HSQUIRRELVM v);
+
+
 static bool str2num(const SQChar *s,SQObjectPtr &res,SQInteger base)
 {
     SQChar *end;
@@ -536,6 +540,7 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("setdelegate"),table_setdelegate,2, _SC(".t|o")},
     {_SC("getdelegate"),table_getdelegate,1, _SC(".")},
     {_SC("filter"),table_filter,2, _SC("tc")},
+    {_SC("getfuncinfos"),delegable_getfuncinfos,1, _SC("t")},
 	{_SC("keys"),table_keys,1, _SC("t") },
 	{_SC("values"),table_values,1, _SC("t") },
     {NULL,(SQFUNCTION)0,0,NULL}
@@ -1032,8 +1037,7 @@ static SQInteger closure_setroot(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger closure_getinfos(HSQUIRRELVM v) {
-    SQObject o = stack_get(v,1);
+static SQInteger closure_getfuncinfos_obj(HSQUIRRELVM v, SQObjectPtr & o) {
     SQTable *res = SQTable::Create(_ss(v),4);
     if(sq_type(o) == OT_CLOSURE) {
         SQFunctionProto *f = _closure(o)->_function;
@@ -1076,6 +1080,39 @@ static SQInteger closure_getinfos(HSQUIRRELVM v) {
 }
 
 
+static SQInteger closure_getfuncinfos(HSQUIRRELVM v)
+{
+  SQObjectPtr o = stack_get(v, 1);
+  return closure_getfuncinfos_obj(v, o);
+}
+
+
+static SQInteger delegable_getfuncinfos(HSQUIRRELVM v)
+{
+  SQObjectPtr o = stack_get(v, 1);
+
+  SQDelegable * delegable = _delegable(o);
+  SQObjectPtr call;
+  if (delegable->GetMetaMethod(v, MT_CALL, call))
+    closure_getfuncinfos_obj(v, call);
+  else
+    sq_pushnull(v);
+
+  return 1;
+}
+
+static SQInteger class_getfuncinfos(HSQUIRRELVM v)
+{
+  SQObjectPtr o = stack_get(v, 1);
+
+  if (!sq_isnull(_class(o)->_metamethods[MT_CALL]))
+    closure_getfuncinfos_obj(v, _class(o)->_metamethods[MT_CALL]);
+  else
+    sq_pushnull(v);
+
+  return 1;
+}
+
 
 const SQRegFunction SQSharedState::_closure_default_delegate_funcz[]={
     {_SC("call"),closure_call,-1, _SC("c")},
@@ -1085,7 +1122,7 @@ const SQRegFunction SQSharedState::_closure_default_delegate_funcz[]={
     {_SC("weakref"),obj_delegate_weakref,1, NULL },
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
     {_SC("bindenv"),closure_bindenv,2, _SC("c x|y|t")},
-    {_SC("getinfos"),closure_getinfos,1, _SC("c")},
+    {_SC("getfuncinfos"),closure_getfuncinfos,1, _SC("c")},
     {_SC("getroot"),closure_getroot,1, _SC("c")},
     {_SC("setroot"),closure_setroot,2, _SC("ct")},
     {NULL,(SQFUNCTION)0,0,NULL}
@@ -1334,6 +1371,7 @@ const SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
     {_SC("getbase"),class_getbase,1, _SC("y")},
     {_SC("newmember"),class_newmember,-3, _SC("y")},
     {_SC("rawnewmember"),class_rawnewmember,-3, _SC("y")},
+    {_SC("getfuncinfos"),class_getfuncinfos,1, _SC("y")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -1352,6 +1390,7 @@ const SQRegFunction SQSharedState::_instance_default_delegate_funcz[] = {
     {_SC("rawin"),container_rawexists,2, _SC("x")},
     {_SC("weakref"),obj_delegate_weakref,1, NULL },
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+    {_SC("getfuncinfos"),delegable_getfuncinfos,1, _SC("x")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -1366,5 +1405,10 @@ const SQRegFunction SQSharedState::_weakref_default_delegate_funcz[] = {
     {_SC("ref"),weakref_ref,1, _SC("r")},
     {_SC("weakref"),obj_delegate_weakref,1, NULL },
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+    {NULL,(SQFUNCTION)0,0,NULL}
+};
+
+const SQRegFunction SQSharedState::_userdata_default_delegate_funcz[] = {
+    {_SC("getfuncinfos"),delegable_getfuncinfos,1, _SC("u")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };

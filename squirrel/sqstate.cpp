@@ -152,6 +152,8 @@ void SQSharedState::Init()
     _class_default_delegate = CreateDefaultDelegate(this,_class_default_delegate_funcz);
     _instance_default_delegate = CreateDefaultDelegate(this,_instance_default_delegate_funcz);
     _weakref_default_delegate = CreateDefaultDelegate(this,_weakref_default_delegate_funcz);
+    _userdata_default_delegate = CreateDefaultDelegate(this,_userdata_default_delegate_funcz);
+
 }
 
 SQSharedState::~SQSharedState()
@@ -180,6 +182,7 @@ SQSharedState::~SQSharedState()
     _class_default_delegate.Null();
     _instance_default_delegate.Null();
     _weakref_default_delegate.Null();
+    _userdata_default_delegate.Null();
     _refs_table.Finalize();
 #ifndef NO_GARBAGE_COLLECTOR
     SQCollectable *t = _gc_chain;
@@ -261,6 +264,7 @@ void SQSharedState::RunMark(SQVM* SQ_UNUSED_ARG(vm),SQCollectable **tchain)
     MarkObject(_class_default_delegate,tchain);
     MarkObject(_instance_default_delegate,tchain);
     MarkObject(_weakref_default_delegate,tchain);
+    MarkObject(_userdata_default_delegate,tchain);
 
 }
 

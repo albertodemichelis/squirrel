@@ -1353,6 +1353,7 @@ bool SQVM::InvokeDefaultDelegate(const SQObjectPtr &self,const SQObjectPtr &key,
         case OT_CLOSURE: case OT_NATIVECLOSURE: ddel = _closure_ddel; break;
         case OT_THREAD: ddel = _thread_ddel; break;
         case OT_WEAKREF: ddel = _weakref_ddel; break;
+        case OT_USERDATA: ddel = _userdata_ddel; break;
         default: return false;
     }
     return  ddel->Get(key,dest);

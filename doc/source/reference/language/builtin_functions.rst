@@ -505,7 +505,7 @@ returns the root table of the closure
 clones the function(aka closure) and bind the environment object to it(table,class or instance). the this parameter of the newly create function will always be set to env. Note that the created function holds a weak reference to its environment object so cannot be used to control its lifetime.
 
 
-.. js:function:: function.getinfos()
+.. js:function:: function.getfuncinfos()
 
 returns a table containing informations about the function, like parameters, name and source name; ::
 
@@ -582,6 +582,11 @@ sets/adds the slot 'key' with the value 'val' and attributes 'attrs' and if pres
 
 sets/adds the slot 'key' with the value 'val' and attributes 'attrs'. If bstatic is true the slot will be added as static. If the slot does not exist, it will be created. It doesn't invoke any metamethod.
 
+.. js:function:: class.getfuncinfos()
+
+If class has _call() metamethod, get info about it (see function.getfuncinfos() for details).
+
+
 ^^^^^^^^^^^^^^
 Class Instance
 ^^^^^^^^^^^^^^
@@ -616,6 +621,10 @@ tries to get a value from the slot 'key' without employing delegation
 .. js:function:: instance.rawset(key,val)
 
 sets the slot 'key' with the value 'val' without employing delegation. If the slot does not exists, it will be created.
+
+.. js:function:: instance.getfuncinfos()
+
+If instance has _call() metamethod, get info about it (see function.getfuncinfos() for details).
 
 ^^^^^^^^^^^^^^
 Generator
@@ -691,3 +700,11 @@ returns a weak reference to the object.
 .. js:function:: weakreference.tostring()
 
 returns the string "(weakref : pointer)".
+
+^^^^^^^^^^^^^^
+Userdata
+^^^^^^^^^^^^^^
+
+.. js:function:: userdata.getfuncinfos()
+
+If userdata has _call() metamethod in delegate, get info about it (see function.getfuncinfos() for details).
