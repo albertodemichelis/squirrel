@@ -558,7 +558,13 @@ bool SQVM::FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr
                     return false;
                 }
             }
-            Raise_Error(_SC("_nexti failed"));
+            if ((nrefidx = (_delegable(o1)->_delegate)->Next(false, o4, o2, o3)) == -1)
+              _FINISH(exitpos);
+
+            _instance(o1)->Get(o2, o3);
+            o4 = (SQInteger)nrefidx;
+            _FINISH(1);
+
             return false;
         }
         break;
