@@ -101,7 +101,8 @@ enum SQOpcode
     _OP_GETBASE=            0x3B,
     _OP_CLOSE=              0x3C,
     _OP_NULLCOALESCE=       0x3D,
-    _OP_NULLCALL=           0x3E
+    _OP_NULLCALL=           0x3E,
+    _OP_LOADCALLEE=         0x3F,
 };
 
 struct SQInstructionDesc {

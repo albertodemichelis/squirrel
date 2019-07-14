@@ -905,6 +905,7 @@ exception_restore:
                                 }
                 continue;
             case _OP_LOADBOOL: TARGET = arg1?true:false; continue;
+            case _OP_LOADCALLEE: TARGET = ci->_closure; continue;
             case _OP_DMOVE: STK(arg0) = STK(arg1); STK(arg2) = STK(arg3); continue;
             case _OP_JMP: ci->_ip += (sarg1); continue;
             //case _OP_JNZ: if(!IsFalse(STK(arg0))) ci->_ip+=(sarg1); continue;
