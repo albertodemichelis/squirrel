@@ -667,13 +667,17 @@ public:
     void PrefixedExpr()
     {
         SQInteger pos = Factor();
+        bool nextIsNullable = false;
         for(;;) {
             switch(_token) {
             case _SC('.'):
             case TK_NULLGETSTR: {
                 SQInteger flags = 0;
-                if (_token == TK_NULLGETSTR)
+                if (_token == TK_NULLGETSTR || nextIsNullable)
+                {
                     flags = OP_GET_FLAG_NULL_PROPAGATION;
+                    nextIsNullable = true;
+                }
                 pos = -1;
                 Lex();
 
@@ -699,8 +703,11 @@ public:
             case _SC('['):
             case TK_NULLGETOBJ: {
                 SQInteger flags = 0;
-                if (_token == TK_NULLGETOBJ)
+                if (_token == TK_NULLGETOBJ || nextIsNullable)
+                {
                     flags = OP_GET_FLAG_NULL_PROPAGATION;
+                    nextIsNullable = true;
+                }
                 if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot brake deref/or comma needed after [exp]=exp slot declaration"));
                 Lex(); Expression(SQE_REGULAR); Expect(_SC(']'));
                 pos = -1;
@@ -721,6 +728,7 @@ public:
             case TK_MINUSMINUS:
             case TK_PLUSPLUS:
                 {
+                    nextIsNullable = false;
                     if(IsEndOfStatement()) return;
                     SQInteger diff = (_token==TK_MINUSMINUS) ? -1 : 1;
                     Lex();
@@ -751,7 +759,8 @@ public:
                 break;
             case _SC('('):
             case TK_NULLCALL: {
-                SQInteger nullcall = _token==TK_NULLCALL;
+                SQInteger nullcall = (_token==TK_NULLCALL || nextIsNullable);
+                nextIsNullable = !!nullcall;
                 switch(_es.etype) {
                     case OBJECT: {
                         if (!nullcall) {
