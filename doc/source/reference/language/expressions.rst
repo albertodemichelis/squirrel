@@ -254,28 +254,6 @@ returns the type name of a value as string.::
     print(typeof b); //will print "string"
 
 ^^^^^^^^^^^^^^^^^^^
-Comma operator
-^^^^^^^^^^^^^^^^^^^
-
-.. index::
-    pair: Comma operator; Operators
-
-::
-
-    exp:= exp ',' exp
-
-The comma operator evaluates two expression left to right, the result of the operator is
-the result of the expression on the right; the result of the left expression is discarded.::
-
-    local j=0,k=0;
-    for(local i=0; i<10; i++ , j++)
-    {
-        k = i + j;
-    }
-    local a,k;
-    a = (k=1,k+2); //a becomes 3
-
-^^^^^^^^^^^^^^^^^^^
 Bitwise Operators
 ^^^^^^^^^^^^^^^^^^^
 

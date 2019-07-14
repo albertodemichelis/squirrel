@@ -233,7 +233,7 @@ public:
             Lex();
             if(!IsEndOfStatement()) {
                 SQInteger retexp = _fs->GetCurrentPos()+1;
-                CommaExpr();
+                Expression();
                 if(op == _OP_RETURN && _fs->_traps > 0)
                     _fs->AddInstruction(_OP_POPTRAP, _fs->_traps, 0);
                 _fs->_returnexp = retexp;
@@ -293,7 +293,7 @@ public:
             break;
         case TK_THROW:
             Lex();
-            CommaExpr();
+            Expression();
             _fs->AddInstruction(_OP_THROW, _fs->PopTarget());
             break;
         case TK_CONST:
@@ -310,7 +310,7 @@ public:
             }
             break;
         default:
-            CommaExpr();
+            Expression();
             _fs->DiscardTarget();
             //_fs->PopTarget();
             break;
@@ -927,7 +927,7 @@ public:
         case TK_MINUSMINUS :
         case TK_PLUSPLUS :PrefixIncDec(_token); break;
         case TK_DELETE : DeleteExpr(); break;
-        case _SC('('): Lex(); CommaExpr(); Expect(_SC(')'));
+        case _SC('('): Lex(); Expression(); Expect(_SC(')'));
             break;
         case TK___LINE__: EmitLoadConstInt(_lex._currentline,-1); Lex(); break;
         case TK___FILE__: _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(_sourcename)); Lex(); break;
@@ -1050,7 +1050,7 @@ public:
                     firstId = _fs->CreateString(_lex._svalue,_lex._longstr.size()-1);
                 else if (_token == TK_INTEGER)
                     firstId = SQObjectPtr(_lex._nvalue);
-                CommaExpr();
+                Expression();
                 if (!sq_isnull(firstId) && _fs->_instructions.size() == prevInstrSize+1) {
                     unsigned char op = _fs->_instructions.back().op;
                     if (op == _OP_LOAD || op == _OP_LOADINT)
@@ -1158,7 +1158,7 @@ public:
     {
         SQInteger jmppos;
         bool haselse = false;
-        Lex(); Expect(_SC('(')); CommaExpr(); Expect(_SC(')'));
+        Lex(); Expect(_SC('(')); Expression(); Expect(_SC(')'));
         _fs->AddInstruction(_OP_JZ, _fs->PopTarget());
         SQInteger jnepos = _fs->GetCurrentPos();
 
@@ -1196,7 +1196,7 @@ public:
     {
         SQInteger jzpos, jmppos;
         jmppos = _fs->GetCurrentPos();
-        Lex(); Expect(_SC('(')); CommaExpr(); Expect(_SC(')'));
+        Lex(); Expect(_SC('(')); Expression(); Expect(_SC(')'));
 
         BEGIN_BREAKBLE_BLOCK();
         _fs->AddInstruction(_OP_JZ, _fs->PopTarget());
@@ -1221,7 +1221,7 @@ public:
         END_SCOPE();
         Expect(TK_WHILE);
         SQInteger continuetrg = _fs->GetCurrentPos();
-        Expect(_SC('(')); CommaExpr(); Expect(_SC(')'));
+        Expect(_SC('(')); Expression(); Expect(_SC(')'));
         _fs->AddInstruction(_OP_JZ, _fs->PopTarget(), 1);
         _fs->AddInstruction(_OP_JMP, 0, jmptrg - _fs->GetCurrentPos() - 1);
         END_BREAKBLE_BLOCK(continuetrg);
@@ -1240,7 +1240,7 @@ public:
         _fs->SnoozeOpt();
         SQInteger jmppos = _fs->GetCurrentPos();
         SQInteger jzpos = -1;
-        if(_token != _SC(';')) { CommaExpr(); _fs->AddInstruction(_OP_JZ, _fs->PopTarget()); jzpos = _fs->GetCurrentPos(); }
+        if(_token != _SC(';')) { Expression(); _fs->AddInstruction(_OP_JZ, _fs->PopTarget()); jzpos = _fs->GetCurrentPos(); }
         Expect(_SC(';'));
         _fs->SnoozeOpt();
         SQInteger expstart = _fs->GetCurrentPos() + 1;
@@ -1319,7 +1319,7 @@ public:
     }
     void SwitchStatement()
     {
-        Lex(); Expect(_SC('(')); CommaExpr(); Expect(_SC(')'));
+        Lex(); Expect(_SC('(')); Expression(); Expect(_SC(')'));
         Expect(_SC('{'));
         SQInteger expr = _fs->TopTarget();
         bool bfirst = true;
