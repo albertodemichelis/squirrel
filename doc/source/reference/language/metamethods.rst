@@ -250,7 +250,7 @@ _inherited
 
 ::
 
-    _inherited(attributes)
+    _inherited()
 
 invoked when a class object inherits from the class implementing ``_inherited``.
 The ``this`` contains the new class.
@@ -263,7 +263,7 @@ _newmember
 
 ::
 
-    _newmember(index,value,attributes,isstatic)
+    _newmember(index,value,isstatic)
 
 invoked for each member declared in a class body (at declaration time).
 

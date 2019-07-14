@@ -554,16 +554,6 @@ Class
 returns a new instance of the class. this function does not invoke the instance constructor. The constructor must be explicitly called (eg. class_inst.constructor(class_inst) ).
 
 
-.. js:function:: class.getattributes(membername)
-
-returns the attributes of the specified member. if the parameter member is null the function returns the class level attributes.
-
-
-.. js:function:: class.setattributes(membername,attr)
-
-sets the attribute of the specified member and returns the previous attribute value. if the parameter member is null the function sets the class level attributes.
-
-
 .. js:function:: class.rawin(key)
 
 returns true if the slot 'key' exists. the function has the same effect as the operator 'in' but does not employ delegation.
@@ -589,14 +579,14 @@ tries to get a value from the slot 'key' without employing delegation
 sets the slot 'key' with the value 'val' without employing delegation. If the slot does not exists, it will be created.
 
 
-.. js:function:: class.newmember(key,val,[attrs],[bstatic])
+.. js:function:: class.newmember(key,val,[bstatic])
 
-sets/adds the slot 'key' with the value 'val' and attributes 'attrs' and if present invokes the _newmember metamethod. If bstatic is true the slot will be added as static. If the slot does not exists , it will be created.
+sets/adds the slot 'key' with the value 'val' and if present invokes the _newmember metamethod. If bstatic is true the slot will be added as static. If the slot does not exists , it will be created.
 
 
-.. js:function:: class.rawnewmember(key,val,[attrs],[bstatic])
+.. js:function:: class.rawnewmember(key,val,[bstatic])
 
-sets/adds the slot 'key' with the value 'val' and attributes 'attrs'. If bstatic is true the slot will be added as static. If the slot does not exist, it will be created. It doesn't invoke any metamethod.
+sets/adds the slot 'key' with the value 'val'. If bstatic is true the slot will be added as static. If the slot does not exist, it will be created. It doesn't invoke any metamethod.
 
 .. js:function:: class.getfuncinfos()
 

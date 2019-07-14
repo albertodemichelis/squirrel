@@ -945,13 +945,13 @@ SQRESULT sq_newmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
 {
     SQObjectPtr &self = stack_get(v, idx);
     if(sq_type(self) != OT_CLASS) return sq_throwerror(v, _SC("new member only works with classes"));
-    SQObjectPtr &key = v->GetUp(-3);
+    SQObjectPtr &key = v->GetUp(-2);
     if(sq_type(key) == OT_NULL) return sq_throwerror(v, _SC("null key"));
-    if(!v->NewSlotA(self,key,v->GetUp(-2),v->GetUp(-1),bstatic?true:false,false)) {
-        v->Pop(3);
+    if(!v->NewSlotA(self,key,v->GetUp(-1),bstatic?true:false,false)) {
+        v->Pop(2);
         return SQ_ERROR;
     }
-    v->Pop(3);
+    v->Pop(2);
     return SQ_OK;
 }
 
@@ -959,13 +959,13 @@ SQRESULT sq_rawnewmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
 {
     SQObjectPtr &self = stack_get(v, idx);
     if(sq_type(self) != OT_CLASS) return sq_throwerror(v, _SC("new member only works with classes"));
-    SQObjectPtr &key = v->GetUp(-3);
+    SQObjectPtr &key = v->GetUp(-2);
     if(sq_type(key) == OT_NULL) return sq_throwerror(v, _SC("null key"));
-    if(!v->NewSlotA(self,key,v->GetUp(-2),v->GetUp(-1),bstatic?true:false,true)) {
-        v->Pop(3);
+    if(!v->NewSlotA(self,key,v->GetUp(-1),bstatic?true:false,true)) {
+        v->Pop(2);
         return SQ_ERROR;
     }
-    v->Pop(3);
+    v->Pop(2);
     return SQ_OK;
 }
 
@@ -1374,48 +1374,6 @@ SQRESULT sq_setfreevariable(HSQUIRRELVM v,SQInteger idx,SQUnsignedInteger nval)
     }
     v->Pop();
     return SQ_OK;
-}
-
-SQRESULT sq_setattributes(HSQUIRRELVM v,SQInteger idx)
-{
-    SQObjectPtr *o = NULL;
-    _GETSAFE_OBJ(v, idx, OT_CLASS,o);
-    SQObjectPtr &key = stack_get(v,-2);
-    SQObjectPtr &val = stack_get(v,-1);
-    SQObjectPtr attrs;
-    if(sq_type(key) == OT_NULL) {
-        attrs = _class(*o)->_attributes;
-        _class(*o)->_attributes = val;
-        v->Pop(2);
-        v->Push(attrs);
-        return SQ_OK;
-    }else if(_class(*o)->GetAttributes(key,attrs)) {
-        _class(*o)->SetAttributes(key,val);
-        v->Pop(2);
-        v->Push(attrs);
-        return SQ_OK;
-    }
-    return sq_throwerror(v,_SC("wrong index"));
-}
-
-SQRESULT sq_getattributes(HSQUIRRELVM v,SQInteger idx)
-{
-    SQObjectPtr *o = NULL;
-    _GETSAFE_OBJ(v, idx, OT_CLASS,o);
-    SQObjectPtr &key = stack_get(v,-1);
-    SQObjectPtr attrs;
-    if(sq_type(key) == OT_NULL) {
-        attrs = _class(*o)->_attributes;
-        v->Pop();
-        v->Push(attrs);
-        return SQ_OK;
-    }
-    else if(_class(*o)->GetAttributes(key,attrs)) {
-        v->Pop();
-        v->Push(attrs);
-        return SQ_OK;
-    }
-    return sq_throwerror(v,_SC("wrong index"));
 }
 
 SQRESULT sq_getmemberhandle(HSQUIRRELVM v,SQInteger idx,HSQMEMBERHANDLE *handle)

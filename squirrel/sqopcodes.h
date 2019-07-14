@@ -128,7 +128,6 @@ struct SQInstruction
 #include "squtils.h"
 typedef sqvector<SQInstruction> SQInstructionVec;
 
-#define NEW_SLOT_ATTRIBUTES_FLAG    0x01
 #define NEW_SLOT_STATIC_FLAG        0x02
 
 #define OP_GET_FLAG_NULL_PROPAGATION    0x01

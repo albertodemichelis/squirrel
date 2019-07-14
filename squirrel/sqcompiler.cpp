@@ -1005,15 +1005,9 @@ public:
         SQInteger tpos = _fs->GetCurrentPos(),nkeys = 0;
         sqvector<SQObject> memberConstantKeys;
         while(_token != terminator) {
-            bool hasattrs = false;
             bool isstatic = false;
-            //check if is an attribute
+            //check if is an static
             if(separator == ';') {
-                if(_token == TK_ATTR_OPEN) {
-                    _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(),0,NOT_TABLE); Lex();
-                    ParseTableOrClass(',',TK_ATTR_CLOSE);
-                    hasattrs = true;
-                }
                 if(_token == TK_STATIC) {
                     isstatic = true;
                     Lex();
@@ -1070,10 +1064,7 @@ public:
             nkeys++;
             SQInteger val = _fs->PopTarget();
             SQInteger key = _fs->PopTarget();
-            SQInteger attrs = hasattrs ? _fs->PopTarget():-1;
-            ((void)attrs);
-            assert((hasattrs && (attrs == key-1)) || !hasattrs);
-            unsigned char flags = (hasattrs?NEW_SLOT_ATTRIBUTES_FLAG:0)|(isstatic?NEW_SLOT_STATIC_FLAG:0);
+            unsigned char flags = isstatic ? NEW_SLOT_STATIC_FLAG : 0;
             SQInteger table = _fs->TopTarget(); //<<BECAUSE OF THIS NO COMMON EMIT FUNC IS POSSIBLE
             if(separator == _SC(',')) { //hack recognizes a table from the separator
                 _fs->AddInstruction(_OP_NEWSLOT, 0xFF, table, key, val);
@@ -1515,21 +1506,13 @@ public:
     void ClassExp()
     {
         SQInteger base = -1;
-        SQInteger attrs = -1;
         if(_token == TK_EXTENDS) {
             Lex(); Expression();
             base = _fs->TopTarget();
         }
-        if(_token == TK_ATTR_OPEN) {
-            Lex();
-            _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(),0,NOT_TABLE);
-            ParseTableOrClass(_SC(','),TK_ATTR_CLOSE);
-            attrs = _fs->TopTarget();
-        }
         Expect(_SC('{'));
-        if(attrs != -1) _fs->PopTarget();
         if(base != -1) _fs->PopTarget();
-        _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(), base, attrs,NOT_CLASS);
+        _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(), base, 0, NOT_CLASS);
         ParseTableOrClass(_SC(';'),_SC('}'));
     }
     void DeleteExpr()

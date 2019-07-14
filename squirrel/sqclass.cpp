@@ -34,7 +34,6 @@ SQClass::SQClass(SQSharedState *ss,SQClass *base)
 }
 
 void SQClass::Finalize() {
-    _attributes.Null();
     _NULL_SQOBJECT_VECTOR(_defaultvalues,_defaultvalues.size());
     _methods.resize(0);
     _NULL_SQOBJECT_VECTOR(_metamethods,MT_LAST);
@@ -118,29 +117,6 @@ SQInteger SQClass::Next(const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObject
         }
     }
     return idx;
-}
-
-bool SQClass::SetAttributes(const SQObjectPtr &key,const SQObjectPtr &val)
-{
-    SQObjectPtr idx;
-    if(_members->Get(key,idx)) {
-        if(_isfield(idx))
-            _defaultvalues[_member_idx(idx)].attrs = val;
-        else
-            _methods[_member_idx(idx)].attrs = val;
-        return true;
-    }
-    return false;
-}
-
-bool SQClass::GetAttributes(const SQObjectPtr &key,SQObjectPtr &outval)
-{
-    SQObjectPtr idx;
-    if(_members->Get(key,idx)) {
-        outval = (_isfield(idx)?_defaultvalues[_member_idx(idx)].attrs:_methods[_member_idx(idx)].attrs);
-        return true;
-    }
-    return false;
 }
 
 ///////////////////////////////////////////////////////////////////////

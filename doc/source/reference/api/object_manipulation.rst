@@ -172,20 +172,6 @@ pops a key from the stack and performs a get operation on the object at the posi
 
 
 
-.. _sq_getattributes:
-
-.. c:function:: SQRESULT sq_getattributes(HSQUIRRELVM v, SQInteger idx)
-
-    :param HSQUIRRELVM v: the target VM
-    :param SQInteger idx: index of the target class in the stack
-    :returns: a SQRESULT
-
-Gets the attribute of a class member. The function pops a key from the stack and pushes the attribute of the class member indexed by they key from a class at position idx in the stack. If key is null the function gets the class level attribute.
-
-
-
-
-
 .. _sq_getbase:
 
 .. c:function:: SQRESULT sq_getbase(HSQUIRRELVM v, SQInteger idx)
@@ -283,7 +269,7 @@ Determines if an object is an instance of a certain class. Expects an instance a
     :returns: a SQRESULT
     :remarks: Invokes the _newmember metamethod in the class. it only works on classes.
 
-pops a key, a value and an object (which will be set as attribute of the member) from the stack and performs a new slot operation on the class that is at position idx in the stack; if the slot does not exist, it will be created.
+pops a key and a value from the stack and performs a new slot operation on the class that is at position idx in the stack; if the slot does not exist, it will be created.
 
 
 
@@ -359,7 +345,7 @@ pops a key from the stack and performs a get operation on the object at position
     :returns: a SQRESULT
     :remarks: it only works on classes.
 
-pops a key, a value and an object(that will be set as attribute of the member) from the stack and performs a new slot operation on the class that is at position idx in the stack; if the slot does not exist it will be created.
+pops a key and a value from the stack and performs a new slot operation on the class that is at position idx in the stack; if the slot does not exist it will be created.
 
 
 
@@ -390,20 +376,6 @@ pops a key and a value from the stack and performs a set operation on the object
     :remarks: this call will invoke the delegation system like a normal assignment, it only works on tables, arrays and userdata.
 
 pops a key and a value from the stack and performs a set operation on the object at position idx in the stack.
-
-
-
-
-
-.. _sq_setattributes:
-
-.. c:function:: SQRESULT sq_setattributes(HSQUIRRELVM v, SQInteger idx)
-
-    :param HSQUIRRELVM v: the target VM
-    :param SQInteger idx: index of the target class in the stack.
-    :returns: a SQRESULT
-
-Sets the attribute of a class member. The function pops a key and a value from the stack and sets the attribute (indexed by the key) on the class at position idx in the stack. If key is null the function sets the class level attribute. If the function succeed, the old attribute value is pushed in the stack.
 
 
 

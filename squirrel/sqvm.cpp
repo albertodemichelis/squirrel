@@ -616,29 +616,24 @@ bool SQVM::CLOSURE_OP(SQObjectPtr &target, SQFunctionProto *func)
 }
 
 
-bool SQVM::CLASS_OP(SQObjectPtr &target,SQInteger baseclass,SQInteger attributes)
+bool SQVM::CLASS_OP(SQObjectPtr &target,SQInteger baseclass)
 {
     SQClass *base = NULL;
-    SQObjectPtr attrs;
     if(baseclass != -1) {
         if(sq_type(_stack._vals[_stackbase+baseclass]) != OT_CLASS) { Raise_Error(_SC("trying to inherit from a %s"),GetTypeName(_stack._vals[_stackbase+baseclass])); return false; }
         base = _class(_stack._vals[_stackbase + baseclass]);
-    }
-    if(attributes != MAX_FUNC_STACKSIZE) {
-        attrs = _stack._vals[_stackbase+attributes];
     }
     target = SQClass::Create(_ss(this),base);
     if(sq_type(_class(target)->_metamethods[MT_INHERITED]) != OT_NULL) {
         int nparams = 2;
         SQObjectPtr ret;
-        Push(target); Push(attrs);
+        Push(target);
         if(!Call(_class(target)->_metamethods[MT_INHERITED],nparams,_top - nparams, ret, false)) {
             Pop(nparams);
             return false;
         }
         Pop(nparams);
     }
-    _class(target)->_attributes = attrs;
     return true;
 }
 
@@ -937,7 +932,7 @@ exception_restore:
                 switch(arg3) {
                     case NOT_TABLE: TARGET = SQTable::Create(_ss(this), arg1); continue;
                     case NOT_ARRAY: TARGET = SQArray::Create(_ss(this), 0); _array(TARGET)->Reserve(arg1); continue;
-                    case NOT_CLASS: _GUARD(CLASS_OP(TARGET,arg1,arg2)); continue;
+                    case NOT_CLASS: _GUARD(CLASS_OP(TARGET,arg1)); continue;
                     default: assert(0); continue;
                 }
             case _OP_APPENDARRAY:
@@ -1087,7 +1082,7 @@ exception_restore:
                 continue;
             case _OP_THROW: Raise_Error(TARGET); SQ_THROW(); continue;
             case _OP_NEWSLOTA:
-                _GUARD(NewSlotA(STK(arg1),STK(arg2),STK(arg3),(arg0&NEW_SLOT_ATTRIBUTES_FLAG) ? STK(arg2-1) : SQObjectPtr(),(arg0&NEW_SLOT_STATIC_FLAG)?true:false,false));
+                _GUARD(NewSlotA(STK(arg1),STK(arg2),STK(arg3),(arg0&NEW_SLOT_STATIC_FLAG)?true:false,false));
                 continue;
             case _OP_GETBASE:{
                 SQClosure *clo = _closure(ci->_closure);
@@ -1498,7 +1493,7 @@ cloned_mt:
     }
 }
 
-bool SQVM::NewSlotA(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val,const SQObjectPtr &attrs,bool bstatic,bool raw)
+bool SQVM::NewSlotA(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val,bool bstatic,bool raw)
 {
     if(sq_type(self) != OT_CLASS) {
         Raise_Error(_SC("object must be a class"));
@@ -1509,16 +1504,12 @@ bool SQVM::NewSlotA(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjec
         SQObjectPtr &mm = c->_metamethods[MT_NEWMEMBER];
         if(sq_type(mm) != OT_NULL ) {
             Push(self); Push(key); Push(val);
-            Push(attrs);
             Push(bstatic);
             return CallMetaMethod(mm,MT_NEWMEMBER,5,temp_reg);
         }
     }
     if(!NewSlot(self, key, val,bstatic))
         return false;
-    if(sq_type(attrs) != OT_NULL) {
-        c->SetAttributes(key,attrs);
-    }
     return true;
 }
 

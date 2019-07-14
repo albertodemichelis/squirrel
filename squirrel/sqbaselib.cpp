@@ -1410,16 +1410,6 @@ const SQRegFunction SQSharedState::_thread_default_delegate_funcz[] = {
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
-static SQInteger class_getattributes(HSQUIRRELVM v)
-{
-    return SQ_SUCCEEDED(sq_getattributes(v,-2))?1:SQ_ERROR;
-}
-
-static SQInteger class_setattributes(HSQUIRRELVM v)
-{
-    return SQ_SUCCEEDED(sq_setattributes(v,-3))?1:SQ_ERROR;
-}
-
 static SQInteger class_instance(HSQUIRRELVM v)
 {
     return SQ_SUCCEEDED(sq_createinstance(v,-1))?1:SQ_ERROR;
@@ -1463,8 +1453,6 @@ static SQInteger class_rawnewmember(HSQUIRRELVM v)
 }
 
 const SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
-    {_SC("getattributes"), class_getattributes, 2, _SC("y.")},
-    {_SC("setattributes"), class_setattributes, 3, _SC("y..")},
     {_SC("rawget"),container_rawget,2, _SC("y")},
     {_SC("rawset"),container_rawset,3, _SC("y")},
     {_SC("rawin"),container_rawexists,2, _SC("y")},

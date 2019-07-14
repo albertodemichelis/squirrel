@@ -65,8 +65,6 @@ struct SQVM;
 #define TK_MULEQ 317
 #define TK_DIVEQ 318
 #define TK_MODEQ 319
-#define TK_ATTR_OPEN 320
-#define TK_ATTR_CLOSE 321
 #define TK_STATIC 322
 #define TK_ENUM 323
 #define TK_CONST 324

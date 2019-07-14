@@ -6,10 +6,8 @@ struct SQInstance;
 
 struct SQClassMember {
     SQObjectPtr val;
-    SQObjectPtr attrs;
     void Null() {
         val.Null();
-        attrs.Null();
     }
 };
 
@@ -57,8 +55,6 @@ public:
         }
         return false;
     }
-    bool SetAttributes(const SQObjectPtr &key,const SQObjectPtr &val);
-    bool GetAttributes(const SQObjectPtr &key,SQObjectPtr &outval);
     void Lock() { _locked = true; if(_base) _base->Lock(); }
     void Release() {
         if (_hook) { _hook(_typetag,0);}
@@ -76,7 +72,6 @@ public:
     SQClassMemberVec _defaultvalues;
     SQClassMemberVec _methods;
     SQObjectPtr _metamethods[MT_LAST];
-    SQObjectPtr _attributes;
     SQUserPointer _typetag;
     SQRELEASEHOOK _hook;
     bool _locked;

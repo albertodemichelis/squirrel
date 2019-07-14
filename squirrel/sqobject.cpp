@@ -595,14 +595,11 @@ void SQClass::Mark(SQCollectable **chain)
     START_MARK()
         _members->Mark(chain);
         if(_base) _base->Mark(chain);
-        SQSharedState::MarkObject(_attributes, chain);
         for(SQUnsignedInteger i =0; i< _defaultvalues.size(); i++) {
             SQSharedState::MarkObject(_defaultvalues[i].val, chain);
-            SQSharedState::MarkObject(_defaultvalues[i].attrs, chain);
         }
         for(SQUnsignedInteger j =0; j< _methods.size(); j++) {
             SQSharedState::MarkObject(_methods[j].val, chain);
-            SQSharedState::MarkObject(_methods[j].attrs, chain);
         }
         for(SQUnsignedInteger k =0; k< MT_LAST; k++) {
             SQSharedState::MarkObject(_metamethods[k], chain);
