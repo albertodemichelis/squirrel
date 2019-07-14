@@ -5,6 +5,7 @@
 #ifndef NO_COMPILER
 #include <stdarg.h>
 #include <setjmp.h>
+#include <algorithm>
 #include "sqopcodes.h"
 #include "sqstring.h"
 #include "sqfuncproto.h"
@@ -27,6 +28,7 @@ struct SQExpState {
 };
 
 #define MAX_COMPILER_ERROR_LEN 256
+#define MAX_FUNCTION_NAME_LEN 128
 
 struct SQScope {
     SQInteger outers;
@@ -167,7 +169,7 @@ public:
         _debugop = 0;
 
         SQFuncState funcstate(_ss(_vm), NULL,ThrowError,this);
-        funcstate._name = SQString::Create(_ss(_vm), _SC("main"));
+        funcstate._name = SQString::Create(_ss(_vm), _SC("__main__"));
         _fs = &funcstate;
         _fs->AddParameter(_fs->CreateString(_SC("this")));
         _fs->AddParameter(_fs->CreateString(_SC("vargv")));
@@ -785,6 +787,10 @@ public:
                     case TK_CONSTRUCTOR: id = _fs->CreateString(_SC("constructor"),11); break;
                 }
 
+                if (_stringval(id) == _stringval(_fs->_name)) {
+                    Error(_SC("Variable name %s conflicts with function name"), _stringval(id));
+                }
+
                 SQInteger pos = -1;
                 Lex();
                 if((pos = _fs->GetLocalVariable(id)) != -1) {
@@ -1081,6 +1087,8 @@ public:
     {
         if (_fs->GetLocalVariable(name) >= 0)
             Error(_SC("Local variable '%s' already exists"), _string(name)->_val);
+        if (_stringval(name) == _stringval(_fs->_name))
+            Error(_SC("Variable name %s conflicts with function name"), _stringval(name));
     }
     void LocalDeclStatement()
     {
@@ -1496,11 +1504,26 @@ public:
             END_SCOPE();
         }
     }
+
+    SQObjectPtr generateSurrogateFunctionName()
+    {
+        const SQChar * fileName = (sq_type(_sourcename) == OT_STRING) ? _stringval(_sourcename) : _SC("unknown");
+        int lineNum = int(_lex._currentline);
+
+        const SQChar * rightSlash = std::max(scstrrchr(fileName, _SC('/')), scstrrchr(fileName, _SC('\\')));
+
+        SQChar buf[MAX_FUNCTION_NAME_LEN];
+        scsprintf(buf, MAX_FUNCTION_NAME_LEN, _SC("(%s:%d)"), rightSlash ? (rightSlash + 1) : fileName, lineNum);
+        return _fs->CreateString(buf);
+    }
+
     void FunctionExp(SQInteger ftype,bool lambda = false)
     {
-        Lex(); Expect(_SC('('));
-        SQObjectPtr dummy;
-        CreateFunction(dummy,lambda);
+        Lex();
+        SQObjectPtr functionName = (_token == TK_IDENTIFIER) ? Expect(TK_IDENTIFIER) : generateSurrogateFunctionName();
+        Expect(_SC('('));
+
+        CreateFunction(functionName, lambda);
         _fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1, ftype == TK_FUNCTION?0:1);
     }
     void ClassExp()

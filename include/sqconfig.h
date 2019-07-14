@@ -76,6 +76,7 @@ typedef wchar_t SQChar;
 #define scvsprintf  vswprintf
 #define scstrstr    wcsstr
 #define scprintf    wprintf
+#define scstrrchr   wcsrchr
 
 #ifdef _WIN32
 #define WCHAR_SIZE 2
@@ -124,6 +125,7 @@ typedef char SQChar;
 #define scstrtoul   strtoul
 #define scvsprintf  vsnprintf
 #define scstrstr    strstr
+#define scstrrchr   strrchr
 #define scisspace   isspace
 #define scisdigit   isdigit
 #define scisprint   isprint
