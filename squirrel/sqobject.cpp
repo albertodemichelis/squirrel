@@ -276,7 +276,7 @@ SQClosure::~SQClosure()
 }
 
 #define _CHECK_IO(exp)  { if(!exp)return false; }
-bool SafeWrite(HSQUIRRELVM v,SQWRITEFUNC write,SQUserPointer up,SQUserPointer dest,SQInteger size)
+static bool SafeWrite(HSQUIRRELVM v,SQWRITEFUNC write,SQUserPointer up,SQUserPointer dest,SQInteger size)
 {
     if(write(up,dest,size) != size) {
         v->Raise_Error(_SC("io error (write function failure)"));
@@ -285,7 +285,7 @@ bool SafeWrite(HSQUIRRELVM v,SQWRITEFUNC write,SQUserPointer up,SQUserPointer de
     return true;
 }
 
-bool SafeRead(HSQUIRRELVM v,SQREADFUNC read,SQUserPointer up,SQUserPointer dest,SQInteger size)
+static bool SafeRead(HSQUIRRELVM v,SQREADFUNC read,SQUserPointer up,SQUserPointer dest,SQInteger size)
 {
     if(size && read(up,dest,size) != size) {
         v->Raise_Error(_SC("io error, read function failure, the origin stream could be corrupted/trucated"));
@@ -294,12 +294,12 @@ bool SafeRead(HSQUIRRELVM v,SQREADFUNC read,SQUserPointer up,SQUserPointer dest,
     return true;
 }
 
-bool WriteTag(HSQUIRRELVM v,SQWRITEFUNC write,SQUserPointer up,SQUnsignedInteger32 tag)
+static bool WriteTag(HSQUIRRELVM v,SQWRITEFUNC write,SQUserPointer up,SQUnsignedInteger32 tag)
 {
     return SafeWrite(v,write,up,&tag,sizeof(tag));
 }
 
-bool CheckTag(HSQUIRRELVM v,SQREADFUNC read,SQUserPointer up,SQUnsignedInteger32 tag)
+static bool CheckTag(HSQUIRRELVM v,SQREADFUNC read,SQUserPointer up,SQUnsignedInteger32 tag)
 {
     SQUnsignedInteger32 t;
     _CHECK_IO(SafeRead(v,read,up,&t,sizeof(t)));
@@ -310,7 +310,7 @@ bool CheckTag(HSQUIRRELVM v,SQREADFUNC read,SQUserPointer up,SQUnsignedInteger32
     return true;
 }
 
-bool WriteObject(HSQUIRRELVM v,SQUserPointer up,SQWRITEFUNC write,SQObjectPtr &o)
+static bool WriteObject(HSQUIRRELVM v,SQUserPointer up,SQWRITEFUNC write,SQObjectPtr &o)
 {
     SQUnsignedInteger32 _type = (SQUnsignedInteger32)sq_type(o);
     _CHECK_IO(SafeWrite(v,write,up,&_type,sizeof(_type)));
@@ -333,7 +333,7 @@ bool WriteObject(HSQUIRRELVM v,SQUserPointer up,SQWRITEFUNC write,SQObjectPtr &o
     return true;
 }
 
-bool ReadObject(HSQUIRRELVM v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &o)
+static bool ReadObject(HSQUIRRELVM v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &o)
 {
     SQUnsignedInteger32 _type;
     _CHECK_IO(SafeRead(v,read,up,&_type,sizeof(_type)));
