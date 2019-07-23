@@ -283,7 +283,7 @@ public:
             ClassStatement();
             break;
         case TK_ENUM:
-            EnumStatement();
+            EnumStatement(false);
             break;
         case _SC('{'):{
                 BEGIN_SCOPE();
@@ -307,17 +307,16 @@ public:
             _fs->AddInstruction(_OP_THROW, _fs->PopTarget());
             break;
         case TK_CONST:
-            {
+            ConstStatement(false);
+            break;
+        case TK_GLOBAL:
             Lex();
-            SQObject id = Expect(TK_IDENTIFIER);
-            Expect('=');
-            SQObject val = ExpectScalar();
-            OptionalSemicolon();
-            SQTable *enums = _table(_ss(_vm)->_consts);
-            SQObjectPtr strongid = id;
-            enums->NewSlot(strongid,SQObjectPtr(val));
-            strongid.Null();
-            }
+            if (_token == TK_CONST)
+                ConstStatement(true);
+            else if (_token == TK_ENUM)
+                EnumStatement(true);
+            else
+                Error(_SC("global can be applied to const and enum only"));
             break;
         case TK_DOCSTRING:
             if (!sq_isnull(_fs->_docstring))
@@ -1501,7 +1500,19 @@ public:
         Lex();
         return val;
     }
-    void EnumStatement()
+    void ConstStatement(bool global)
+    {
+        Lex();
+        SQObject id = Expect(TK_IDENTIFIER);
+        Expect('=');
+        SQObject val = ExpectScalar();
+        OptionalSemicolon();
+        SQTable *enums = _table(global ? _ss(_vm)->_consts : _fs->GetConstTable());
+        SQObjectPtr strongid = id;
+        enums->NewSlot(strongid,SQObjectPtr(val));
+        strongid.Null();
+    }
+    void EnumStatement(bool global)
     {
         Lex();
         SQObject id = Expect(TK_IDENTIFIER);
@@ -1523,7 +1534,7 @@ public:
             _table(table)->NewSlot(SQObjectPtr(key),SQObjectPtr(val));
             if(_token == ',') Lex();
         }
-        SQTable *enums = _table(_ss(_vm)->_consts);
+        SQTable *enums = _table(global ? _ss(_vm)->_consts : _fs->GetConstTable());
         SQObjectPtr strongid = id;
         enums->NewSlot(SQObjectPtr(strongid),SQObjectPtr(table));
         strongid.Null();

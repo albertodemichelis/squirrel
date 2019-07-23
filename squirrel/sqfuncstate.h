@@ -77,10 +77,12 @@ struct SQFuncState
     SQInteger _lastline;
     SQInteger _traps; //contains number of nested exception traps
     SQInteger _outers;
+    SQObjectPtr _consts;
     bool _optimization;
     SQSharedState *_sharedstate;
     sqvector<SQFuncState*> _childstates;
     SQInteger GetConstant(const SQObject &cons);
+    SQObjectPtr GetConstTable();
 private:
     CompilerErrorFunc _errfunc;
     void *_errtarget;

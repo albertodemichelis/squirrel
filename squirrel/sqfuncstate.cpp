@@ -240,6 +240,13 @@ SQInteger SQFuncState::GetConstant(const SQObject &cons)
     return _integer(val);
 }
 
+SQObjectPtr SQFuncState::GetConstTable()
+{
+    if (sq_type(_consts) != OT_TABLE)
+        _consts = SQTable::Create(_sharedstate, 0);
+    return _consts;
+}
+
 void SQFuncState::SetInstructionParams(SQInteger pos,SQInteger arg0,SQInteger arg1,SQInteger arg2,SQInteger arg3)
 {
     _instructions[pos]._arg0=(unsigned char)*((SQUnsignedInteger *)&arg0);
@@ -338,6 +345,14 @@ void SQFuncState::SetStackSize(SQInteger n)
 bool SQFuncState::IsConstant(const SQObject &name,SQObject &e)
 {
     SQObjectPtr val;
+
+    for (SQFuncState *fs = this; fs; fs=fs->_parent) {
+        if (!sq_isnull(fs->_consts) && _table(fs->_consts)->Get(name,val)) {
+            e = val;
+            return true;
+        }
+    }
+
     if(_table(_sharedstate->_consts)->Get(name,val)) {
         e = val;
         return true;
