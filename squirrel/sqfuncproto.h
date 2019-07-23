@@ -122,6 +122,7 @@ public:
 #endif
     SQObjectPtr _sourcename;
     SQObjectPtr _name;
+    SQObjectPtr _docstring;
     SQInteger _stacksize;
     bool _bgenerator;
     SQInteger _varparams;

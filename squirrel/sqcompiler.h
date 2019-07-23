@@ -73,6 +73,7 @@ struct SQVM;
 #define TK_NULLGETOBJ 327
 #define TK_NULLCOALESCE 328
 #define TK_NULLCALL 329
+#define TK_DOCSTRING 330
 
 
 

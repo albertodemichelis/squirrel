@@ -1162,6 +1162,7 @@ static SQInteger closure_getfuncinfos_obj(HSQUIRRELVM v, SQObjectPtr & o) {
         res->NewSlot(SQString::Create(_ss(v),_SC("parameters"),-1),params);
         res->NewSlot(SQString::Create(_ss(v),_SC("varargs"),-1),f->_varparams);
     res->NewSlot(SQString::Create(_ss(v),_SC("defparams"),-1),defparams);
+        res->NewSlot(SQString::Create(_ss(v),_SC("docstring"),-1),f->_docstring);
     }
     else { //OT_NATIVECLOSURE
         SQNativeClosure *nc = _nativeclosure(o);
