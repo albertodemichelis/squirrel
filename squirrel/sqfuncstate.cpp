@@ -344,6 +344,15 @@ void SQFuncState::SetStackSize(SQInteger n)
 
 bool SQFuncState::IsConstant(const SQObject &name,SQObject &e)
 {
+    if (IsLocalConstant(name, e))
+        return true;
+    if (IsGlobalConstant(name, e))
+        return true;
+    return false;
+}
+
+bool SQFuncState::IsLocalConstant(const SQObject &name,SQObject &e)
+{
     SQObjectPtr val;
 
     for (SQFuncState *fs = this; fs; fs=fs->_parent) {
@@ -352,7 +361,12 @@ bool SQFuncState::IsConstant(const SQObject &name,SQObject &e)
             return true;
         }
     }
+    return false;
+}
 
+bool SQFuncState::IsGlobalConstant(const SQObject &name,SQObject &e)
+{
+    SQObjectPtr val;
     if(_table(_sharedstate->_consts)->Get(name,val)) {
         e = val;
         return true;
