@@ -440,7 +440,7 @@ void SQFuncState::DiscardTarget()
     if(size > 0 && _optimization){
         SQInstruction &pi = _instructions[size-1];//previous instruction
         switch(pi.op) {
-        case _OP_SET:case _OP_NEWSLOT:case _OP_SETOUTER:case _OP_CALL:
+        case _OP_SET:case _OP_NEWSLOT:case _OP_SETOUTER:case _OP_CALL:case _OP_NULLCALL:
             if(pi._arg0 == discardedtarget) {
                 pi._arg0 = 0xFF;
             }

@@ -1732,7 +1732,8 @@ public:
             _table(_fs->_sharedstate->_thread_default_delegate),
             _table(_fs->_sharedstate->_class_default_delegate),
             _table(_fs->_sharedstate->_instance_default_delegate),
-            _table(_fs->_sharedstate->_weakref_default_delegate)
+            _table(_fs->_sharedstate->_weakref_default_delegate),
+            _table(_fs->_sharedstate->_userdata_default_delegate)
         };
         SQObjectPtr tmp;
         for (SQInteger i=0; i<sizeof(delegTbls)/sizeof(delegTbls[0]); ++i) {
