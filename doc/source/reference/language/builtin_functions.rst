@@ -349,6 +349,15 @@ returns an array containing all the values of the table slots.
 Creates a new table of the same size. For each element in the original table invokes the function 'func' and assigns the return value of the function to the corresponding slot of the newly created table.
 Provided func can accept up to 3 arguments: slot value (required), slot key in table (optional), reference to table itself (optional).
 
+.. js:function:: table.each(func(slot_value, [slot_key], [table_ref]))
+
+Iterates a table and calls provided function for each element.
+
+.. js:function:: table.search(func(slot_value, [slot_key], [table_ref]))
+
+Performs a linear search calling provided function for each value in the table.
+Returns the index of the value if it was found (callback returned true (non-false) value) or null otherwise.
+
 .. js:function:: table.reduce(func(accumulator, slot_value, [slot_key], [table_ref]), [initializer])
 
 Reduces a table to a single value (similar to array.reduce()).
@@ -482,6 +491,9 @@ Provided func can accept up to 3 arguments: array item value (required), array i
 
 for each element in the array invokes the function 'func' and replace the original value of the element with the return value of the function.
 
+.. js:function:: array.each(func(item_value, [item_index], [array_ref]))
+
+Iterates an array and calls provided function for each element.
 
 .. js:function:: array.reduce(func(prevval,curval,[index],[array_ref]), [initializer])
 
@@ -508,6 +520,12 @@ Creates a new array with all elements that pass the test implemented by the prov
 .. js:function:: array.find(value)
 
 Performs a linear search for the value in the array. Returns the index of the value if it was found null otherwise.
+
+.. js:function:: array.search(func(item_value, [item_index], [array_ref]))
+
+Performs a linear search calling provided function for each value in the array.
+Returns the index of the value if it was found (callback returned true (non-false) value) or null otherwise.
+
 
 ^^^^^^^^
 Function

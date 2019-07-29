@@ -559,6 +559,65 @@ static SQInteger container_merge(HSQUIRRELVM v)
 }
 
 
+static SQInteger container_each(HSQUIRRELVM v)
+{
+    SQObject &o = stack_get(v,1);
+    SQObject &closure = stack_get(v, 2);
+    SQInteger nArgs = get_allowed_args_count(closure, 4);
+
+    sq_pushnull(v);
+    while (SQ_SUCCEEDED(sq_next(v, 1))) {
+        SQInteger iterTop = sq_gettop(v);
+        v->Push(closure);
+        v->Push(o);
+        v->Push(stack_get(v, iterTop));
+        if (nArgs >= 3)
+            v->Push(stack_get(v, iterTop-1));
+        if (nArgs >= 4)
+            v->Push(o);
+
+        if (SQ_FAILED(sq_call(v,nArgs,SQFalse,SQFalse))) {
+            return SQ_ERROR;
+        }
+        v->Pop(3);
+    }
+    sq_pop(v, 1); // pops the iterator
+
+    return 0;
+}
+
+
+static SQInteger container_search(HSQUIRRELVM v)
+{
+    SQObject &o = stack_get(v,1);
+    SQObject &closure = stack_get(v, 2);
+    SQInteger nArgs = get_allowed_args_count(closure, 4);
+
+    sq_pushnull(v);
+    while (SQ_SUCCEEDED(sq_next(v, 1))) {
+        SQInteger iterTop = sq_gettop(v);
+        v->Push(closure);
+        v->Push(o);
+        v->Push(stack_get(v, iterTop));
+        if (nArgs >= 3)
+            v->Push(stack_get(v, iterTop-1));
+        if (nArgs >= 4)
+            v->Push(o);
+
+        if (SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
+            return SQ_ERROR;
+        }
+        if (!v->IsFalse(stack_get(v, -1))) {
+            v->Push(stack_get(v, iterTop-1));
+            return 1;
+        }
+        v->Pop(4);
+    }
+    sq_pop(v, 1); // pops the iterator
+
+    return 0;
+}
+
 /////////////////////////////////////////////////////////////////
 //TABLE DEFAULT DELEGATE
 
@@ -762,6 +821,8 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("filter"),table_filter,2, _SC("tc")},
     {_SC("reduce"),table_reduce, -2, _SC("tc")},
     {_SC("getfuncinfos"),delegable_getfuncinfos,1, _SC("t")},
+    {_SC("each"),container_each,2, _SC("tc")},
+    {_SC("search"),container_search,2, _SC("tc")},
 	{_SC("keys"),table_keys,1, _SC("t") },
 	{_SC("values"),table_values,1, _SC("t") },
     {_SC("__update"),container_update, -2, "t|yt|y|x" },
@@ -1112,6 +1173,7 @@ static SQInteger array_slice(HSQUIRRELVM v)
 
 }
 
+
 const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("a")},
     {_SC("append"),array_append,2, _SC("a")},
@@ -1133,6 +1195,8 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("reduce"),array_reduce,-2, _SC("ac.")},
     {_SC("filter"),array_filter,2, _SC("ac")},
     {_SC("find"),array_find,2, _SC("a.")},
+    {_SC("each"),container_each,2, _SC("ac")},
+    {_SC("search"),container_search,2, _SC("ac")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -1547,6 +1611,7 @@ const SQRegFunction SQSharedState::_thread_default_delegate_funcz[] = {
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
+
 
 static SQInteger class_instance(HSQUIRRELVM v)
 {
