@@ -1582,6 +1582,10 @@ const SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
     {_SC("newmember"),class_newmember,-3, _SC("y")},
     {_SC("rawnewmember"),class_rawnewmember,-3, _SC("y")},
     {_SC("getfuncinfos"),class_getfuncinfos,1, _SC("y")},
+    {_SC("call"),closure_call,-1, _SC("y")},
+    {_SC("pcall"),closure_pcall,-1, _SC("y")},
+    {_SC("acall"),closure_acall,2, _SC("ya")},
+    {_SC("pacall"),closure_pacall,2, _SC("ya")},
     {_SC("__update"),container_update, -2, "t|yt|y|x" },
     {_SC("__merge"),container_merge, -2, "t|yt|y|x" },
     {NULL,(SQFUNCTION)0,0,NULL}
