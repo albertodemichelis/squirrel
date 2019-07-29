@@ -1077,16 +1077,29 @@ static SQInteger array_sort(HSQUIRRELVM v)
     return 1;
 }
 
+
+static int clamp_int(int v, int minv, int maxv)
+{
+  return (v < minv) ? minv : (v > maxv) ? maxv : v;
+}
+
 static SQInteger array_slice(HSQUIRRELVM v)
 {
     SQInteger sidx,eidx;
     SQObjectPtr o;
     if(get_slice_params(v,sidx,eidx,o)==-1)return -1;
     SQInteger alen = _array(o)->Size();
-    if(sidx < 0)sidx = alen + sidx;
-    if(eidx < 0)eidx = alen + eidx;
-    if(eidx < sidx)return sq_throwerror(v,_SC("wrong indexes"));
-    if(eidx > alen || sidx < 0)return sq_throwerror(v, _SC("slice out of range"));
+
+    sidx = clamp_int((sidx < 0) ? (alen + sidx) : sidx, 0, alen);
+    eidx = clamp_int((eidx < 0) ? (alen + eidx) : eidx, 0, alen);
+
+    if (alen == 0 || eidx <= sidx)
+    {
+      SQArray *arr = SQArray::Create(_ss(v), 0);
+      v->Push(arr);
+      return 1;
+    }
+
     SQArray *arr=SQArray::Create(_ss(v),eidx-sidx);
     SQObjectPtr t;
     SQInteger count=0;
@@ -1130,10 +1143,16 @@ static SQInteger string_slice(HSQUIRRELVM v)
     SQObjectPtr o;
     if(SQ_FAILED(get_slice_params(v,sidx,eidx,o)))return -1;
     SQInteger slen = _string(o)->_len;
-    if(sidx < 0)sidx = slen + sidx;
-    if(eidx < 0)eidx = slen + eidx;
-    if(eidx < sidx) return sq_throwerror(v,_SC("wrong indexes"));
-    if(eidx > slen || sidx < 0) return sq_throwerror(v, _SC("slice out of range"));
+
+    sidx = clamp_int((sidx < 0) ? (slen + sidx) : sidx, 0, slen);
+    eidx = clamp_int((eidx < 0) ? (slen + eidx) : eidx, 0, slen);
+
+    if (slen == 0 || eidx <= sidx)
+    {
+      v->Push(SQString::Create(_ss(v), _SC(""), -1));
+      return 1;
+    }
+
     v->Push(SQString::Create(_ss(v),&_stringval(o)[sidx],eidx-sidx));
     return 1;
 }
