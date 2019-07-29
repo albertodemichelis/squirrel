@@ -357,6 +357,29 @@ For each table slot invokes the function 'func' passing the initial value
 Callback function can also take optional parameters: key in table for current value and reference to table itself.
 Iteration order is not determined.
 
+.. js:function:: table.__merge(table_1, [table_2], [table_3], ...)
+
+This delegate is used to create new table from old and given.
+Arguments to merge fields from can be tables, classes and instances.
+
+Example: ::
+
+    local foo = {fizz=1}
+    local bar = foo.__merge({buzz=2})
+    => foo == {fizz=1}; bar={fizz=1, buzz=2}
+
+
+.. js:function:: table.__update(table_1, [table_2], [table_3], ...)
+
+This delegate is used to update new table with values from given ones.
+In other words it mutates table with data from provided tables.
+
+Example: ::
+
+    local foo = {fizz=1}
+    local bar = foo.__update({buzz=2})
+    => foo == {fizz=1, bazz=2}; bar={fizz=1, buzz=2}
+
 
 ^^^^^^
 Array
@@ -606,6 +629,15 @@ sets/adds the slot 'key' with the value 'val'. If bstatic is true the slot will 
 
 If class has _call() metamethod, get info about it (see function.getfuncinfos() for details).
 
+.. js:function:: class.__merge(table_or_class_1, [table_or_class_2], [table_or_class_3], ...)
+
+This delegate is used to create new class from old and given.
+Arguments to merge fields from can be tables, classes and instances.
+
+.. js:function:: class.__update(table_1, [table_2], [table_3], ...)
+
+This delegate is used to update new table with values from given ones.
+In other words it mutates table with data from provided tables.
 
 ^^^^^^^^^^^^^^
 Class Instance

@@ -506,6 +506,58 @@ static SQInteger number_delegate_tochar(HSQUIRRELVM v)
 }
 
 
+static SQInteger container_update(HSQUIRRELVM v)
+{
+    SQInteger top = sq_gettop(v);
+    for (int arg=2; arg<=top; ++arg) {
+        SQObjectType argType = sq_gettype(v, arg);
+        if (!(argType & (_RT_TABLE | _RT_CLASS | _RT_INSTANCE))) {
+            v->Raise_ParamTypeError(arg, _RT_TABLE | _RT_CLASS | _RT_INSTANCE, argType);
+            return SQ_ERROR;
+        }
+
+        sq_pushnull(v);
+        while (SQ_SUCCEEDED(sq_next(v, arg))) {
+            sq_newslot(v, 1, false);
+        }
+        sq_pop(v, 1); // pops the iterator
+    }
+    sq_push(v, 1);
+    return 1;
+}
+
+
+static SQInteger container_merge(HSQUIRRELVM v)
+{
+    SQInteger top = sq_gettop(v);
+    SQObjectType tp = sq_gettype(v, 1);
+    switch (tp) {
+        case OT_TABLE:
+            sq_newtableex(v, sq_getsize(v, 1));
+            break;
+        case OT_CLASS:
+            sq_newclass(v, SQFalse);
+            break;
+        default:
+            return sq_throwerror(v, "merge() only works on tables and classes");
+    }
+
+    for (int arg=1; arg<=top; ++arg) {
+        SQObjectType argType = sq_gettype(v, arg);
+        if (!(argType & (_RT_TABLE | _RT_CLASS | _RT_INSTANCE))) {
+            v->Raise_ParamTypeError(arg, _RT_TABLE | _RT_CLASS | _RT_INSTANCE, argType);
+            return SQ_ERROR;
+        }
+
+        sq_pushnull(v);
+        while (SQ_SUCCEEDED(sq_next(v, arg))) {
+            sq_newslot(v, top+1, false);
+        }
+        sq_pop(v, 1); // pops the iterator
+    }
+    return 1;
+}
+
 
 /////////////////////////////////////////////////////////////////
 //TABLE DEFAULT DELEGATE
@@ -712,6 +764,8 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("getfuncinfos"),delegable_getfuncinfos,1, _SC("t")},
 	{_SC("keys"),table_keys,1, _SC("t") },
 	{_SC("values"),table_values,1, _SC("t") },
+    {_SC("__update"),container_update, -2, "t|yt|y|x" },
+    {_SC("__merge"),container_merge, -2, "t|yt|y|x" },
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -1528,6 +1582,8 @@ const SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
     {_SC("newmember"),class_newmember,-3, _SC("y")},
     {_SC("rawnewmember"),class_rawnewmember,-3, _SC("y")},
     {_SC("getfuncinfos"),class_getfuncinfos,1, _SC("y")},
+    {_SC("__update"),container_update, -2, "t|yt|y|x" },
+    {_SC("__merge"),container_merge, -2, "t|yt|y|x" },
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
