@@ -110,6 +110,20 @@ level = 0 is getstackinfos() itself! level = 1 is the current function, level = 
 
 creates a new cooperative thread object(coroutine) and returns it
 
+.. js:function:: min(x, y, [z], [w], ...)
+
+returns minimal value of all arguments
+
+.. js:function:: max(x, y, [z], [w], ...)
+
+returns maximal value of all arguments
+
+.. js:function:: clamp(x, min_val, max_val)
+
+returns value limited by provided min-max range
+
+creates a new cooperative thread object(coroutine) and returns it
+
 .. js:data:: _versionnumber_
 
 integer values describing the version of VM and compiler. e.g. for Squirrel 3.0.1 this value will be 301

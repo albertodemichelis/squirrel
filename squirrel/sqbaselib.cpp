@@ -297,6 +297,67 @@ static SQInteger base_callee(HSQUIRRELVM v)
     return sq_throwerror(v,_SC("no closure in the calls stack"));
 }
 
+
+template<SQInteger CmpRes>
+static SQInteger base_min_max(HSQUIRRELVM v)
+{
+    SQInteger nArgs = sq_gettop(v);
+    SQObject objRes = stack_get(v, 2);
+
+    for (SQInteger i = 3; i <= nArgs; ++i) {
+        SQObjectPtr &cur = stack_get(v, i);
+        if (!(sq_type(cur) & SQOBJECT_NUMERIC)) {
+            v->Raise_ParamTypeError(i, _RT_FLOAT|_RT_INTEGER, sq_type(cur));
+            return SQ_ERROR;
+        }
+
+        SQInteger cres = 0;
+        if (!v->ObjCmp(cur, objRes, cres))
+            return sq_throwerror(v, _SC("Internal error, comparison failed"));
+
+        if (cres == CmpRes)
+            objRes = cur;
+    }
+
+    v->Push(objRes);
+    return 1;
+}
+
+
+static SQInteger base_clamp(HSQUIRRELVM v)
+{
+    SQObject x = stack_get(v, 2), lo = stack_get(v, 3), hi = stack_get(v, 4);
+    SQInteger cres = 0;
+
+    const SQChar *cmpFailedErrText = _SC("Internal error, comparison failed");
+
+    if (!v->ObjCmp(lo, hi, cres))
+        return sq_throwerror(v, cmpFailedErrText);
+
+    if (cres > 0)
+        return sq_throwerror(v, _SC("Invalid clamp range: min>max"));
+
+    if (!v->ObjCmp(x, lo, cres))
+        return sq_throwerror(v, cmpFailedErrText);
+
+    if (cres < 0) {
+        v->Push(lo);
+        return 1;
+    }
+
+    if (!v->ObjCmp(x, hi, cres))
+        return sq_throwerror(v, cmpFailedErrText);
+
+    if (cres > 0) {
+        v->Push(hi);
+        return 1;
+    }
+
+    v->Push(x);
+    return 1;
+}
+
+
 static const SQRegFunction base_funcs[]={
     //generic
     {_SC("seterrorhandler"),base_seterrorhandler,2, NULL},
@@ -320,6 +381,9 @@ static const SQRegFunction base_funcs[]={
     {_SC("collectgarbage"),base_collectgarbage,0, NULL},
     {_SC("resurrectunreachable"),base_resurectureachable,0, NULL},
 #endif
+    {_SC("min"),base_min_max<-1>,-3,".nnnnnnnn"},
+    {_SC("max"),base_min_max<1>,-3,".nnnnnnnn"},
+    {_SC("clamp"),base_clamp,4,".nnn"},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
