@@ -38,23 +38,23 @@ under Linux, type something like
  $ make install
  $ cd ..; rm -r build
 
-The default installation directory will be the top source directory,
-i. e. the binaries will go into bin/ and the libraries into lib/. You
-can change this behavior by calling CMake like this:
+The default installation directory will be /usr/local on Unix platforms,
+and C:/Program Files/squirrel on Windows. The binaries will go into bin/
+and the libraries into lib/. You can change this behavior by calling CMake like
+this:
 
  $ cmake .. -DCMAKE_INSTALL_PREFIX=/some/path/on/your/system
 
-With the INSTALL_BIN_DIR and INSTALL_LIB_DIR options, the directories
+With the CMAKE_INSTALL_BINDIR and CMAKE_INSTALL_LIBDIR options, the directories
 the binaries & libraries will go in (relative to CMAKE_INSTALL_PREFIX)
 can be specified. For instance,
 
- $ cmake .. -DINSTALL_LIB_DIR=lib64
+ $ cmake .. -DCMAKE_INSTALL_LIBDIR=lib64
 
 will install the libraries into a 'lib64' subdirectory in the top
-source directory. If INSTALL_INC_DIR is set, the public header files
-will be installed into the directory the value of INSTALL_INC_DIR
-points to. There is no default directory - if you want only the
-binaries and no headers, just don't specify INSTALL_INC_DIR, and no
+source directory. The public header files will be installed into the directory
+the value of CMAKE_INSTALL_INCLUDEDIR points to. If you want only the
+binaries and no headers, just set -DSQ_DISABLE_HEADER_INSTALLER=ON, and no
 header files will be installed.
 
 Under Windows, it is probably easiest to use the CMake GUI interface,
