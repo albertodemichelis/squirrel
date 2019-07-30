@@ -72,3 +72,38 @@ if(NOT SQ_DISABLE_INSTALLER AND NOT SQ_DISABLE_HEADER_INSTALLER)
     COMPONENT Development
     )
 endif()
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-config-version.cmake"
+  VERSION "${squirrel_VERSION}"
+  COMPATIBILITY AnyNewerVersion
+  )
+
+configure_package_config_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/squirrel-config.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-config.cmake"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/squirrel"
+  )
+
+export(EXPORT squirrel
+  NAMESPACE squirrel::
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-targets.cmake"
+  )
+
+if(NOT SQ_DISABLE_INSTALLER AND NOT SQ_DISABLE_CMAKE_INSTALLER)
+  install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-config-version.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-config.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/squirrel"
+    COMPONENT Development
+    )
+
+  install(EXPORT squirrel
+    NAMESPACE squirrel::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/squirrel"
+    FILE "squirrel-targets.cmake"
+    COMPONENT Development
+    )
+endif()
