@@ -46,7 +46,8 @@ enum SQExpressionContext
 
 #define BEGIN_SCOPE() SQScope __oldscope__ = _scope; \
                      _scope.outers = _fs->_outers; \
-                     _scope.stacksize = _fs->GetStackSize();
+                     _scope.stacksize = _fs->GetStackSize(); \
+                     _scopedconsts.push_back();
 
 #define RESOLVE_OUTERS() if(_fs->GetStackSize() != _scope.stacksize) { \
                             if(_fs->CountOuters(_scope.stacksize)) { \
@@ -58,6 +59,8 @@ enum SQExpressionContext
                             _fs->SetStackSize(_scope.stacksize); \
                         } \
                         _scope = __oldscope__; \
+                        assert(!_scopedconsts.empty()); \
+                        _scopedconsts.pop_back(); \
                     }
 
 #define END_SCOPE() {   SQInteger oldouters = _fs->_outers;\
@@ -68,6 +71,7 @@ enum SQExpressionContext
                             } \
                         } \
                         _scope = __oldscope__; \
+                        _scopedconsts.pop_back(); \
                     }
 
 #define BEGIN_BREAKBLE_BLOCK()  SQInteger __nbreaks__=_fs->_unresolvedbreaks.size(); \
@@ -94,6 +98,39 @@ public:
         _compilererror[0] = _SC('\0');
         _expression_context = SQE_REGULAR;
     }
+
+    bool IsConstant(const SQObject &name,SQObject &e)
+    {
+        if (IsLocalConstant(name, e))
+            return true;
+        if (IsGlobalConstant(name, e))
+            return true;
+        return false;
+    }
+
+    bool IsLocalConstant(const SQObject &name,SQObject &e)
+    {
+        SQObjectPtr val;
+        for (int i=_scopedconsts.size()-1; i>=0; --i) {
+            SQObjectPtr &tbl = _scopedconsts[i];
+            if (!sq_isnull(tbl) && _table(tbl)->Get(name,val)) {
+                e = val;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool IsGlobalConstant(const SQObject &name,SQObject &e)
+    {
+        SQObjectPtr val;
+        if(_table(_ss(_vm)->_consts)->Get(name,val)) {
+            e = val;
+            return true;
+        }
+        return false;
+    }
+
     static void ThrowError(void *ud, const SQChar *s) {
         SQCompiler *c = (SQCompiler *)ud;
         c->Error(s);
@@ -178,6 +215,7 @@ public:
         _debugline = 1;
         _debugop = 0;
 
+        _scopedconsts.push_back();
         SQFuncState funcstate(_ss(_vm), NULL,ThrowError,this);
         funcstate._name = SQString::Create(_ss(_vm), _SC("__main__"));
         _fs = &funcstate;
@@ -209,6 +247,7 @@ public:
             _vm->_lasterror = SQString::Create(_ss(_vm), _compilererror, -1);
             return false;
         }
+        assert(_scopedconsts.size()==1);
         return true;
     }
     void Statements()
@@ -868,7 +907,7 @@ public:
                     }
                 }
 
-                else if(_fs->IsConstant(id, constant)) {
+                else if(IsConstant(id, constant)) {
                     /* Handle named constant */
                     SQObjectPtr constval;
                     SQObject    constid;
@@ -1146,7 +1185,7 @@ public:
             Error(_SC("%s name '%s' conflicts with function name"), desc, _stringval(name));
 
         SQObject constant;
-        if (ignore_global_consts ? _fs->IsLocalConstant(name, constant) : _fs->IsConstant(name, constant))
+        if (ignore_global_consts ? IsLocalConstant(name, constant) : IsConstant(name, constant))
             Error(_SC("%s name '%s' conflicts with existing constant/enum"), desc, _stringval(name));
     }
     void LocalDeclStatement()
@@ -1504,6 +1543,16 @@ public:
         Lex();
         return val;
     }
+
+    SQTable* GetScopedConstsTable()
+    {
+        assert(!_scopedconsts.empty());
+        SQObjectPtr &consts = _scopedconsts.top();
+        if (sq_type(consts) != OT_TABLE)
+            consts = SQTable::Create(_ss(_vm), 0);
+        return _table(consts);
+    }
+
     void ConstStatement(bool global)
     {
         Lex();
@@ -1513,11 +1562,14 @@ public:
         Expect('=');
         SQObject val = ExpectScalar();
         OptionalSemicolon();
-        SQTable *enums = _table(global ? _ss(_vm)->_consts : _fs->GetConstTable());
+
+        SQTable *enums = global ? _table(_ss(_vm)->_consts) : GetScopedConstsTable();
+
         SQObjectPtr strongid = id;
         enums->NewSlot(strongid,SQObjectPtr(val));
         strongid.Null();
     }
+
     void EnumStatement(bool global)
     {
         Lex();
@@ -1542,7 +1594,9 @@ public:
             _table(table)->NewSlot(SQObjectPtr(key),SQObjectPtr(val));
             if(_token == ',') Lex();
         }
-        SQTable *enums = _table(global ? _ss(_vm)->_consts : _fs->GetConstTable());
+
+        SQTable *enums = global ? _table(_ss(_vm)->_consts) : GetScopedConstsTable();
+
         SQObjectPtr strongid = id;
         enums->NewSlot(SQObjectPtr(strongid),SQObjectPtr(table));
         strongid.Null();
@@ -1777,6 +1831,7 @@ private:
     SQChar _compilererror[MAX_COMPILER_ERROR_LEN];
     jmp_buf _errorjmp;
     SQVM *_vm;
+    SQObjectPtrVec _scopedconsts;
 };
 
 bool Compile(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
