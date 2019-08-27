@@ -1772,7 +1772,7 @@ void SQVM::dumpstack(SQInteger stackbase,bool dumpall)
         case OT_USERPOINTER:    scprintf(_SC("USERPOINTER %p"),_userpointer(obj));break;
         case OT_CLASS:          scprintf(_SC("CLASS %p"),_class(obj));break;
         case OT_INSTANCE:       scprintf(_SC("INSTANCE %p"),_instance(obj));break;
-        case OT_WEAKREF:        scprintf(_SC("WEAKERF %p"),_weakref(obj));break;
+        case OT_WEAKREF:        scprintf(_SC("WEAKREF %p"),_weakref(obj));break;
         default:
             assert(0);
             break;
