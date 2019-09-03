@@ -665,7 +665,7 @@ bool SQVM::IsEqual(const SQObjectPtr &o1,const SQObjectPtr &o2,bool &res)
     return true;
 }
 
-bool SQVM::IsFalse(SQObjectPtr &o)
+bool SQVM::IsFalse(const SQObjectPtr &o)
 {
     if(((sq_type(o) & SQOBJECT_CANBEFALSE)
         && ( ((sq_type(o) == OT_FLOAT) && (_float(o) == SQFloat(0.0))) ))

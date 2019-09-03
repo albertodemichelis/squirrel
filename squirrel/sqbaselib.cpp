@@ -381,9 +381,9 @@ static const SQRegFunction base_funcs[]={
     {_SC("collectgarbage"),base_collectgarbage,0, NULL},
     {_SC("resurrectunreachable"),base_resurectureachable,0, NULL},
 #endif
-    {_SC("min"),base_min_max<-1>,-3,".nnnnnnnn"},
-    {_SC("max"),base_min_max<1>,-3,".nnnnnnnn"},
-    {_SC("clamp"),base_clamp,4,".nnn"},
+    {_SC("min"),base_min_max<-1>,-3,_SC(".nnnnnnnn")},
+    {_SC("max"),base_min_max<1>,-3,_SC(".nnnnnnnn")},
+    {_SC("clamp"),base_clamp,4,_SC(".nnn")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -539,7 +539,7 @@ static SQInteger container_merge(HSQUIRRELVM v)
             sq_newclass(v, SQFalse);
             break;
         default:
-            return sq_throwerror(v, "merge() only works on tables and classes");
+            return sq_throwerror(v, _SC("merge() only works on tables and classes"));
     }
 
     for (int arg=1; arg<=top; ++arg) {
@@ -823,10 +823,10 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("getfuncinfos"),delegable_getfuncinfos,1, _SC("t")},
     {_SC("each"),container_each,2, _SC("tc")},
     {_SC("search"),container_search,2, _SC("tc")},
-	{_SC("keys"),table_keys,1, _SC("t") },
-	{_SC("values"),table_values,1, _SC("t") },
-    {_SC("__update"),container_update, -2, "t|yt|y|x" },
-    {_SC("__merge"),container_merge, -2, "t|yt|y|x" },
+    {_SC("keys"),table_keys,1, _SC("t") },
+    {_SC("values"),table_values,1, _SC("t") },
+    {_SC("__update"),container_update, -2, _SC("t|yt|y|x") },
+    {_SC("__merge"),container_merge, -2, _SC("t|yt|y|x") },
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -1670,8 +1670,8 @@ const SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
     {_SC("pcall"),closure_pcall,-1, _SC("y")},
     {_SC("acall"),closure_acall,2, _SC("ya")},
     {_SC("pacall"),closure_pacall,2, _SC("ya")},
-    {_SC("__update"),container_update, -2, "t|yt|y|x" },
-    {_SC("__merge"),container_merge, -2, "t|yt|y|x" },
+    {_SC("__update"),container_update, -2, _SC("t|yt|y|x") },
+    {_SC("__merge"),container_merge, -2, _SC("t|yt|y|x") },
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
