@@ -864,7 +864,7 @@ public:
         case TK_CONSTRUCTOR:
         case TK_THIS:{
                 if (_token == TK_IDENTIFIER && sq_isstring(_fs->_name)
-                    && strcmp(_stringval(_fs->_name), _lex._svalue)==0
+                    && scstrcmp(_stringval(_fs->_name), _lex._svalue)==0
                     && _fs->GetLocalVariable(_fs->_name) == -1)
                 {
                     _fs->AddInstruction(_OP_LOADCALLEE, _fs->PushTarget());

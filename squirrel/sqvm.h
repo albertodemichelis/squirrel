@@ -134,7 +134,7 @@ public:
     //stack functions for the api
     void Remove(SQInteger n);
 
-    static bool IsFalse(SQObjectPtr &o);
+    static bool IsFalse(const SQObjectPtr &o);
 
     void Pop();
     void Pop(SQInteger n);
