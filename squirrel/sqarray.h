@@ -77,11 +77,12 @@ public:
         if(_values.size() <= _values.capacity()>>2) //shrink the array
             _values.shrinktofit();
     }
-    bool Remove(SQInteger idx){
+    bool Remove(SQInteger idx, bool shrink=true){
         if(idx < 0 || idx >= (SQInteger)_values.size())
             return false;
         _values.remove(idx);
-        ShrinkIfNeeded();
+        if (shrink)
+            ShrinkIfNeeded();
         return true;
     }
     void Release()

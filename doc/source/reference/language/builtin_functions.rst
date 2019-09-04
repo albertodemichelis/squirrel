@@ -56,6 +56,8 @@ sets the const table of the VM; returns the previous const table.
 .. js:function:: assert(exp, [message])
 
 throws an exception if exp is null or false. Throws "assertion failed" string by default, or message if specified.
+If message argument is function it is evaluated and return value is used as message text. This is to avoid
+unnecessary string formatting when it is not needed.
 
 .. js:function:: print(x)
 
@@ -277,6 +279,53 @@ returns a uppercase copy of the string.
 
 returns a weak reference to the object.
 
+.. js:function:: string.subst(...)
+
+This delegate is used to format strings. A format string can contain variable positional arguments and table keys.
+As parameters, you can pass an arbitrary number of tables and arbitrary number of positional arguments. If the key is found in several tables,
+then the most value from the leftmost table will be used.
+
+Example: ::
+
+"Score: {0}".subst(4200) => "Score: 4200"
+"x={0} y={1} z={2}".subst(42, 45.53, -10.8) => "x=42 y=45.53 z=-10.8"
+"Score: {score}".subst({score=4200}) => "Score: 4200"
+"x={x} y={y} z={z}".subst({y=45.53, x=42, z=-10.8}) => "x=42 y=45.53 z=-10.8"
+"Type: {type}, Health: {hp}".subst({hp=100, damage=5}, {isAir=true, type="helicopter"}) => "Type: helicopter, Health: 100"
+"Type: {type}, Pos: x={0} y={1} z={2}".subst({isAir=true, type="helicopter"}, 42, 45.53, -10.8) => "Type: helicopter, Pos: x=42 y=45.53 z=-10.8"
+"Score: {0}".subst() => "Score: {0}"
+"Score: {score}".subst({}) => "Score: {score}"
+
+.. js:function:: string.replace(from, to)
+
+Replaces all occurrences of 'from' substring to 'to'
+
+.. js:function:: string.join(arr)
+
+Concatenate all items in provided array using string itself as separator.
+Example: ::
+", ".join(["a", "b", "c"]) // => "a, b, c"
+
+.. js:function:: string.concat(...)
+
+Concatenate all arguments using string itself as separator.
+Example: ::
+", ".concat("a", "b", "c") // => "a, b, c"
+
+.. js:function:: string.split([sep])
+
+Return a list of the words in the string, using sep as the delimiter string.
+If sep is given, consecutive delimiters are not grouped together and are deemed to delimit empty strings
+(for example, '1,,2'.split(',') returns ['1', '', '2']).
+The sep argument may consist of multiple characters (for example, '1<>2<>3'.split('<>') returns ['1', '2', '3']).
+Splitting an empty string with a specified separator returns [''].
+
+If sep is not specified or is None, a different splitting algorithm is applied:
+runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings
+at the start or end if the string has leading or trailing whitespace.
+Consequently, splitting an empty string or a string consisting of just whitespace without providing a separator returns [].
+
+
 ^^^^^
 Table
 ^^^^^
@@ -331,7 +380,7 @@ Sets the delegate of the table. To remove a delegate, 'null' must be passed to t
 returns the table's delegate or null if no delegate was set.
 
 
-.. js:function:: table.filter(func(key,val))
+.. js:function:: table.filter(func(val, [key], [table_ref]))
 
 Creates a new table with all values that pass the test implemented by the provided function. In detail, it creates a new table, invokes the specified function for each key-value pair in the original table; if the function returns 'true', then the value is added to the newly created table at the same key.
 
@@ -512,10 +561,14 @@ calls the function with that result and the fourth parameter and so on until all
 Finally, returns the return value of the last invocation of func.
 
 
-.. js:function:: array.filter(func(index,val))
+.. js:function:: array.filter(func(val, [index], [array_ref]))
 
 Creates a new array with all elements that pass the test implemented by the provided function. In detail, it creates a new array, for each element in the original array invokes the specified function passing the index of the element and it's value; if the function returns 'true', then the value of the corresponding element is added on the newly created array.
 
+.. js:function:: array.filter_inplace(func(val, [index], [array_ref]))
+
+Similar to array.filter(), but modifies given array instead of creating new one.
+It removes all elements for which provided function returns false.
 
 .. js:function:: array.find(value)
 
