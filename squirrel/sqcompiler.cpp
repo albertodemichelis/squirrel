@@ -1202,6 +1202,14 @@ public:
             _fs->PopTarget();
             _fs->PushLocalVariable(varname);
             return;
+        } else if (_token == TK_CLASS) {
+            Lex();
+            varname = Expect(TK_IDENTIFIER);
+            CheckDuplicateLocalIdentifier(varname, "Class", false);
+            ClassExp();
+            _fs->PopTarget();
+            _fs->PushLocalVariable(varname);
+            return;
         }
 
         do {
