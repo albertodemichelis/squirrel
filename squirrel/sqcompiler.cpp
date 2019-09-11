@@ -719,7 +719,7 @@ public:
                 SQInteger flags = 0;
                 if (_token == TK_NULLGETSTR || nextIsNullable)
                 {
-                    flags = OP_GET_FLAG_NULL_PROPAGATION;
+                    flags = OP_GET_FLAG_NO_ERROR;
                     nextIsNullable = true;
                 }
                 pos = -1;
@@ -749,7 +749,7 @@ public:
                 SQInteger flags = 0;
                 if (_token == TK_NULLGETOBJ || nextIsNullable)
                 {
-                    flags = OP_GET_FLAG_NULL_PROPAGATION;
+                    flags = OP_GET_FLAG_NO_ERROR;
                     nextIsNullable = true;
                 }
                 if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot brake deref/or comma needed after [exp]=exp slot declaration"));
@@ -818,7 +818,7 @@ public:
                             SQInteger storedSelf = _fs->PushTarget();
                             _fs->AddInstruction(_OP_MOVE, storedSelf, self);
                             _fs->PopTarget();
-                            Emit2ArgsOP(_OP_GET, OP_GET_FLAG_NULL_PROPAGATION|OP_GET_FLAG_ALLOW_DEF_DELEGATE);
+                            Emit2ArgsOP(_OP_GET, OP_GET_FLAG_NO_ERROR|OP_GET_FLAG_ALLOW_DEF_DELEGATE);
                             SQInteger ttarget = _fs->PushTarget();
                             _fs->AddInstruction(_OP_MOVE, ttarget, storedSelf);
                         }
@@ -1212,6 +1212,16 @@ public:
             return;
         }
 
+        SQChar deconstructor = 0;
+        if (_token == _SC('{') || _token == _SC('[')) {
+            deconstructor = _token;
+            Lex();
+        }
+
+        sqvector<SQInteger> targets;
+        sqvector<SQInteger> flags;
+        SQObjectPtrVec names;
+
         do {
             varname = Expect(TK_IDENTIFIER);
             CheckDuplicateLocalIdentifier(varname, _SC("Local variable"), false);
@@ -1220,14 +1230,40 @@ public:
                 SQInteger src = _fs->PopTarget();
                 SQInteger dest = _fs->PushTarget();
                 if(dest != src) _fs->AddInstruction(_OP_MOVE, dest, src);
+                flags.push_back(OP_GET_FLAG_NO_ERROR | OP_GET_FLAG_KEEP_VAL);
             }
             else{
                 _fs->AddInstruction(_OP_LOADNULLS, _fs->PushTarget(),1);
+                flags.push_back(0);
             }
-            _fs->PopTarget();
+            targets.push_back(_fs->PopTarget());
             _fs->PushLocalVariable(varname);
+            names.push_back(varname);
             if(_token == _SC(',')) Lex(); else break;
         } while(1);
+
+        if (deconstructor) {
+            SQInteger prevTargets = _fs->_targetstack.size();
+            Expect(deconstructor==_SC('[') ? _SC(']') : _SC('}'));
+            Expect(_SC('='));
+            Expression(SQE_REGULAR);
+            SQInteger src = _fs->TopTarget();
+            SQInteger key_pos = _fs->PushTarget();
+            if (deconstructor == _SC('[')) {
+                for (SQInteger i=0; i<targets.size(); ++i) {
+                    EmitLoadConstInt(i, key_pos);
+                    _fs->AddInstruction(_OP_GET, targets[i], src, key_pos, flags[i]);
+                }
+            }
+            else {
+                for (SQInteger i=0; i<targets.size(); ++i) {
+                    _fs->AddInstruction(_OP_LOAD, key_pos, _fs->GetConstant(names[i]));
+                    _fs->AddInstruction(_OP_GET, targets[i], src, key_pos, flags[i]);
+                }
+            }
+            _fs->PopTarget();
+            _fs->PopTarget();
+        }
     }
     void IfBlock()
     {

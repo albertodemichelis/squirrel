@@ -131,7 +131,8 @@ typedef sqvector<SQInstruction> SQInstructionVec;
 
 #define NEW_SLOT_STATIC_FLAG        0x02
 
-#define OP_GET_FLAG_NULL_PROPAGATION    0x01
-#define OP_GET_FLAG_ALLOW_DEF_DELEGATE  0x02
+#define OP_GET_FLAG_ALLOW_DEF_DELEGATE  0x01
+#define OP_GET_FLAG_NO_ERROR            0x02
+#define OP_GET_FLAG_KEEP_VAL            0x04 //< only used with OP_GET_FLAG_NO_ERROR
 
 #endif // _SQOPCODES_H_
