@@ -47,34 +47,11 @@ a local function can be declared with this syntactic sugar::
 
 that is equivalent to::
 
-    local tuna = function(a,b,c)
+    local tuna = function tuna(a,b,c)
     {
         return a+b-c;
     }
 
-is also possible to declare something like::
-
-    T <- {}
-    function T::ciao(a,b,c)
-    {
-        return a+b-c;
-    }
-
-    //that is equivalent to write
-
-    T.ciao <- function(a,b,c)
-    {
-        return a+b-c;
-    }
-
-    //or
-
-    T <- {
-        function ciao(a,b,c)
-        {
-            return a+b-c;
-        }
-    }
 
 ^^^^^^^^^^^^^^^^^^
 Default Paramaters

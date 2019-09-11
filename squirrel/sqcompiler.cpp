@@ -1510,14 +1510,6 @@ public:
         Lex(); id = Expect(TK_IDENTIFIER);
         _fs->PushTarget(0);
         _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
-        if(_token == TK_DOUBLE_COLON) Emit2ArgsOP(_OP_GET);
-
-        while(_token == TK_DOUBLE_COLON) {
-            Lex();
-            id = Expect(TK_IDENTIFIER);
-            _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
-            if(_token == TK_DOUBLE_COLON) Emit2ArgsOP(_OP_GET);
-        }
         Expect(_SC('('));
         CreateFunction(id);
         _fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1, 0);

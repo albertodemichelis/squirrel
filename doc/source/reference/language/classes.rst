@@ -85,14 +85,8 @@ in order to emulate namespaces, it is also possible to declare something like th
         }
     }
 
-    function FakeNamespace::Utils::SuperClass::DoSomethingElse()
-    {
-        ::print("FakeNamespace::Utils::SuperClass::DoSomethingElse()")
-    }
-
     local testy = FakeNamespace.Utils.SuperClass();
     testy.DoSomething();
-    testy.DoSomethingElse();
 
 After its declaration, methods or properties can be added or modified by following
 the same rules that apply to a table(operator ``<-``).::
@@ -102,12 +96,6 @@ the same rules that apply to a table(operator ``<-``).::
 
     //modifies the default value of an existing property
     Foo.testy <- "I'm a string";
-
-    //adds a new method
-    function Foo::DoSomething(a,b)
-    {
-        return a+b;
-    }
 
 After a class is instantiated is no longer possible to add new properties however is possible to add or replace methods.
 
