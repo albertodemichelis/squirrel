@@ -1177,7 +1177,7 @@ public:
             _fs->SetInstructionParam(tpos, 1, nkeys);
         Lex();
     }
-    void CheckDuplicateLocalIdentifier(const SQObject &name, const char *desc, bool ignore_global_consts)
+    void CheckDuplicateLocalIdentifier(const SQObject &name, const SQChar *desc, bool ignore_global_consts)
     {
         if (_fs->GetLocalVariable(name) >= 0)
             Error(_SC("%s name '%s' conflicts with existing local variable"), desc, _string(name)->_val);
@@ -1195,7 +1195,7 @@ public:
         if( _token == TK_FUNCTION) {
             Lex();
             varname = Expect(TK_IDENTIFIER);
-            CheckDuplicateLocalIdentifier(varname, "Function", false);
+            CheckDuplicateLocalIdentifier(varname, _SC("Function"), false);
             Expect(_SC('('));
             CreateFunction(varname,false);
             _fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1, 0);
@@ -1205,7 +1205,7 @@ public:
         } else if (_token == TK_CLASS) {
             Lex();
             varname = Expect(TK_IDENTIFIER);
-            CheckDuplicateLocalIdentifier(varname, "Class", false);
+            CheckDuplicateLocalIdentifier(varname, _SC("Class"), false);
             ClassExp();
             _fs->PopTarget();
             _fs->PushLocalVariable(varname);
@@ -1214,7 +1214,7 @@ public:
 
         do {
             varname = Expect(TK_IDENTIFIER);
-            CheckDuplicateLocalIdentifier(varname, "Local variable", false);
+            CheckDuplicateLocalIdentifier(varname, _SC("Local variable"), false);
             if(_token == _SC('=')) {
                 Lex(); Expression(SQE_REGULAR);
                 SQInteger src = _fs->PopTarget();
@@ -1373,12 +1373,12 @@ public:
     {
         SQObject idxname, valname;
         Lex(); Expect(_SC('(')); valname = Expect(TK_IDENTIFIER);
-        CheckDuplicateLocalIdentifier(valname, "Iterator", false);
+        CheckDuplicateLocalIdentifier(valname, _SC("Iterator"), false);
 
         if(_token == _SC(',')) {
             idxname = valname;
             Lex(); valname = Expect(TK_IDENTIFIER);
-            CheckDuplicateLocalIdentifier(valname, "Iterator", false);
+            CheckDuplicateLocalIdentifier(valname, _SC("Iterator"), false);
         }
         else{
             idxname = _fs->CreateString(_SC("@INDEX@"));
@@ -1565,7 +1565,7 @@ public:
     {
         Lex();
         SQObject id = Expect(TK_IDENTIFIER);
-        CheckDuplicateLocalIdentifier(id, "Constant", global);
+        CheckDuplicateLocalIdentifier(id, _SC("Constant"), global);
 
         Expect('=');
         SQObject val = ExpectScalar();
@@ -1582,7 +1582,7 @@ public:
     {
         Lex();
         SQObject id = Expect(TK_IDENTIFIER);
-        CheckDuplicateLocalIdentifier(id, "Enum", global);
+        CheckDuplicateLocalIdentifier(id, _SC("Enum"), global);
 
         Expect(_SC('{'));
 
