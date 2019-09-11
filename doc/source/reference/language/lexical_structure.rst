@@ -146,9 +146,3 @@ characters.  A new line not immediately preceded by a backslash terminates this 
 comment.  It is commonly called a *"single-line comment."*::
 
     //this is a single line comment. this line will be ignored by the compiler
-
-The character ``#`` is an alternative syntax for single line comment.::
-
-    # this is also a single line comment.
-
-This to facilitate the use of squirrel in UNIX-style shell scripts.
