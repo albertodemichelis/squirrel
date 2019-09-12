@@ -817,8 +817,8 @@ exception_restore:
                       }
                     default:
                         if (nullcall && sq_type(clo)==OT_NULL) {
-                            if(sarg0 != -1) {
-                                STK(sarg0).Null();
+                            if(tgt0 != -1) {
+                                STK(tgt0).Null();
                             }
                         } else {
                             Raise_Error(_SC("attempt to call '%s'"), GetTypeName(clo));
