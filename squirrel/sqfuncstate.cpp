@@ -82,7 +82,7 @@ void DumpLiteral(SQObjectPtr &o)
         case OT_FLOAT: scprintf(_SC("{%f}"),_float(o));break;
         case OT_INTEGER: scprintf(_SC("{") _PRINT_INT_FMT _SC("}"),_integer(o));break;
         case OT_BOOL: scprintf(_SC("%s"),_integer(o)?_SC("true"):_SC("false"));break;
-        default: scprintf(_SC("(%s %p)"),GetTypeName(o),(void*)_rawval(o));break; break; //shut up compiler
+        default: scprintf(_SC("(%s 0x%zx)"),GetTypeName(o),(size_t)_rawval(o));break; break; //shut up compiler
     }
 }
 

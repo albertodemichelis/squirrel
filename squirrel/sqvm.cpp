@@ -313,7 +313,7 @@ bool SQVM::ToString(const SQObjectPtr &o,SQObjectPtr &res)
             }
         }
     default:
-        scsprintf(_sp(sq_rsl((sizeof(void*)*2)+NUMBER_MAX_CHAR)),sq_rsl((sizeof(void*)*2)+NUMBER_MAX_CHAR),_SC("(%s : 0x%p)"),GetTypeName(o),(void*)_rawval(o));
+        scsprintf(_sp(sq_rsl((sizeof(void*)*2)+NUMBER_MAX_CHAR)),sq_rsl((sizeof(void*)*2)+NUMBER_MAX_CHAR),_SC("(%s : 0x%zx)"),GetTypeName(o),(size_t)_rawval(o));
     }
     res = SQString::Create(_ss(this),_spval);
     return true;
