@@ -18,6 +18,7 @@ SQSharedState::SQSharedState()
     _printfunc = NULL;
     _errorfunc = NULL;
     _debuginfo = false;
+    _lineInfoInExpressions = false;
     _notifyallexceptions = false;
     _foreignptr = NULL;
     _releasehook = NULL;

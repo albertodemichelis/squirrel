@@ -144,6 +144,11 @@ SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,const SQCha
 #endif
 }
 
+void sq_lineinfo_in_expressions(HSQUIRRELVM v, SQBool enable)
+{
+    _ss(v)->_lineInfoInExpressions = enable ? true : false;
+}
+
 void sq_enabledebuginfo(HSQUIRRELVM v, SQBool enable)
 {
     _ss(v)->_debuginfo = enable?true:false;

@@ -433,6 +433,9 @@ public:
         SQExpressionContext saved_expression_context = _expression_context;
         _expression_context = expression_context;
 
+        if (_ss(_vm)->_lineInfoInExpressions && _fs)
+          _fs->AddLineInfos(_lex._prevtoken == _SC('\n') ? _lex._lasttokenline: _lex._currentline, _lineinfo, false);
+
          SQExpState es = _es;
         _es.etype     = EXPR;
         _es.epos      = -1;
@@ -1802,6 +1805,7 @@ public:
         SQFuncState *currchunk = _fs;
         _fs = funcstate;
         if(lambda) {
+            _fs->AddLineInfos(_lex._prevtoken == _SC('\n') ? _lex._lasttokenline: _lex._currentline, _lineinfo, true);
             Expression(SQE_REGULAR);
             _fs->AddInstruction(_OP_RETURN, 1, _fs->PopTarget());}
         else {

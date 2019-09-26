@@ -105,6 +105,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                 {
                 case 'd': //DEBUG(debug infos)
                     sq_enabledebuginfo(v,1);
+                    sq_lineinfo_in_expressions(v, 1);
                     break;
                 case 'c':
                     compiles_only = 1;

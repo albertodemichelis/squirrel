@@ -111,6 +111,7 @@ public:
     SQPRINTFUNCTION _errorfunc;
     bool _debuginfo;
     bool _notifyallexceptions;
+    bool _lineInfoInExpressions;
     SQUserPointer _foreignptr;
     SQRELEASEHOOK _releasehook;
 private:
