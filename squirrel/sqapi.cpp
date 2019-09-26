@@ -94,6 +94,12 @@ void sq_seterrorhandler(HSQUIRRELVM v)
     }
 }
 
+HSQOBJECT sq_geterrorhandler(HSQUIRRELVM v)
+{
+  return v->_errorhandler;
+}
+
+
 void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook)
 {
     v->_debughook_native = hook;
@@ -1257,6 +1263,12 @@ void sq_setcompilererrorhandler(HSQUIRRELVM v,SQCOMPILERERROR f)
 {
     _ss(v)->_compilererrorhandler = f;
 }
+
+SQCOMPILERERROR sq_getcompilererrorhandler(HSQUIRRELVM v)
+{
+    return _ss(v)->_compilererrorhandler;
+}
+
 
 SQRESULT sq_writeclosure(HSQUIRRELVM v,SQWRITEFUNC w,SQUserPointer up)
 {
