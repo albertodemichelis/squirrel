@@ -1050,13 +1050,26 @@ SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx)
 {
     SQObjectPtr &self=stack_get(v,idx);
     SQObjectPtr &obj = v->GetUp(-1);
-    if(v->Get(self,obj,obj,false,DONT_FALL_BACK))
+    if(v->Get(self,obj,obj,0,DONT_FALL_BACK))
         return SQ_OK;
     v->Pop();
     return SQ_ERROR;
 }
 
-SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx)
+// Added to prevent raising errors when checking slot existence
+// No need to create and format string when we are allow given slot to be missing
+SQRESULT sq_get_noerr(HSQUIRRELVM v,SQInteger idx)
+{
+    SQObjectPtr &self=stack_get(v,idx);
+    SQObjectPtr &obj = v->GetUp(-1);
+    if(v->Get(self,obj,obj,GET_FLAG_DO_NOT_RAISE_ERROR,DONT_FALL_BACK))
+        return SQ_OK;
+    v->Pop();
+    return SQ_ERROR;
+}
+
+template <bool err_on_missing_slot>
+static SQRESULT sq_rawget_internal(HSQUIRRELVM v,SQInteger idx)
 {
     SQObjectPtr &self=stack_get(v,idx);
     SQObjectPtr &obj = v->GetUp(-1);
@@ -1090,7 +1103,19 @@ SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx)
         return sq_throwerror(v,_SC("rawget works only on array/table/instance and class"));
     }
     v->Pop();
-    return sq_throwerror(v,_SC("the index doesn't exist"));
+    if (err_on_missing_slot)
+      return sq_throwerror(v,_SC("the index doesn't exist"));
+    return SQ_ERROR;
+}
+
+SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx)
+{
+  return sq_rawget_internal<true>(v,idx);
+}
+
+SQRESULT sq_rawget_noerr(HSQUIRRELVM v,SQInteger idx)
+{
+  return sq_rawget_internal<false>(v,idx);
 }
 
 SQRESULT sq_getstackobj(HSQUIRRELVM v,SQInteger idx,HSQOBJECT *po)
