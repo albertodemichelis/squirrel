@@ -27,6 +27,10 @@ struct SQExpState {
   bool       donot_get;   /* signal not to deref the next value */
 };
 
+#ifndef SQ_LINE_INFO_IN_STRUCTURES
+#  define SQ_LINE_INFO_IN_STRUCTURES 1
+#endif
+
 #define MAX_COMPILER_ERROR_LEN 256
 #define MAX_FUNCTION_NAME_LEN 128
 
@@ -973,6 +977,10 @@ public:
                 SQInteger apos = _fs->GetCurrentPos(),key = 0;
                 Lex();
                 while(_token != _SC(']')) {
+                    #if SQ_LINE_INFO_IN_STRUCTURES
+                    if (key < 100)
+                      _fs->AddLineInfos(_lex._currentline, false);
+                    #endif
                     Expression(SQE_REGULAR);
                     if(_token == _SC(',')) Lex();
                     SQInteger val = _fs->PopTarget();
@@ -1108,6 +1116,10 @@ public:
         SQInteger tpos = _fs->GetCurrentPos(),nkeys = 0;
         sqvector<SQObject> memberConstantKeys;
         while(_token != terminator) {
+            #if SQ_LINE_INFO_IN_STRUCTURES
+            if (nkeys < 100)
+              _fs->AddLineInfos(_lex._currentline, false);
+            #endif
             bool isstatic = false;
             //check if is an static
             if(separator == ';') {
