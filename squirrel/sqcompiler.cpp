@@ -1299,10 +1299,10 @@ public:
             }
         }
         else {
-            //BEGIN_SCOPE();
+            BEGIN_SCOPE();
             Statement();
             if (_lex._prevtoken != _SC('}') && _lex._prevtoken != _SC(';')) OptionalSemicolon();
-            //END_SCOPE();
+            END_SCOPE();
         }
     }
     void IfStatement()
