@@ -300,11 +300,18 @@ Example: ::
 
 Replaces all occurrences of 'from' substring to 'to'
 
-.. js:function:: string.join(arr)
+.. js:function:: string.join(arr, [filter])
 
 Concatenate all items in provided array using string itself as separator.
 Example: ::
 ", ".join(["a", "b", "c"]) // => "a, b, c"
+
+Optional filter parameter can be specified.
+When it is set to true (boolean), default filter is used which keeps items which are non-null and not "" (empty string).
+When filter is a function, it is called for every item and must return true for elements that should be included in resulting string.
+Example: ::
+", ".join(["a", null, "b", "", "", "c"], true) // => "a, b, c"
+", ".join(["a", null, "b", "", "", "c"], @(v) v!=null)) // => "a, b, , , c"
 
 .. js:function:: string.concat(...)
 

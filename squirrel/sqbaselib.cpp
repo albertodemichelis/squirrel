@@ -1413,21 +1413,49 @@ static SQInteger string_join(HSQUIRRELVM v)
     SQInteger sep_len;
     sq_getstringandsize(v, 1, &sep, &sep_len);
     SQArray *arr = _array(stack_get(v, 2));
-    SQInteger nitems = arr->Size();
-    if (nitems < 1) {
+
+    SQObjectPtrVec strings;
+    strings.reserve(arr->Size());
+    SQObjectPtr tmp;
+    SQObjectPtr flt;
+
+    if (sq_gettop(v) > 3)
+        return sq_throwerror(v, _SC("Too many arguments"));
+
+    if (sq_gettop(v) == 3)
+        flt = stack_get(v, 3);
+
+    SQInteger res_len = 0;
+    for (SQInteger i=0; i<arr->Size(); ++i) {
+        SQObjectPtr &item = arr->_values[i];
+        if (sq_isbool(flt) && sq_objtobool(&flt)) {
+            if (sq_isnull(item) || (sq_isstring(item) && !_string(item)->_len))
+                continue;
+        } else if (sq_isclosure(flt) || sq_isnativeclosure(flt)) {
+            sq_push(v, 1);
+            sq_pushobject(v, item);
+
+            if (SQ_FAILED(sq_call(v,2,SQTrue,SQFalse)))
+                return SQ_ERROR;
+            bool use = !SQVM::IsFalse(v->GetUp(-1));
+            v->Pop();
+            if (!use)
+                continue;
+        }
+
+        if (!v->ToString(item, tmp))
+            return sq_throwerror(v, _SC("Failed to convert array item to string"));
+
+        strings.push_back(tmp);
+        res_len += _string(tmp)->_len;
+    }
+
+    if (strings.empty()) {
         sq_pushstring(v, _SC(""), 0);
         return 1;
     }
 
-    SQObjectPtrVec strings;
-    strings.resize(nitems);
-
-    SQInteger res_len = sep_len * (nitems-1);
-    for (SQInteger i=0; i<nitems; ++i) {
-        if (!v->ToString(arr->_values[i], strings[i]))
-            return sq_throwerror(v, _SC("Failed to convert array item to string"));
-        res_len += _string(strings[i])->_len;
-    }
+    res_len += sep_len * (strings.size()-1);
 
     sqvector<SQChar> res;
     res.resize(res_len);
@@ -1545,7 +1573,7 @@ const SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
     {_SC("toupper"),string_toupper,-1, _SC("s n n")},
     {_SC("subst"),string_substitute,-2, _SC("s")},
     {_SC("replace"),string_replace, 3, _SC("s s s")},
-    {_SC("join"),string_join, 2, _SC("s a")},
+    {_SC("join"),string_join, -2, _SC("s a b|c")},
     {_SC("concat"),string_concat, -2, _SC("s")},
     {_SC("split"),string_split, -1, _SC("s s")},
     {_SC("weakref"),obj_delegate_weakref,1, NULL },
