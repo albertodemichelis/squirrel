@@ -51,6 +51,7 @@ struct SQFuncState
     bool IsConstant(const SQObject &name,SQObject &e);
     bool IsLocalConstant(const SQObject &name,SQObject &e);
     bool IsGlobalConstant(const SQObject &name,SQObject &e);
+    SQUnsignedInteger lang_features;
     SQInteger _returnexp;
     SQLocalVarInfoVec _vlocals;
     SQIntVec _targetstack;

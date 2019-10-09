@@ -50,7 +50,7 @@ SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc
         _bgenerator = false;
         _outers = 0;
         _ss = ss;
-
+        lang_features = parent ? parent->lang_features : ss->defaultLangFeatures;
 }
 
 void SQFuncState::Error(const SQChar *err)
@@ -528,8 +528,7 @@ SQObject SQFuncState::CreateTable()
 
 SQFunctionProto *SQFuncState::BuildProto()
 {
-
-    SQFunctionProto *f=SQFunctionProto::Create(_ss,_instructions.size(),
+    SQFunctionProto *f=SQFunctionProto::Create(_ss,lang_features,_instructions.size(),
         _nliterals,_parameters.size(),_functions.size(),_outervalues.size(),
         _lineinfos.size(),_localvarinfos.size(),_defaultparams.size());
 

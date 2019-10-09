@@ -147,7 +147,65 @@ public:
         va_end(vl);
         longjmp(_errorjmp,1);
     }
-    void Lex(){ _token = _lex.Lex();}
+
+
+    void ProcessDirective()
+    {
+        const SQChar *sval = _lex._svalue;
+
+        SQInteger setFlags = 0, clearFlags = 0;
+        bool applyToDefault = false;
+        if (scstrncmp(sval, _SC("default:"), 8) == 0) {
+            applyToDefault = true;
+            sval += 8;
+        }
+
+        if (scstrcmp(sval, _SC("strict")) == 0)
+            setFlags = ~SQUnsignedInteger(0);
+        else if (scstrcmp(sval, _SC("relaxed")) == 0)
+            clearFlags = ~SQUnsignedInteger(0);
+        else if (scstrcmp(sval, _SC("strict-bool")) == 0)
+            setFlags = LF_STRICT_BOOL;
+        else if (scstrcmp(sval, _SC("relaxed-bool")) == 0)
+            clearFlags = LF_STRICT_BOOL;
+        else if (scstrcmp(sval, _SC("no-root-fallback")) == 0)
+            setFlags = LF_EXPLICIT_ROOT_LOOKUP;
+        else if (scstrcmp(sval, _SC("implicit-root-fallback")) == 0)
+            clearFlags = LF_EXPLICIT_ROOT_LOOKUP;
+        else if (scstrcmp(sval, _SC("no-func-decl-sugar")) == 0)
+            setFlags = LF_NO_FUNC_DECL_SUGAR;
+        else if (scstrcmp(sval, _SC("allow-func-decl-sugar")) == 0)
+            clearFlags = LF_NO_FUNC_DECL_SUGAR;
+        else if (scstrcmp(sval, _SC("no-class-decl-sugar")) == 0)
+            setFlags = LF_NO_CLASS_DECL_SUGAR;
+        else if (scstrcmp(sval, _SC("allow-class-decl-sugar")) == 0)
+            clearFlags = LF_NO_CLASS_DECL_SUGAR;
+        else if (scstrcmp(sval, _SC("no-plus-concat")) == 0)
+            setFlags = LF_NO_PLUS_CONCAT;
+        else if (scstrcmp(sval, _SC("allow-plus-concat")) == 0)
+            clearFlags = LF_NO_PLUS_CONCAT;
+        else
+            Error(_SC("unsupported directive"));
+
+        _fs->lang_features = (_fs->lang_features | setFlags) & ~clearFlags;
+        if (applyToDefault)
+            _ss(_vm)->defaultLangFeatures = (_ss(_vm)->defaultLangFeatures | setFlags) & ~clearFlags;
+    }
+
+    void Lex()
+    {
+        _token = _lex.Lex();
+        while (_token == TK_DIRECTIVE)
+        {
+            bool endOfLine = (_lex._prevtoken == _SC('\n'));
+            ProcessDirective();
+            _token = _lex.Lex();
+            if (endOfLine)
+                _lex._prevtoken = _SC('\n');
+        }
+    }
+
+
     SQObject Expect(SQInteger tok)
     {
 
@@ -320,10 +378,16 @@ public:
             Lex();
             break;
         case TK_FUNCTION:
-            FunctionStatement();
+            if (!(_fs->lang_features & LF_NO_FUNC_DECL_SUGAR))
+                FunctionStatement();
+            else
+                Error(_SC("Syntactic sugar for declaring functions as fields is disabled"));
             break;
         case TK_CLASS:
-            ClassStatement();
+            if (!(_fs->lang_features & LF_NO_CLASS_DECL_SUGAR))
+                ClassStatement();
+            else
+                Error(_SC("Syntactic sugar for declaring classes as fields is disabled"));
             break;
         case TK_ENUM:
             EnumStatement(false);

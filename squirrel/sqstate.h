@@ -112,6 +112,7 @@ public:
     bool _debuginfo;
     bool _notifyallexceptions;
     bool _lineInfoInExpressions;
+    SQUnsignedInteger defaultLangFeatures;
     SQUserPointer _foreignptr;
     SQRELEASEHOOK _releasehook;
 private:

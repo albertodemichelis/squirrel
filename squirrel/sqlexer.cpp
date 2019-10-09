@@ -191,6 +191,13 @@ SQInteger SQLexer::Lex()
             NEXT();
             if (CUR_CHAR != _SC('=')){ RETURN_TOKEN('!')}
             else { NEXT(); RETURN_TOKEN(TK_NE); }
+        case _SC('#'): {
+            NEXT();
+            SQInteger stype = ReadDirective();
+            if (stype < 0)
+                Error(_SC("error parsing directive"));
+            RETURN_TOKEN(TK_DIRECTIVE);
+            }
         case _SC('@'): {
             SQInteger stype;
             NEXT();
@@ -569,4 +576,18 @@ SQInteger SQLexer::ReadID()
         _svalue = &_longstr[0];
     }
     return res;
+}
+
+SQInteger SQLexer::ReadDirective()
+{
+    INIT_TEMP_STRING();
+    do {
+        APPEND_CHAR(CUR_CHAR);
+        NEXT();
+    } while(scisalnum(CUR_CHAR) || CUR_CHAR == _SC('_') || CUR_CHAR == _SC('-') || CUR_CHAR == _SC(':'));
+    TERMINATE_BUFFER();
+    if (!_longstr[0])
+        return -1;
+    _svalue = &_longstr[0];
+    return TK_DIRECTIVE;
 }

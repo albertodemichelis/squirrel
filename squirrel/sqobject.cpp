@@ -415,6 +415,7 @@ bool SQFunctionProto::Save(SQVM *v,SQUserPointer up,SQWRITEFUNC write)
     _CHECK_IO(WriteObject(v,up,write,_sourcename));
     _CHECK_IO(WriteObject(v,up,write,_name));
     _CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+    _CHECK_IO(SafeWrite(v,write,up, &lang_features, sizeof(lang_features)));
     _CHECK_IO(SafeWrite(v,write,up,&nliterals,sizeof(nliterals)));
     _CHECK_IO(SafeWrite(v,write,up,&nparameters,sizeof(nparameters)));
     _CHECK_IO(SafeWrite(v,write,up,&noutervalues,sizeof(noutervalues)));
@@ -471,6 +472,7 @@ bool SQFunctionProto::Save(SQVM *v,SQUserPointer up,SQWRITEFUNC write)
 bool SQFunctionProto::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &ret)
 {
     SQInteger i, nliterals,nparameters;
+    SQUnsignedInteger langFeatures;
     SQInteger noutervalues ,nlocalvarinfos ;
     SQInteger nlineinfos,ninstructions ,nfunctions,ndefaultparams ;
     SQObjectPtr sourcename, name;
@@ -480,6 +482,7 @@ bool SQFunctionProto::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr 
     _CHECK_IO(ReadObject(v, up, read, name));
 
     _CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));
+    _CHECK_IO(SafeRead(v,read,up, &langFeatures, sizeof(langFeatures)));
     _CHECK_IO(SafeRead(v,read,up, &nliterals, sizeof(nliterals)));
     _CHECK_IO(SafeRead(v,read,up, &nparameters, sizeof(nparameters)));
     _CHECK_IO(SafeRead(v,read,up, &noutervalues, sizeof(noutervalues)));
@@ -490,7 +493,8 @@ bool SQFunctionProto::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr 
     _CHECK_IO(SafeRead(v,read,up, &nfunctions, sizeof(nfunctions)));
 
 
-    SQFunctionProto *f = SQFunctionProto::Create(_opt_ss(v),ninstructions,nliterals,nparameters,
+    SQFunctionProto *f = SQFunctionProto::Create(_opt_ss(v), langFeatures,
+            ninstructions,nliterals,nparameters,
             nfunctions,noutervalues,nlineinfos,nlocalvarinfos,ndefaultparams);
     SQObjectPtr proto = f; //gets a ref in case of failure
     f->_sourcename = sourcename;

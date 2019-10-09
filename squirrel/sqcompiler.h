@@ -75,6 +75,7 @@ struct SQVM;
 #define TK_NULLCALL 329
 #define TK_DOCSTRING 330
 #define TK_GLOBAL 331
+#define TK_DIRECTIVE 332
 
 
 typedef void(*CompilerErrorFunc)(void *ud, const SQChar *s);

@@ -135,6 +135,10 @@ public:
     void Remove(SQInteger n);
 
     static bool IsFalse(const SQObjectPtr &o);
+    enum BooleanResult {BOOL_FALSE = 0, LEGACY_FALSE = 1, BOOL_TRUE = 2, LEGACY_TRUE = 3};
+    static BooleanResult ResolveBooleanResult(const SQObjectPtr &o);
+    static bool IsBooleanResultFalse(BooleanResult r){return r <= LEGACY_FALSE;}
+    static bool IsBooleanResultLegacy(BooleanResult r){return ((unsigned)r) & 1;}
 
     void Pop();
     void Pop(SQInteger n);

@@ -672,13 +672,36 @@ bool SQVM::IsFalse(const SQObjectPtr &o)
 #if !defined(SQUSEDOUBLE) || (defined(SQUSEDOUBLE) && defined(_SQ64))
         || (_integer(o) == 0) )  //OT_NULL|OT_INTEGER|OT_BOOL
 #else
-        || (((type(o) != OT_FLOAT) && (_integer(o) == 0))) )  //OT_NULL|OT_INTEGER|OT_BOOL
+        || (((sq_type(o) != OT_FLOAT) && (_integer(o) == 0))) )  //OT_NULL|OT_INTEGER|OT_BOOL
 #endif
     {
         return true;
     }
     return false;
 }
+
+SQVM::BooleanResult SQVM::ResolveBooleanResult(const SQObjectPtr &o)
+{
+    if (sq_type(o) != OT_BOOL)
+      return IsFalse(o) ? LEGACY_FALSE : LEGACY_TRUE;
+    return (_integer(o) == 0) ? BOOL_FALSE : BOOL_TRUE;
+}
+
+#define VALIDATE_BOOLEAN_RESULT(r, o) {\
+    if ((_closure(ci->_closure)->_function->lang_features & LF_STRICT_BOOL) && IsBooleanResultLegacy(r)) { \
+        Raise_Error(_SC("Expression type is %s, not bool as expected"), GetTypeName((o))); \
+        SQ_THROW(); \
+    } \
+}
+
+#define VALIDATE_NOT_STRING(a, b) { \
+     if ((_closure(ci->_closure)->_function->lang_features & LF_NO_PLUS_CONCAT) && ((sq_type(a) | sq_type(b)) & _RT_STRING)) \
+     { \
+         Raise_Error(_SC("'+' cannot be applied to string")); \
+         SQ_THROW(); \
+     } \
+}
+
 extern SQInstructionDesc g_InstrDesc[];
 bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQObjectPtr &outres, SQBool raiseerror,ExecutionType et)
 {
@@ -890,7 +913,10 @@ exception_restore:
                 if(!IsEqual(STK(arg2),COND_LITERAL,res)) { SQ_THROW(); }
                 TARGET = (!res)?true:false;
                 } continue;
-            case _OP_ADD: _ARITH_(+,TARGET,STK(arg2),STK(arg1)); continue;
+            case _OP_ADD:
+              VALIDATE_NOT_STRING(STK(arg2), STK(arg1));
+              _ARITH_(+,TARGET,STK(arg2),STK(arg1));
+              continue;
             case _OP_SUB: _ARITH_(-,TARGET,STK(arg2),STK(arg1)); continue;
             case _OP_MUL: _ARITH_(*,TARGET,STK(arg2),STK(arg1)); continue;
             case _OP_DIV: _ARITH_NOZERO(/,TARGET,STK(arg2),STK(arg1),_SC("division by zero")); continue;
@@ -921,12 +947,19 @@ exception_restore:
             case _OP_LOADCALLEE: TARGET = ci->_closure; continue;
             case _OP_DMOVE: STK(arg0) = STK(arg1); STK(arg2) = STK(arg3); continue;
             case _OP_JMP: ci->_ip += (sarg1); continue;
-            //case _OP_JNZ: if(!IsFalse(STK(arg0))) ci->_ip+=(sarg1); continue;
-            case _OP_JCMP:
+            //case _OP_JNZ: if(!ResolveBooleanResult(STK(arg0))) ci->_ip+=(sarg1); continue;
+            case _OP_JCMP: {
                 _GUARD(CMP_OP((CmpOP)arg3,STK(arg2),STK(arg0),temp_reg));
-                if(IsFalse(temp_reg)) ci->_ip+=(sarg1);
+                BooleanResult result = ResolveBooleanResult(temp_reg);
+                VALIDATE_BOOLEAN_RESULT(result, temp_reg);
+                if(IsBooleanResultFalse(result)) ci->_ip+=(sarg1);
+                }
                 continue;
-            case _OP_JZ: if(IsFalse(STK(arg0))) ci->_ip+=(sarg1); continue;
+            case _OP_JZ: {
+              BooleanResult result = ResolveBooleanResult(STK(arg0));
+              VALIDATE_BOOLEAN_RESULT(result, STK(arg0));
+              if(IsBooleanResultFalse(result)) ci->_ip+=(sarg1);
+            } continue;
             case _OP_GETOUTER: {
                 SQClosure *cur_cls = _closure(ci->_closure);
                 SQOuter *otr = _outer(cur_cls->_outervalues[arg1]);
@@ -984,7 +1017,11 @@ exception_restore:
                 _GUARD(DerefInc(arg3, TARGET, STK(selfidx), STK(arg2), STK(arg1&0x0000FFFF), false, selfidx));
                                 }
                 continue;
-            case _OP_INC: {SQObjectPtr o(sarg3); _GUARD(DerefInc('+',TARGET, STK(arg1), STK(arg2), o, false, arg1));} continue;
+            case _OP_INC: {
+                SQObjectPtr o(sarg3);
+                VALIDATE_NOT_STRING(STK(arg2), o);
+                _GUARD(DerefInc('+',TARGET, STK(arg1), STK(arg2), o, false, arg1));
+                } continue;
             case _OP_INCL: {
                 SQObjectPtr &a = STK(arg1);
                 if(sq_type(a) == OT_INTEGER) {
@@ -992,10 +1029,15 @@ exception_restore:
                 }
                 else {
                     SQObjectPtr o(sarg3); //_GUARD(LOCAL_INC('+',TARGET, STK(arg1), o));
+                    VALIDATE_NOT_STRING(a, o);
                     _ARITH_(+,a,a,o);
                 }
                            } continue;
-            case _OP_PINC: {SQObjectPtr o(sarg3); _GUARD(DerefInc('+',TARGET, STK(arg1), STK(arg2), o, true, arg1));} continue;
+            case _OP_PINC: {
+                SQObjectPtr o(sarg3);
+                VALIDATE_NOT_STRING(STK(arg2), o);
+                _GUARD(DerefInc('+',TARGET, STK(arg1), STK(arg2), o, true, arg1));
+                } continue;
             case _OP_PINCL: {
                 SQObjectPtr &a = STK(arg1);
                 if(sq_type(a) == OT_INTEGER) {
@@ -1003,7 +1045,9 @@ exception_restore:
                     a._unVal.nInteger = _integer(a) + sarg3;
                 }
                 else {
-                    SQObjectPtr o(sarg3); _GUARD(PLOCAL_INC('+',TARGET, STK(arg1), o));
+                    SQObjectPtr o(sarg3);
+                    VALIDATE_NOT_STRING(STK(arg1), o);
+                    _GUARD(PLOCAL_INC('+',TARGET, STK(arg1), o));
                 }
 
                         } continue;
@@ -1014,16 +1058,24 @@ exception_restore:
                 {Raise_Error(_SC("cannot apply instanceof between a %s and a %s"),GetTypeName(STK(arg1)),GetTypeName(STK(arg2))); SQ_THROW();}
                 TARGET = (sq_type(STK(arg2)) == OT_INSTANCE) ? (_instance(STK(arg2))->InstanceOf(_class(STK(arg1)))?true:false) : false;
                 continue;
-            case _OP_AND:
-                if(IsFalse(STK(arg2))) {
+            case _OP_AND:{
+                BooleanResult result = ResolveBooleanResult(STK(arg2));
+                VALIDATE_BOOLEAN_RESULT(result, STK(arg2));
+                if(IsBooleanResultFalse(result)) {
                     TARGET = STK(arg2);
                     ci->_ip += (sarg1);
                 }
+
+                }
                 continue;
-            case _OP_OR:
-                if(!IsFalse(STK(arg2))) {
+            case _OP_OR:{
+                BooleanResult result = ResolveBooleanResult(STK(arg2));
+                VALIDATE_BOOLEAN_RESULT(result, STK(arg2));
+                if(!IsBooleanResultFalse(result)) {
                     TARGET = STK(arg2);
                     ci->_ip += (sarg1);
+                }
+
                 }
                 continue;
             case _OP_NULLCOALESCE:
@@ -1033,7 +1085,11 @@ exception_restore:
                 }
                 continue;
             case _OP_NEG: _GUARD(NEG_OP(TARGET,STK(arg1))); continue;
-            case _OP_NOT: TARGET = IsFalse(STK(arg1)); continue;
+            case _OP_NOT:{
+                BooleanResult result = ResolveBooleanResult(STK(arg1));
+                VALIDATE_BOOLEAN_RESULT(result, STK(arg1));
+                TARGET = IsBooleanResultFalse(result);
+            } continue;
             case _OP_BWNOT:
                 if(sq_type(STK(arg1)) == OT_INTEGER) {
                     SQInteger t = _integer(STK(arg1));
@@ -1335,7 +1391,7 @@ bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &des
         }
     }
 //#ifdef ROOT_FALLBACK
-    if(selfidx == 0) {
+    if(selfidx == 0 && sq_isclosure(ci->_closure) && !(_closure(ci->_closure)->_function->lang_features & LF_EXPLICIT_ROOT_LOOKUP)) {
         SQWeakRef *w = _closure(ci->_closure)->_root;
         if(sq_type(w->_obj) != OT_NULL)
         {

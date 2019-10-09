@@ -23,6 +23,7 @@ private:
     void LexBlockComment();
     void LexLineComment();
     SQInteger ReadID();
+    SQInteger ReadDirective();
     void Next();
 #ifdef SQUNICODE
 #if WCHAR_SIZE == 2

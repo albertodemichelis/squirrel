@@ -12,7 +12,8 @@
 #include "squserdata.h"
 #include "sqclass.h"
 
-SQSharedState::SQSharedState()
+SQSharedState::SQSharedState() :
+    defaultLangFeatures(0)
 {
     _compilererrorhandler = NULL;
     _printfunc = NULL;
