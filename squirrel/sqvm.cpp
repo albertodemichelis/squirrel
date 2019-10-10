@@ -1557,9 +1557,13 @@ cloned_mt:
     case OT_ARRAY:
         target = _array(self)->Clone();
         return true;
-    default:
+    case OT_USERDATA:
+    case OT_CLASS:
         Raise_Error(_SC("cloning a %s"), GetTypeName(self));
         return false;
+    default:
+        target = self;
+        return true;
     }
 }
 
