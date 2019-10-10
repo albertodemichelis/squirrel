@@ -132,6 +132,7 @@ public:
     SQObjectType GetType() {return OT_FUNCPROTO;}
 #endif
     SQObjectPtr _sourcename;
+    const SQChar * _sourcename_ptr;
     SQObjectPtr _name;
     SQObjectPtr _docstring;
     SQUnsignedInteger   lang_features;

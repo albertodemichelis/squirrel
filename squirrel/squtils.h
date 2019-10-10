@@ -2,6 +2,8 @@
 #ifndef _SQUTILS_H_
 #define _SQUTILS_H_
 
+#include <memory>
+
 void *sq_vm_malloc(SQUnsignedInteger size);
 void *sq_vm_realloc(void *p,SQUnsignedInteger oldsize,SQUnsignedInteger size);
 void sq_vm_free(void *p,SQUnsignedInteger size);
@@ -111,6 +113,45 @@ private:
     }
     SQUnsignedInteger _size;
     SQUnsignedInteger _allocated;
+};
+
+
+
+class SQConstStringsCollection
+{
+  sqvector<const SQChar *> v;
+
+public:
+  SQConstStringsCollection() = default;
+
+  ~SQConstStringsCollection()
+  {
+    while (!v.empty())
+    {
+      delete[] v.top();
+      v.pop_back();
+    }
+  }
+
+  const SQChar * perpetuate(const SQChar * s)
+  {
+    if (!s)
+      return perpetuate(_SC(""));
+
+    for (int i = int(v.size()) - 1; i >= 0; i--)
+    {
+      if (scstrcmp(v[i], s) == 0)
+        return v[i];
+    }
+
+    int count = int(scstrlen(s)) + 1;
+    SQChar * res = new SQChar[count];
+    memcpy(res, s, sizeof(SQChar) * count);
+
+    v.push_back(res);
+
+    return res;
+  }
 };
 
 #endif //_SQUTILS_H_

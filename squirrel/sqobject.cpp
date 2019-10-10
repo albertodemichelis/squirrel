@@ -498,6 +498,7 @@ bool SQFunctionProto::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr 
             nfunctions,noutervalues,nlineinfos,nlocalvarinfos,ndefaultparams);
     SQObjectPtr proto = f; //gets a ref in case of failure
     f->_sourcename = sourcename;
+    f->_sourcename_ptr = v->constStrings.perpetuate(_stringval(sourcename));
     f->_name = name;
 
     _CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));

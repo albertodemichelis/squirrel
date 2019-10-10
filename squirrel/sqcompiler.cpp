@@ -96,6 +96,7 @@ public:
         _vm=v;
         _lex.Init(_ss(v), rg, up,ThrowError,this);
         _sourcename = SQString::Create(_ss(v), sourcename);
+        _sourcename_ptr = v->constStrings.perpetuate(sourcename);
         _lineinfo = lineinfo;_raiseerror = raiseerror;
         _scope.outers = 0;
         _scope.stacksize = 0;
@@ -285,6 +286,7 @@ public:
         _fs->AddParameter(_fs->CreateString(_SC("vargv")));
         _fs->_varparams = true;
         _fs->_sourcename = _sourcename;
+        _fs->_sourcename_ptr = _sourcename_ptr;
         SQInteger stacksize = _fs->GetStackSize();
         if(setjmp(_errorjmp) == 0) {
             Lex();
@@ -1835,6 +1837,7 @@ public:
         SQObject paramname;
         funcstate->AddParameter(_fs->CreateString(_SC("this")));
         funcstate->_sourcename = _sourcename;
+        funcstate->_sourcename_ptr = _sourcename_ptr;
         SQInteger defparams = 0;
         while(_token!=_SC(')')) {
             if(_token == TK_VARPARAMS) {
@@ -1934,6 +1937,8 @@ public:
         }
         return false;
     }
+
+    const SQChar * _sourcename_ptr;
 
 private:
     SQInteger _token;
