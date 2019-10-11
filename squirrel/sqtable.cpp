@@ -7,6 +7,8 @@ see copyright notice in squirrel.h
 #include "sqfuncproto.h"
 #include "sqclosure.h"
 
+#define _FAST_CLONE
+
 SQTable::SQTable(SQSharedState *ss,SQInteger nInitialSize)
 {
     SQInteger pow2size=MINPOWER2;
@@ -93,7 +95,7 @@ SQTable *SQTable::Clone()
         dst++;
         src++;
     }
-    assert(_firstfree > basesrc);
+    assert(_firstfree >= basesrc);
     assert(_firstfree != NULL);
     nt->_firstfree = basedst + (_firstfree - basesrc);
     nt->_usednodes = _usednodes;
@@ -112,7 +114,12 @@ bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val)
 {
     if(sq_type(key) == OT_NULL)
         return false;
-    _HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
+
+    _HashNode *n;
+    if (sq_type(key) == OT_STRING)
+        n = _GetStr(_rawval(key), _string(key)->_hash & (_numofnodes - 1));
+    else
+        n = _Get(key, HashObj(key) & (_numofnodes - 1));
     if (n) {
         val = _realval(n->val);
         return true;

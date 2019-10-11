@@ -64,6 +64,16 @@ public:
     void Mark(SQCollectable **chain);
     SQObjectType GetType() {return OT_TABLE;}
 #endif
+    inline _HashNode *_GetStr(const SQRawObjectVal key, SQHash hash)
+    {
+        _HashNode *n = &_nodes[hash];
+        do{
+            if(_rawval(n->key) == key && sq_type(n->key) == OT_STRING){
+                return n;
+            }
+        }while((n = n->next));
+        return NULL;
+    }
     inline _HashNode *_Get(const SQObjectPtr &key,SQHash hash)
     {
         _HashNode *n = &_nodes[hash];
