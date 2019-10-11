@@ -74,7 +74,7 @@ void VarTrace::saveStack(const SQObject & value, HSQUIRRELVM var_vm)
     if (si.source)
       src = si.source;
     history[pos].stack[level].fileName = src;
-    history[pos].stack[level].line = si.line;
+    history[pos].stack[level].line = int(si.line);
     level++;
     if (level >= VAR_TRACE_STACK_DEPTH)
       break;

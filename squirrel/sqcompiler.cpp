@@ -116,7 +116,7 @@ public:
     bool IsLocalConstant(const SQObject &name,SQObject &e)
     {
         SQObjectPtr val;
-        for (int i=_scopedconsts.size()-1; i>=0; --i) {
+        for (SQInteger i=SQInteger(_scopedconsts.size())-1; i>=0; --i) {
             SQObjectPtr &tbl = _scopedconsts[i];
             if (!sq_isnull(tbl) && _table(tbl)->Get(name,val)) {
                 e = val;
@@ -1296,7 +1296,7 @@ public:
             return;
         }
 
-        SQChar deconstructor = 0;
+        SQInteger deconstructor = 0;
         if (_token == _SC('{') || _token == _SC('[')) {
             deconstructor = _token;
             Lex();
@@ -1334,13 +1334,13 @@ public:
             SQInteger src = _fs->TopTarget();
             SQInteger key_pos = _fs->PushTarget();
             if (deconstructor == _SC('[')) {
-                for (SQInteger i=0; i<targets.size(); ++i) {
+                for (SQUnsignedInteger i=0; i<targets.size(); ++i) {
                     EmitLoadConstInt(i, key_pos);
                     _fs->AddInstruction(_OP_GET, targets[i], src, key_pos, flags[i]);
                 }
             }
             else {
-                for (SQInteger i=0; i<targets.size(); ++i) {
+                for (SQUnsignedInteger i=0; i<targets.size(); ++i) {
                     _fs->AddInstruction(_OP_LOAD, key_pos, _fs->GetConstant(names[i]));
                     _fs->AddInstruction(_OP_GET, targets[i], src, key_pos, flags[i]);
                 }

@@ -795,7 +795,6 @@ static SQInteger table_reduce(HSQUIRRELVM v)
             accum = val;
             gotAccum = true;
         } else {
-            int prevTop = sq_gettop(v);
             v->Push(closure);
             v->Push(o);
             v->Push(accum);
@@ -811,7 +810,6 @@ static SQInteger table_reduce(HSQUIRRELVM v)
 
             accum = v->GetUp(-1);
             v->Pop(2);
-            assert(prevTop == sq_gettop(v));
         }
     }
 
@@ -1192,7 +1190,7 @@ static SQInteger array_sort(HSQUIRRELVM v)
 }
 
 
-static int clamp_int(int v, int minv, int maxv)
+static SQInteger clamp_int(SQInteger v, SQInteger minv, SQInteger maxv)
 {
   return (v < minv) ? minv : (v > maxv) ? maxv : v;
 }
