@@ -8,7 +8,7 @@
 */
 
 #include "sqstring.h"
-
+#include "vartrace.h"
 
 #define hashptr(p)  (SQHash((SQInteger(p) >> 4)))
 
@@ -31,6 +31,7 @@ private:
         SQObjectPtr val;
         SQObjectPtr key;
         _HashNode *next;
+        VT_DECL_SINGLE;
     };
     _HashNode *_firstfree;
     _HashNode *_nodes;
@@ -92,10 +93,13 @@ public:
         return false;
     }
     bool Get(const SQObjectPtr &key,SQObjectPtr &val);
+
+    VT_CODE(VarTrace * GetVarTracePtr(const SQObjectPtr &key));
+
     void Remove(const SQObjectPtr &key);
     bool Set(const SQObjectPtr &key, const SQObjectPtr &val);
     //returns true if a new slot has been created false if it was already present
-    bool NewSlot(const SQObjectPtr &key,const SQObjectPtr &val);
+    bool NewSlot(const SQObjectPtr &key,const SQObjectPtr &val  VT_DECL_ARG_DEF);
     SQInteger Next(bool getweakrefs,const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObjectPtr &outval);
 
     SQInteger CountUsed(){ return _usednodes;}

@@ -25,6 +25,7 @@ void SQTable::Remove(const SQObjectPtr &key)
     if (n) {
         n->val.Null();
         n->key.Null();
+        VT_CLEAR_SINGLE(n);
         _usednodes--;
         Rehash(false);
     }
@@ -63,7 +64,7 @@ void SQTable::Rehash(bool force)
     for (SQInteger i=0; i<oldsize; i++) {
         _HashNode *old = nold+i;
         if (sq_type(old->key) != OT_NULL)
-            NewSlot(old->key,old->val);
+            NewSlot(old->key,old->val  VT_REF(old));
     }
     for(SQInteger k=0;k<oldsize;k++)
         nold[k].~_HashNode();
@@ -82,6 +83,8 @@ SQTable *SQTable::Clone()
     for(n = 0; n < _numofnodes; n++) {
         dst->key = src->key;
         dst->val = src->val;
+        VT_COPY_SINGLE(src, dst);
+        VT_TRACE_SINGLE(dst, dst->val);
         if(src->next) {
             assert(src->next > basesrc);
             dst->next = basedst + (src->next - basesrc);
@@ -98,7 +101,7 @@ SQTable *SQTable::Clone()
     SQInteger ridx=0;
     SQObjectPtr key,val;
     while((ridx=Next(true,ridx,key,val))!=-1){
-        nt->NewSlot(key,val);
+        nt->NewSlot(key,val VT_CODE(VT_COMMA &_nodes[ridx].varTrace));
     }
 #endif
     nt->SetDelegate(_delegate);
@@ -116,18 +119,32 @@ bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val)
     }
     return false;
 }
-bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val)
+
+#if SQ_VAR_TRACE_ENABLED == 1
+VarTrace * SQTable::GetVarTracePtr(const SQObjectPtr &key)
+{
+  _HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
+  if (n)
+    return &(n->varTrace);
+  else
+    return NULL;
+}
+#endif
+
+
+bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val  VT_DECL_ARG)
 {
     assert(sq_type(key) != OT_NULL);
     SQHash h = HashObj(key) & (_numofnodes - 1);
     _HashNode *n = _Get(key, h);
     if (n) {
         n->val = val;
+        VT_CODE(if (var_trace_arg) n->varTrace = *var_trace_arg);
+        VT_TRACE_SINGLE(n, val);
         return false;
     }
     _HashNode *mp = &_nodes[h];
     n = mp;
-
 
     //key not found I'll insert it
     //main pos is not free
@@ -147,8 +164,10 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val)
             n->key = mp->key;
             n->val = mp->val;/* copy colliding node into free pos. (mp->next also goes) */
             n->next = mp->next;
+            VT_COPY_SINGLE(mp, n);
             mp->key.Null();
             mp->val.Null();
+            VT_CLEAR_SINGLE(mp);
             mp->next = NULL;  /* now `mp' is free */
         }
         else{
@@ -163,6 +182,8 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val)
     for (;;) {  /* correct `firstfree' */
         if (sq_type(_firstfree->key) == OT_NULL && _firstfree->next == NULL) {
             mp->val = val;
+            VT_CODE(if (var_trace_arg) mp->varTrace = *var_trace_arg);
+            VT_TRACE_SINGLE(mp, val);
             _usednodes++;
             return true;  /* OK; table still has a free place */
         }
@@ -170,7 +191,7 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val)
         else (_firstfree)--;
     }
     Rehash(true);
-    return NewSlot(key, val);
+    return NewSlot(key, val  VT_CODE(VT_COMMA var_trace_arg));
 }
 
 SQInteger SQTable::Next(bool getweakrefs,const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObjectPtr &outval)
@@ -197,6 +218,7 @@ bool SQTable::Set(const SQObjectPtr &key, const SQObjectPtr &val)
     _HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
     if (n) {
         n->val = val;
+        VT_TRACE_SINGLE(n, val);
         return true;
     }
     return false;
@@ -204,7 +226,7 @@ bool SQTable::Set(const SQObjectPtr &key, const SQObjectPtr &val)
 
 void SQTable::_ClearNodes()
 {
-    for(SQInteger i = 0;i < _numofnodes; i++) { _HashNode &n = _nodes[i]; n.key.Null(); n.val.Null(); }
+    for(SQInteger i = 0;i < _numofnodes; i++) { _HashNode &n = _nodes[i]; n.key.Null(); n.val.Null(); VT_CLEAR_SINGLE((&n)); }
 }
 
 void SQTable::Finalize()

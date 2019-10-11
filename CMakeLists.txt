@@ -3,6 +3,7 @@ project(squirrel VERSION 3.1 LANGUAGES C CXX)
 
 option(DISABLE_STATIC "Avoid building/installing static libraries.")
 option(LONG_OUTPUT_NAMES "Use longer names for binaries and libraries: squirrel3 (not sq).")
+option(ENABLE_VAR_TRACE "Enable variable change tracing feature.")
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")

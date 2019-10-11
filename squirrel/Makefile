@@ -21,6 +21,7 @@ OBJS= \
 	sqvm.o \
 	sqclass.o \
   sqdirect.o \
+  vartracestub.o \
 
 SRCS= \
 	sqapi.cpp \
@@ -36,6 +37,7 @@ SRCS= \
 	sqvm.cpp \
 	sqclass.cpp \
   sqdirect.cpp \
+  vartracestub.cpp \
 
 
 

@@ -20,6 +20,7 @@ SQSharedState::SQSharedState() :
     _errorfunc = NULL;
     _debuginfo = false;
     _lineInfoInExpressions = false;
+    _varTraceEnabled = false;
     _notifyallexceptions = false;
     _foreignptr = NULL;
     _releasehook = NULL;

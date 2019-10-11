@@ -68,6 +68,8 @@ public:
     bool Call(SQObjectPtr &closure, SQInteger nparams, SQInteger stackbase, SQObjectPtr &outres,SQBool raiseerror);
     SQRESULT Suspend();
 
+    bool GetVarTrace(const SQObjectPtr &self, const SQObjectPtr &key, SQChar * buf, int buf_size);
+
     void CallDebugHook(SQInteger type,SQInteger forcedline=0);
     void CallErrorHandler(SQObjectPtr &e);
     bool Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &dest, SQUnsignedInteger getflags, SQInteger selfidx);

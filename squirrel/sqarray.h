@@ -2,10 +2,16 @@
 #ifndef _SQARRAY_H_
 #define _SQARRAY_H_
 
+#include "vartrace.h"
+
 struct SQArray : public CHAINABLE_OBJ
 {
+    VT_DECL_VEC;
 private:
-    SQArray(SQSharedState *ss,SQInteger nsize){_values.resize(nsize); INIT_CHAIN();ADD_TO_CHAIN(&_ss(this)->_gc_chain,this);}
+    SQArray(SQSharedState *ss,SQInteger nsize)
+    {
+        _values.resize(nsize); VT_RESIZE(nsize); INIT_CHAIN();ADD_TO_CHAIN(&_ss(this)->_gc_chain,this);
+    }
     ~SQArray()
     {
         REMOVE_FROM_CHAIN(&_ss(this)->_gc_chain,this);
@@ -22,7 +28,11 @@ public:
 #endif
     void Finalize(){
         _values.resize(0);
+        VT_RESIZE(0);
     }
+
+    VT_CODE(VarTrace * GetVarTracePtr(const SQInteger nidx) { return &varTrace[nidx]; })
+
     bool Get(const SQInteger nidx,SQObjectPtr &val)
     {
         if(nidx>=0 && nidx<(SQInteger)_values.size()){
@@ -36,6 +46,7 @@ public:
     {
         if(nidx>=0 && nidx<(SQInteger)_values.size()){
             _values[nidx]=val;
+            VT_TRACE(nidx, val);
             return true;
         }
         else return false;
@@ -54,23 +65,24 @@ public:
         //nothing to iterate anymore
         return -1;
     }
-    SQArray *Clone(){SQArray *anew=Create(_opt_ss(this),0); anew->_values.copy(_values); return anew; }
+    SQArray *Clone(){SQArray *anew=Create(_opt_ss(this),0); anew->_values.copy(_values); VT_CLONE_TO(anew); return anew; }
     SQInteger Size() const {return _values.size();}
     void Resize(SQInteger size)
     {
         SQObjectPtr _null;
         Resize(size,_null);
     }
-    void Resize(SQInteger size,SQObjectPtr &fill) { _values.resize(size,fill); ShrinkIfNeeded(); }
-    void Reserve(SQInteger size) { _values.reserve(size); }
-    void Append(const SQObject &o){_values.push_back(o);}
+    void Resize(SQInteger size,SQObjectPtr &fill) { _values.resize(size,fill); VT_RESIZE(size); ShrinkIfNeeded(); }
+    void Reserve(SQInteger size) { _values.reserve(size); VT_RESERVE(size); }
+    void Append(const SQObject &o){_values.push_back(o); VT_PUSHBACK(o); }
     void Extend(const SQArray *a);
     SQObjectPtr &Top(){return _values.top();}
-    void Pop(){_values.pop_back(); ShrinkIfNeeded(); }
+    void Pop(){_values.pop_back(); VT_POPBACK(); ShrinkIfNeeded(); }
     bool Insert(SQInteger idx,const SQObject &val){
         if(idx < 0 || idx > (SQInteger)_values.size())
             return false;
         _values.insert(idx,val);
+        VT_INSERT(idx, val);
         return true;
     }
     void ShrinkIfNeeded() {
@@ -81,6 +93,7 @@ public:
         if(idx < 0 || idx >= (SQInteger)_values.size())
             return false;
         _values.remove(idx);
+        VT_REMOVE(idx);
         if (shrink)
             ShrinkIfNeeded();
         return true;

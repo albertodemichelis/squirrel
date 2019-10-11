@@ -13,6 +13,11 @@
 #include "sqfuncstate.h"
 #include "sqclass.h"
 
+SQUIRREL_API SQBool sq_tracevar(HSQUIRRELVM v, const HSQOBJECT *container, const HSQOBJECT * key, SQChar * buf, int buf_size)
+{
+  return v->GetVarTrace(SQObjectPtr(*container), SQObjectPtr(*key), buf, buf_size);
+}
+
 static bool sq_aux_gettypedarg(HSQUIRRELVM v,SQInteger idx,SQObjectType type,SQObjectPtr **o)
 {
     *o = &stack_get(v,idx);
@@ -147,6 +152,11 @@ SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,const SQCha
 void sq_lineinfo_in_expressions(HSQUIRRELVM v, SQBool enable)
 {
     _ss(v)->_lineInfoInExpressions = enable ? true : false;
+}
+
+void sq_enablevartrace(HSQUIRRELVM v, SQBool enable)
+{
+    _ss(v)->_varTraceEnabled = enable ? true : false;
 }
 
 void sq_enabledebuginfo(HSQUIRRELVM v, SQBool enable)

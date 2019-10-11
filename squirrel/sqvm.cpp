@@ -13,6 +13,7 @@
 #include "squserdata.h"
 #include "sqarray.h"
 #include "sqclass.h"
+#include "vartrace.h"
 
 #define TOP() (_stack._vals[_top-1])
 #define TARGET _stack._vals[_stackbase+arg0]
@@ -705,6 +706,23 @@ SQVM::BooleanResult SQVM::ResolveBooleanResult(const SQObjectPtr &o)
 extern SQInstructionDesc g_InstrDesc[];
 bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQObjectPtr &outres, SQBool raiseerror,ExecutionType et)
 {
+    VT_CODE(
+      struct ResoreVmOnExit
+      {
+        HSQUIRRELVM savedVm;
+        bool savedVtEnabled;
+        ~ResoreVmOnExit()
+        {
+          VarTrace::vm = savedVm;
+          VarTrace::enabled = savedVtEnabled;
+        }
+      } restoreVm;
+      restoreVm.savedVm = VarTrace::vm;
+      restoreVm.savedVtEnabled = VarTrace::enabled;
+      VarTrace::vm = this;
+      VarTrace::enabled = _ss(this)->_varTraceEnabled;
+    );
+
     if ((_nnativecalls + 1) > MAX_NATIVE_CALLS) { Raise_Error(_SC("Native stack overflow")); return false; }
     _nnativecalls++;
     AutoDec ad(&_nnativecalls);
@@ -1341,6 +1359,71 @@ bool SQVM::TailCall(SQClosure *closure, SQInteger parambase,SQInteger nparams)
 		_top = last_top;
 	}
 	return ret;
+}
+
+
+bool SQVM::GetVarTrace(const SQObjectPtr &self, const SQObjectPtr &key, char * buf, int buf_size)
+{
+#if SQ_VAR_TRACE_ENABLED == 1
+
+  SQObjectPtr tmp;
+  VarTrace * vt = NULL;
+  const char * reason = "";
+
+  if (_ss(this)->_varTraceEnabled == false)
+  {
+    reason = "vartrace is disabled for this VM";
+  }
+  else
+  {
+    switch (sq_type(self))
+    {
+    case OT_TABLE:
+      if (_table(self)->Get(key, tmp))
+        vt = _table(self)->GetVarTracePtr(key);
+      else
+        reason = "key not found";
+      break;
+    case OT_ARRAY:
+      if (sq_isnumeric(key))
+      {
+        if (_array(self)->Get(tointeger(key), tmp))
+          vt = _array(self)->GetVarTracePtr(tointeger(key));
+        else
+          reason = "index not found";
+      }
+      break;
+
+    default:
+      reason = "not a table or array";
+      break;
+    }
+  }
+
+  if (vt)
+  {
+    vt->printStack(buf, buf_size);
+    return true;
+  }
+  else
+  {
+    *buf = 0;
+    strncat(buf, reason, buf_size);
+    buf[buf_size - 1] = 0;
+    return false;
+  }
+
+#else
+
+  (void)self;
+  (void)key;
+
+  strncpy(buf, "vartrace is disabled - use build with SQ_VAR_TRACE_ENABLED=1 option set", buf_size);
+  buf[buf_size-1] = 0;
+
+  return false;
+
+#endif
 }
 
 #define FALLBACK_OK         0
