@@ -1239,6 +1239,26 @@ bool SQVM::CreateClassInstance(SQClass *theclass, SQObjectPtr &inst, SQObjectPtr
 
 void SQVM::CallErrorHandler(SQObjectPtr &error)
 {
+  if (_debughook_native)
+  {
+    if (ci->_closure._type == OT_NATIVECLOSURE)
+    {
+      const SQChar *errStr = _stringval(error);
+      _debughook_native(this, _SC('e'), "", 0, errStr);
+    }
+    else
+    {
+      SQFunctionProto *func = _closure(ci->_closure)->_function;
+      if (func)
+      {
+        const SQChar *src = sq_type(func->_sourcename) == OT_STRING ? _stringval(func->_sourcename) : NULL;
+        const SQChar *errStr = _stringval(error);
+        SQInteger line = func->GetLine(ci->_ip);
+        _debughook_native(this, _SC('e'), src, line, errStr);
+      }
+    }
+  }
+
     if(sq_type(_errorhandler) != OT_NULL) {
         SQObjectPtr out;
         Push(_roottable); Push(error);
