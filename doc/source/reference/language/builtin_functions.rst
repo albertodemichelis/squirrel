@@ -455,14 +455,14 @@ Array
 returns the length of the array
 
 
-.. js:function:: array.append(val)
+.. js:function:: array.append(val, [val_2], [val_3], ...)
 
-appends the value 'val' at the end of the array. Returns array itself.
+sequentially appends the values of arguments 'val' to the end of the array. Returns array itself.
 
 
-.. js:function:: array.push(val)
+.. js:function:: array.push(val, [val_2], [val_3], ...)
 
-appends the value 'val' at the end of the array. Returns array itself.
+alias for array.append()
 
 
 .. js:function:: array.extend(array)

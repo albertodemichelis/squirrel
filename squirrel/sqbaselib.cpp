@@ -849,7 +849,15 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
 
 static SQInteger array_append(HSQUIRRELVM v)
 {
-    return SQ_SUCCEEDED(sq_arrayappend(v,-2)) ? 1 : SQ_ERROR;
+    SQArray *arr = _array(stack_get(v, 1));
+    SQInteger nitems = sq_gettop(v)-1;
+    SQInteger offs = arr->Size();
+    arr->Resize(offs + nitems);
+    for (SQInteger i=0; i<nitems; ++i)
+        arr->Set(offs+i, stack_get(v, 2+i));
+
+    v->Push(stack_get(v, 1));
+    return 1;
 }
 
 static SQInteger array_extend(HSQUIRRELVM v)
@@ -1227,9 +1235,9 @@ static SQInteger array_slice(HSQUIRRELVM v)
 
 const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("a")},
-    {_SC("append"),array_append,2, _SC("a")},
+    {_SC("append"),array_append,-2, _SC("a")},
     {_SC("extend"),array_extend,2, _SC("aa")},
-    {_SC("push"),array_append,2, _SC("a")},
+    {_SC("push"),array_append,-2, _SC("a")},
     {_SC("pop"),array_pop,1, _SC("a")},
     {_SC("top"),array_top,1, _SC("a")},
     {_SC("insert"),array_insert,3, _SC("an")},
