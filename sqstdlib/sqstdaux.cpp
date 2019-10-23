@@ -120,7 +120,7 @@ void _sqstd_compiler_error(HSQUIRRELVM v,const SQChar *sErr,const SQChar *sSourc
 {
     SQPRINTFUNCTION pf = sq_geterrorfunc(v);
     if(pf) {
-        pf(v,_SC("%s line = (%d) column = (%d) : error %s\n"),sSource,line,column,sErr);
+        pf(v,_SC("%s line = (%d) column = (%d) : error %s\n"),sSource,(int)line,(int)column,sErr);
     }
 }
 
