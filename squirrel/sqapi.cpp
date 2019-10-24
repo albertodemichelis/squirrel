@@ -46,17 +46,21 @@ SQInteger sq_aux_invalidtype(HSQUIRRELVM v,SQObjectType type)
 
 HSQUIRRELVM sq_open(SQInteger initialstacksize)
 {
-    SQSharedState *ss;
-    SQVM *v;
-    sq_new(ss, SQSharedState);
+    SQAllocContext allocctx = nullptr;
+    sq_vm_init_alloc_context(&allocctx);
+
+    SQSharedState *ss = (SQSharedState *)SQ_MALLOC(allocctx, sizeof(SQSharedState));
+    new (ss) SQSharedState(allocctx);
     ss->Init();
-    v = (SQVM *)SQ_MALLOC(sizeof(SQVM));
+
+    SQVM *v = (SQVM *)SQ_MALLOC(allocctx, sizeof(SQVM));
     new (v) SQVM(ss);
     ss->_root_vm = v;
     if(v->Init(NULL, initialstacksize)) {
         return v;
     } else {
-        sq_delete(v, SQVM);
+        sq_delete(allocctx, v, SQVM);
+        sq_vm_destroy_alloc_context(&allocctx);
         return NULL;
     }
     return v;
@@ -68,14 +72,14 @@ HSQUIRRELVM sq_newthread(HSQUIRRELVM friendvm, SQInteger initialstacksize)
     SQVM *v;
     ss=_ss(friendvm);
 
-    v= (SQVM *)SQ_MALLOC(sizeof(SQVM));
+    v= (SQVM *)SQ_MALLOC(ss->_alloc_ctx, sizeof(SQVM));
     new (v) SQVM(ss);
 
     if(v->Init(friendvm, initialstacksize)) {
         friendvm->Push(v);
         return v;
     } else {
-        sq_delete(v, SQVM);
+        sq_delete(ss->_alloc_ctx, v, SQVM);
         return NULL;
     }
 }
@@ -127,7 +131,9 @@ void sq_close(HSQUIRRELVM v)
 {
     SQSharedState *ss = _ss(v);
     _thread(ss->_root_vm)->Finalize();
-    sq_delete(ss, SQSharedState);
+    SQAllocContext allocctx = ss->_alloc_ctx;
+    sq_delete(allocctx, ss, SQSharedState);
+    sq_vm_destroy_alloc_context(&allocctx);
 }
 
 SQInteger sq_getversion()
@@ -140,7 +146,7 @@ SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,const SQCha
     SQObjectPtr o;
 #ifndef NO_COMPILER
     if(Compile(v, read, p, sourcename, o, raiseerror?true:false, _ss(v)->_debuginfo)) {
-        v->Push(SQClosure::Create(_ss(v), _funcproto(o), _table(v->_roottable)->GetWeakRef(OT_TABLE)));
+        v->Push(SQClosure::Create(_ss(v), _funcproto(o), _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE)));
         return SQ_OK;
     }
     return SQ_ERROR;
@@ -454,7 +460,7 @@ SQRESULT sq_setparamscheck(HSQUIRRELVM v,SQInteger nparamscheck,const SQChar *ty
     SQNativeClosure *nc = _nativeclosure(o);
     nc->_nparamscheck = nparamscheck;
     if(typemask) {
-        SQIntVec res;
+        SQIntVec res(_ss(v)->_alloc_ctx);
         if(!CompileTypemask(res, typemask))
             return sq_throwerror(v, _SC("invalid typemask"));
         nc->_typecheck.copy(res);
@@ -480,7 +486,7 @@ SQRESULT sq_bindenv(HSQUIRRELVM v,SQInteger idx)
         !sq_isclass(env) &&
         !sq_isinstance(env))
         return sq_throwerror(v,_SC("invalid environment"));
-    SQWeakRef *w = _refcounted(env)->GetWeakRef(sq_type(env));
+    SQWeakRef *w = _refcounted(env)->GetWeakRef(_ss(v)->_alloc_ctx, sq_type(env));
     SQObjectPtr ret;
     if(sq_isclosure(o)) {
         SQClosure *c = _closure(o)->Clone();
@@ -527,7 +533,7 @@ SQRESULT sq_setclosureroot(HSQUIRRELVM v,SQInteger idx)
     SQObject o = stack_get(v, -1);
     if(!sq_isclosure(c)) return sq_throwerror(v, _SC("closure expected"));
     if(sq_istable(o)) {
-        _closure(c)->SetRoot(_table(o)->GetWeakRef(OT_TABLE));
+        _closure(c)->SetRoot(_table(o)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE));
         v->Pop();
         return SQ_OK;
     }
@@ -1530,7 +1536,7 @@ void sq_weakref(HSQUIRRELVM v,SQInteger idx)
 {
     SQObject &o=stack_get(v,idx);
     if(ISREFCOUNTED(sq_type(o))) {
-        v->Push(_refcounted(o)->GetWeakRef(sq_type(o)));
+        v->Push(_refcounted(o)->GetWeakRef(_ss(v)->_alloc_ctx, sq_type(o)));
         return;
     }
     v->Push(o);
@@ -1625,17 +1631,22 @@ SQPRINTFUNCTION sq_geterrorfunc(HSQUIRRELVM v)
     return _ss(v)->_errorfunc;
 }
 
-void *sq_malloc(SQUnsignedInteger size)
+SQAllocContext sq_getallocctx(HSQUIRRELVM v)
 {
-    return SQ_MALLOC(size);
+    return _ss(v)->_alloc_ctx;
 }
 
-void *sq_realloc(void* p,SQUnsignedInteger oldsize,SQUnsignedInteger newsize)
+void *sq_malloc(SQAllocContext ctx, SQUnsignedInteger size)
 {
-    return SQ_REALLOC(p,oldsize,newsize);
+    return SQ_MALLOC(ctx, size);
 }
 
-void sq_free(void *p,SQUnsignedInteger size)
+void *sq_realloc(SQAllocContext ctx, void* p,SQUnsignedInteger oldsize,SQUnsignedInteger newsize)
 {
-    SQ_FREE(p,size);
+    return SQ_REALLOC(ctx,p,oldsize,newsize);
+}
+
+void sq_free(SQAllocContext ctx, void *p,SQUnsignedInteger size)
+{
+    SQ_FREE(ctx,p,size);
 }

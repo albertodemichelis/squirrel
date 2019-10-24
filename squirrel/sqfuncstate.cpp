@@ -32,7 +32,22 @@ void DumpLiteral(SQObjectPtr &o)
     }
 }
 
-SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc efunc,void *ed)
+SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc efunc,void *ed) :
+    _vlocals(ss->_alloc_ctx),
+    _targetstack(ss->_alloc_ctx),
+    _unresolvedbreaks(ss->_alloc_ctx),
+    _unresolvedcontinues(ss->_alloc_ctx),
+    _functions(ss->_alloc_ctx),
+    _parameters(ss->_alloc_ctx),
+    _outervalues(ss->_alloc_ctx),
+    _instructions(ss->_alloc_ctx),
+    _localvarinfos(ss->_alloc_ctx),
+    _lineinfos(ss->_alloc_ctx),
+    _scope_blocks(ss->_alloc_ctx),
+    _breaktargets(ss->_alloc_ctx),
+    _continuetargets(ss->_alloc_ctx),
+    _defaultparams(ss->_alloc_ctx),
+    _childstates(ss->_alloc_ctx)
 {
         _nliterals = 0;
         _literals = SQTable::Create(ss,0);
@@ -70,7 +85,7 @@ void SQFuncState::Dump(SQFunctionProto *func)
     scprintf(_SC("-----LITERALS\n"));
     SQObjectPtr refidx,key,val;
     SQInteger idx;
-    SQObjectPtrVec templiterals;
+    SQObjectPtrVec templiterals(_ss->_alloc_ctx);
     templiterals.resize(_nliterals);
     while((idx=_table(_literals)->Next(false,refidx,key,val))!=-1) {
         refidx=idx;
@@ -563,7 +578,7 @@ SQFunctionProto *SQFuncState::BuildProto()
 
 SQFuncState *SQFuncState::PushChildState(SQSharedState *ss)
 {
-    SQFuncState *child = (SQFuncState *)sq_malloc(sizeof(SQFuncState));
+    SQFuncState *child = (SQFuncState *)sq_malloc(ss->_alloc_ctx, sizeof(SQFuncState));
     new (child) SQFuncState(ss,this,_errfunc,_errtarget);
     _childstates.push_back(child);
     return child;
@@ -572,7 +587,8 @@ SQFuncState *SQFuncState::PushChildState(SQSharedState *ss)
 void SQFuncState::PopChildState()
 {
     SQFuncState *child = _childstates.back();
-    sq_delete(child,SQFuncState);
+    SQAllocContext ctx = _ss->_alloc_ctx;
+    sq_delete(ctx, child,SQFuncState);
     _childstates.pop_back();
 }
 

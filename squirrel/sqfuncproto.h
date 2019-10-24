@@ -83,8 +83,11 @@ public:
     {
         SQFunctionProto *f;
         //I compact the whole class and members in a single memory allocation
-        f = (SQFunctionProto *)sq_vm_malloc(_FUNC_SIZE(ninstructions,nliterals,nparameters,nfunctions,noutervalues,nlineinfos,nlocalvarinfos,ndefaultparams));
+        f = (SQFunctionProto *)sq_vm_malloc(ss->_alloc_ctx,
+            _FUNC_SIZE(ninstructions,nliterals,nparameters,nfunctions,noutervalues,nlineinfos,nlocalvarinfos,ndefaultparams));
+
         new (f) SQFunctionProto(ss);
+        f->_alloc_ctx = ss->_alloc_ctx;
         f->lang_features = lang_features;
         f->_ninstructions = ninstructions;
         f->_literals = (SQObjectPtr*)&f->_instructions[ninstructions];
@@ -118,8 +121,9 @@ public:
         //_DESTRUCT_VECTOR(SQLineInfo,_nlineinfos,_lineinfos); //not required are 2 integers
         _DESTRUCT_VECTOR(SQLocalVarInfo,_nlocalvarinfos,_localvarinfos);
         SQInteger size = _FUNC_SIZE(_ninstructions,_nliterals,_nparameters,_nfunctions,_noutervalues,_nlineinfos,_nlocalvarinfos,_ndefaultparams);
+        SQAllocContext ctx = _alloc_ctx;
         this->~SQFunctionProto();
-        sq_vm_free(this,size);
+        sq_vm_free(ctx, this, size);
     }
 
     const SQChar* GetLocal(SQVM *v,SQUnsignedInteger stackbase,SQUnsignedInteger nseq,SQUnsignedInteger nop);
@@ -139,6 +143,8 @@ public:
     SQInteger _stacksize;
     bool _bgenerator;
     SQInteger _varparams;
+
+    SQAllocContext _alloc_ctx;
 
     SQInteger _nlocalvarinfos;
     SQLocalVarInfo *_localvarinfos;

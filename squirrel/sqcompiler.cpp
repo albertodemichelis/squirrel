@@ -91,7 +91,9 @@ enum SQExpressionContext
 class SQCompiler
 {
 public:
-    SQCompiler(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, bool raiseerror, bool lineinfo)
+    SQCompiler(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, bool raiseerror, bool lineinfo) :
+      _lex(_ss(v)),
+      _scopedconsts(_ss(v)->_alloc_ctx)
     {
         _vm=v;
         _lex.Init(_ss(v), rg, up,ThrowError,this);
@@ -1183,7 +1185,7 @@ public:
     void ParseTableOrClass(SQInteger separator,SQInteger terminator)
     {
         SQInteger tpos = _fs->GetCurrentPos(),nkeys = 0;
-        sqvector<SQObject> memberConstantKeys;
+        sqvector<SQObject> memberConstantKeys(_fs->_sharedstate->_alloc_ctx);
         while(_token != terminator) {
             #if SQ_LINE_INFO_IN_STRUCTURES
             if (nkeys < 100)
@@ -1302,9 +1304,9 @@ public:
             Lex();
         }
 
-        sqvector<SQInteger> targets;
-        sqvector<SQInteger> flags;
-        SQObjectPtrVec names;
+        sqvector<SQInteger> targets(_ss(_vm)->_alloc_ctx);
+        sqvector<SQInteger> flags(_ss(_vm)->_alloc_ctx);
+        SQObjectPtrVec names(_ss(_vm)->_alloc_ctx);
 
         do {
             varname = Expect(TK_IDENTIFIER);
@@ -1469,7 +1471,7 @@ public:
         _fs->SnoozeOpt();
         SQInteger expend = _fs->GetCurrentPos();
         SQInteger expsize = (expend - expstart) + 1;
-        SQInstructionVec exp;
+        SQInstructionVec exp(_fs->_sharedstate->_alloc_ctx);
         if(expsize > 0) {
             for(SQInteger i = 0; i < expsize; i++)
                 exp.push_back(_fs->GetInstruction(expstart + i));

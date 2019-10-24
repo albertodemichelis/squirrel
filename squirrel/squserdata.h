@@ -12,7 +12,7 @@ struct SQUserData : SQDelegable
     }
     static SQUserData* Create(SQSharedState *ss, SQInteger size)
     {
-        SQUserData* ud = (SQUserData*)SQ_MALLOC(sq_aligning(sizeof(SQUserData))+size);
+        SQUserData* ud = (SQUserData*)SQ_MALLOC(ss->_alloc_ctx, sq_aligning(sizeof(SQUserData))+size);
         new (ud) SQUserData(ss);
         ud->_size = size;
         ud->_typetag = 0;
@@ -27,7 +27,7 @@ struct SQUserData : SQDelegable
         if (_hook) _hook((SQUserPointer)sq_aligning(this + 1),_size);
         SQInteger tsize = _size;
         this->~SQUserData();
-        SQ_FREE(this, sq_aligning(sizeof(SQUserData)) + tsize);
+        SQ_FREE(_sharedstate->_alloc_ctx, this, sq_aligning(sizeof(SQUserData)) + tsize);
     }
 
 

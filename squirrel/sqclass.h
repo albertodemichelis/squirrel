@@ -28,7 +28,7 @@ struct SQClass : public CHAINABLE_OBJ
     SQClass(SQSharedState *ss,SQClass *base);
 public:
     static SQClass* Create(SQSharedState *ss,SQClass *base) {
-        SQClass *newclass = (SQClass *)SQ_MALLOC(sizeof(SQClass));
+        SQClass *newclass = (SQClass *)SQ_MALLOC(ss->_alloc_ctx, sizeof(SQClass));
         new (newclass) SQClass(ss, base);
         return newclass;
     }
@@ -58,7 +58,8 @@ public:
     void Lock() { _locked = true; if(_base) _base->Lock(); }
     void Release() {
         if (_hook) { _hook(_typetag,0);}
-        sq_delete(this, SQClass);
+        SQAllocContext ctx = _methods._alloc_ctx;
+        sq_delete(ctx, this, SQClass);
     }
     void Finalize();
 #ifndef NO_GARBAGE_COLLECTOR
@@ -91,7 +92,7 @@ public:
     static SQInstance* Create(SQSharedState *ss,SQClass *theclass) {
 
         SQInteger size = calcinstancesize(theclass);
-        SQInstance *newinst = (SQInstance *)SQ_MALLOC(size);
+        SQInstance *newinst = (SQInstance *)SQ_MALLOC(ss->_alloc_ctx, size);
         new (newinst) SQInstance(ss, theclass,size);
         if(theclass->_udsize) {
             newinst->_userpointer = ((unsigned char *)newinst) + (size - theclass->_udsize);
@@ -101,7 +102,7 @@ public:
     SQInstance *Clone(SQSharedState *ss)
     {
         SQInteger size = calcinstancesize(_class);
-        SQInstance *newinst = (SQInstance *)SQ_MALLOC(size);
+        SQInstance *newinst = (SQInstance *)SQ_MALLOC(ss->_alloc_ctx, size);
         new (newinst) SQInstance(ss, this,size);
         if(_class->_udsize) {
             newinst->_userpointer = ((unsigned char *)newinst) + (size - _class->_udsize);
@@ -136,8 +137,9 @@ public:
         _uiRef--;
         if(_uiRef > 0) return;
         SQInteger size = _memsize;
+        SQAllocContext ctx = _alloc_ctx;
         this->~SQInstance();
-        SQ_FREE(this, size);
+        SQ_FREE(ctx, this, size);
     }
     void Finalize();
 #ifndef NO_GARBAGE_COLLECTOR
@@ -150,6 +152,7 @@ public:
     SQClass *_class;
     SQUserPointer _userpointer;
     SQRELEASEHOOK _hook;
+    SQAllocContext _alloc_ctx;
     SQInteger _memsize;
     SQObjectPtr _values[1];
 };

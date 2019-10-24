@@ -8,13 +8,14 @@ extern "C" {
 
 typedef unsigned int SQRexBool;
 typedef struct SQRex SQRex;
+typedef struct SQAllocContextT * SQAllocContext;
 
 typedef struct {
     const SQChar *begin;
     SQInteger len;
 } SQRexMatch;
 
-SQUIRREL_API SQRex *sqstd_rex_compile(const SQChar *pattern,const SQChar **error);
+SQUIRREL_API SQRex *sqstd_rex_compile(SQAllocContext ctx, const SQChar *pattern,const SQChar **error);
 SQUIRREL_API void sqstd_rex_free(SQRex *exp);
 SQUIRREL_API SQBool sqstd_rex_match(SQRex* exp,const SQChar* text);
 SQUIRREL_API SQBool sqstd_rex_search(SQRex* exp,const SQChar* text, const SQChar** out_begin, const SQChar** out_end);

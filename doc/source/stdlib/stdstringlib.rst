@@ -250,8 +250,9 @@ Formatting
 Regular Expessions
 ++++++++++++++++++
 
-.. c:function:: SQRex* sqstd_rex_compile(const SQChar *pattern, const SQChar ** error)
+.. c:function:: SQRex* sqstd_rex_compile(SQAllocCtx alloc_ctx, const SQChar *pattern, const SQChar ** error)
 
+    :param SQAllocCtx alloc_ctx VM memory allocation context handle
     :param SQChar* pattern: a pointer to a zero terminated string containing the pattern that has to be compiled.
     :param SQChar** error: a pointer to a string pointer that will be set with an error string in case of failure.
     :returns: a pointer to the compiled pattern

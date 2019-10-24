@@ -30,7 +30,7 @@ struct RefTable {
         SQUnsignedInteger refs;
         struct RefNode *next;
     };
-    RefTable();
+    RefTable(SQAllocContext ctx);
     ~RefTable();
     void AddRef(SQObject &obj);
     SQBool Release(SQObject &obj);
@@ -49,6 +49,7 @@ private:
     RefNode *_nodes;
     RefNode *_freelist;
     RefNode **_buckets;
+    SQAllocContext _alloc_ctx;
 };
 
 #define ADD_STRING(ss,str,len) ss->_stringtable->Add(str,len)
@@ -58,7 +59,7 @@ struct SQObjectPtr;
 
 struct SQSharedState
 {
-    SQSharedState();
+    SQSharedState(SQAllocContext allocctx);
     ~SQSharedState();
     void Init();
 public:
@@ -70,6 +71,7 @@ public:
     SQInteger ResurrectUnreachable(SQVM *vm);
     static void MarkObject(SQObjectPtr &o,SQCollectable **chain);
 #endif
+    SQAllocContext _alloc_ctx;
     SQObjectPtrVec *_metamethods;
     SQObjectPtr _metamethodsmap;
     SQObjectPtrVec *_systemstrings;

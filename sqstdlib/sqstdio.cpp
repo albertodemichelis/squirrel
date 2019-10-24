@@ -61,8 +61,16 @@ SQInteger sqstd_feof(SQFILE file)
 
 //File
 struct SQFile : public SQStream {
-    SQFile() { _handle = NULL; _owns = false;}
-    SQFile(SQFILE file, bool owns) { _handle = file; _owns = owns;}
+    SQFile(SQAllocContext alloc_ctx)
+        : _alloc_ctx(alloc_ctx)
+        , _handle(nullptr)
+        , _owns(false)
+    {}
+    SQFile(SQAllocContext alloc_ctx, SQFILE file, bool owns)
+        : _alloc_ctx(alloc_ctx)
+        , _handle(file)
+        , _owns(owns)
+    {}
     virtual ~SQFile() { Close(); }
     bool Open(const SQChar *filename ,const SQChar *mode) {
         Close();
@@ -104,6 +112,10 @@ struct SQFile : public SQStream {
     bool IsValid() { return _handle?true:false; }
     bool EOS() { return Tell()==Len()?true:false;}
     SQFILE GetHandle() {return _handle;}
+
+public:
+    SQAllocContext _alloc_ctx;
+
 private:
     SQFILE _handle;
     bool _owns;
@@ -118,8 +130,9 @@ static SQInteger _file__typeof(HSQUIRRELVM v)
 static SQInteger _file_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(size))
 {
     SQFile *self = (SQFile*)p;
+    SQAllocContext alloc_ctx = self->_alloc_ctx;
     self->~SQFile();
-    sq_free(self,sizeof(SQFile));
+    sq_free(alloc_ctx, self,sizeof(SQFile));
     return 1;
 }
 
@@ -141,10 +154,12 @@ static SQInteger _file_constructor(HSQUIRRELVM v)
         return sq_throwerror(v,_SC("wrong parameter"));
     }
 
-    f = new (sq_malloc(sizeof(SQFile)))SQFile(newf,owns);
+    SQAllocContext alloc_ctx = sq_getallocctx(v);
+
+    f = new (sq_malloc(alloc_ctx, sizeof(SQFile)))SQFile(alloc_ctx,newf,owns);
     if(SQ_FAILED(sq_setinstanceup(v,1,f))) {
         f->~SQFile();
-        sq_free(f,sizeof(SQFile));
+        sq_free(alloc_ctx,f,sizeof(SQFile));
         return sq_throwerror(v, _SC("cannot create blob with negative size"));
     }
     sq_setreleasehook(v,1,_file_releasehook);

@@ -4,16 +4,18 @@
 
 struct SQBlob : public SQStream
 {
-    SQBlob(SQInteger size) {
+    SQBlob(SQAllocContext alloc_ctx, SQInteger size)
+        : _alloc_ctx(alloc_ctx)
+    {
         _size = size;
         _allocated = size;
-        _buf = (unsigned char *)sq_malloc(size);
+        _buf = (unsigned char *)sq_malloc(_alloc_ctx, size);
         memset(_buf, 0, _size);
         _ptr = 0;
         _owns = true;
     }
     virtual ~SQBlob() {
-        sq_free(_buf, _allocated);
+        sq_free(_alloc_ctx, _buf, _allocated);
     }
     SQInteger Write(void *buffer, SQInteger size) {
         if(!CanAdvance(size)) {
@@ -37,13 +39,13 @@ struct SQBlob : public SQStream
     bool Resize(SQInteger n) {
         if(!_owns) return false;
         if(n != _allocated) {
-            unsigned char *newbuf = (unsigned char *)sq_malloc(n);
+            unsigned char *newbuf = (unsigned char *)sq_malloc(_alloc_ctx, n);
             memset(newbuf,0,n);
             if(_size > n)
                 memcpy(newbuf,_buf,n);
             else
                 memcpy(newbuf,_buf,_size);
-            sq_free(_buf,_allocated);
+            sq_free(_alloc_ctx, _buf,_allocated);
             _buf=newbuf;
             _allocated = n;
             if(_size > _allocated)
@@ -97,6 +99,10 @@ struct SQBlob : public SQStream
     SQInteger Tell() { return _ptr; }
     SQInteger Len() { return _size; }
     SQUserPointer GetBuf(){ return _buf; }
+
+public:
+    SQAllocContext _alloc_ctx;
+
 private:
     SQInteger _size;
     SQInteger _allocated;

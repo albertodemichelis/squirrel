@@ -18,7 +18,11 @@
 #define TERMINATE_BUFFER() {_longstr.push_back(_SC('\0'));}
 #define ADD_KEYWORD(key,id) _keywords->NewSlot( SQString::Create(ss, _SC(#key)) ,SQInteger(id))
 
-SQLexer::SQLexer(){}
+SQLexer::SQLexer(SQSharedState *ss)
+    : _longstr(ss->_alloc_ctx)
+{
+}
+
 SQLexer::~SQLexer()
 {
     _keywords->Release();

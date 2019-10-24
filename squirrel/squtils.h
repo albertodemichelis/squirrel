@@ -4,15 +4,19 @@
 
 #include <memory>
 
-void *sq_vm_malloc(SQUnsignedInteger size);
-void *sq_vm_realloc(void *p,SQUnsignedInteger oldsize,SQUnsignedInteger size);
-void sq_vm_free(void *p,SQUnsignedInteger size);
+typedef struct SQAllocContextT * SQAllocContext;
 
-#define sq_new(__ptr,__type) {__ptr=(__type *)sq_vm_malloc(sizeof(__type));new (__ptr) __type;}
-#define sq_delete(__ptr,__type) {__ptr->~__type();sq_vm_free(__ptr,sizeof(__type));}
-#define SQ_MALLOC(__size) sq_vm_malloc((__size));
-#define SQ_FREE(__ptr,__size) sq_vm_free((__ptr),(__size));
-#define SQ_REALLOC(__ptr,__oldsize,__size) sq_vm_realloc((__ptr),(__oldsize),(__size));
+void sq_vm_init_alloc_context(SQAllocContext * ctx);
+void sq_vm_destroy_alloc_context(SQAllocContext * ctx);
+void *sq_vm_malloc(SQAllocContext ctx, SQUnsignedInteger size);
+void *sq_vm_realloc(SQAllocContext ctx, void *p,SQUnsignedInteger oldsize,SQUnsignedInteger size);
+void sq_vm_free(SQAllocContext ctx, void *p,SQUnsignedInteger size);
+
+#define sq_new(__ctx,__ptr,__type, ...) {__ptr=(__type *)sq_vm_malloc((__ctx),sizeof(__type));new (__ptr) __type(__VA_ARGS__);}
+#define sq_delete(__ctx,__ptr,__type) {__ptr->~__type();sq_vm_free((__ctx),__ptr,sizeof(__type));}
+#define SQ_MALLOC(__ctx,__size) sq_vm_malloc((__ctx),(__size));
+#define SQ_FREE(__ctx,__ptr,__size) sq_vm_free((__ctx),(__ptr),(__size));
+#define SQ_REALLOC(__ctx,__ptr,__oldsize,__size) sq_vm_realloc((__ctx),(__ptr),(__oldsize),(__size));
 
 #define sq_aligning(v) (((size_t)(v) + (SQ_ALIGNMENT-1)) & (~(SQ_ALIGNMENT-1)))
 
@@ -20,11 +24,12 @@ void sq_vm_free(void *p,SQUnsignedInteger size);
 template<typename T> class sqvector
 {
 public:
-    sqvector()
+    sqvector(SQAllocContext ctx)
     {
         _vals = NULL;
         _size = 0;
         _allocated = 0;
+        _alloc_ctx = ctx;
     }
     sqvector(const sqvector<T>& v)
     {
@@ -43,13 +48,14 @@ public:
             new ((void *)&_vals[i]) T(v._vals[i]);
         }
         _size = v._size;
+        _alloc_ctx = v._alloc_ctx;
     }
     ~sqvector()
     {
         if(_allocated) {
             for(SQUnsignedInteger i = 0; i < _size; i++)
                 _vals[i].~T();
-            SQ_FREE(_vals, (_allocated * sizeof(T)));
+            SQ_FREE(_alloc_ctx, _vals, (_allocated * sizeof(T)));
         }
     }
     void reserve(SQUnsignedInteger newsize) { _realloc(newsize); }
@@ -104,11 +110,12 @@ public:
     inline T &back() const { return _vals[_size - 1]; }
     inline T& operator[](SQUnsignedInteger pos) const{ return _vals[pos]; }
     T* _vals;
+    SQAllocContext _alloc_ctx;
 private:
     void _realloc(SQUnsignedInteger newsize)
     {
         newsize = (newsize > 0)?newsize:4;
-        _vals = (T*)SQ_REALLOC(_vals, _allocated * sizeof(T), newsize * sizeof(T));
+        _vals = (T*)SQ_REALLOC(_alloc_ctx, _vals, _allocated * sizeof(T), newsize * sizeof(T));
         _allocated = newsize;
     }
     SQUnsignedInteger _size;
@@ -122,7 +129,7 @@ class SQConstStringsCollection
   sqvector<const SQChar *> v;
 
 public:
-  SQConstStringsCollection() = default;
+  SQConstStringsCollection(SQAllocContext ctx) : v(ctx) {}
 
   ~SQConstStringsCollection()
   {

@@ -37,6 +37,7 @@ private:
     _HashNode *_nodes;
     SQInteger _numofnodes;
     SQInteger _usednodes;
+    SQAllocContext _alloc_ctx;
 
 ///////////////////////////
     void AllocNodes(SQInteger nSize);
@@ -46,7 +47,7 @@ private:
 public:
     static SQTable* Create(SQSharedState *ss,SQInteger nInitialSize)
     {
-        SQTable *newtable = (SQTable*)SQ_MALLOC(sizeof(SQTable));
+        SQTable *newtable = (SQTable*)SQ_MALLOC(ss->_alloc_ctx, sizeof(SQTable));
         new (newtable) SQTable(ss, nInitialSize);
         newtable->_delegate = NULL;
         return newtable;
@@ -58,7 +59,7 @@ public:
         SetDelegate(NULL);
         REMOVE_FROM_CHAIN(&_sharedstate->_gc_chain, this);
         for (SQInteger i = 0; i < _numofnodes; i++) _nodes[i].~_HashNode();
-        SQ_FREE(_nodes, _numofnodes * sizeof(_HashNode));
+        SQ_FREE(_alloc_ctx, _nodes, _numofnodes * sizeof(_HashNode));
     }
 #ifndef NO_GARBAGE_COLLECTOR
     void Mark(SQCollectable **chain);
@@ -116,7 +117,7 @@ public:
     void Clear();
     void Release()
     {
-        sq_delete(this, SQTable);
+        sq_delete(_alloc_ctx, this, SQTable);
     }
 
 };

@@ -12,7 +12,9 @@
 #include "squserdata.h"
 #include "sqclass.h"
 
-SQSharedState::SQSharedState() :
+SQSharedState::SQSharedState(SQAllocContext allocctx) :
+    _alloc_ctx(allocctx),
+    _refs_table(allocctx),
     defaultLangFeatures(0)
 {
     _compilererrorhandler = NULL;
@@ -99,11 +101,12 @@ void SQSharedState::Init()
 #ifndef NO_GARBAGE_COLLECTOR
     _gc_chain=NULL;
 #endif
-    _stringtable = (SQStringTable*)SQ_MALLOC(sizeof(SQStringTable));
+
+    _stringtable = (SQStringTable*)SQ_MALLOC(_alloc_ctx, sizeof(SQStringTable));
     new (_stringtable) SQStringTable(this);
-    sq_new(_metamethods,SQObjectPtrVec);
-    sq_new(_systemstrings,SQObjectPtrVec);
-    sq_new(_types,SQObjectPtrVec);
+    sq_new(_alloc_ctx, _metamethods, SQObjectPtrVec, _alloc_ctx);
+    sq_new(_alloc_ctx, _systemstrings, SQObjectPtrVec, _alloc_ctx);
+    sq_new(_alloc_ctx, _types, SQObjectPtrVec, _alloc_ctx);
     _metamethodsmap = SQTable::Create(this,MT_LAST-1);
     //adding type strings to avoid memory trashing
     //types names
@@ -208,11 +211,11 @@ SQSharedState::~SQSharedState()
     }
 #endif
 
-    sq_delete(_types,SQObjectPtrVec);
-    sq_delete(_systemstrings,SQObjectPtrVec);
-    sq_delete(_metamethods,SQObjectPtrVec);
-    sq_delete(_stringtable,SQStringTable);
-    if(_scratchpad)SQ_FREE(_scratchpad,_scratchpadsize);
+    sq_delete(_alloc_ctx, _types, SQObjectPtrVec);
+    sq_delete(_alloc_ctx, _systemstrings, SQObjectPtrVec);
+    sq_delete(_alloc_ctx, _metamethods,SQObjectPtrVec);
+    sq_delete(_alloc_ctx, _stringtable,SQStringTable);
+    if(_scratchpad)SQ_FREE(_alloc_ctx,_scratchpad,_scratchpadsize);
 }
 
 
@@ -384,19 +387,20 @@ SQChar* SQSharedState::GetScratchPad(SQInteger size)
     if(size>0) {
         if(_scratchpadsize < size) {
             newsize = size + (size>>1);
-            _scratchpad = (SQChar *)SQ_REALLOC(_scratchpad,_scratchpadsize,newsize);
+            _scratchpad = (SQChar *)SQ_REALLOC(_alloc_ctx, _scratchpad, _scratchpadsize, newsize);
             _scratchpadsize = newsize;
 
         }else if(_scratchpadsize >= (size<<5)) {
             newsize = _scratchpadsize >> 1;
-            _scratchpad = (SQChar *)SQ_REALLOC(_scratchpad,_scratchpadsize,newsize);
+            _scratchpad = (SQChar *)SQ_REALLOC(_alloc_ctx, _scratchpad, _scratchpadsize, newsize);
             _scratchpadsize = newsize;
         }
     }
     return _scratchpad;
 }
 
-RefTable::RefTable()
+RefTable::RefTable(SQAllocContext ctx) :
+    _alloc_ctx(ctx)
 {
     AllocNodes(4);
 }
@@ -412,7 +416,7 @@ void RefTable::Finalize()
 
 RefTable::~RefTable()
 {
-    SQ_FREE(_buckets,(_numofslots * sizeof(RefNode *)) + (_numofslots * sizeof(RefNode)));
+    SQ_FREE(_alloc_ctx, _buckets,(_numofslots * sizeof(RefNode *)) + (_numofslots * sizeof(RefNode)));
 }
 
 #ifndef NO_GARBAGE_COLLECTOR
@@ -493,7 +497,7 @@ void RefTable::Resize(SQUnsignedInteger size)
         t++;
     }
     assert(nfound == oldnumofslots);
-    SQ_FREE(oldbucks,(oldnumofslots * sizeof(RefNode *)) + (oldnumofslots * sizeof(RefNode)));
+    SQ_FREE(_alloc_ctx, oldbucks,(oldnumofslots * sizeof(RefNode *)) + (oldnumofslots * sizeof(RefNode)));
 }
 
 RefTable::RefNode *RefTable::Add(SQHash mainpos,SQObject &obj)
@@ -535,7 +539,7 @@ void RefTable::AllocNodes(SQUnsignedInteger size)
 {
     RefNode **bucks;
     RefNode *nodes;
-    bucks = (RefNode **)SQ_MALLOC((size * sizeof(RefNode *)) + (size * sizeof(RefNode)));
+    bucks = (RefNode **)SQ_MALLOC(_alloc_ctx, (size * sizeof(RefNode *)) + (size * sizeof(RefNode)));
     nodes = (RefNode *)&bucks[size];
     RefNode *temp = nodes;
     SQUnsignedInteger n;
@@ -573,14 +577,14 @@ SQStringTable::SQStringTable(SQSharedState *ss)
 
 SQStringTable::~SQStringTable()
 {
-    SQ_FREE(_strings,sizeof(SQString*)*_numofslots);
+    SQ_FREE(_sharedstate->_alloc_ctx, _strings,sizeof(SQString*)*_numofslots);
     _strings = NULL;
 }
 
 void SQStringTable::AllocNodes(SQInteger size)
 {
     _numofslots = size;
-    _strings = (SQString**)SQ_MALLOC(sizeof(SQString*)*_numofslots);
+    _strings = (SQString**)SQ_MALLOC(_sharedstate->_alloc_ctx, sizeof(SQString*)*_numofslots);
     memset(_strings,0,sizeof(SQString*)*_numofslots);
 }
 
@@ -596,7 +600,7 @@ SQString *SQStringTable::Add(const SQChar *news,SQInteger len)
             return s; //found
     }
 
-    SQString *t = (SQString *)SQ_MALLOC(sq_rsl(len)+sizeof(SQString));
+    SQString *t = (SQString *)SQ_MALLOC(_sharedstate->_alloc_ctx, sq_rsl(len)+sizeof(SQString));
     new (t) SQString;
     t->_sharedstate = _sharedstate;
     memcpy(t->_val,news,sq_rsl(len));
@@ -626,7 +630,7 @@ void SQStringTable::Resize(SQInteger size)
             p = next;
         }
     }
-    SQ_FREE(oldtable,oldsize*sizeof(SQString*));
+    SQ_FREE(_sharedstate->_alloc_ctx, oldtable, oldsize*sizeof(SQString*));
 }
 
 void SQStringTable::Remove(SQString *bs)
@@ -644,7 +648,7 @@ void SQStringTable::Remove(SQString *bs)
             _slotused--;
             SQInteger slen = s->_len;
             s->~SQString();
-            SQ_FREE(s,sizeof(SQString) + sq_rsl(slen));
+            SQ_FREE(_sharedstate->_alloc_ctx, s, sizeof(SQString) + sq_rsl(slen));
             return;
         }
         prev = s;

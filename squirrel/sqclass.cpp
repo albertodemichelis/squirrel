@@ -10,7 +10,9 @@
 
 
 
-SQClass::SQClass(SQSharedState *ss,SQClass *base)
+SQClass::SQClass(SQSharedState *ss,SQClass *base) :
+    _defaultvalues(ss->_alloc_ctx),
+    _methods(ss->_alloc_ctx)
 {
     _base = base;
     _typetag = 0;
@@ -119,9 +121,11 @@ SQInteger SQClass::Next(const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObject
     return idx;
 }
 
+
 ///////////////////////////////////////////////////////////////////////
 void SQInstance::Init(SQSharedState *ss)
 {
+    _alloc_ctx = ss->_alloc_ctx;
     _userpointer = NULL;
     _hook = NULL;
     __ObjAddRef(_class);

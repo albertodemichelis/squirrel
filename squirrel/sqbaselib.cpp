@@ -1299,14 +1299,14 @@ static SQInteger string_find(HSQUIRRELVM v)
     return sq_throwerror(v,_SC("invalid param"));
 }
 
-static SQChar* replace_all(SQChar *s, SQInteger &buf_len, SQInteger &len,
+static SQChar* replace_all(SQAllocContext allocctx, SQChar *s, SQInteger &buf_len, SQInteger &len,
                           const SQChar *from, SQInteger len_from, const SQChar *to, SQInteger len_to)
 {
     for (SQInteger pos=0; pos<=len-len_from; ) {
         if (memcmp(s+pos, from, len_from*sizeof(SQChar))==0) {
             SQInteger d_size = len_to - len_from;
             if (d_size > 0) {
-                s = (SQChar*)sq_realloc(s, buf_len*sizeof(SQChar), (buf_len+d_size)*sizeof(SQChar));
+                s = (SQChar*)sq_realloc(allocctx, s, buf_len*sizeof(SQChar), (buf_len+d_size)*sizeof(SQChar));
                 buf_len += d_size;
             }
             if (d_size!=0)
@@ -1324,15 +1324,16 @@ static SQChar* replace_all(SQChar *s, SQInteger &buf_len, SQInteger &len,
 
 static SQInteger string_substitute(HSQUIRRELVM v)
 {
+    SQAllocContext allocctx = _ss(v)->_alloc_ctx;
     const SQChar *fmt;
     SQInteger len;
     sq_getstringandsize(v, 1, &fmt, &len);
     SQInteger buf_len = len;
-    SQChar *s = (SQChar*)sq_malloc(len*sizeof(SQChar));
+    SQChar *s = (SQChar*)sq_malloc(allocctx, len*sizeof(SQChar));
     memcpy(s, fmt, len*sizeof(SQChar));
 
     SQInteger top = sq_gettop(v);
-    sqvector<SQChar> bufFrom;
+    sqvector<SQChar> bufFrom(allocctx);
 
     for (int idx = 2; idx <= top; ++idx) {
         SQObjectPtr &arg = stack_get(v, idx);
@@ -1344,7 +1345,7 @@ static SQInteger string_substitute(HSQUIRRELVM v)
             SQObjectPtr keyStr, valStr;
             while ((ridx = table->Next(true, ridx, key, val)) != -1) {
                 if (!v->ToString(key, keyStr) || !v->ToString(val, valStr)) {
-                    sq_free(s, buf_len*sizeof(SQChar));
+                    sq_free(allocctx, s, buf_len*sizeof(SQChar));
                     return sq_throwerror(v, _SC("subst: Failed to convert key or value to string"));
                 }
 
@@ -1352,22 +1353,22 @@ static SQInteger string_substitute(HSQUIRRELVM v)
                 memcpy(bufFrom._vals+1, _stringval(keyStr), _string(keyStr)->_len * sizeof(SQChar));
                 bufFrom[0] = _SC('{');
                 bufFrom[1+_string(keyStr)->_len] = _SC('}');
-                s = replace_all(s, buf_len, len, bufFrom._vals, bufFrom.size(), _stringval(valStr), _string(valStr)->_len);
+                s = replace_all(allocctx, s, buf_len, len, bufFrom._vals, bufFrom.size(), _stringval(valStr), _string(valStr)->_len);
             }
         } else {
             SQObjectPtr valStr;
             if (!v->ToString(arg, valStr)) {
-                sq_free(s, buf_len*sizeof(SQChar));
+                sq_free(allocctx, s, buf_len*sizeof(SQChar));
                 return sq_throwerror(v, _SC("subst: Failed to convert key or value to string"));
             }
             SQChar bufKey[8];
             int n = scsprintf(bufKey, 8, _SC("{%d}"), idx - 2);
-            s = replace_all(s, buf_len, len, bufKey, n, _stringval(valStr), _string(valStr)->_len);
+            s = replace_all(allocctx, s, buf_len, len, bufKey, n, _stringval(valStr), _string(valStr)->_len);
         }
     }
 
     sq_pushstring(v, s, len);
-    sq_free(s, buf_len*sizeof(SQChar));
+    sq_free(allocctx, s, buf_len*sizeof(SQChar));
     return 1;
 }
 
@@ -1387,13 +1388,13 @@ static SQInteger string_replace(HSQUIRRELVM v)
 
     // can be optimized by avoiding unnecessary copying
     SQInteger buf_len = len_s;
-    SQChar *dest = (SQChar *)sq_malloc(buf_len*sizeof(SQChar));
+    SQChar *dest = (SQChar *)sq_malloc(_ss(v)->_alloc_ctx, buf_len*sizeof(SQChar));
     SQInteger len_dest = len_s;
     memcpy(dest, s, len_s*sizeof(SQChar));
-    dest = replace_all(dest, buf_len, len_dest, from, len_from, to, len_to);
+    dest = replace_all(_ss(v)->_alloc_ctx, dest, buf_len, len_dest, from, len_from, to, len_to);
 
     sq_pushstring(v, dest, len_dest);
-    sq_free(dest, buf_len*sizeof(SQChar));
+    sq_free(_ss(v)->_alloc_ctx, dest, buf_len*sizeof(SQChar));
     return 1;
 }
 
@@ -1420,7 +1421,7 @@ static SQInteger string_join(HSQUIRRELVM v)
     sq_getstringandsize(v, 1, &sep, &sep_len);
     SQArray *arr = _array(stack_get(v, 2));
 
-    SQObjectPtrVec strings;
+    SQObjectPtrVec strings(_ss(v)->_alloc_ctx);
     strings.reserve(arr->Size());
     SQObjectPtr tmp;
     SQObjectPtr flt;
@@ -1463,7 +1464,7 @@ static SQInteger string_join(HSQUIRRELVM v)
 
     res_len += sep_len * (strings.size()-1);
 
-    sqvector<SQChar> res;
+    sqvector<SQChar> res(_ss(v)->_alloc_ctx);
     res.resize(res_len);
     SQInteger out_pos = buf_concat(res, strings, sep, sep_len);
     assert(out_pos == res_len);
@@ -1483,7 +1484,7 @@ static SQInteger string_concat(HSQUIRRELVM v)
         return 1;
     }
 
-    SQObjectPtrVec strings;
+    SQObjectPtrVec strings(_ss(v)->_alloc_ctx);
     strings.resize(nitems);
 
     SQInteger res_len = sep_len * (nitems-1);
@@ -1493,7 +1494,7 @@ static SQInteger string_concat(HSQUIRRELVM v)
         res_len += _string(strings[i])->_len;
     }
 
-    sqvector<SQChar> res;
+    sqvector<SQChar> res(_ss(v)->_alloc_ctx);
     res.resize(res_len);
     SQInteger out_pos = buf_concat(res, strings, sep, sep_len);
     assert(out_pos == res_len);

@@ -363,10 +363,14 @@ SQUIRREL_API SQRESULT sq_resurrectunreachable(HSQUIRRELVM v);
 SQUIRREL_API SQRESULT sq_writeclosure(HSQUIRRELVM vm,SQWRITEFUNC writef,SQUserPointer up);
 SQUIRREL_API SQRESULT sq_readclosure(HSQUIRRELVM vm,SQREADFUNC readf,SQUserPointer up);
 
+
+typedef struct SQAllocContextT * SQAllocContext;
+SQUIRREL_API SQAllocContext sq_getallocctx(HSQUIRRELVM v);
+
 /*mem allocation*/
-SQUIRREL_API void *sq_malloc(SQUnsignedInteger size);
-SQUIRREL_API void *sq_realloc(void* p,SQUnsignedInteger oldsize,SQUnsignedInteger newsize);
-SQUIRREL_API void sq_free(void *p,SQUnsignedInteger size);
+SQUIRREL_API void *sq_malloc(SQAllocContext ctx, SQUnsignedInteger size);
+SQUIRREL_API void *sq_realloc(SQAllocContext ctx, void* p,SQUnsignedInteger oldsize,SQUnsignedInteger newsize);
+SQUIRREL_API void sq_free(SQAllocContext ctx, void *p,SQUnsignedInteger size);
 
 /*debug*/
 SQUIRREL_API SQRESULT sq_stackinfos(HSQUIRRELVM v,SQInteger level,SQStackInfos *si);

@@ -8,7 +8,9 @@ struct SQArray : public CHAINABLE_OBJ
 {
     VT_DECL_VEC;
 private:
-    SQArray(SQSharedState *ss,SQInteger nsize)
+    SQArray(SQSharedState *ss,SQInteger nsize) :
+      _values(ss->_alloc_ctx)
+      VT_DECL_CTR(ss->_alloc_ctx)
     {
         _values.resize(nsize); VT_RESIZE(nsize); INIT_CHAIN();ADD_TO_CHAIN(&_ss(this)->_gc_chain,this);
     }
@@ -18,7 +20,7 @@ private:
     }
 public:
     static SQArray* Create(SQSharedState *ss,SQInteger nInitialSize){
-        SQArray *newarray=(SQArray*)SQ_MALLOC(sizeof(SQArray));
+        SQArray *newarray=(SQArray*)SQ_MALLOC(ss->_alloc_ctx, sizeof(SQArray));
         new (newarray) SQArray(ss,nInitialSize);
         return newarray;
     }
@@ -100,7 +102,8 @@ public:
     }
     void Release()
     {
-        sq_delete(this,SQArray);
+        SQAllocContext ctx = _values._alloc_ctx;
+        sq_delete(ctx, this, SQArray);
     }
 
     SQObjectPtrVec _values;

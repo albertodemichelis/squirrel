@@ -90,7 +90,7 @@ struct SQRefCounted
     struct SQWeakRef *_weakref;
     SQRefCounted() { _uiRef = 0; _weakref = NULL; }
     virtual ~SQRefCounted();
-    SQWeakRef *GetWeakRef(SQObjectType type);
+    SQWeakRef *GetWeakRef(SQAllocContext alloc_ctx, SQObjectType type);
     virtual void Release()=0;
 
 };
@@ -99,6 +99,7 @@ struct SQWeakRef : SQRefCounted
 {
     void Release();
     SQObject _obj;
+    SQAllocContext _alloc_ctx;
 };
 
 #define _realval(o) (sq_type((o)) != OT_WEAKREF?(SQObject)o:_weakref(o)->_obj)

@@ -108,7 +108,11 @@ bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,
     return true;
 }
 
-SQVM::SQVM(SQSharedState *ss)
+SQVM::SQVM(SQSharedState *ss) :
+    _callstackdata(ss->_alloc_ctx),
+    _stack(ss->_alloc_ctx),
+    _etraps(ss->_alloc_ctx),
+    constStrings(ss->_alloc_ctx)
 {
     _sharedstate=ss;
     _suspended = SQFalse;
@@ -596,7 +600,7 @@ bool SQVM::FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr
 bool SQVM::CLOSURE_OP(SQObjectPtr &target, SQFunctionProto *func)
 {
     SQInteger nouters;
-    SQClosure *closure = SQClosure::Create(_ss(this), func,_table(_roottable)->GetWeakRef(OT_TABLE));
+    SQClosure *closure = SQClosure::Create(_ss(this), func,_table(_roottable)->GetWeakRef(_sharedstate->_alloc_ctx, OT_TABLE));
     if((nouters = func->_noutervalues)) {
         for(SQInteger i = 0; i<nouters; i++) {
             SQOuterVar &v = func->_outervalues[i];
@@ -1894,6 +1898,13 @@ bool SQVM::EnterFrame(SQInteger newbase, SQInteger newtop, bool tailcall)
     }
     return true;
 }
+
+
+void SQVM::Release()
+{
+  sq_delete(_sharedstate->_alloc_ctx, this, SQVM);
+}
+
 
 void SQVM::LeaveFrame() {
     SQInteger last_top = _top;

@@ -82,13 +82,12 @@ SQUnsignedInteger TranslateIndex(const SQObjectPtr &idx)
     return 0;
 }
 
-SQWeakRef *SQRefCounted::GetWeakRef(SQObjectType type)
+SQWeakRef *SQRefCounted::GetWeakRef(SQAllocContext alloc_ctx, SQObjectType type)
 {
     if(!_weakref) {
-        sq_new(_weakref,SQWeakRef);
-#if defined(SQUSEDOUBLE) && !defined(_SQ64)
-        _weakref->_obj._unVal.raw = 0; //clean the whole union on 32 bits with double
-#endif
+        sq_new(alloc_ctx, _weakref, SQWeakRef);
+        _weakref->_alloc_ctx = alloc_ctx;
+        _weakref->_obj._unVal.raw = 0;
         _weakref->_obj._type = type;
         _weakref->_obj._unVal.pRefCounted = this;
     }
@@ -107,7 +106,7 @@ void SQWeakRef::Release() {
     if(ISREFCOUNTED(_obj._type)) {
         _obj._unVal.pRefCounted->_weakref = NULL;
     }
-    sq_delete(this,SQWeakRef);
+    sq_delete(_alloc_ctx, this, SQWeakRef);
 }
 
 bool SQDelegable::GetMetaMethod(SQVM *v,SQMetaMethod mm,SQObjectPtr &res) {
@@ -139,7 +138,7 @@ bool SQGenerator::Yield(SQVM *v,SQInteger target)
 
     _stack.resize(size);
     SQObject _this = v->_stack[v->_stackbase];
-    _stack._vals[0] = ISREFCOUNTED(sq_type(_this)) ? SQObjectPtr(_refcounted(_this)->GetWeakRef(sq_type(_this))) : _this;
+    _stack._vals[0] = ISREFCOUNTED(sq_type(_this)) ? SQObjectPtr(_refcounted(_this)->GetWeakRef(_ss(v)->_alloc_ctx, sq_type(_this))) : _this;
     for(SQInteger n =1; n<target; n++) {
         _stack._vals[n] = v->_stack[v->_stackbase+n];
     }
@@ -388,7 +387,7 @@ bool SQClosure::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &ret)
     SQObjectPtr func;
     _CHECK_IO(SQFunctionProto::Load(v,up,read,func));
     _CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_TAIL));
-    ret = SQClosure::Create(_ss(v),_funcproto(func),_table(v->_roottable)->GetWeakRef(OT_TABLE));
+    ret = SQClosure::Create(_ss(v),_funcproto(func),_table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE));
     //FIXME: load an root for this closure
     return true;
 }

@@ -467,7 +467,7 @@ static SQInteger _regexp_constructor(HSQUIRRELVM v)
 {
     const SQChar *error,*pattern;
     sq_getstring(v,2,&pattern);
-    SQRex *rex = sqstd_rex_compile(pattern,&error);
+    SQRex *rex = sqstd_rex_compile(sq_getallocctx(v),pattern,&error);
     if(!rex) return sq_throwerror(v,error);
     sq_setinstanceup(v,1,rex);
     sq_setreleasehook(v,1,_rexobj_releasehook);

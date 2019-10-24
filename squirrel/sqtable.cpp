@@ -9,7 +9,8 @@ see copyright notice in squirrel.h
 
 #define _FAST_CLONE
 
-SQTable::SQTable(SQSharedState *ss,SQInteger nInitialSize)
+SQTable::SQTable(SQSharedState *ss,SQInteger nInitialSize) :
+    _alloc_ctx(ss->_alloc_ctx)
 {
     SQInteger pow2size=MINPOWER2;
     while(nInitialSize>pow2size)pow2size=pow2size<<1;
@@ -22,7 +23,6 @@ SQTable::SQTable(SQSharedState *ss,SQInteger nInitialSize)
 
 void SQTable::Remove(const SQObjectPtr &key)
 {
-
     _HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
     if (n) {
         n->val.Null();
@@ -35,7 +35,7 @@ void SQTable::Remove(const SQObjectPtr &key)
 
 void SQTable::AllocNodes(SQInteger nSize)
 {
-    _HashNode *nodes=(_HashNode *)SQ_MALLOC(sizeof(_HashNode)*nSize);
+    _HashNode *nodes=(_HashNode *)SQ_MALLOC(_alloc_ctx, sizeof(_HashNode)*nSize);
     for(SQInteger i=0;i<nSize;i++){
         _HashNode &n = nodes[i];
         new (&n) _HashNode;
@@ -70,7 +70,7 @@ void SQTable::Rehash(bool force)
     }
     for(SQInteger k=0;k<oldsize;k++)
         nold[k].~_HashNode();
-    SQ_FREE(nold,oldsize*sizeof(_HashNode));
+    SQ_FREE(_alloc_ctx, nold, oldsize*sizeof(_HashNode));
 }
 
 SQTable *SQTable::Clone()
