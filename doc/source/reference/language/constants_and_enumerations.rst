@@ -26,15 +26,18 @@ global values, except that they are evaluated compile time and their value canno
 constants values can only be integers, floats or string literals. No expression are allowed.
 are declared with the following syntax.::
 
-    const foobar = 100;
-    const floatbar = 1.2;
-    const stringbar = "I'm a constant string";
+    const foobar = 100
+    const floatbar = 1.2
+    const stringbar = "I'm a constant string"
 
-constants are always globally scoped, from the moment they are declared, any following code
-can reference them.
+Constants are locally scoped, from the moment they are declared.
+To make constant global, use the ``global`` keyword.::
+
+    global const baz = 123
+
 Constants will shadow any global slot with the same name( the global slot will remain visible by using the ``::`` syntax).::
 
-    local x = foobar * 2;
+    local x = foobar * 2
 
 ---------------
 Enumerations
@@ -67,7 +70,11 @@ An enum value is accessed in a manner that's similar to accessing a static class
 The name of the member must be qualified with the name of the enumeration, for example ``Stuff.second``
 Enumerations will shadow any global slot with the same name( the global slot will remain visible by using the ``::`` syntax).::
 
-    local x = Stuff.first * 2;
+    local x = Stuff.first * 2
+
+Like with constants, to declare globally-scoped enum, use the ``global`` keyword.::
+
+    global enum Stuff { first, second }
 
 --------------------
 Implementation notes
@@ -75,7 +82,8 @@ Implementation notes
 
 Enumerations and Constants are a compile-time feature. Only integers, string and floats can be declared as const/enum;
 No expressions are allowed(because they would have to be evaluated compile time).
-When a const or an enum is declared, it is added compile time to the ``consttable``. This table is stored in the VM shared state
+
+If a const or enum is global, when declared it is added compile time to the ``consttable``. This table is stored in the VM shared state
 and is shared by the VM and all its threads.
 The ``consttable`` is a regular squirrel table; In the same way as the ``roottable``
 it can be modified runtime.

@@ -17,6 +17,7 @@
    language/generators.rst
    language/constants_and_enumerations.rst
    language/destructuring_assignment.rst
+   language/string_interpolation.rst
    language/threads.rst
    language/weak_references.rst
    language/delegation.rst

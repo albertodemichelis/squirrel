@@ -115,6 +115,7 @@ If key exists, return result of 'get' operations, else return null.
 
 This works for any type (internally done via SQVM::Get(), like an 'in' operator), including null.
 Therefore operator can be chained
+
 ::
     local x = tbl?.foo?.bar?.baz?["spam"]
 
