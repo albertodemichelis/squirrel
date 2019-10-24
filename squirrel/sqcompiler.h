@@ -76,6 +76,7 @@ struct SQVM;
 #define TK_DOCSTRING 330
 #define TK_GLOBAL 331
 #define TK_DIRECTIVE 332
+#define TK_READERMACRO 333
 
 
 typedef void(*CompilerErrorFunc)(void *ud, const SQChar *s);

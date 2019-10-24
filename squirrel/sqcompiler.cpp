@@ -4,6 +4,7 @@
 #include "sqpcheader.h"
 #ifndef NO_COMPILER
 #include <stdarg.h>
+#include <ctype.h>
 #include <setjmp.h>
 #include <algorithm>
 #include "sqopcodes.h"
@@ -155,6 +156,22 @@ public:
     void ProcessDirective()
     {
         const SQChar *sval = _lex._svalue;
+
+        if (scstrncmp(sval, _SC("pos:"), 4) == 0) {
+            sval += 4;
+            if (!scisdigit(*sval))
+                Error(_SC("expected line number after #pos:"));
+            SQChar * next = NULL;
+            _lex._currentline = scstrtol(sval, &next, 10);
+            if (!next || *next != ':')
+                Error(_SC("expected ':'"));
+            next++;
+            if (!scisdigit(*next))
+                Error(_SC("expected column number after #pos:<line>:"));
+            _lex._currentcolumn = scstrtol(next, NULL, 10);
+
+            return;
+        }
 
         SQInteger setFlags = 0, clearFlags = 0;
         bool applyToDefault = false;
