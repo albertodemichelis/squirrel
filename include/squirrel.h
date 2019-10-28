@@ -85,7 +85,7 @@ struct SQOuter;
 #define SQ_MATCHTYPEMASKSTRING (-99999)
 
 #define _RT_MASK 0x00FFFFFF
-#define _RAW_TYPE(type) (type&_RT_MASK)
+#define _RAW_TYPE(type) ((type)&_RT_MASK)
 
 #define _RT_NULL            0x00000001
 #define _RT_INTEGER         0x00000002
@@ -127,7 +127,7 @@ typedef enum tagSQObjectType{
     OT_OUTER =          (_RT_OUTER|SQOBJECT_REF_COUNTED) //internal usage only
 }SQObjectType;
 
-#define ISREFCOUNTED(t) (t&SQOBJECT_REF_COUNTED)
+#define ISREFCOUNTED(t) ((t)&SQOBJECT_REF_COUNTED)
 
 
 typedef union tagSQObjectValue
@@ -404,8 +404,8 @@ SQUIRREL_API void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook);
 #define SQ_OK (0)
 #define SQ_ERROR (-1)
 
-#define SQ_FAILED(res) (res<0)
-#define SQ_SUCCEEDED(res) (res>=0)
+#define SQ_FAILED(res) ((res)<0)
+#define SQ_SUCCEEDED(res) ((res)>=0)
 
 #ifdef __GNUC__
 # define SQ_UNUSED_ARG(x) x __attribute__((__unused__))
