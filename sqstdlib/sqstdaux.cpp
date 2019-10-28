@@ -98,7 +98,7 @@ void sqstd_printcallstack(HSQUIRRELVM v)
     }
 }
 
-static SQInteger _sqstd_aux_printerror(HSQUIRRELVM v, void*)
+static SQInteger _sqstd_aux_printerror(HSQUIRRELVM v)
 {
     SQPRINTFUNCTION pf = sq_geterrorfunc(v);
     if(pf) {
@@ -127,7 +127,7 @@ void _sqstd_compiler_error(HSQUIRRELVM v,const SQChar *sErr,const SQChar *sSourc
 void sqstd_seterrorhandlers(HSQUIRRELVM v)
 {
     sq_setcompilererrorhandler(v,_sqstd_compiler_error);
-    sq_newclosure(v,_sqstd_aux_printerror,0,NULL);
+    sq_newclosure(v,_sqstd_aux_printerror,0);
     sq_seterrorhandler(v);
 }
 

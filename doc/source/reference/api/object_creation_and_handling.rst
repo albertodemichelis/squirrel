@@ -363,7 +363,21 @@ creates a new class object. If the parameter 'hasbase' is different than 0, the 
 
 .. _sq_newclosure:
 
-.. c:function:: void sq_newclosure(HSQUIRRELVM v, HSQFUNCTION func, SQInteger nfreevars, void *userdata)
+.. c:function:: void sq_newclosure(HSQUIRRELVM v, HSQFUNCTION func, SQInteger nfreevars)
+
+    :param HSQUIRRELVM v: the target VM
+    :param HSQFUNCTION func: a pointer to a native-function
+    :param SQInteger nfreevars: number of free variables(can be 0)
+
+create a new native closure, pops n values set those as free variables of the new closure, and push the new closure in the stack.
+
+
+
+
+
+.. _sq_newudclosure:
+
+.. c:function:: void sq_newudclosure(HSQUIRRELVM v, HSQUDFUNCTION func, SQInteger nfreevars, void *userdata)
 
     :param HSQUIRRELVM v: the target VM
     :param HSQFUNCTION func: a pointer to a native-function
@@ -371,6 +385,7 @@ creates a new class object. If the parameter 'hasbase' is different than 0, the 
     :param void* userdata: Pointer to arbitrary data
 
 create a new native closure, pops n values set those as free variables of the new closure, and push the new closure in the stack.
+The arbitrary data is passed to subsequent calls to func.
 
 
 

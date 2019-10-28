@@ -20,7 +20,7 @@
 #define screname rename
 #endif
 
-static SQInteger _system_getenv(HSQUIRRELVM v, void*)
+static SQInteger _system_getenv(HSQUIRRELVM v)
 {
     const SQChar *s;
     if(SQ_SUCCEEDED(sq_getstring(v,2,&s))){
@@ -31,7 +31,7 @@ static SQInteger _system_getenv(HSQUIRRELVM v, void*)
 }
 
 
-static SQInteger _system_system(HSQUIRRELVM v, void*)
+static SQInteger _system_system(HSQUIRRELVM v)
 {
     const SQChar *s;
     if(SQ_SUCCEEDED(sq_getstring(v,2,&s))){
@@ -42,20 +42,20 @@ static SQInteger _system_system(HSQUIRRELVM v, void*)
 }
 
 
-static SQInteger _system_clock(HSQUIRRELVM v, void*)
+static SQInteger _system_clock(HSQUIRRELVM v)
 {
     sq_pushfloat(v,((SQFloat)clock())/(SQFloat)CLOCKS_PER_SEC);
     return 1;
 }
 
-static SQInteger _system_time(HSQUIRRELVM v, void*)
+static SQInteger _system_time(HSQUIRRELVM v)
 {
     SQInteger t = (SQInteger)time(NULL);
     sq_pushinteger(v,t);
     return 1;
 }
 
-static SQInteger _system_remove(HSQUIRRELVM v, void*)
+static SQInteger _system_remove(HSQUIRRELVM v)
 {
     const SQChar *s;
     sq_getstring(v,2,&s);
@@ -64,7 +64,7 @@ static SQInteger _system_remove(HSQUIRRELVM v, void*)
     return 0;
 }
 
-static SQInteger _system_rename(HSQUIRRELVM v, void*)
+static SQInteger _system_rename(HSQUIRRELVM v)
 {
     const SQChar *oldn,*newn;
     sq_getstring(v,2,&oldn);
@@ -81,7 +81,7 @@ static void _set_integer_slot(HSQUIRRELVM v,const SQChar *name,SQInteger val)
     sq_rawset(v,-3);
 }
 
-static SQInteger _system_date(HSQUIRRELVM v, void*)
+static SQInteger _system_date(HSQUIRRELVM v)
 {
     time_t t;
     SQInteger it;
@@ -136,7 +136,7 @@ SQInteger sqstd_register_systemlib(HSQUIRRELVM v)
     while(systemlib_funcs[i].name!=0)
     {
         sq_pushstring(v,systemlib_funcs[i].name,-1);
-        sq_newclosure(v,systemlib_funcs[i].f,0,NULL);
+        sq_newclosure(v,systemlib_funcs[i].f,0);
         sq_setparamscheck(v,systemlib_funcs[i].nparamscheck,systemlib_funcs[i].typemask);
         sq_setnativeclosurename(v,-1,systemlib_funcs[i].name);
         sq_newslot(v,-3,SQFalse);

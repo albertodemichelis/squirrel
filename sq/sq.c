@@ -38,7 +38,7 @@ int MemAllocHook( int allocType, void *userData, size_t size, int blockType,
 #endif
 
 
-SQInteger quit(HSQUIRRELVM v,void* ignore)
+SQInteger quit(HSQUIRRELVM v)
 {
     int *done;
     sq_getuserpointer(v,-1,(SQUserPointer*)&done);
@@ -235,7 +235,7 @@ void Interactive(HSQUIRRELVM v)
     sq_pushroottable(v);
     sq_pushstring(v,_SC("quit"),-1);
     sq_pushuserpointer(v,&done);
-    sq_newclosure(v,quit,1,NULL);
+    sq_newclosure(v,quit,1);
     sq_setparamscheck(v,1,NULL);
     sq_newslot(v,-3,SQFalse);
     sq_pop(v,1);

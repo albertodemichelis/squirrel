@@ -16,7 +16,7 @@ the return value is an integer respecting the following rules:
 * SQ_ERROR runtime error is thrown
 
 In order to obtain a new callable squirrel function from a C function pointer, is necessary
-to call sq_newclosure() passing the C function and a user-defined pointer to it;
+to call sq_newclosure() passing the C function to it;
 the new Squirrel function will be pushed in the stack.
 
 When the function is called, the stackbase is the first parameter of the function and the
@@ -99,7 +99,7 @@ Here an example of how to register a function::
     {
         sq_pushroottable(v);
         sq_pushstring(v,fname,-1);
-        sq_newclosure(v,f,0,NULL); //create a new function
+        sq_newclosure(v,f,0); //create a new function
         sq_newslot(v,-3,SQFalse);
         sq_pop(v,1); //pops the root table
         return 0;
