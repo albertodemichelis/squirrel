@@ -598,7 +598,7 @@ static SQInteger container_each(HSQUIRRELVM v)
 }
 
 
-static SQInteger container_search(HSQUIRRELVM v)
+static SQInteger container_findindex(HSQUIRRELVM v)
 {
     SQObject &o = stack_get(v,1);
     SQObject &closure = stack_get(v, 2);
@@ -627,6 +627,40 @@ static SQInteger container_search(HSQUIRRELVM v)
     sq_pop(v, 1); // pops the iterator
 
     return 0;
+}
+
+static SQInteger container_findvalue(HSQUIRRELVM v)
+{
+    if (sq_gettop(v) > 3)
+        return sq_throwerror(v, _SC("Too many arguments for findvalue()"));
+
+    SQObject &o = stack_get(v,1);
+    SQObject &closure = stack_get(v, 2);
+    SQInteger nArgs = get_allowed_args_count(closure, 4);
+
+    sq_pushnull(v);
+    while (SQ_SUCCEEDED(sq_next(v, 1))) {
+        SQInteger iterTop = sq_gettop(v);
+        v->Push(closure);
+        v->Push(o);
+        v->Push(stack_get(v, iterTop));
+        if (nArgs >= 3)
+            v->Push(stack_get(v, iterTop-1));
+        if (nArgs >= 4)
+            v->Push(o);
+
+        if (SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
+            return SQ_ERROR;
+        }
+        if (!v->IsFalse(stack_get(v, -1))) {
+            v->Push(stack_get(v, iterTop));
+            return 1;
+        }
+        v->Pop(4);
+    }
+    sq_pop(v, 1); // pops the iterator
+
+    return sq_gettop(v) > 2 ? 1 : 0;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -837,7 +871,8 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("reduce"),table_reduce, -2, _SC("tc")},
     {_SC("getfuncinfos"),delegable_getfuncinfos,1, _SC("t")},
     {_SC("each"),container_each,2, _SC("tc")},
-    {_SC("search"),container_search,2, _SC("tc")},
+    {_SC("findindex"),container_findindex,2, _SC("tc")},
+    {_SC("findvalue"),container_findvalue,-2, _SC("tc.")},
     {_SC("keys"),table_keys,1, _SC("t") },
     {_SC("values"),table_values,1, _SC("t") },
     {_SC("__update"),container_update, -2, _SC("t|yt|y|x") },
@@ -1081,7 +1116,7 @@ static SQInteger array_filter_inplace(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger array_find(HSQUIRRELVM v)
+static SQInteger array_indexof(HSQUIRRELVM v)
 {
     SQObject &o = stack_get(v,1);
     SQObjectPtr &val = stack_get(v,2);
@@ -1254,9 +1289,10 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("reduce"),array_reduce,-2, _SC("ac.")},
     {_SC("filter"),array_filter,2, _SC("ac")},
     {_SC("filter_inplace"),array_filter_inplace,2, _SC("ac")},
-    {_SC("find"),array_find,2, _SC("a.")},
+    {_SC("indexof"),array_indexof,2, _SC("a.")},
     {_SC("each"),container_each,2, _SC("ac")},
-    {_SC("search"),container_search,2, _SC("ac")},
+    {_SC("findindex"),container_findindex,2, _SC("ac")},
+    {_SC("findvalue"),container_findvalue,-2, _SC("ac.")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -1281,7 +1317,7 @@ static SQInteger string_slice(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger string_find(HSQUIRRELVM v)
+static SQInteger string_indexof(HSQUIRRELVM v)
 {
     SQInteger top,start_idx=0;
     const SQChar *str,*substr,*ret;
@@ -1575,7 +1611,7 @@ const SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
     {_SC("tofloat"),default_delegate_tofloat,1, _SC("s")},
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
     {_SC("slice"),string_slice,-1, _SC("s n  n")},
-    {_SC("find"),string_find,-2, _SC("s s n")},
+    {_SC("indexof"),string_indexof,-2, _SC("s s n")},
     {_SC("tolower"),string_tolower,-1, _SC("s n n")},
     {_SC("toupper"),string_toupper,-1, _SC("s n n")},
     {_SC("subst"),string_substitute,-2, _SC("s")},

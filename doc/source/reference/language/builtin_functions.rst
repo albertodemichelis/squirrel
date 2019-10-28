@@ -260,7 +260,7 @@ returns the string (really, a dummy function)
 returns a section of the string as new string. Copies from start to the end (not included). If start is negative the index is calculated as length + start, if end is negative the index is calculated as length + end. If end is omitted end is equal to the string length.
 
 
-.. js:function:: string.find(substr,[startidx])
+.. js:function:: string.indexof(substr,[startidx])
 
 Searches a sub string (substr) starting from the index startidx and returns the index of its first occurrence. If startidx is omitted the search operation starts from the beginning of the string. The function returns null if substr is not found.
 
@@ -409,10 +409,15 @@ Provided func can accept up to 3 arguments: slot value (required), slot key in t
 
 Iterates a table and calls provided function for each element.
 
-.. js:function:: table.search(func(slot_value, [slot_key], [table_ref]))
+.. js:function:: table.findindex(func(slot_value, [slot_key], [table_ref]))
 
 Performs a linear search calling provided function for each value in the table.
 Returns the index of the value if it was found (callback returned true (non-false) value) or null otherwise.
+
+.. js:function:: table.findvalue(func(slot_value, [slot_key], [table_ref]), [def=null])
+
+Performs a linear search calling provided function for each value in the table.
+Returns matched value (for which callback returned non-false value) or default value otherwise (null if not provided).
 
 .. js:function:: table.reduce(func(accumulator, slot_value, [slot_key], [table_ref]), [initializer])
 
@@ -577,15 +582,19 @@ Creates a new array with all elements that pass the test implemented by the prov
 Similar to array.filter(), but modifies given array instead of creating new one.
 It removes all elements for which provided function returns false.
 
-.. js:function:: array.find(value)
+.. js:function:: array.indexof(value)
 
 Performs a linear search for the value in the array. Returns the index of the value if it was found null otherwise.
 
-.. js:function:: array.search(func(item_value, [item_index], [array_ref]))
+.. js:function:: array.findindex(func(item_value, [item_index], [array_ref]))
 
 Performs a linear search calling provided function for each value in the array.
 Returns the index of the value if it was found (callback returned true (non-false) value) or null otherwise.
 
+.. js:function:: array.findvalue(func(item_value, [item_index], [array_ref]), [def=null])
+
+Performs a linear search calling provided function for each value in the array.
+Returns matched value (for which callback returned non-false value) or default value otherwise (null if not provided).
 
 ^^^^^^^^
 Function
