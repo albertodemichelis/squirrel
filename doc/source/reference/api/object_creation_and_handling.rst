@@ -363,11 +363,12 @@ creates a new class object. If the parameter 'hasbase' is different than 0, the 
 
 .. _sq_newclosure:
 
-.. c:function:: void sq_newclosure(HSQUIRRELVM v, HSQFUNCTION func, SQInteger nfreevars)
+.. c:function:: void sq_newclosure(HSQUIRRELVM v, HSQFUNCTION func, SQInteger nfreevars, void *userdata)
 
     :param HSQUIRRELVM v: the target VM
     :param HSQFUNCTION func: a pointer to a native-function
     :param SQInteger nfreevars: number of free variables(can be 0)
+    :param void* userdata: Pointer to arbitrary data
 
 create a new native closure, pops n values set those as free variables of the new closure, and push the new closure in the stack.
 

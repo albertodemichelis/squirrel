@@ -149,19 +149,20 @@ struct SQNativeClosure : public CHAINABLE_OBJ
 private:
     SQNativeClosure(SQSharedState *ss,SQFUNCTION func){_function=func;INIT_CHAIN();ADD_TO_CHAIN(&_ss(this)->_gc_chain,this); _env = NULL;}
 public:
-    static SQNativeClosure *Create(SQSharedState *ss,SQFUNCTION func,SQInteger nouters)
+    static SQNativeClosure *Create(SQSharedState *ss,SQFUNCTION func,SQInteger nouters,void *userdata)
     {
         SQInteger size = _CALC_NATVIVECLOSURE_SIZE(nouters);
         SQNativeClosure *nc=(SQNativeClosure*)SQ_MALLOC(size);
         new (nc) SQNativeClosure(ss,func);
         nc->_outervalues = (SQObjectPtr *)(nc + 1);
         nc->_noutervalues = nouters;
+        nc->_userdata = userdata;
         _CONSTRUCT_VECTOR(SQObjectPtr,nc->_noutervalues,nc->_outervalues);
         return nc;
     }
     SQNativeClosure *Clone()
     {
-        SQNativeClosure * ret = SQNativeClosure::Create(_opt_ss(this),_function,_noutervalues);
+        SQNativeClosure * ret = SQNativeClosure::Create(_opt_ss(this),_function,_noutervalues,_userdata);
         ret->_env = _env;
         if(ret->_env) __ObjAddRef(ret->_env);
         ret->_name = _name;
@@ -194,6 +195,7 @@ public:
     SQWeakRef *_env;
     SQFUNCTION _function;
     SQObjectPtr _name;
+    void *_userdata;
 };
 
 

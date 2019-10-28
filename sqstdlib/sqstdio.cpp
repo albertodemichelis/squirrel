@@ -109,7 +109,7 @@ private:
     bool _owns;
 };
 
-static SQInteger _file__typeof(HSQUIRRELVM v)
+static SQInteger _file__typeof(HSQUIRRELVM v, void*)
 {
     sq_pushstring(v,_SC("file"),-1);
     return 1;
@@ -123,7 +123,7 @@ static SQInteger _file_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(size
     return 1;
 }
 
-static SQInteger _file_constructor(HSQUIRRELVM v)
+static SQInteger _file_constructor(HSQUIRRELVM v, void*)
 {
     const SQChar *filename,*mode;
     bool owns = true;
@@ -151,7 +151,7 @@ static SQInteger _file_constructor(HSQUIRRELVM v)
     return 0;
 }
 
-static SQInteger _file_close(HSQUIRRELVM v)
+static SQInteger _file_close(HSQUIRRELVM v, void*)
 {
     SQFile *self = NULL;
     if(SQ_SUCCEEDED(sq_getinstanceup(v,1,(SQUserPointer*)&self,(SQUserPointer)SQSTD_FILE_TYPE_TAG))
@@ -426,7 +426,7 @@ SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM v,const SQChar *filename)
     return SQ_ERROR; //forward the error
 }
 
-SQInteger _g_io_loadfile(HSQUIRRELVM v)
+SQInteger _g_io_loadfile(HSQUIRRELVM v, void*)
 {
     const SQChar *filename;
     SQBool printerror = SQFalse;
@@ -439,7 +439,7 @@ SQInteger _g_io_loadfile(HSQUIRRELVM v)
     return SQ_ERROR; //propagates the error
 }
 
-SQInteger _g_io_writeclosuretofile(HSQUIRRELVM v)
+SQInteger _g_io_writeclosuretofile(HSQUIRRELVM v, void*)
 {
     const SQChar *filename;
     sq_getstring(v,2,&filename);
@@ -448,7 +448,7 @@ SQInteger _g_io_writeclosuretofile(HSQUIRRELVM v)
     return SQ_ERROR; //propagates the error
 }
 
-SQInteger _g_io_dofile(HSQUIRRELVM v)
+SQInteger _g_io_dofile(HSQUIRRELVM v, void*)
 {
     const SQChar *filename;
     SQBool printerror = SQFalse;

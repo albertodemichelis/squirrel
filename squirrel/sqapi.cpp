@@ -383,9 +383,9 @@ SQRESULT sq_arrayinsert(HSQUIRRELVM v,SQInteger idx,SQInteger destpos)
     return ret;
 }
 
-void sq_newclosure(HSQUIRRELVM v,SQFUNCTION func,SQUnsignedInteger nfreevars)
+void sq_newclosure(HSQUIRRELVM v,SQFUNCTION func,SQUnsignedInteger nfreevars,void *userdata)
 {
-    SQNativeClosure *nc = SQNativeClosure::Create(_ss(v), func,nfreevars);
+    SQNativeClosure *nc = SQNativeClosure::Create(_ss(v), func,nfreevars, userdata);
     nc->_nparamscheck = 0;
     for(SQUnsignedInteger i = 0; i < nfreevars; i++) {
         nc->_outervalues[i] = v->Top();

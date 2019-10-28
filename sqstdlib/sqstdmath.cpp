@@ -4,14 +4,14 @@
 #include <stdlib.h>
 #include <sqstdmath.h>
 
-#define SINGLE_ARG_FUNC(_funcname) static SQInteger math_##_funcname(HSQUIRRELVM v){ \
+#define SINGLE_ARG_FUNC(_funcname) static SQInteger math_##_funcname(HSQUIRRELVM v, void*){ \
     SQFloat f; \
     sq_getfloat(v,2,&f); \
     sq_pushfloat(v,(SQFloat)_funcname(f)); \
     return 1; \
 }
 
-#define TWO_ARGS_FUNC(_funcname) static SQInteger math_##_funcname(HSQUIRRELVM v){ \
+#define TWO_ARGS_FUNC(_funcname) static SQInteger math_##_funcname(HSQUIRRELVM v, void*){ \
     SQFloat p1,p2; \
     sq_getfloat(v,2,&p1); \
     sq_getfloat(v,3,&p2); \
@@ -19,7 +19,7 @@
     return 1; \
 }
 
-static SQInteger math_srand(HSQUIRRELVM v)
+static SQInteger math_srand(HSQUIRRELVM v, void*)
 {
     SQInteger i;
     if(SQ_FAILED(sq_getinteger(v,2,&i)))
@@ -28,13 +28,13 @@ static SQInteger math_srand(HSQUIRRELVM v)
     return 0;
 }
 
-static SQInteger math_rand(HSQUIRRELVM v)
+static SQInteger math_rand(HSQUIRRELVM v, void*)
 {
     sq_pushinteger(v,rand());
     return 1;
 }
 
-static SQInteger math_abs(HSQUIRRELVM v)
+static SQInteger math_abs(HSQUIRRELVM v, void*)
 {
     SQInteger n;
     sq_getinteger(v,2,&n);
@@ -91,7 +91,7 @@ SQRESULT sqstd_register_mathlib(HSQUIRRELVM v)
     SQInteger i=0;
     while(mathlib_funcs[i].name!=0) {
         sq_pushstring(v,mathlib_funcs[i].name,-1);
-        sq_newclosure(v,mathlib_funcs[i].f,0);
+        sq_newclosure(v,mathlib_funcs[i].f,0,NULL);
         sq_setparamscheck(v,mathlib_funcs[i].nparamscheck,mathlib_funcs[i].typemask);
         sq_setnativeclosurename(v,-1,mathlib_funcs[i].name);
         sq_newslot(v,-3,SQFalse);

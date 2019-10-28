@@ -173,7 +173,7 @@ begin:
     }
 }
 
-static SQInteger _string_printf(HSQUIRRELVM v)
+static SQInteger _string_printf(HSQUIRRELVM v, void*)
 {
     SQChar *dest = NULL;
     SQInteger length = 0;
@@ -186,7 +186,7 @@ static SQInteger _string_printf(HSQUIRRELVM v)
     return 0;
 }
 
-static SQInteger _string_format(HSQUIRRELVM v)
+static SQInteger _string_format(HSQUIRRELVM v, void*)
 {
     SQChar *dest = NULL;
     SQInteger length = 0;
@@ -214,7 +214,7 @@ static void __strip_r(const SQChar *str,SQInteger len,const SQChar **end)
     *end = t + 1;
 }
 
-static SQInteger _string_strip(HSQUIRRELVM v)
+static SQInteger _string_strip(HSQUIRRELVM v, void*)
 {
     const SQChar *str,*start,*end;
     sq_getstring(v,2,&str);
@@ -225,7 +225,7 @@ static SQInteger _string_strip(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger _string_lstrip(HSQUIRRELVM v)
+static SQInteger _string_lstrip(HSQUIRRELVM v, void*)
 {
     const SQChar *str,*start;
     sq_getstring(v,2,&str);
@@ -234,7 +234,7 @@ static SQInteger _string_lstrip(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger _string_rstrip(HSQUIRRELVM v)
+static SQInteger _string_rstrip(HSQUIRRELVM v, void*)
 {
     const SQChar *str,*end;
     sq_getstring(v,2,&str);
@@ -244,7 +244,7 @@ static SQInteger _string_rstrip(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger _string_split(HSQUIRRELVM v)
+static SQInteger _string_split(HSQUIRRELVM v, void*)
 {
     const SQChar *str,*seps;
     SQChar *stemp;
@@ -282,7 +282,7 @@ static SQInteger _string_split(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger _string_escape(HSQUIRRELVM v)
+static SQInteger _string_escape(HSQUIRRELVM v, void*)
 {
     const SQChar *str;
     SQChar *dest,*resstr;
@@ -352,7 +352,7 @@ static SQInteger _string_escape(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger _string_startswith(HSQUIRRELVM v)
+static SQInteger _string_startswith(HSQUIRRELVM v, void*)
 {
     const SQChar *str,*cmp;
     sq_getstring(v,2,&str);
@@ -367,7 +367,7 @@ static SQInteger _string_startswith(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger _string_endswith(HSQUIRRELVM v)
+static SQInteger _string_endswith(HSQUIRRELVM v, void*)
 {
     const SQChar *str,*cmp;
     sq_getstring(v,2,&str);
@@ -393,7 +393,7 @@ static SQInteger _rexobj_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(si
     return 1;
 }
 
-static SQInteger _regexp_match(HSQUIRRELVM v)
+static SQInteger _regexp_match(HSQUIRRELVM v, void*)
 {
     SETUP_REX(v);
     const SQChar *str;
@@ -418,7 +418,7 @@ static void _addrexmatch(HSQUIRRELVM v,const SQChar *str,const SQChar *begin,con
     sq_rawset(v,-3);
 }
 
-static SQInteger _regexp_search(HSQUIRRELVM v)
+static SQInteger _regexp_search(HSQUIRRELVM v, void*)
 {
     SETUP_REX(v);
     const SQChar *str,*begin,*end;
@@ -432,7 +432,7 @@ static SQInteger _regexp_search(HSQUIRRELVM v)
     return 0;
 }
 
-static SQInteger _regexp_capture(HSQUIRRELVM v)
+static SQInteger _regexp_capture(HSQUIRRELVM v, void*)
 {
     SETUP_REX(v);
     const SQChar *str,*begin,*end;
@@ -456,14 +456,14 @@ static SQInteger _regexp_capture(HSQUIRRELVM v)
     return 0;
 }
 
-static SQInteger _regexp_subexpcount(HSQUIRRELVM v)
+static SQInteger _regexp_subexpcount(HSQUIRRELVM v, void*)
 {
     SETUP_REX(v);
     sq_pushinteger(v,sqstd_rex_getsubexpcount(self));
     return 1;
 }
 
-static SQInteger _regexp_constructor(HSQUIRRELVM v)
+static SQInteger _regexp_constructor(HSQUIRRELVM v, void*)
 {
     const SQChar *error,*pattern;
     sq_getstring(v,2,&pattern);
@@ -474,7 +474,7 @@ static SQInteger _regexp_constructor(HSQUIRRELVM v)
     return 0;
 }
 
-static SQInteger _regexp__typeof(HSQUIRRELVM v)
+static SQInteger _regexp__typeof(HSQUIRRELVM v, void*)
 {
     sq_pushstring(v,_SC("regexp"),-1);
     return 1;
@@ -516,7 +516,7 @@ SQInteger sqstd_register_stringlib(HSQUIRRELVM v)
     while(rexobj_funcs[i].name != 0) {
         const SQRegFunction &f = rexobj_funcs[i];
         sq_pushstring(v,f.name,-1);
-        sq_newclosure(v,f.f,0);
+        sq_newclosure(v,f.f,0,NULL);
         sq_setparamscheck(v,f.nparamscheck,f.typemask);
         sq_setnativeclosurename(v,-1,f.name);
         sq_newslot(v,-3,SQFalse);
@@ -528,7 +528,7 @@ SQInteger sqstd_register_stringlib(HSQUIRRELVM v)
     while(stringlib_funcs[i].name!=0)
     {
         sq_pushstring(v,stringlib_funcs[i].name,-1);
-        sq_newclosure(v,stringlib_funcs[i].f,0);
+        sq_newclosure(v,stringlib_funcs[i].f,0,NULL);
         sq_setparamscheck(v,stringlib_funcs[i].nparamscheck,stringlib_funcs[i].typemask);
         sq_setnativeclosurename(v,-1,stringlib_funcs[i].name);
         sq_newslot(v,-3,SQFalse);
