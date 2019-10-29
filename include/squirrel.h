@@ -371,6 +371,20 @@ SQUIRREL_API SQRESULT sq_objrawnewmember(HSQUIRRELVM v,HSQOBJECT *cls,HSQOBJECT 
 SQUIRREL_API SQRESULT sq_objrawset(HSQUIRRELVM v,HSQOBJECT *target,HSQOBJECT *key,HSQOBJECT *value);
 SQUIRREL_API SQRESULT sq_objset(HSQUIRRELVM v,HSQOBJECT *target,HSQOBJECT *key,HSQOBJECT *value);
 SQUIRREL_API SQRESULT sq_objsetdelegates(HSQUIRRELVM v,HSQOBJECT *target,HSQOBJECT *value);
+SQUIRREL_API void sq_objnewtable(HSQUIRRELVM v,HSQOBJECT *obj);
+SQUIRREL_API void sq_objnewtableex(HSQUIRRELVM v,SQInteger initialcapacity,HSQOBJECT *obj);
+SQUIRREL_API void sq_objnewarray(HSQUIRRELVM v,SQInteger size,HSQOBJECT *obj);
+SQUIRREL_API void sq_objnewclosure(HSQUIRRELVM v,SQFUNCTION func,HSQOBJECT *obj);
+SQUIRREL_API void sq_objnewstring(HSQUIRRELVM v,const SQChar *s,SQInteger len,HSQOBJECT *obj);
+SQUIRREL_API void sq_objnewfloat(HSQUIRRELVM v,SQFloat f,HSQOBJECT *obj);
+SQUIRREL_API void sq_objnewinteger(HSQUIRRELVM v,SQInteger n,HSQOBJECT *obj);
+SQUIRREL_API void sq_objnewbool(HSQUIRRELVM v,SQBool b,HSQOBJECT *obj);
+SQUIRREL_API void sq_objnewnull(HSQUIRRELVM v,HSQOBJECT *obj);
+SQUIRREL_API void sq_objnewthread(HSQUIRRELVM v, HSQUIRRELVM thread,HSQOBJECT *obj);
+SQUIRREL_API SQRESULT sq_objnewclass(HSQUIRRELVM v,HSQOBJECT* base,HSQOBJECT *obj);
+SQUIRREL_API void sq_objgetroottable(HSQUIRRELVM v,HSQOBJECT *obj);
+SQUIRREL_API void sq_objgetregistrytable(HSQUIRRELVM v,HSQOBJECT *obj);
+SQUIRREL_API void sq_objgetconsttable(HSQUIRRELVM v,HSQOBJECT *obj);
 
 /*GC*/
 SQUIRREL_API SQInteger sq_collectgarbage(HSQUIRRELVM v);

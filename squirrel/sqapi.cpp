@@ -231,6 +231,11 @@ void sq_pushnull(HSQUIRRELVM v)
     v->PushNull();
 }
 
+void sq_objnewnull(HSQUIRRELVM v,HSQOBJECT *obj)
+{
+    *obj = SQObjectPtr();
+}
+
 void sq_pushstring(HSQUIRRELVM v,const SQChar *s,SQInteger len)
 {
     if(s)
@@ -238,9 +243,21 @@ void sq_pushstring(HSQUIRRELVM v,const SQChar *s,SQInteger len)
     else v->PushNull();
 }
 
+void sq_objnewstring(HSQUIRRELVM v,const SQChar *s,SQInteger len,HSQOBJECT *obj)
+{
+    if(s)
+        *obj = SQObjectPtr(SQString::Create(_ss(v), s, len));
+    else *obj = SQObjectPtr();
+}
+
 void sq_pushinteger(HSQUIRRELVM v,SQInteger n)
 {
     v->Push(n);
+}
+
+void sq_objnewinteger(HSQUIRRELVM v,SQInteger n,HSQOBJECT *obj)
+{
+    *obj = SQObjectPtr(n);
 }
 
 void sq_pushbool(HSQUIRRELVM v,SQBool b)
@@ -248,9 +265,19 @@ void sq_pushbool(HSQUIRRELVM v,SQBool b)
     v->Push(b?true:false);
 }
 
+void sq_objnewbool(HSQUIRRELVM v,SQBool b,HSQOBJECT *obj)
+{
+    *obj = SQObjectPtr(b?true:false);
+}
+
 void sq_pushfloat(HSQUIRRELVM v,SQFloat n)
 {
     v->Push(n);
+}
+
+void sq_objnewfloat(HSQUIRRELVM v,SQFloat f,HSQOBJECT *obj)
+{
+    *obj = SQObjectPtr(f);
 }
 
 void sq_pushuserpointer(HSQUIRRELVM v,SQUserPointer p)
@@ -261,6 +288,11 @@ void sq_pushuserpointer(HSQUIRRELVM v,SQUserPointer p)
 void sq_pushthread(HSQUIRRELVM v, HSQUIRRELVM thread)
 {
     v->Push(thread);
+}
+
+void sq_objnewthread(HSQUIRRELVM v, HSQUIRRELVM thread, HSQOBJECT *obj)
+{
+    *obj = SQObjectPtr(thread);
 }
 
 SQUserPointer sq_newuserdata(HSQUIRRELVM v,SQUnsignedInteger size)
@@ -275,14 +307,29 @@ void sq_newtable(HSQUIRRELVM v)
     v->Push(SQTable::Create(_ss(v), 0));
 }
 
+void sq_objnewtable(HSQUIRRELVM v,HSQOBJECT *obj)
+{
+    *obj = SQObjectPtr(SQTable::Create(_ss(v), 0));
+}
+
 void sq_newtableex(HSQUIRRELVM v,SQInteger initialcapacity)
 {
     v->Push(SQTable::Create(_ss(v), initialcapacity));
 }
 
+void sq_objnewtableex(HSQUIRRELVM v,SQInteger initialcapacity,HSQOBJECT *obj)
+{
+    *obj = SQObjectPtr(SQTable::Create(_ss(v), initialcapacity));
+}
+
 void sq_newarray(HSQUIRRELVM v,SQInteger size)
 {
     v->Push(SQArray::Create(_ss(v), size));
+}
+
+void sq_objnewarray(HSQUIRRELVM v,SQInteger size,HSQOBJECT *obj)
+{
+    *obj = SQObjectPtr(SQArray::Create(_ss(v), size));
 }
 
 SQRESULT sq_newclass(HSQUIRRELVM v,SQBool hasbase)
@@ -297,6 +344,20 @@ SQRESULT sq_newclass(HSQUIRRELVM v,SQBool hasbase)
     SQClass *newclass = SQClass::Create(_ss(v), baseclass);
     if(baseclass) v->Pop();
     v->Push(newclass);
+    return SQ_OK;
+}
+
+
+SQRESULT sq_objnewclass(HSQUIRRELVM v,HSQOBJECT* base,HSQOBJECT *obj)
+{
+    SQClass *baseclass = NULL;
+    if(base) {
+        if(sq_type(*base) != OT_CLASS)
+            return sq_throwerror(v,_SC("invalid base type"));
+        baseclass = _class(*base);
+    }
+    SQClass *newclass = SQClass::Create(_ss(v), baseclass);
+    *obj = SQObjectPtr(newclass);
     return SQ_OK;
 }
 
@@ -472,6 +533,13 @@ void sq_newclosure(HSQUIRRELVM v,SQFUNCTION func,SQUnsignedInteger nfreevars)
     v->Push(SQObjectPtr(nc));
 }
 
+void sq_objnewclosure(HSQUIRRELVM v,SQFUNCTION func,HSQOBJECT *obj)
+{
+    SQNativeClosure *nc = SQNativeClosure::Create(_ss(v), func,0);
+    nc->_nparamscheck = 0;
+    *obj = SQObjectPtr(nc);
+}
+
 SQRESULT sq_getclosureinfo(HSQUIRRELVM v,SQInteger idx,SQInteger *nparams,SQInteger *nfreevars)
 {
     SQObject o = stack_get(v, idx);
@@ -631,14 +699,29 @@ void sq_pushroottable(HSQUIRRELVM v)
     v->Push(v->_roottable);
 }
 
+void sq_objgetroottable(HSQUIRRELVM v,HSQOBJECT *obj)
+{
+    *obj = v->_roottable;
+}
+
 void sq_pushregistrytable(HSQUIRRELVM v)
 {
     v->Push(_ss(v)->_registry);
 }
 
+void sq_objgetregistrytable(HSQUIRRELVM v,HSQOBJECT *obj)
+{
+    *obj = _ss(v)->_registry;
+}
+
 void sq_pushconsttable(HSQUIRRELVM v)
 {
     v->Push(_ss(v)->_consts);
+}
+
+void sq_objgetconsttable(HSQUIRRELVM v,HSQOBJECT *obj)
+{
+    *obj = _ss(v)->_consts;
 }
 
 SQRESULT sq_setroottable(HSQUIRRELVM v)
