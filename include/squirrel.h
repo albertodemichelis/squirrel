@@ -350,7 +350,7 @@ SQUIRREL_API SQRESULT sq_getobjtypetag(const HSQOBJECT *o,SQUserPointer * typeta
 SQUIRREL_API SQUnsignedInteger sq_getvmrefcount(HSQUIRRELVM v, const HSQOBJECT *po);
 SQUIRREL_API SQRESULT sq_objarrayappend(HSQUIRRELVM v,HSQOBJECT *target,HSQOBJECT *obj);
 SQUIRREL_API SQRESULT sq_objarrayinsert(HSQUIRRELVM v,HSQOBJECT *target,SQInteger pos,HSQOBJECT *obj);
-SQUIRREL_API SQRESULT sq_objarraypop(HSQUIRRELVM v,HSQOBJECT *target);
+SQUIRREL_API SQRESULT sq_objarraypop(HSQUIRRELVM v,HSQOBJECT *target,HSQOBJECT *popped);
 SQUIRREL_API SQRESULT sq_objarrayremove(HSQUIRRELVM v,HSQOBJECT *target,SQInteger pos);
 SQUIRREL_API SQRESULT sq_objarrayresize(HSQUIRRELVM v,HSQOBJECT *target,SQInteger newsize);
 SQUIRREL_API SQRESULT sq_objarrayreverse(HSQUIRRELVM v,HSQOBJECT *target);
