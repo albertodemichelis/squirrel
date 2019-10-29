@@ -91,12 +91,12 @@ resumes the generator at the top position of the stack.
 
 .. c:function:: SQRESULT sq_tailcall(HSQUIRRELVM v, SQInteger nparams)
 
-	:param HSQUIRRELVM v: the target VM
+    :param HSQUIRRELVM v: the target VM
     :param SQInteger params: number of parameters of the function
 
-	Calls a closure and removes the caller function from the call stack.
-	This function must be invoke from a native closure and 
-	he return value of sq_tailcall must be returned by the caller function(see example).
+Calls a closure and removes the caller function from the call stack.
+This function must be invoked from a native closure and
+the return value of sq_tailcall must be returned by the caller function(see example).
 	
 *.eg*
 

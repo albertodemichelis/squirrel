@@ -29,6 +29,7 @@ THE SOFTWARE.
    :numbered:
 
    introduction.rst
+   diff_from_original.rst
    language.rst
    embedding_squirrel.rst
    api_reference.rst
