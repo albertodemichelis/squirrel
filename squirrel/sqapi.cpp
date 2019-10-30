@@ -387,7 +387,7 @@ SQRESULT sq_arrayappend(HSQUIRRELVM v,SQInteger idx)
     return SQ_OK;
 }
 
-SQRESULT sq_objarrayappend(HSQUIRRELVM v,HSQOBJECT *arr,const HSQOBJECT *obj)
+SQRESULT sq_objarrayappend(HSQUIRRELVM v,HSQOBJECT *arr,HSQOBJECT *obj)
 {
     if(sq_isarray(*arr)) {
         _array(*arr)->Append(*obj);
@@ -1914,6 +1914,7 @@ SQRESULT sq_objgetclass(HSQUIRRELVM v,HSQOBJECT *o,HSQOBJECT *value)
 {
     if(sq_isinstance(*o)) {
         *value = SQObjectPtr(_instance(*o)->_class);
+        return SQ_OK;
     }
     return SQ_ERROR;
 }
