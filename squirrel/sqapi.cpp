@@ -285,6 +285,11 @@ void sq_pushuserpointer(HSQUIRRELVM v,SQUserPointer p)
     v->Push(p);
 }
 
+void sq_objnewuserpointer(HSQUIRRELVM v,SQUserPointer ptr,HSQOBJECT *obj)
+{
+    *obj = SQObjectPtr(ptr);
+}
+
 void sq_pushthread(HSQUIRRELVM v, HSQUIRRELVM thread)
 {
     v->Push(thread);
@@ -297,8 +302,16 @@ void sq_objnewthread(HSQUIRRELVM v, HSQUIRRELVM thread, HSQOBJECT *obj)
 
 SQUserPointer sq_newuserdata(HSQUIRRELVM v,SQUnsignedInteger size)
 {
+    HSQOBJECT obj;
+    SQUserPointer ptr = sq_objnewuserdata(v,size,&obj);
+    v->Push(obj);
+    return ptr;
+}
+
+SQUserPointer sq_objnewuserdata(HSQUIRRELVM v,SQUnsignedInteger size,HSQOBJECT *obj)
+{
     SQUserData *ud = SQUserData::Create(_ss(v), size + SQ_ALIGNMENT);
-    v->Push(ud);
+    *obj = SQObjectPtr(ud);
     return (SQUserPointer)sq_aligning(ud + 1);
 }
 

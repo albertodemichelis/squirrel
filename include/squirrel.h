@@ -383,6 +383,8 @@ SQUIRREL_API void sq_objnewbool(HSQUIRRELVM v,SQBool b,HSQOBJECT *obj);
 SQUIRREL_API void sq_objnewnull(HSQUIRRELVM v,HSQOBJECT *obj);
 SQUIRREL_API void sq_objnewthread(HSQUIRRELVM v, HSQUIRRELVM thread,HSQOBJECT *obj);
 SQUIRREL_API SQRESULT sq_objnewclass(HSQUIRRELVM v,HSQOBJECT* base,HSQOBJECT *obj);
+SQUIRREL_API SQUserPointer sq_objnewuserdata(HSQUIRRELVM v,SQUnsignedInteger size,HSQOBJECT *obj);
+SQUIRREL_API void sq_objnewuserpointer(HSQUIRRELVM v,SQUserPointer ptr,HSQOBJECT *obj);
 SQUIRREL_API void sq_objgetroottable(HSQUIRRELVM v,HSQOBJECT *obj);
 SQUIRREL_API void sq_objgetregistrytable(HSQUIRRELVM v,HSQOBJECT *obj);
 SQUIRREL_API void sq_objgetconsttable(HSQUIRRELVM v,HSQOBJECT *obj);
