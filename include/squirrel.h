@@ -341,6 +341,7 @@ SQUIRREL_API void sq_addref(HSQUIRRELVM v,HSQOBJECT *po);
 SQUIRREL_API SQBool sq_release(HSQUIRRELVM v,HSQOBJECT *po);
 SQUIRREL_API SQUnsignedInteger sq_getrefcount(HSQUIRRELVM v,HSQOBJECT *po);
 SQUIRREL_API void sq_resetobject(HSQOBJECT *po);
+SQUIRREL_API SQInteger sq_objgetsize(HSQUIRRELVM v,HSQOBJECT *o);
 SQUIRREL_API const SQChar *sq_objtostring(const HSQOBJECT *o);
 SQUIRREL_API SQBool sq_objtobool(const HSQOBJECT *o);
 SQUIRREL_API SQInteger sq_objtointeger(const HSQOBJECT *o);

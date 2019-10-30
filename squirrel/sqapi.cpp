@@ -884,14 +884,19 @@ SQRESULT sq_objclone(HSQUIRRELVM v,HSQOBJECT *o,HSQOBJECT *clone)
 SQInteger sq_getsize(HSQUIRRELVM v, SQInteger idx)
 {
     SQObjectPtr &o = stack_get(v, idx);
-    SQObjectType type = sq_type(o);
+    return sq_objgetsize(v,&o);
+}
+
+SQInteger sq_objgetsize(HSQUIRRELVM v,HSQOBJECT *o)
+{
+    SQObjectType type = sq_type(*o);
     switch(type) {
-    case OT_STRING:     return _string(o)->_len;
-    case OT_TABLE:      return _table(o)->CountUsed();
-    case OT_ARRAY:      return _array(o)->Size();
-    case OT_USERDATA:   return _userdata(o)->_size;
-    case OT_INSTANCE:   return _instance(o)->_class->_udsize;
-    case OT_CLASS:      return _class(o)->_udsize;
+    case OT_STRING:     return _string(*o)->_len;
+    case OT_TABLE:      return _table(*o)->CountUsed();
+    case OT_ARRAY:      return _array(*o)->Size();
+    case OT_USERDATA:   return _userdata(*o)->_size;
+    case OT_INSTANCE:   return _instance(*o)->_class->_udsize;
+    case OT_CLASS:      return _class(*o)->_udsize;
     default:
         return sq_aux_invalidtype(v, type);
     }
