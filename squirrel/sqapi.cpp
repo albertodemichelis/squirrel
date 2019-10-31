@@ -1542,19 +1542,28 @@ void sq_resetobject(HSQOBJECT *po)
     po->_unVal.pUserPointer=NULL;po->_type=OT_NULL;
 }
 
+static SQRESULT _sq_seterror(HSQUIRRELVM v,const SQObjectPtr& err)
+{
+    v->_lasterror = err;
+    return SQ_ERROR;
+}
+
 SQRESULT sq_throwerror(HSQUIRRELVM v,const SQChar *err)
 {
-    v->_lasterror=SQString::Create(_ss(v),err);
-    return SQ_ERROR;
+    return _sq_seterror(v,SQString::Create(_ss(v),err));
 }
 
 SQRESULT sq_throwobject(HSQUIRRELVM v)
 {
-    v->_lasterror = v->GetUp(-1);
+    SQObjectPtr& err = v->GetUp(-1);
     v->Pop();
-    return SQ_ERROR;
+    return _sq_seterror(v,err);
 }
 
+SQRESULT sq_objthrowobject(HSQUIRRELVM v,const HSQOBJECT* err)
+{
+    return _sq_seterror(v,*err);
+}
 
 void sq_reseterror(HSQUIRRELVM v)
 {

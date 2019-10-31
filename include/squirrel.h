@@ -389,6 +389,7 @@ SQUIRREL_API void sq_objgetroottable(HSQUIRRELVM v,HSQOBJECT *obj);
 SQUIRREL_API void sq_objgetregistrytable(HSQUIRRELVM v,HSQOBJECT *obj);
 SQUIRREL_API void sq_objgetconsttable(HSQUIRRELVM v,HSQOBJECT *obj);
 SQUIRREL_API SQInteger sq_objcmp(HSQUIRRELVM v,const HSQOBJECT *a,const HSQOBJECT *b);
+SQUIRREL_API SQRESULT sq_objthrowobject(HSQUIRRELVM v,const HSQOBJECT* err);
 
 /*GC*/
 SQUIRREL_API SQInteger sq_collectgarbage(HSQUIRRELVM v);
