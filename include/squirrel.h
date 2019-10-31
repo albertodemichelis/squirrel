@@ -370,7 +370,7 @@ SQUIRREL_API SQRESULT sq_objrawdeleteslot(HSQUIRRELVM v,const HSQOBJECT *target,
 SQUIRREL_API SQRESULT sq_objrawget(HSQUIRRELVM v,const HSQOBJECT *target,const HSQOBJECT *key,HSQOBJECT *value);
 SQUIRREL_API SQRESULT sq_objrawnewmember(HSQUIRRELVM v,const HSQOBJECT *cls,const HSQOBJECT *key,const HSQOBJECT *value,const HSQOBJECT *attr,SQBool bstatic);
 SQUIRREL_API SQRESULT sq_objrawset(HSQUIRRELVM v,const HSQOBJECT *target,const HSQOBJECT *key,const HSQOBJECT *value);
-SQUIRREL_API SQRESULT sq_objset(HSQUIRRELVM v,HSQOBJECT *target,const HSQOBJECT *key,const HSQOBJECT *value);
+SQUIRREL_API SQRESULT sq_objset(HSQUIRRELVM v,const HSQOBJECT *target,const HSQOBJECT *key,const HSQOBJECT *value);
 SQUIRREL_API SQRESULT sq_objsetdelegate(HSQUIRRELVM v,const HSQOBJECT *target,const HSQOBJECT *value);
 SQUIRREL_API void sq_objnewtable(HSQUIRRELVM v,HSQOBJECT *obj);
 SQUIRREL_API void sq_objnewtableex(HSQUIRRELVM v,SQInteger initialcapacity,HSQOBJECT *obj);
@@ -388,6 +388,7 @@ SQUIRREL_API void sq_objnewuserpointer(HSQUIRRELVM v,SQUserPointer ptr,HSQOBJECT
 SQUIRREL_API void sq_objgetroottable(HSQUIRRELVM v,HSQOBJECT *obj);
 SQUIRREL_API void sq_objgetregistrytable(HSQUIRRELVM v,HSQOBJECT *obj);
 SQUIRREL_API void sq_objgetconsttable(HSQUIRRELVM v,HSQOBJECT *obj);
+SQUIRREL_API SQInteger sq_objcmp(HSQUIRRELVM v,const HSQOBJECT *a,const HSQOBJECT *b);
 
 /*GC*/
 SQUIRREL_API SQInteger sq_collectgarbage(HSQUIRRELVM v);

@@ -1090,11 +1090,21 @@ void sq_remove(HSQUIRRELVM v, SQInteger idx)
     v->Remove(idx);
 }
 
-SQInteger sq_cmp(HSQUIRRELVM v)
+static SQInteger _sq_cmp(HSQUIRRELVM v, const SQObjectPtr& a, const SQObjectPtr& b)
 {
     SQInteger res;
-    v->ObjCmp(stack_get(v, -1), stack_get(v, -2),res);
+    v->ObjCmp(a, b, res);
     return res;
+}
+
+SQInteger sq_cmp(HSQUIRRELVM v)
+{
+    return _sq_cmp(v, stack_get(v, -1), stack_get(v, -2));
+}
+
+SQInteger sq_objcmp(HSQUIRRELVM v, const HSQOBJECT* a, const HSQOBJECT* b)
+{
+    return _sq_cmp(v, *a, *b);
 }
 
 static SQRESULT _sq_newslot(HSQUIRRELVM v,const SQObjectPtr& self,const SQObjectPtr& key,const SQObjectPtr& value,SQBool bstatic)
