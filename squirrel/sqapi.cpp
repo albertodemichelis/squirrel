@@ -400,7 +400,7 @@ SQBool sq_instanceof(HSQUIRRELVM v)
     return _sq_instanceof(v,inst,cl);
 }
 
-SQBool sq_objinstanceof(HSQUIRRELVM v,HSQOBJECT *inst,HSQOBJECT *cl)
+SQBool sq_objinstanceof(HSQUIRRELVM v,const HSQOBJECT *inst,const HSQOBJECT *cl)
 {
     return _sq_instanceof(v,*inst,*cl);
 }
@@ -425,7 +425,7 @@ SQRESULT sq_arrayappend(HSQUIRRELVM v,SQInteger idx)
     return SQ_ERROR;
 }
 
-SQRESULT sq_objarrayappend(HSQUIRRELVM v,HSQOBJECT *arr,HSQOBJECT *obj)
+SQRESULT sq_objarrayappend(HSQUIRRELVM v,const HSQOBJECT *arr,const HSQOBJECT *obj)
 {
     return _sq_arrayappend(v,*arr,*obj);
 }
@@ -456,7 +456,7 @@ SQRESULT sq_arraypop(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
     return SQ_ERROR;
 }
 
-SQRESULT sq_objarraypop(HSQUIRRELVM v,HSQOBJECT *arr,HSQOBJECT *popped)
+SQRESULT sq_objarraypop(HSQUIRRELVM v,const HSQOBJECT *arr,HSQOBJECT *popped)
 {
     SQObjectPtr obj;
     SQRESULT res = _sq_arraypop(v,*arr,obj);
@@ -483,7 +483,7 @@ SQRESULT sq_arrayresize(HSQUIRRELVM v,SQInteger idx,SQInteger newsize)
     return _sq_arrayresize(v,arr,newsize);
 }
 
-SQRESULT sq_objarrayresize(HSQUIRRELVM v,HSQOBJECT *arr,SQInteger newsize)
+SQRESULT sq_objarrayresize(HSQUIRRELVM v,const HSQOBJECT *arr,SQInteger newsize)
 {
     return _sq_arrayresize(v,*arr,newsize);
 }
@@ -515,7 +515,7 @@ SQRESULT sq_arrayreverse(HSQUIRRELVM v,SQInteger idx)
     return _sq_arrayreverse(v,o);
 }
 
-SQRESULT sq_objarrayreverse(HSQUIRRELVM v,HSQOBJECT *o)
+SQRESULT sq_objarrayreverse(HSQUIRRELVM v,const HSQOBJECT *o)
 {
     return _sq_arrayreverse(v,*o);
 }
@@ -535,7 +535,7 @@ SQRESULT sq_arrayremove(HSQUIRRELVM v,SQInteger idx,SQInteger itemidx)
     return _sq_arrayremove(v,arr,itemidx);
 }
 
-SQRESULT sq_objarrayremove(HSQUIRRELVM v,HSQOBJECT *arr,SQInteger itemidx)
+SQRESULT sq_objarrayremove(HSQUIRRELVM v,const HSQOBJECT *arr,SQInteger itemidx)
 {
     return _sq_arrayremove(v,*arr,itemidx);
 }
@@ -560,7 +560,7 @@ SQRESULT sq_arrayinsert(HSQUIRRELVM v,SQInteger idx,SQInteger destpos)
     return SQ_ERROR;
 }
 
-SQRESULT sq_objarrayinsert(HSQUIRRELVM v,HSQOBJECT *arr,SQInteger destpos,HSQOBJECT *obj)
+SQRESULT sq_objarrayinsert(HSQUIRRELVM v,const HSQOBJECT *arr,SQInteger destpos,const HSQOBJECT *obj)
 {
     return _sq_arrayinsert(v,*arr,destpos,*obj);
 }
@@ -729,7 +729,7 @@ SQRESULT sq_clear(HSQUIRRELVM v,SQInteger idx)
     return _sq_clear(v,o);
 }
 
-SQRESULT sq_objclear(HSQUIRRELVM v,HSQOBJECT *o)
+SQRESULT sq_objclear(HSQUIRRELVM v,const HSQOBJECT *o)
 {
     return _sq_clear(v,*o);
 }
@@ -934,7 +934,7 @@ SQRESULT sq_clone(HSQUIRRELVM v,SQInteger idx)
     return SQ_OK;
 }
 
-SQRESULT sq_objclone(HSQUIRRELVM v,HSQOBJECT *o,HSQOBJECT *clone)
+SQRESULT sq_objclone(HSQUIRRELVM v,const HSQOBJECT *o,HSQOBJECT *clone)
 {
     SQObjectPtr dest;
     if(!v->Clone(*o, dest)){
@@ -944,25 +944,30 @@ SQRESULT sq_objclone(HSQUIRRELVM v,HSQOBJECT *o,HSQOBJECT *clone)
     return SQ_OK;
 }
 
-SQInteger sq_getsize(HSQUIRRELVM v, SQInteger idx)
+static SQInteger _sq_getsize(HSQUIRRELVM v,const SQObjectPtr& o)
 {
-    SQObjectPtr &o = stack_get(v, idx);
-    return sq_objgetsize(v,&o);
-}
-
-SQInteger sq_objgetsize(HSQUIRRELVM v,HSQOBJECT *o)
-{
-    SQObjectType type = sq_type(*o);
+    SQObjectType type = sq_type(o);
     switch(type) {
-    case OT_STRING:     return _string(*o)->_len;
-    case OT_TABLE:      return _table(*o)->CountUsed();
-    case OT_ARRAY:      return _array(*o)->Size();
-    case OT_USERDATA:   return _userdata(*o)->_size;
-    case OT_INSTANCE:   return _instance(*o)->_class->_udsize;
-    case OT_CLASS:      return _class(*o)->_udsize;
+    case OT_STRING:     return _string(o)->_len;
+    case OT_TABLE:      return _table(o)->CountUsed();
+    case OT_ARRAY:      return _array(o)->Size();
+    case OT_USERDATA:   return _userdata(o)->_size;
+    case OT_INSTANCE:   return _instance(o)->_class->_udsize;
+    case OT_CLASS:      return _class(o)->_udsize;
     default:
         return sq_aux_invalidtype(v, type);
     }
+}
+
+SQInteger sq_getsize(HSQUIRRELVM v, SQInteger idx)
+{
+    SQObjectPtr &o = stack_get(v, idx);
+    return _sq_getsize(v,o);
+}
+
+SQInteger sq_objgetsize(HSQUIRRELVM v,const HSQOBJECT *o)
+{
+    return _sq_getsize(v,*o);
 }
 
 SQHash sq_gethash(HSQUIRRELVM v, SQInteger idx)
@@ -1114,7 +1119,7 @@ SQRESULT sq_newslot(HSQUIRRELVM v, SQInteger idx, SQBool bstatic)
     return SQ_ERROR;
 }
 
-SQRESULT sq_objnewslot(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *key,HSQOBJECT *value,SQBool bstatic)
+SQRESULT sq_objnewslot(HSQUIRRELVM v,const HSQOBJECT *self,const HSQOBJECT *key,const HSQOBJECT *value,SQBool bstatic)
 {
     return _sq_newslot(v,*self,*key,*value,bstatic);
 }
@@ -1149,7 +1154,7 @@ SQRESULT sq_deleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
     return SQ_OK;
 }
 
-SQRESULT sq_objdeleteslot(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *key,HSQOBJECT *deleted)
+SQRESULT sq_objdeleteslot(HSQUIRRELVM v,const HSQOBJECT *self,const HSQOBJECT *key,HSQOBJECT *deleted)
 {
     SQObjectPtr res;
     if(SQ_SUCCEEDED(_sq_deleteslot(v,*self,*key,res))) {
@@ -1177,7 +1182,7 @@ SQRESULT sq_set(HSQUIRRELVM v,SQInteger idx)
     return SQ_ERROR;
 }
 
-SQRESULT sq_objset(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *key,HSQOBJECT *value)
+SQRESULT sq_objset(HSQUIRRELVM v,const HSQOBJECT *self,const HSQOBJECT *key,const HSQOBJECT *value)
 {
     return _sq_set(v,*self,*key,*value);
 }
@@ -1222,7 +1227,7 @@ SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx)
     return res;
 }
 
-SQRESULT sq_objrawset(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *key,HSQOBJECT *value)
+SQRESULT sq_objrawset(HSQUIRRELVM v,const HSQOBJECT *self,const HSQOBJECT *key,const HSQOBJECT *value)
 {
     return _sq_rawset(v,*self,*key,*value);
 }
@@ -1250,7 +1255,7 @@ SQRESULT sq_newmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
     return res;
 }
 
-SQRESULT sq_objnewmember(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *key,HSQOBJECT *value,HSQOBJECT *attr,SQBool bstatic)
+SQRESULT sq_objnewmember(HSQUIRRELVM v,const HSQOBJECT *self,const HSQOBJECT *key,const HSQOBJECT *value,const HSQOBJECT *attr,SQBool bstatic)
 {
     return _sq_newmember(v,*self,*key,*value,*attr,bstatic);
 }
@@ -1278,7 +1283,7 @@ SQRESULT sq_rawnewmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
     return res;
 }
 
-SQRESULT sq_objrawnewmember(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *key,HSQOBJECT *value,HSQOBJECT *attr,SQBool bstatic)
+SQRESULT sq_objrawnewmember(HSQUIRRELVM v,const HSQOBJECT *self,const HSQOBJECT *key,const HSQOBJECT *value,const HSQOBJECT *attr,SQBool bstatic)
 {
     return _sq_rawnewmember(v,*self,*key,*value,*attr,bstatic);
 }
@@ -1322,7 +1327,7 @@ SQRESULT sq_setdelegate(HSQUIRRELVM v,SQInteger idx)
     return SQ_ERROR;
 }
 
-SQRESULT sq_objsetdelegate(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *mt)
+SQRESULT sq_objsetdelegate(HSQUIRRELVM v,const HSQOBJECT *self,const HSQOBJECT *mt)
 {
     return _sq_setdelegate(v,*self,*mt);
 }
@@ -1354,7 +1359,7 @@ SQRESULT sq_rawdeleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
     return SQ_OK;
 }
 
-SQRESULT sq_objrawdeleteslot(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *key,HSQOBJECT *deleted)
+SQRESULT sq_objrawdeleteslot(HSQUIRRELVM v,const HSQOBJECT *self,const HSQOBJECT *key,HSQOBJECT *deleted)
 {
     SQObjectPtr t;
     if(SQ_SUCCEEDED(_sq_rawdeleteslot(v,*self,*key,t))) {
@@ -1391,7 +1396,7 @@ SQRESULT sq_getdelegate(HSQUIRRELVM v,SQInteger idx)
     return SQ_ERROR;
 }
 
-SQRESULT sq_objgetdelegate(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *value)
+SQRESULT sq_objgetdelegate(HSQUIRRELVM v,const HSQOBJECT *self,HSQOBJECT *value)
 {
     SQObjectPtr val;
     if(SQ_SUCCEEDED(_sq_getdelegate(v,*self,val))) {
@@ -1420,7 +1425,7 @@ SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx)
     return SQ_OK;
 }
 
-SQRESULT sq_objget(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *key,HSQOBJECT *obj)
+SQRESULT sq_objget(HSQUIRRELVM v,const HSQOBJECT *self,const HSQOBJECT *key,HSQOBJECT *obj)
 {
     SQObjectPtr dest;
     if(SQ_SUCCEEDED(_sq_get(v,*self,*key,dest))) {
@@ -1476,7 +1481,7 @@ SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx)
     return SQ_OK;
 }
 
-SQRESULT sq_objrawget(HSQUIRRELVM v,HSQOBJECT *self,HSQOBJECT *key,HSQOBJECT *value)
+SQRESULT sq_objrawget(HSQUIRRELVM v,const HSQOBJECT *self,const HSQOBJECT *key,HSQOBJECT *value)
 {
     SQObjectPtr obj;
     if(SQ_SUCCEEDED(_sq_rawget(v,*self,*key,obj))) {
@@ -1824,7 +1829,7 @@ SQRESULT sq_getattributes(HSQUIRRELVM v,SQInteger idx)
     return _sq_getattributes(v,o,key,key);
 }
 
-SQRESULT sq_objgetattributes(HSQUIRRELVM v,HSQOBJECT *o,HSQOBJECT *key,HSQOBJECT *value)
+SQRESULT sq_objgetattributes(HSQUIRRELVM v,const HSQOBJECT *o,const HSQOBJECT *key,HSQOBJECT *value)
 {
     SQObjectPtr attrs;
     if(SQ_SUCCEEDED(_sq_getattributes(v,*o,*key,attrs))) {
@@ -1926,7 +1931,7 @@ SQRESULT sq_getbase(HSQUIRRELVM v,SQInteger idx)
     return SQ_OK;
 }
 
-SQRESULT sq_objgetbase(HSQUIRRELVM v,HSQOBJECT *o,HSQOBJECT *value)
+SQRESULT sq_objgetbase(HSQUIRRELVM v,const HSQOBJECT *o,HSQOBJECT *value)
 {
     SQObjectPtr obj;
     if(SQ_SUCCEEDED(_sq_getbase(v,o,obj))) {
@@ -1956,7 +1961,7 @@ SQRESULT sq_getclass(HSQUIRRELVM v,SQInteger idx)
     return SQ_ERROR;
 }
 
-SQRESULT sq_objgetclass(HSQUIRRELVM v,HSQOBJECT *o,HSQOBJECT *value)
+SQRESULT sq_objgetclass(HSQUIRRELVM v,const HSQOBJECT *o,HSQOBJECT *value)
 {
     if(sq_isinstance(*o)) {
         *value = SQObjectPtr(_instance(*o)->_class);
