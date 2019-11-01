@@ -360,6 +360,7 @@ SQUIRREL_API SQRESULT sq_objclone(HSQUIRRELVM v,const HSQOBJECT *orig,HSQOBJECT 
 SQUIRREL_API SQRESULT sq_objdeleteslot(HSQUIRRELVM v,const HSQOBJECT *target,const HSQOBJECT *key,HSQOBJECT *deleted);
 SQUIRREL_API SQRESULT sq_objget(HSQUIRRELVM v,const HSQOBJECT *target,const HSQOBJECT *key,HSQOBJECT *value);
 SQUIRREL_API SQRESULT sq_objgetattributes(HSQUIRRELVM v,const HSQOBJECT *target,const HSQOBJECT *key,HSQOBJECT *value);
+SQUIRREL_API SQRESULT sq_objsetattributes(HSQUIRRELVM v,const HSQOBJECT *target,const HSQOBJECT *key,const HSQOBJECT *value,HSQOBJECT *old);
 SQUIRREL_API SQRESULT sq_objgetbase(HSQUIRRELVM v,const HSQOBJECT *target,HSQOBJECT *value);
 SQUIRREL_API SQRESULT sq_objgetclass(HSQUIRRELVM v,const HSQOBJECT *target,HSQOBJECT *value);
 SQUIRREL_API SQRESULT sq_objgetdelegate(HSQUIRRELVM v,const HSQOBJECT *target,HSQOBJECT *value);

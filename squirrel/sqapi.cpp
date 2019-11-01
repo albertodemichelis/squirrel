@@ -1804,26 +1804,41 @@ SQRESULT sq_setfreevariable(HSQUIRRELVM v,SQInteger idx,SQUnsignedInteger nval)
     return SQ_OK;
 }
 
+static SQRESULT _sq_setattributes(HSQUIRRELVM v,const SQObjectPtr& o,const SQObjectPtr& key, const SQObjectPtr& val,SQObjectPtr& old)
+{
+    if(sq_type(key) == OT_NULL) {
+        old = _class(o)->_attributes;
+        _class(o)->_attributes = val;
+        return SQ_OK;
+    }else if(_class(o)->GetAttributes(key,old)) {
+        _class(o)->SetAttributes(key,val);
+        return SQ_OK;
+    }
+    return sq_throwerror(v,_SC("wrong index"));
+}
+
 SQRESULT sq_setattributes(HSQUIRRELVM v,SQInteger idx)
 {
-    SQObjectPtr *o = NULL;
-    _GETSAFE_OBJ(v, idx, OT_CLASS,o);
+    SQObjectPtr &o = stack_get(v, idx);
     SQObjectPtr &key = stack_get(v,-2);
     SQObjectPtr &val = stack_get(v,-1);
     SQObjectPtr attrs;
-    if(sq_type(key) == OT_NULL) {
-        attrs = _class(*o)->_attributes;
-        _class(*o)->_attributes = val;
-        v->Pop(2);
-        v->Push(attrs);
-        return SQ_OK;
-    }else if(_class(*o)->GetAttributes(key,attrs)) {
-        _class(*o)->SetAttributes(key,val);
+    if(SQ_SUCCEEDED(_sq_setattributes(v,o,key,val,attrs))) {
         v->Pop(2);
         v->Push(attrs);
         return SQ_OK;
     }
-    return sq_throwerror(v,_SC("wrong index"));
+    return SQ_ERROR;
+}
+
+SQRESULT sq_objsetattributes(HSQUIRRELVM v,const HSQOBJECT *target,const HSQOBJECT *key,const HSQOBJECT *value,HSQOBJECT *old)
+{
+    SQObjectPtr attrs;
+    if(SQ_SUCCEEDED(_sq_setattributes(v,&target,&key,&value,attrs))) {
+        *old = attrs;
+        return SQ_OK;
+    }
+    return SQ_ERROR;
 }
 
 static SQRESULT _sq_getattributes(HSQUIRRELVM v,const SQObjectPtr &o,const SQObjectPtr &key,SQObjectPtr &value)
