@@ -149,7 +149,7 @@ struct SQNativeClosure : public CHAINABLE_OBJ
 private:
     SQNativeClosure(SQSharedState *ss,SQUDFUNCTION func){_function=func;INIT_CHAIN();ADD_TO_CHAIN(&_ss(this)->_gc_chain,this); _env = NULL;}
 
-    static SQInteger closure_wrapper(HSQUIRRELVM vm, void* func)
+    static SQInteger closure_wrapper(HSQUIRRELVM vm, SQUserPointer func)
     {
         return ((SQFUNCTION)func)(vm);
     }
