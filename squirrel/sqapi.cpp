@@ -376,7 +376,7 @@ SQRESULT sq_newclass(HSQUIRRELVM v,SQBool hasbase)
 }
 
 
-SQRESULT sq_objnewclass(HSQUIRRELVM v,HSQOBJECT* base,HSQOBJECT *obj)
+SQRESULT sq_objnewclass(HSQUIRRELVM v,const HSQOBJECT* base,HSQOBJECT *obj)
 {
     SQObjectPtr cls;
     SQRESULT res = base?_sq_newclass(v,*base,cls):_sq_newclass(v,cls);
