@@ -16,6 +16,7 @@
 #include <sqstdmath.h>
 #include <sqstdstring.h>
 #include <sqstdaux.h>
+#include <sqmodules.h>
 
 #ifdef SQUNICODE
 #define scfprintf fwprintf
@@ -24,6 +25,9 @@
 #define scfprintf fprintf
 #define scvprintf vfprintf
 #endif
+
+
+static SqModules *module_mgr = nullptr;
 
 
 void PrintVersionInfos();
@@ -87,6 +91,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
 {
     int i;
     int compiles_only = 0;
+	int run_as_module = 0;
 #ifdef SQUNICODE
     static SQChar temp[500];
 #endif
@@ -109,6 +114,9 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                     break;
                 case 'c':
                     compiles_only = 1;
+                    break;
+                case 'm':
+                    run_as_module = 1;
                     break;
                 case 'o':
                     if(arg < argc) {
@@ -169,10 +177,20 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                         return _DONE;
                 }
             }
+            else if (run_as_module) {
+                SqModules::SqObjPtr exports;
+                std::string errMsg;
+                if (!module_mgr->requireModule(filename, true, "__main__", exports, errMsg)) {
+                    scprintf(_SC("Error [%s]\n"), errMsg.c_str());
+                    return _ERROR;
+                }
+                return _DONE;
+            }
             else {
                 //if(SQ_SUCCEEDED(sqstd_dofile(v,filename,SQFalse,SQTrue))) {
                     //return _DONE;
                 //}
+
                 if(SQ_SUCCEEDED(sqstd_loadfile(v,filename,SQTrue))) {
                     int callargs = 1;
                     sq_pushroottable(v);
@@ -327,6 +345,11 @@ int main(int argc, char* argv[])
     //sets error handlers
     sqstd_seterrorhandlers(v);
 
+    module_mgr = new SqModules(v);
+    module_mgr->registerBaseLibs();
+    module_mgr->registerIoLib();
+    module_mgr->registerSystemLib();
+
     //gets arguments
     switch(getargs(v,argc,argv,&retval))
     {
@@ -339,12 +362,13 @@ int main(int argc, char* argv[])
         break;
     }
 
+    delete module_mgr;
     sq_close(v);
 
 #if defined(_MSC_VER) && defined(_DEBUG)
     _getch();
     _CrtMemDumpAllObjectsSince( NULL );
 #endif
-    return retval;
+    return int(retval);
 }
 
