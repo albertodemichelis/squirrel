@@ -8,6 +8,9 @@ squirrel
 sqstdlib
     the standard utility libraries
 
+sqmodules
+    module support library example
+
 sq
     stand alone interpreter
 
@@ -73,10 +76,6 @@ for 32 bits systems
 for 64 bits systems
 
  $ make sq64
-
-VISUAL C++ USERS
-.........................................................
-Open squirrel.dsw from the root project directory and build(dho!)
 
 DOCUMENTATION GENERATION
 .........................................................
