@@ -221,10 +221,6 @@ bool SQLexer::ProcessReaderMacro()
                         Error(_SC("in brace order"));
                         break;
                     }
-                    if (depth == 0 && (insideStr1 || insideStr2))  {
-                        Error(_SC("expected end of string before \"}\""));
-                        break;
-                    }
 
                     if (!depth)  {
                         macroState.macroParams.push_back(_SC(')'));
