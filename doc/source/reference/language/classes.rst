@@ -8,7 +8,7 @@ Classes
 .. index::
     single: Classes
 
-Squirrel implements a class mechanism similar to languages like Java/C++/etc...
+Quirrel implements a class mechanism similar to languages like Java/C++/etc...
 however because of its dynamic nature it differs in several aspects.
 Classes are first class objects like integer or strings and can be stored in
 table slots local variables, arrays and passed as function parameters.
@@ -107,7 +107,7 @@ Static variables
     pair: static variables; Class
     single: Static variables
 
-Squirrel's classes support static member variables. A static variable shares its value
+Quirrel's classes support static member variables. A static variable shares its value
 between all instances of the class. Statics are declared by prefixing the variable declaration
 with the keyword ``static``; the declaration must be in the class body.
 
@@ -149,7 +149,7 @@ class declaration. The values are copied verbatim, *no cloning is performed* eve
 
 .. note:: FOR C# and Java programmers:
 
-            Squirrel doesn't clone member's default values nor executes the member declaration for each instance(as C# or java).
+            Quirrel doesn't clone member's default values nor executes the member declaration for each instance(as C# or java).
 
             So consider this example: ::
 
@@ -227,7 +227,7 @@ Inheritance
     pair: inheritance; Class
     single: Inheritance
 
-Squirrel's classes support single inheritance by adding the keyword ``extends``, followed
+Quirrel's classes support single inheritance by adding the keyword ``extends``, followed
 by an expression, in the class declaration.
 The syntax for a derived class is the following: ::
 
@@ -237,7 +237,7 @@ The syntax for a derived class is the following: ::
         }
     }
 
-When a derived class is declared, Squirrel first copies all base's members in the
+When a derived class is declared, Quirrel first copies all base's members in the
 new class then proceeds with evaluating the rest of the declaration.
 
 A derived class inherit all members and properties of it's base, if the derived class

@@ -8,11 +8,11 @@ Statements
 .. index::
     single: statements
 
-A squirrel program is a simple sequence of statements.::
+A quirrel program is a simple sequence of statements.::
 
     stats := stat [';'|'\n'] stats
 
-Statements in squirrel are comparable to the C-Family languages (C/C++, Java, C#
+Statements in quirrel are comparable to the C-Family languages (C/C++, Java, C#
 etc...): assignment, function calls, program flow control structures etc.. plus some
 custom statement like yield, table and array constructors (All those will be covered in detail
 later in this document).
@@ -41,7 +41,7 @@ Control Flow Statements
 .. index::
     single: control flow statements
 
-squirrel implements the most common control flow statements: ``if, while, do-while, switch-case, for, foreach``
+quirrel implements the most common control flow statements: ``if, while, do-while, switch-case, for, foreach``
 
 ^^^^^^^^^^^^^^
 true and false
@@ -52,7 +52,7 @@ true and false
     single: true
     single: false
 
-Squirrel has a boolean type (bool) however like C++ it considers null, 0(integer) and 0.0(float)
+Quirrel has a boolean type (bool) however like C++ it considers null, 0(integer) and 0.0(float)
 as *false*, any other value is considered *true*.
 
 ^^^^^^^^^^^^^^^^^
@@ -381,6 +381,6 @@ Expression statement
 
     stat := exp
 
-In Squirrel every expression is also allowed as statement, if so, the result of the
+In Quirrel every expression is also allowed as statement, if so, the result of the
 expression is thrown away.
 

@@ -4,16 +4,16 @@
 Userdata and UserPointers
 =========================
 
-Squirrel allows the host application put arbitrary data chunks into a Squirrel value, this is
+Quirrel allows the host application put arbitrary data chunks into a Quirrel value, this is
 possible through the data type userdata.::
 
     SQUserPointer sq_newuserdata(HSQUIRRELVM v,SQUnsignedInteger size);
 
-When the function *sq_newuserdata* is called, Squirrel allocates a new userdata with the
+When the function *sq_newuserdata* is called, Quirrel allocates a new userdata with the
 specified size, returns a pointer to his payload buffer and push the object in the stack; at
 this point the application can do whatever it want with this memory chunk, the VM will
 automatically take cake of the memory deallocation like for every other built-in type.
-A userdata can be passed to a function or stored in a table slot. By default Squirrel
+A userdata can be passed to a function or stored in a table slot. By default Quirrel
 cannot manipulate directly userdata; however is possible to assign a delegate to it and
 define a behavior like it would be a table.
 Because the application would want to do something with the data stored in a userdata

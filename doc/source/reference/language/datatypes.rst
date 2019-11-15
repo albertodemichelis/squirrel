@@ -4,9 +4,9 @@
 Values and Data types
 =====================
 
-While Squirrel is a dynamically typed language and variables do not
+While Quirrel is a dynamically typed language and variables do not
 have a type, different operations may interpret the variable as
-containing a type.  Squirrel's basic types are integer, float, string,
+containing a type. Quirrel's basic types are integer, float, string,
 null, table, array, function, generator, class, instance, bool, thread
 and userdata.
 
@@ -39,7 +39,7 @@ String
 Strings are an immutable sequence of characters. In order to modify a
 string is it necessary create a new one.
 
-Squirrel's strings are similar to strings in C or C++.  They are
+Quirrel's strings are similar to strings in C or C++.  They are
 delimited by quotation marks(``"``) and can contain escape
 sequences (``\t``, ``\a``, ``\b``, ``\n``, ``\r``, ``\v``, ``\f``,
 ``\\``, ``\"``, ``\'``, ``\0``, ``\x<hh>``, ``\u<hhhh>`` and
@@ -144,7 +144,7 @@ Userdata
 ---------
 
 Userdata objects are blobs of memory or pointers defined by the host
-application but stored within Squirrel variables (See :ref:`Userdata
+application but stored within Quirrel variables (See :ref:`Userdata
 and UserPointers <embedding_userdata_and_userpointers>`).
 
 ---------

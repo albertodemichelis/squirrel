@@ -10,7 +10,7 @@ Constants & Enumerations
 
 
 
-Squirrel allows to bind constant values to an identifier that will be evaluated compile-time.
+Quirrel allows to bind constant values to an identifier that will be evaluated compile-time.
 This is achieved though constants and Enumerations.
 
 ---------------
@@ -81,11 +81,11 @@ Implementation notes
 --------------------
 
 Enumerations and Constants are a compile-time feature. Only integers, string and floats can be declared as const/enum;
-No expressions are allowed(because they would have to be evaluated compile time).
+No expressions are allowed (because they would have to be evaluated compile time).
 
 If a const or enum is global, when declared it is added compile time to the ``consttable``. This table is stored in the VM shared state
 and is shared by the VM and all its threads.
-The ``consttable`` is a regular squirrel table; In the same way as the ``roottable``
+The ``consttable`` is a regular quirrel table; In the same way as the ``roottable``
 it can be modified runtime.
 You can access the ``consttable`` through the built-in function ``getconsttable()``
 and also change it through the built-in function ``setconsttable()``
@@ -101,5 +101,5 @@ here some example: ::
     //deletes the enumeration
     delete getconsttable()["somethingelse"]
 
-This system allows to procedurally declare constants and enumerations, it is also possible to assign any squirrel type
+This system allows to procedurally declare constants and enumerations, it is also possible to assign any quirrel type
 to a constant/enumeration(function,classes etc...). However this will make serialization of a code chunk impossible.

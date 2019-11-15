@@ -100,7 +100,7 @@ _delslot
     _delslot(key)
 
 invoked when a script deletes a slot from a table.
-if the method is invoked squirrel will not try to delete the slot himself
+if the method is invoked quirrel will not try to delete the slot himself
 
 ^^^^^^^^
 _add

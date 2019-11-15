@@ -1,10 +1,11 @@
 .. _reference:
 
 #################################
-  Squirrel 3.1 Reference Manual
+  Quirrel 4.0 Reference Manual
 #################################
 
 Copyright (c) 2003-2016 Alberto Demichelis
+Copyright (c) 2016-2019 Gaijin Entertainment
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

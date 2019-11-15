@@ -39,7 +39,7 @@ push in the stack the currently running closure.
 
     :param HSQUIRRELVM v: the target VM
     :returns: a SQRESULT
-    :remarks: the pushed error descriptor can be any valid squirrel type.
+    :remarks: the pushed error descriptor can be any valid quirrel type.
 
 pushes the last error in the stack.
 
@@ -94,9 +94,9 @@ resumes the generator at the top position of the stack.
     :param HSQUIRRELVM v: the target VM
     :param SQInteger params: number of parameters of the function
 
-Calls a closure and removes the caller function from the call stack.
-This function must be invoked from a native closure and
-the return value of sq_tailcall must be returned by the caller function(see example).
+	Calls a closure and removes the caller function from the call stack.
+	This function must be invoke from a native closure and 
+	he return value of sq_tailcall must be returned by the caller function(see example).
 	
 *.eg*
 
@@ -108,7 +108,7 @@ the return value of sq_tailcall must be returned by the caller function(see exam
 		... 
         return sq_tailcall(v,2);
     }
-	
+
 .. _sq_throwerror:
 
 .. c:function:: SQRESULT sq_throwerror(HSQUIRRELVM v, const SQChar * err)

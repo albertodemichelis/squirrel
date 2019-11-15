@@ -11,7 +11,7 @@ Virtual Machine
 
     :param HSQUIRRELVM v: the target VM
 
-releases a squirrel VM and all related friend VMs
+releases a quirrel VM and all related friend VMs
 
 
 
@@ -141,7 +141,7 @@ pushes the object at the position 'idx' of the source vm stack in the destinatio
     :param HSQUIRRELVM friendvm: a friend VM
     :param SQInteger initialstacksize: the size of the stack in slots(number of objects)
     :returns: a pointer to the new VM.
-    :remarks: By default the roottable is shared with the VM passed as first parameter. The new VM lifetime is bound to the "thread" object pushed in the stack and behave like a normal squirrel object.
+    :remarks: By default the roottable is shared with the VM passed as first parameter. The new VM lifetime is bound to the "thread" object pushed in the stack and behave like a normal quirrel object.
 
 creates a new vm friendvm of the one passed as first parmeter and pushes it in its stack as "thread" object.
 
@@ -154,10 +154,10 @@ creates a new vm friendvm of the one passed as first parmeter and pushes it in i
 .. c:function:: HSQUIRRELVM sq_open(SQInteger initialstacksize)
 
     :param SQInteger initialstacksize: the size of the stack in slots(number of objects)
-    :returns: an handle to a squirrel vm
+    :returns: an handle to a quirrel vm
     :remarks: the returned VM has to be released with sq_releasevm
 
-creates a new instance of a squirrel VM that consists in a new execution stack.
+creates a new instance of a quirrel VM that consists in a new execution stack.
 
 
 

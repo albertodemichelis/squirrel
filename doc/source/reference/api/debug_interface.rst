@@ -12,7 +12,7 @@ Debug interface
     :param SQInteger level: calls stack level
     :param SQFunctionInfo * fi: pointer to the SQFunctionInfo structure that will store the closure informations
     :returns: a SQRESULT.
-    :remarks: the member 'funcid' of the returned SQFunctionInfo structure is a unique identifier of the function; this can be useful to identify a specific piece of squirrel code in an application like for instance a profiler. this method will fail if the closure in the stack is a native C closure.
+    :remarks: the member 'funcid' of the returned SQFunctionInfo structure is a unique identifier of the function; this can be useful to identify a specific piece of quirrel code in an application like for instance a profiler. this method will fail if the closure in the stack is a native C closure.
 
 
 

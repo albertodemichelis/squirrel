@@ -4,7 +4,7 @@
 Debug Interface
 ===============
 
-The squirrel VM exposes a very simple debug interface that allows to easily built a full
+The quirrel VM exposes a very simple debug interface that allows to easily built a full
 featured debugger.
 Through the functions sq_setdebughook and sq_setnativedebughook is possible in fact to set a callback function that
 will be called every time the VM executes an new line of a script or if a function get

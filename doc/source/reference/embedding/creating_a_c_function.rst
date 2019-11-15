@@ -15,8 +15,8 @@ respecting the following rules:
 * 0 if the function does not return a value
 * SQ_ERROR runtime error is thrown
 
-In order to obtain a new callable squirrel function from a C function pointer, is necessary
-to call sq_newclosure() passing the C function to it; the new Squirrel function will be
+In order to obtain a new callable quirrel function from a C function pointer, is necessary
+to call sq_newclosure() passing the C function to it; the new Quirrel function will be
 pushed in the stack.
 
 When the function is called, the stackbase is the first parameter of the function and the

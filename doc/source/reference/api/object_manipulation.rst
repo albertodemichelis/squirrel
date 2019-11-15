@@ -126,21 +126,6 @@ pushes a clone of the table, array, or class instance at the position idx.
 
 
 
-.. _sq_createslot:
-
-.. c:function:: SQRESULT sq_createslot(HSQUIRRELVM v, SQInteger idx)
-
-    :param HSQUIRRELVM v: the target VM
-    :param SQInteger idx: index of the target table in the stack
-    :returns: a SQRESULT
-    :remarks: invoke the _newslot metamethod in the table delegate. it only works on tables. [this function is deperecated since version 2.0.5 use sq_newslot() instead]
-
-pops a key and a value from the stack and performs a set operation on the table or class that is at position idx in the stack; if the slot does not exist, it will be created.
-
-
-
-
-
 .. _sq_deleteslot:
 
 .. c:function:: SQRESULT sq_deleteslot(HSQUIRRELVM v, SQInteger idx, SQBool pushval)
@@ -221,8 +206,8 @@ pushes the current delegate of the object at the position idx in the stack.
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: index of the target object in the stack(closure)
     :param SQInteger nval: 0 based index of the free variable(relative to the closure).
-    :returns: the name of the free variable for pure squirrel closures. NULL in case of error or if the index of the variable is out of range. In case the target closure is a native closure, the return name is always "@NATIVE".
-    :remarks: The function works for both squirrel closure and native closure.
+    :returns: the name of the free variable for pure quirrel closures. NULL in case of error or if the index of the variable is out of range. In case the target closure is a native closure, the return name is always "@NATIVE".
+    :remarks: The function works for both quirrel closure and native closure.
 
 gets the value of the free variable of the closure at the position idx in the stack.
 

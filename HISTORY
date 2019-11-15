@@ -1,3 +1,8 @@
+***version 4.0 stable***
+-renamed to Quirrel
+-bumped version
+-lots of changes - see diff_from_original_squirrel
+
 ***version 3.2 stable***
 -added sq_tailcall
 -added rawcall keyword

@@ -23,3 +23,4 @@
    language/delegation.rst
    language/metamethods.rst
    language/builtin_functions.rst
+   language/compiler_directives.rst

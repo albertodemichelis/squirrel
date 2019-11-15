@@ -21,7 +21,7 @@ Assignment
     exp := derefexp '=' exp
     exp:= derefexp '<-' exp
 
-squirrel implements 2 kind of assignment: the normal assignment(=)::
+quirrel implements 2 kind of assignment: the normal assignment(=)::
 
     a = 10;
 
@@ -60,11 +60,11 @@ conditionally evaluate an expression depending on the result of an expression.
     pair: ?? Operator; Operators
 
 ::
-
+    
     exp := exp1 '??' exp2
 
 
-Conditionally evaluate an expression2 depending on the result of an expression1.
+Conditionally evaluate an expression2 depending on the result of an expression1. 
 Given code is equivalent to:
 
 ::
@@ -103,15 +103,15 @@ If key exists, return result of 'get' operations, else return null.
 
 ::
     local tbl = {bar=123}
-
-    tbl.bar     // returns 123
-    tbl.baz     // throws an error
-    tbl?.bar    // returns 123
-    tbl?.baz    // returns null
-    null.bar    // throws an error
-    null?.bar   // returns null
+    
+    tbl.bar // returns 123
+    tbl.baz // throws an error
+    tbl?.bar // returns 123
+    tbl?.baz // returns null
+    null.bar // throws an error
+    null?.bar // returns null
     tbl?["bar"] // returns 123
-    tbl?[4567]  // returns null
+    tbl?[4567] // returns null
 
 This works for any type (internally done via SQVM::Get(), like an 'in' operator), including null.
 Therefore operator can be chained
@@ -130,7 +130,7 @@ Arithmetic
 
     exp:= 'exp' op 'exp'
 
-Squirrel supports the standard arithmetic operators ``+, -, *, / and %``.
+Quirrel supports the standard arithmetic operators ``+, -, *, / and %``.
 Other than that is also supports compact operators (``+=,-=,*=,/=,%=``) and
 increment and decrement operators(++ and --);::
 
@@ -158,7 +158,7 @@ Relational
 
     exp:= 'exp' op 'exp'
 
-Relational operators in Squirrel are : ``==, <, <=, <, <=, !=``
+Relational operators in Quirrel are : ``==, <, <=, <, <=, !=``
 
 These operators return true if the expression is false and a value different than true if the
 expression is true. Internally the VM uses the integer 1 as true but this could change in
@@ -190,7 +190,7 @@ Logical
     exp := exp op exp
     exp := '!' exp
 
-Logical operators in Squirrel are : ``&&, ||, !``
+Logical operators in Quirrel are : ``&&, ||, !``
 
 The operator ``&&`` (logical and) returns null if its first argument is null, otherwise returns
 its second argument.
@@ -250,7 +250,7 @@ typeof operator
 
 returns the type name of a value as string.::
 
-    local a={},b="squirrel"
+    local a={},b="quirrel"
     print(typeof a); //will print "table"
     print(typeof b); //will print "string"
 
@@ -266,7 +266,7 @@ Bitwise Operators
     exp:= 'exp' op 'exp'
     exp := '~' exp
 
-Squirrel supports the standard C-like bitwise operators ``&, |, ^, ~, <<, >>`` plus the unsigned
+Quirrel supports the standard C-like bitwise operators ``&, |, ^, ~, <<, >>`` plus the unsigned
 right shift operator ``>>>``. The unsigned right shift works exactly like the normal right shift operator(``>>``)
 except for treating the left operand as an unsigned integer, so is not affected by the sign. Those operators
 only work on integer values; passing of any other operand type to these operators will
@@ -373,7 +373,7 @@ the following JSON snippet: ::
       "tags": ["Bar","Eek"]
     }
 
-is equivalent to the following squirrel code: ::
+is equivalent to the following quirrel code: ::
 
     local x = {
       id = 1,

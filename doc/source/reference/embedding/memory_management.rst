@@ -6,7 +6,7 @@ Memory Management
 
 .. index:: single: Memory Management
 
-Squirrel uses reference counting (RC) as primary system for memory management;
+Quirrel uses reference counting (RC) as primary system for memory management;
 however, the virtual machine (VM) has an auxiliary
 mark and sweep garbage collector that can be invoked on demand.
 

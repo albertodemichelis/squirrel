@@ -15,83 +15,83 @@ Squirrel API
 Global Symbols
 +++++++++++++++
 
-.. js:function:: abs(x)
+.. sq:function:: abs(x)
 
     returns the absolute value of `x` as an integer
 
-.. js:function:: acos(x)
+.. sq:function:: acos(x)
 
     returns the arccosine of `x`
 
-.. js:function:: asin(x)
+.. sq:function:: asin(x)
 
     returns the arcsine of `x`
 
-.. js:function:: atan(x)
+.. sq:function:: atan(x)
 
     returns the arctangent of `x`
 
-.. js:function:: atan2(x,y)
+.. sq:function:: atan2(x,y)
 
     returns the arctangent of  `x/y`
 
-.. js:function:: ceil(x)
+.. sq:function:: ceil(x)
 
     returns a float value representing the smallest integer that is greater than or equal to `x`
 
-.. js:function:: cos(x)
+.. sq:function:: cos(x)
 
     returns the cosine of `x`
 
-.. js:function:: exp(x)
+.. sq:function:: exp(x)
 
     returns the exponential value of the float parameter `x`
 
-.. js:function:: fabs(x)
+.. sq:function:: fabs(x)
 
     returns the absolute value of `x` as a float
 
-.. js:function:: floor(x)
+.. sq:function:: floor(x)
 
     returns a float value representing the largest integer that is less than or equal to `x`
 
-.. js:function:: log(x)
+.. sq:function:: log(x)
 
     returns the natural logarithm of `x`
 
-.. js:function:: log10(x)
+.. sq:function:: log10(x)
 
     returns the logarithm base-10 of `x`
 
-.. js:function:: pow(x,y)
+.. sq:function:: pow(x,y)
 
     returns `x` raised to the power of `y`
 
-.. js:function:: rand()
+.. sq:function:: rand()
 
     returns a pseudorandom integer in the range 0 to `RAND_MAX`
 
-.. js:function:: sin(x)
+.. sq:function:: sin(x)
 
     rreturns the sine of `x`
 
-.. js:function:: sqrt(x)
+.. sq:function:: sqrt(x)
 
     returns the square root of `x`
 
-.. js:function:: srand(seed)
+.. sq:function:: srand(seed)
 
     sets the starting point for generating a series of pseudorandom integers
 
-.. js:function:: tan(x)
+.. sq:function:: tan(x)
 
     returns the tangent of `x`
 
-.. js:data:: RAND_MAX
+.. sq:data:: RAND_MAX
 
     the maximum value that can be returned by the `rand()` function
 
-.. js:data:: PI
+.. sq:data:: PI
 
     The numeric constant pi (3.141592) is the ratio of the circumference of a circle to its diameter
 

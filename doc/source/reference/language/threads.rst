@@ -8,11 +8,11 @@ Threads
 .. index::
     single: Threads
 
-Squirrel supports cooperative threads(also known as coroutines).
+Quirrel supports cooperative threads(also known as coroutines).
 A cooperative thread is a subroutine that can suspended in mid-execution and provide a value to the
 caller without returning program flow, then its execution can be resumed later from the same
 point where it was suspended.
-At first look a Squirrel thread can be confused with a generator, in fact their behaviour is quite similar.
+At first look a Quirrel thread can be confused with a generator, in fact their behaviour is quite similar.
 However while a generator runs in the caller stack and can suspend only the local routine stack a thread
 has its own execution stack, global table and error handler; This allows a thread to suspend nested calls and
 have it's own error policies.
@@ -25,7 +25,7 @@ Using threads
     single: Using Threads
 
 Threads are created through the built-in function 'newthread(func)'; this function
-gets as parameter a squirrel function and bind it to the new thread objects (will be the thread body).
+gets as parameter a quirrel function and bind it to the new thread objects (will be the thread body).
 The returned thread object is initially in 'idle' state. the thread can be started with the function
 'threadobj.call()'; the parameters passed to 'call' are passed to the thread function.
 

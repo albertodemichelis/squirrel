@@ -14,15 +14,15 @@ Squirrel API
 Global Symbols
 ++++++++++++++
 
-.. js:function:: endswith(str, cmp)
+.. sq:function:: endswith(str, cmp)
 
     returns `true` if the end of the string `str`  matches a the string `cmp` otherwise returns `false`
 
-.. js:function:: escape(str)
+.. sq:function:: escape(str)
 
     Returns a string with backslashes before characters that need to be escaped(`\",\a,\b,\t,\n,\v,\f,\r,\\,\",\',\0,\xnn`).
 
-.. js:function:: format(formatstr, ...)
+.. sq:function:: format(formatstr, ...)
 
     Returns a string formatted according `formatstr` and the optional parameters following it.
     The format string follows the same rules as the `printf` family of
@@ -32,7 +32,7 @@ Global Symbols
         sq> print(format("%s %d 0x%02X\n","this is a test :",123,10));
         this is a test : 123 0x0A
 
-.. js:function:: printf(formatstr, ...)
+.. sq:function:: printf(formatstr, ...)
 
     Just like calling `print(format(formatstr` as in the example above, but is more convenient AND more efficient. ::
 
@@ -40,17 +40,17 @@ Global Symbols
         sq> printf("%s %d 0x%02X\n","this is a test :",123,10);
         this is a test : 123 0x0A
 
-.. js:function:: lstrip(str)
+.. sq:function:: lstrip(str)
 
     Strips white-space-only characters that might appear at the beginning of the given string
     and returns the new stripped string.
 
-.. js:function:: rstrip(str)
+.. sq:function:: rstrip(str)
 
     Strips white-space-only characters that might appear at the end of the given string
     and returns the new stripped string.
 
-.. js:function:: split(str, separators)
+.. sq:function:: split(str, separators)
 
     returns an array of strings split at each point where a separator character occurs in `str`.
     The separator is not returned as part of any array element.
@@ -63,11 +63,11 @@ Global Symbols
         // the result will be  [1,2,3,4,5]
 
 
-.. js:function:: startswith(str, cmp)
+.. sq:function:: startswith(str, cmp)
 
     returns `true` if the beginning of the string `str` matches the string `cmp`; otherwise returns `false`
 
-.. js:function:: strip(str)
+.. sq:function:: strip(str)
 
     Strips white-space-only characters that might appear at the beginning or end of the given string and returns the new stripped string.
 
@@ -75,7 +75,7 @@ Global Symbols
 The regexp class
 ++++++++++++++++++
 
-.. js:class:: regexp(pattern)
+.. sq:class:: regexp(pattern)
 
     The regexp object represents a precompiled regular expression pattern. The object is created
     through `regexp(pattern)`.
@@ -168,7 +168,7 @@ The regexp class
 +---------------------+--------------------------------------+
 
 
-.. js:function:: regexp.capture(str [, start])
+.. sq:function:: regexp.capture(str [, start])
 
     returns an array of tables containing two indexes ("begin" and "end") of
     the first match of the regular expression in the string `str`.
@@ -196,12 +196,12 @@ The regexp class
         match number[02] Test
         match number[03] ;
 
-.. js:function:: regexp.match(str)
+.. sq:function:: regexp.match(str)
 
     returns a true if the regular expression matches the string
     `str`, otherwise returns false.
 
-.. js:function:: regexp.search(str [, start])
+.. sq:function:: regexp.search(str [, start])
 
     returns a table containing two indexes ("begin" and "end") of the first match of the regular expression in
     the string `str`, otherwise if no match occurs returns null. The search starts from the index `start`

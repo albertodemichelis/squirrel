@@ -1,13 +1,13 @@
 .. _embedding_squirrel:
 
 ***************************
-  Embedding Squirrel
+  Embedding Quirrel
 ***************************
 
-*This section describes how to embed Squirrel in a host application,
+*This section describes how to embed Quirrel in a host application,
 C language knowledge is required to understand this part of the manual.*
 
-Because of his nature of extension language, Squirrel's compiler and virtual machine
+Because of his nature of extension language, Quirrel's compiler and virtual machine
 are implemented as C library. The library exposes a set of functions to compile scripts,
 call functions, manipulate data and extend the virtual machine.
 All declarations needed for embedding the language in an application are in the header file 'squirrel.h'.

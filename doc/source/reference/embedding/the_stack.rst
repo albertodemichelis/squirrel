@@ -5,10 +5,10 @@
 The Stack
 ==========
 
-Squirrel exchanges values with the virtual machine through a stack. This mechanism has
+Quirrel exchanges values with the virtual machine through a stack. This mechanism has
 been inherited from the language Lua.
-For instance to call a Squirrel function from C it is necessary to push the function and the
-arguments in the stack and then invoke the function; also when Squirrel calls a C
+For instance to call a Quirrel function from C it is necessary to push the function and the
+arguments in the stack and then invoke the function; also when Quirrel calls a C
 function the parameters will be in the stack as well.
 
 -------------
@@ -42,7 +42,7 @@ In this case, the function *sq_gettop* would return 4;
 Stack manipulation
 ------------------
 
-The API offers several functions to push and retrieve data from the Squirrel stack.
+The API offers several functions to push and retrieve data from the Quirrel stack.
 
 To push a value that is already present in the stack in the top position::
 
@@ -89,7 +89,7 @@ the result can be one of the following values: ::
     OT_NULL,OT_INTEGER,OT_FLOAT,OT_STRING,OT_TABLE,OT_ARRAY,OT_USERDATA,
     OT_CLOSURE,OT_NATIVECLOSURE,OT_GENERATOR,OT_USERPOINTER,OT_BOOL,OT_INSTANCE,OT_CLASS,OT_WEAKREF
 
-The following functions convert a squirrel value in the stack to a C value::
+The following functions convert a quirrel value in the stack to a C value::
 
     SQRESULT sq_getstring(HSQUIRRELVM v,SQInteger idx,const SQChar **c);
     SQRESULT sq_getstringandsize(HSQUIRRELVM v,SQInteger idx,const SQChar **c,SQInteger size);

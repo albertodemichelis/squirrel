@@ -16,7 +16,7 @@ Compiler
     :returns: a SQRESULT. If the sq_compile fails nothing is pushed in the stack.
     :remarks: in case of an error the function will call the function set by sq_setcompilererrorhandler().
 
-compiles a squirrel program; if it succeeds, push the compiled script as function in the stack.
+compiles a quirrel program; if it succeeds, push the compiled script as function in the stack.
 
 
 
@@ -34,7 +34,7 @@ compiles a squirrel program; if it succeeds, push the compiled script as functio
     :returns: a SQRESULT. If the sq_compilebuffer fails nothing is pushed in the stack.
     :remarks: in case of an error the function will call the function set by sq_setcompilererrorhandler().
 
-compiles a squirrel program from a memory buffer; if it succeeds, push the compiled script as function in the stack.
+compiles a quirrel program from a memory buffer; if it succeeds, push the compiled script as function in the stack.
 
 
 

@@ -15,7 +15,7 @@ longer needed.::
         HSQUIRRELVM v;
         v = sq_open(1024); //creates a VM with initial stack size 1024
 
-        //do some stuff with squirrel here
+        //do some stuff with quirrel here
 
         sq_close(v);
     }

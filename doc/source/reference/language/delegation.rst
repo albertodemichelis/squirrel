@@ -8,7 +8,7 @@ Delegation
 .. index::
     single: Delegation
 
-Squirrel supports implicit delegation. Every table or userdata can have a parent table
+Quirrel supports implicit delegation. Every table or userdata can have a parent table
 (delegate). A parent table is a normal table that allows the definition of special behaviors
 for his child.
 When a table (or userdata) is indexed with a key that doesn't correspond to one of its

@@ -14,7 +14,7 @@ Identifiers
 .. index:: single: identifiers
 
 Identifiers start with an alphabetic character or the symbol '_' followed by any number
-of alphabetic characters, '_' or digits ([0-9]). Squirrel is a case sensitive language
+of alphabetic characters, '_' or digits ([0-9]). Quirrel is a case sensitive language
 meaning that the lowercase and uppercase representation of the same alphabetic
 character are considered different characters. For instance, "foo", "Foo" and "fOo" are
 treated as 3 distinct identifiers.
@@ -49,7 +49,7 @@ Operators
 
 .. index:: single: operators
 
-Squirrel recognizes the following operators:
+Quirrel recognizes the following operators:
 
 +----------+----------+----------+----------+----------+----------+----------+----------+
 | ``!``    | ``!=``   | ``||``   | ``==``   | ``&&``   | ``>=``   | ``<=``   | ``>``    |
@@ -86,7 +86,7 @@ Literals
     single: string literals
     single: numeric literals
 
-Squirrel accepts integer numbers, floating point numbers and string literals.
+Quirrel accepts integer numbers, floating point numbers and string literals.
 
 +-------------------------------+------------------------------------------+
 | ``34``                        | Integer number(base 10)                  |

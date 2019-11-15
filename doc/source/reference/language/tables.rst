@@ -10,7 +10,7 @@ Tables
 
 Tables are associative containers implemented as pairs of key/value (called slot); values
 can be any possible type and keys any type except 'null'.
-Tables are squirrel's skeleton, delegation and many other features are all implemented
+Tables are quirrel's skeleton, delegation and many other features are all implemented
 through this type; even the environment, where "global" variables are stored, is a table
 (known as root table).
 

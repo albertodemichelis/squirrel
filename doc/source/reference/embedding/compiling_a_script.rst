@@ -4,7 +4,7 @@
 Compiling a script
 ==================
 
-You can compile a Squirrel script with the function *sq_compile*.::
+You can compile a Quirrel script with the function *sq_compile*.::
 
     typedef SQInteger (*SQLEXREADFUNC)(SQUserPointer userdata);
 
@@ -17,7 +17,7 @@ data.
 The function is called every time the compiler needs a character; It has to return a
 character code if succeed or 0 if the source is finished.
 
-If sq_compile succeeds, the compiled script will be pushed as Squirrel function in the
+If sq_compile succeeds, the compiled script will be pushed as Quirrel function in the
 stack.
 
 .. :note::

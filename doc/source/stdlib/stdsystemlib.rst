@@ -15,11 +15,11 @@ Squirrel API
 Global Symbols
 ++++++++++++++
 
-.. js:function:: clock()
+.. sq:function:: clock()
 
     returns a float representing the number of seconds elapsed since the start of the process
 
-.. js:function:: date([time [, format]])
+.. sq:function:: date([time [, format]])
 
     returns a table containing a date/time split into the slots:
 
@@ -45,23 +45,23 @@ if `time` is omitted the current time is used.
 
 if `format` can be 'l' local time or 'u' UTC time, if omitted is defaulted as 'l'(local time).
 
-.. js:function:: getenv(varaname)
+.. sq:function:: getenv(varaname)
 
     Returns a string containing the value of the environment variable `varname`
 
-.. js:function:: remove(path)
+.. sq:function:: remove(path)
 
     deletes the file specified by `path`
 
-.. js:function:: rename(oldname, newname)
+.. sq:function:: rename(oldname, newname)
 
     renames the file or directory specified by `oldname` to the name given by `newname`
 
-.. js:function:: system(cmd)
+.. sq:function:: system(cmd)
 
     xecutes the string `cmd` through the os command interpreter.
 
-.. js:function:: time()
+.. sq:function:: time()
 
     returns the number of seconds elapsed since midnight 00:00:00, January 1, 1970.
 

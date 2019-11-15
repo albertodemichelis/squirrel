@@ -15,23 +15,23 @@ Squirrel API
 Global symbols
 +++++++++++++++
 
-.. js:function:: castf2i(f)
+.. sq:function:: castf2i(f)
 
     casts a float to a int
 
-.. js:function:: casti2f(n)
+.. sq:function:: casti2f(n)
 
     casts a int to a float
 
-.. js:function:: swap2(n)
+.. sq:function:: swap2(n)
 
     swap the byte order of a number (like it would be a 16bits integer)
 
-.. js:function:: swap4(n)
+.. sq:function:: swap4(n)
 
     swap the byte order of an integer
 
-.. js:function:: swapfloat(n)
+.. sq:function:: swapfloat(n)
 
     swaps the byteorder of a float
 
@@ -44,31 +44,31 @@ a file stream, it has a read/write pointer and it automatically grows if data
 is written out of his boundary.
 A blob can also be accessed byte by byte through the `[]` operator.
 
-.. js:class:: blob(size)
+.. sq:class:: blob(size)
 
     :param int size: initial size of the blob
 
     returns a new instance of a blob class of the specified size in bytes
 
-.. js:function:: blob.eos()
+.. sq:function:: blob.eos()
 
     returns a non null value if the read/write pointer is at the end of the stream.
 
-.. js:function:: blob.flush()
+.. sq:function:: blob.flush()
 
     flushes the stream.return a value != null if succeded, otherwise returns null
 
-.. js:function:: blob.len()
+.. sq:function:: blob.len()
 
     returns the length of the stream
 
-.. js:function:: blob.readblob(size)
+.. sq:function:: blob.readblob(size)
 
     :param int size: number of bytes to read
 
     read n bytes from the stream and returns them as blob
 
-.. js:function:: blob.readn(type)
+.. sq:function:: blob.readn(type)
 
     :param int type: type of the number to read
 
@@ -96,13 +96,13 @@ A blob can also be accessed byte by byte through the `[]` operator.
 | 'd'          | 64bits float                                                                   |  float               |
 +--------------+--------------------------------------------------------------------------------+----------------------+
 
-.. js:function:: blob.resize(size)
+.. sq:function:: blob.resize(size)
 
     :param int size: the new size of the blob in bytes
 
     resizes the blob to the specified `size`
 
-.. js:function:: blob.seek(offset [,origin])
+.. sq:function:: blob.seek(offset [,origin])
 
     :param int offset: indicates the number of bytes from `origin`.
     :param int origin: origin of the seek
@@ -119,25 +119,25 @@ A blob can also be accessed byte by byte through the `[]` operator.
 
 .. note:: If origin is omitted the parameter is defaulted as 'b'(beginning of the stream).
 
-.. js:function:: blob.swap2()
+.. sq:function:: blob.swap2()
 
     swaps the byte order of the blob content as it would be an array of `16bits integers`
 
-.. js:function:: blob.swap4()
+.. sq:function:: blob.swap4()
 
     swaps the byte order of the blob content as it would be an array of `32bits integers`
 
-.. js:function:: blob.tell()
+.. sq:function:: blob.tell()
 
     returns the read/write pointer absolute position
 
-.. js:function:: blob.writeblob(src)
+.. sq:function:: blob.writeblob(src)
 
     :param blob src: the source blob containing the data to be written
 
     writes a blob in the stream
 
-.. js:function:: blob.writen(n, type)
+.. sq:function:: blob.writen(n, type)
 
     :param number n: the value to be written
     :param int type: type of the number to write

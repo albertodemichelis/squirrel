@@ -15,7 +15,7 @@ Global Symbols
 ++++++++++++++
 
 
-.. js:function:: dofile(path, [raiseerror])
+.. sq:function:: dofile(path, [raiseerror])
 
     compiles a squirrel script or loads a precompiled one and executes it.
     returns the value returned by the script or null if no value is returned.
@@ -26,7 +26,7 @@ Global Symbols
     UTF8 with and without prefix and UCS-2 prefixed(both big endian an little endian).
     If the source stream is not prefixed UTF8 encoding is used as default.
 
-.. js:function:: loadfile(path, [raiseerror])
+.. sq:function:: loadfile(path, [raiseerror])
 
     compiles a squirrel script or loads a precompiled one an returns it as as function.
     if the optional parameter 'raiseerror' is true, the compiler error handler is invoked
@@ -36,21 +36,21 @@ Global Symbols
     UTF8 with and without prefix and UCS-2 prefixed(both big endian an little endian).
     If the source stream is not prefixed UTF8 encoding is used as default.
 
-.. js:function:: writeclosuretofile(destpath, closure)
+.. sq:function:: writeclosuretofile(destpath, closure)
 
     serializes a closure to a bytecode file (destpath). The serialized file can be loaded
     using loadfile() and dofile().
 
 
-.. js:data:: stderr
+.. sq:data:: stderr
 
     File object bound on the os *standard error* stream
 
-.. js:data:: stdin
+.. sq:data:: stdin
 
     File object bound on the os *standard input* stream
 
-.. js:data:: stdout
+.. sq:data:: stdout
 
     File object bound on the os *standard output* stream
 
@@ -61,7 +61,7 @@ The file class
 
     The file object implements a stream on a operating system file.
 
-.. js:class:: file(path, patten)
+.. sq:class:: file(path, patten)
 
     It's constructor imitates the behaviour of the C runtime function fopen for eg. ::
 
@@ -69,29 +69,29 @@ The file class
 
     creates a file with read/write access in the current directory.
 
-.. js:function:: file.close()
+.. sq:function:: file.close()
 
     closes the file.
 
-.. js:function:: file.eos()
+.. sq:function:: file.eos()
 
     returns a non null value if the read/write pointer is at the end of the stream.
 
-.. js:function:: file.flush()
+.. sq:function:: file.flush()
 
     flushes the stream.return a value != null if succeeded, otherwise returns null
 
-.. js:function:: file.len()
+.. sq:function:: file.len()
 
     returns the length of the stream
 
-.. js:function:: file.readblob(size)
+.. sq:function:: file.readblob(size)
 
     :param int size: number of bytes to read
 
     read n bytes from the stream and returns them as blob
 
-.. js:function:: file.readn(type)
+.. sq:function:: file.readn(type)
 
     :param int type: type of the number to read
 
@@ -119,13 +119,13 @@ The file class
 | 'd'          | 64bits float                                                                   |  float               |
 +--------------+--------------------------------------------------------------------------------+----------------------+
 
-.. js:function:: file.resize(size)
+.. sq:function:: file.resize(size)
 
     :param int size: the new size of the blob in bytes
 
     resizes the blob to the specified `size`
 
-.. js:function:: file.seek(offset [,origin])
+.. sq:function:: file.seek(offset [,origin])
 
     :param int offset: indicates the number of bytes from `origin`.
     :param int origin: origin of the seek
@@ -142,17 +142,17 @@ The file class
 
 .. note:: If origin is omitted the parameter is defaulted as 'b'(beginning of the stream).
 
-.. js:function:: file.tell()
+.. sq:function:: file.tell()
 
     returns the read/write pointer absolute position
 
-.. js:function:: file.writeblob(src)
+.. sq:function:: file.writeblob(src)
 
     :param blob src: the source blob containing the data to be written
 
     writes a blob in the stream
 
-.. js:function:: file.writen(n, type)
+.. sq:function:: file.writen(n, type)
 
     :param number n: the value to be written
     :param int type: type of the number to write

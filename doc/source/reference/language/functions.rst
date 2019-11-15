@@ -10,7 +10,7 @@ Functions
 
 Functions are first class values like integer or strings and can be stored in table slots,
 local variables, arrays and passed as function parameters.
-Functions can be implemented in Squirrel or in a native language with calling conventions
+Functions can be implemented in Quirrel or in a native language with calling conventions
 compatible with ANSI C.
 
 --------------------
@@ -60,7 +60,7 @@ Default Paramaters
 .. index::
     single: Function Default Paramaters
 
-Squirrel's functions can have default parameters.
+Quirrel's functions can have default parameters.
 
 A function with default parameters is declared as follows: ::
 
@@ -71,7 +71,7 @@ A function with default parameters is declared as follows: ::
 
 when the function *test* is invoked and the parameter c or d are not specified,
 the VM autometically assigns the default value to the unspecified parameter. A default parameter can be
-any valid squirrel expression. The expression is evaluated at runtime.
+any valid quirrel expression. The expression is evaluated at runtime.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Function with variable number of paramaters
@@ -80,14 +80,14 @@ Function with variable number of paramaters
 .. index::
     single: Function with variable number of paramaters
 
-Squirrel's functions can have variable number of parameters(varargs functions).
+Quirrel's functions can have variable number of parameters(varargs functions).
 
 A vararg function is declared by adding three dots (`...`) at the end of its parameter list.
 
 When the function is called all the extra parameters will be accessible through the *array*
 called ``vargv``, that is passed as implicit parameter.
 
-``vargv`` is a regular squirrel array and can be used accordingly.::
+``vargv`` is a regular quirrel array and can be used accordingly.::
 
     function test(a,b,...)
     {
@@ -117,7 +117,7 @@ Function calls
 The expression is evaluated in this order: derefexp after the explist (arguments) and at
 the end the call.
 
-A function call in Squirrel passes the current environment object *this* as a hidden parameter.
+A function call in Quirrel passes the current environment object *this* as a hidden parameter.
 But when the function was immediately indexed from an object, *this* shall be the object
 which was indexed, instead.
 
@@ -150,7 +150,7 @@ Binding an environment to a function
 .. index::
     single: Binding an environment to a function
 
-while by default a squirrel function call passes as environment object 'this', the object
+while by default a quirrel function call passes as environment object 'this', the object
 where the function was indexed from. However, is also possible to statically bind an evironment to a
 closure using the built-in method ``closure.bindenv(env_obj)``.
 The method bindenv() returns a new instance of a closure with the environment bound to it.
@@ -233,7 +233,7 @@ Tail Recursion
 Tail recursion is a method for partially transforming a recursion in a program into an
 iteration: it applies when the recursive calls in a function are the last executed
 statements in that function (just before the return).
-If this happenes the squirrel interpreter collapses the caller stack frame before the
+If this happenes the quirrel interpreter collapses the caller stack frame before the
 recursive call; because of that very deep recursions are possible without risk of a stack
 overflow.::
 

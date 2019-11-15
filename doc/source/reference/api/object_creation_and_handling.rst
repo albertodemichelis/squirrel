@@ -74,7 +74,7 @@ pushes the value of a class or instance member using a member handle (see sq_get
     :param SQInteger * nfreevars: a pointer to an integer that will store the number of free variables
     :returns: an SQRESULT
 
-retrieves number of parameters and number of freevariables from a squirrel closure.
+retrieves number of parameters and number of freevariables from a quirrel closure.
 
 
 
@@ -660,7 +660,7 @@ sets the typetag of the object (userdata or class) at position idx in the stack.
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: an index in the stack
     :param SQBool * b: A pointer to the bool that will store the value
-    :remarks: if the object is not a bool the function converts the value to bool according to squirrel's rules. For instance the number 1 will result in true, and the number 0 in false.
+    :remarks: if the object is not a bool the function converts the value to bool according to quirrel's rules. For instance the number 1 will result in true, and the number 0 in false.
 
 gets the value at position idx in the stack as bool.
 
