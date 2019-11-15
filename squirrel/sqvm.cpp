@@ -1795,19 +1795,13 @@ bool SQVM::DeleteSlot(const SQObjectPtr &self,const SQObjectPtr &key,SQObjectPtr
 
 bool SQVM::Call(SQObjectPtr &closure,SQInteger nparams,SQInteger stackbase,SQObjectPtr &outres,SQBool raiseerror)
 {
-#ifdef _DEBUG
-SQInteger prevstackbase = _stackbase;
-#endif
     switch(sq_type(closure)) {
     case OT_CLOSURE:
         return Execute(closure, nparams, stackbase, outres, raiseerror);
-        break;
     case OT_NATIVECLOSURE:{
         bool dummy;
         return CallNative(_nativeclosure(closure), nparams, stackbase, outres, -1, dummy, dummy);
-
-                          }
-        break;
+    }
     case OT_CLASS: {
         SQObjectPtr constr;
         SQObjectPtr temp;
@@ -1818,17 +1812,10 @@ SQInteger prevstackbase = _stackbase;
             return Call(constr,nparams,stackbase,temp,raiseerror);
         }
         return true;
-                   }
-        break;
+    }
     default:
         return false;
     }
-#ifdef _DEBUG
-    if(!_suspended) {
-        assert(_stackbase == prevstackbase);
-    }
-#endif
-    return true;
 }
 
 bool SQVM::CallMetaMethod(SQObjectPtr &closure,SQMetaMethod SQ_UNUSED_ARG(mm),SQInteger nparams,SQObjectPtr &outres)
