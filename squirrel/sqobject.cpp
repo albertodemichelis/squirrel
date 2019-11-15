@@ -98,7 +98,7 @@ SQRefCounted::~SQRefCounted()
 {
     if(_weakref) {
         _weakref->_obj._type = OT_NULL;
-        _weakref->_obj._unVal.pRefCounted = NULL;
+        _weakref->_obj._unVal.raw = 0;
     }
 }
 
