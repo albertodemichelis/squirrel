@@ -57,10 +57,11 @@ bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,con
     switch(tmask) { \
         case OT_INTEGER: { SQInteger i2 = _integer(o2); if(i2 == 0) { Raise_Error(err); SQ_THROW(); } trg = _integer(o1) op i2; } break;\
         case (OT_FLOAT|OT_INTEGER): \
-        case (OT_FLOAT): trg = tofloat(o1) op tofloat(o2); break;\
+        case (OT_FLOAT): { SQFloat f2 = tofloat(o2); if(f2 == (SQFloat)0.f) { Raise_Error(err); SQ_THROW(); } trg = tofloat(o1) op f2; } break;\
         default: _GUARD(ARITH_OP((#op)[0],trg,o1,o2)); break;\
     } \
 }
+
 
 bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2)
 {
@@ -71,12 +72,12 @@ bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,
             switch(op) {
             case '+': res = i1 + i2; break;
             case '-': res = i1 - i2; break;
-            case '/': if (i2 == 0) { Raise_Error(_SC("division by zero")); return false; }
+            case '/': if (i2 == 0) { Raise_Error(_SC("integer division by zero")); return false; }
                     else if (i2 == -1 && i1 == INT_MIN) { Raise_Error(_SC("integer overflow")); return false; }
                     res = i1 / i2;
                     break;
             case '*': res = i1 * i2; break;
-            case '%': if (i2 == 0) { Raise_Error(_SC("modulo by zero")); return false; }
+            case '%': if (i2 == 0) { Raise_Error(_SC("integer modulo by zero")); return false; }
                     else if (i2 == -1 && i1 == INT_MIN) { res = 0; break; }
                     res = i1 % i2;
                     break;
@@ -90,9 +91,15 @@ bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,
             switch(op) {
             case '+': res = f1 + f2; break;
             case '-': res = f1 - f2; break;
-            case '/': res = f1 / f2; break;
+            case '/':
+              if (f2 == 0.f) { Raise_Error(_SC("float division by zero")); return false; }
+              res = f1 / f2;
+              break;
             case '*': res = f1 * f2; break;
-            case '%': res = SQFloat(fmod((double)f1,(double)f2)); break;
+            case '%':
+              if (f2 == 0.f) { Raise_Error(_SC("float modulo by zero")); return false; }
+              res = SQFloat(fmod((double)f1,(double)f2));
+              break;
             default: res = 0x0f;
             }
             trg = res; }
@@ -942,7 +949,7 @@ exception_restore:
             case _OP_SUB: _ARITH_(-,TARGET,STK(arg2),STK(arg1)); continue;
             case _OP_MUL: _ARITH_(*,TARGET,STK(arg2),STK(arg1)); continue;
             case _OP_DIV: _ARITH_NOZERO(/,TARGET,STK(arg2),STK(arg1),_SC("division by zero")); continue;
-            case _OP_MOD: ARITH_OP('%',TARGET,STK(arg2),STK(arg1)); continue;
+            case _OP_MOD: _GUARD(ARITH_OP('%',TARGET,STK(arg2),STK(arg1))); continue;
             case _OP_BITW:  _GUARD(BW_OP( arg3,TARGET,STK(arg2),STK(arg1))); continue;
             case _OP_RETURN:
                 if((ci)->_generator) {
