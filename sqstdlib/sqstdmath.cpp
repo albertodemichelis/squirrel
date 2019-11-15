@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <sqstdmath.h>
+#include <float.h>
 
 #define SINGLE_ARG_FUNC(_funcname) static SQInteger math_##_funcname(HSQUIRRELVM v){ \
     SQFloat f; \
@@ -104,6 +105,9 @@ SQRESULT sqstd_register_mathlib(HSQUIRRELVM v)
     sq_newslot(v,-3,SQFalse);
     sq_pushstring(v,_SC("PI"),-1);
     sq_pushfloat(v,(SQFloat)M_PI);
+    sq_newslot(v,-3,SQFalse);
+    sq_pushstring(v,_SC("FLT_MAX"),-1);
+    sq_pushfloat(v,(SQFloat)FLT_MAX);
     sq_newslot(v,-3,SQFalse);
     return SQ_OK;
 }
