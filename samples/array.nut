@@ -3,17 +3,16 @@
 * Original Javascript version by David Hedbor(http://www.bagley.org/~doug/shootout/)
 *
 */
-local n, i, k;
+local n, i, k
 
-if(vargv.len()!=0) {
-   n = vargv[0].tointeger();
-  if(n < 1) n = 1;
+if (vargv.len()!=0) {
+  n = ::max(1, vargv[0].tointeger())
 } else {
-  n = 1;
+  n = 1
 }
 
-local x = []; x.resize(n);
-local y = []; y.resize(n);
+local x = ::array(n)
+local y = ::array(n)
 
 for (i = 0; i < n; i+=1) {
   x[i] = i + 1;
@@ -25,5 +24,6 @@ for (k = 0 ; k < n; k+=1) {
     y[i] = y[i]+ x[i];
   }
 }
-print(y[0].tostring()+" "+y[n-1]);
+
+print($"{y[0]} {y[n-1]}")
 

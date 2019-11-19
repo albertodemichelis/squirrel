@@ -1,54 +1,51 @@
-
-PEntity <- {
+::PEntity <- {
     name="noname"
     pos={x=0,y=0,z=0}
     type="entity"
     //methamethod
-    _typeof=function()
-    {
+    function _typeof() {
         return type;
     }
+
+    function PrintPos() {
+      ::print($"x={pos.x} y={pos.y} z={pos.z}\n")
+    }
+
+    function new(name, pos) {
+      local newentity=clone ::PEntity
+      if(name)
+          newentity.name=name
+      if(pos)
+          newentity.pos=pos
+      return newentity
+  }
 }
 
-function PEntity::PrintPos()
-{
-    ::print("x="+pos.x+" y="+pos.y+" z="+pos.z+"\n");
-}
 
-function PEntity::new(name,pos)
-{
-    local newentity=clone ::PEntity;
-    if(name)
-        newentity.name=name;
-    if(pos)
-        newentity.pos=pos;
-    return newentity;
-}
-
-PPlayer <- {
+::PPlayer <- {
     model="warrior.mdl"
     weapon="fist"
     health=100
     armor=0
     //overrides the parent type
     type="player"
+
+    function new(name,pos) {
+        local p = clone ::PPlayer
+        local newplayer = ::PEntity.new(name,pos)
+        newplayer.setdelegate(p)
+        return newplayer
+    }
 }
 
-function PPlayer::new(name,pos)
-{
-    local p = clone ::PPlayer;
-    local newplayer = ::PEntity.new(name,pos);
-    newplayer.setdelegate(p);
-    return newplayer;
-}
 
-local player=PPlayer.new("godzilla",{x=10,y=20,z=30});
+local player = PPlayer.new("godzilla",{x=10,y=20,z=30})
 
-::print("PLAYER NAME"+player.name+"\n");
-::print("ENTITY TYPE"+typeof player+"\n");
+::print($"PLAYER NAME: {player.name}\n")
+::print($"ENTITY TYPE: {typeof player}\n")
 
-player.PrintPos();
+player.PrintPos()
 
-player.pos.x=123;
+player.pos.x=123
 
-player.PrintPos();
+player.PrintPos()
