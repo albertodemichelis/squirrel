@@ -1272,7 +1272,6 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("a")},
     {_SC("append"),array_append,-2, _SC("a")},
     {_SC("extend"),array_extend,2, _SC("aa")},
-    {_SC("push"),array_append,-2, _SC("a")},
     {_SC("pop"),array_pop,1, _SC("a")},
     {_SC("top"),array_top,1, _SC("a")},
     {_SC("insert"),array_insert,3, _SC("an")},

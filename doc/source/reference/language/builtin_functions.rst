@@ -465,11 +465,6 @@ returns the length of the array
 sequentially appends the values of arguments 'val' to the end of the array. Returns array itself.
 
 
-.. sq:function:: array.push(val, [val_2], [val_3], ...)
-
-alias for array.append()
-
-
 .. sq:function:: array.extend(array)
 
 Extends the array by appending all the items in the given array. Returns array itself.
