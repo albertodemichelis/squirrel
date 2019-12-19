@@ -198,21 +198,19 @@ local function curry(fn) {
 */
 
 local function memoize(func, hashfunc=null){
-  local cache = {}
-  local cache_for_null = {}
+  local cacheDefault = {}
+  local cacheForNull = {}
   local parameters = func.getfuncinfos().parameters.slice(0)
   ::assert(parameters.len()>0)
   hashfunc = hashfunc ?? function(...) {
     return vargv[0]
-  }
+ }
   local function memoizedfunc(...){
     local args = [null].extend(vargv)
-    local hash = hashfunc.acall(args)
-    if (hash == null){
-      //index cannot be null. use different cach to avoid collision
-      cache = cache_for_null
-      hash = 0
-    }
+    local rawHash = hashfunc.acall(args)
+    //index cannot be null. use different cache to avoid collision
+    local hash = rawHash ?? 0
+    local cache = rawHash != null ? cacheDefault : cacheForNull
     if (hash in cache) {
       return cache[hash]
     }
@@ -222,7 +220,52 @@ local function memoize(func, hashfunc=null){
   }
   return memoizedfunc
 }
+//the same function as in underscore.js
+//Creates a version of the function that can only be called one time.
+//Repeated calls to the modified function will have no effect, returning the value from the original call.
+//Useful for initialization functions, instead of having to set a boolean flag and then check it later.
+local function once(func){
+  local result
+  local called = false
+  local function memoizedfunc(...){
+    if (called)
+      return result
+    local res = func.acall([null].extend(vargv))
+    result = res
+    called = true
+    return res
+  }
+  return memoizedfunc
+}
 
+//the same function as in underscore.js
+//Creates a version of the function that can be called no more than count times.
+//The result of the last function call is memoized and returned when count has been reached.
+local function before(count, func){
+  local called = 0
+  local res
+  return function beforeTimes(...){
+    if (called >= count)
+      return res
+    called++
+    res = func.acall([null].extend(vargv))
+    return res
+  }
+}
+
+//the same function as in underscore.js
+//Creates a version of the function that will only be run after being called count times.
+//Useful for grouping asynchronous responses, where you want to be sure that all the async calls have finished, before proceeding.
+local function after(count, func){
+  local called = 0
+  return function beforeTimes(...){
+    if (called < count) {
+      called++
+      return
+    }
+    return func.acall([null].extend(vargv))
+  }
+}
 
 return {
   partial = partial
@@ -233,4 +276,7 @@ return {
   curry = curry
   memoize = memoize
   isCallable = isCallable
+  once = once
+  before = before
+  after = after
 }
