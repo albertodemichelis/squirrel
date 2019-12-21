@@ -260,7 +260,7 @@ void sq_pushnull(HSQUIRRELVM v)
 
 void sq_pushstring(HSQUIRRELVM v,const SQChar *s,SQInteger len)
 {
-    if(s)
+    if(s || len==0)
         v->Push(SQObjectPtr(SQString::Create(_ss(v), s, len)));
     else v->PushNull();
 }
