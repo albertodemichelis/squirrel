@@ -332,6 +332,9 @@ runs of consecutive whitespace are regarded as a single separator, and the resul
 at the start or end if the string has leading or trailing whitespace.
 Consequently, splitting an empty string or a string consisting of just whitespace without providing a separator returns [].
 
+.. sq:function:: string.hash()
+
+Returns integer hash value of a string. It is always non-negative (so it doesn't always match Quirrel string internal hash value).
 
 ^^^^^
 Table

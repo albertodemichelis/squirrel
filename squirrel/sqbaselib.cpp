@@ -1296,6 +1296,18 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
 };
 
 //STRING DEFAULT DELEGATE//////////////////////////
+
+static SQInteger string_hash(HSQUIRRELVM v)
+{
+    union { SQHash hash; SQInteger i; SQUnsignedInteger u; } convert;
+    memset(&convert, 0, sizeof(convert));
+    convert.hash = _string(stack_get(v, 1))->_hash;
+    if (convert.i < 0)
+        convert.u = ~convert.u;
+    sq_pushinteger(v, convert.i);
+    return 1;
+}
+
 static SQInteger string_slice(HSQUIRRELVM v)
 {
     SQInteger sidx,eidx;
@@ -1609,6 +1621,7 @@ const SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
     {_SC("tointeger"),default_delegate_tointeger,-1, _SC("sn")},
     {_SC("tofloat"),default_delegate_tofloat,1, _SC("s")},
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+    {_SC("hash"),string_hash, 1, _SC("s")},
     {_SC("slice"),string_slice,-1, _SC("s n  n")},
     {_SC("indexof"),string_indexof,-2, _SC("s s n")},
     {_SC("tolower"),string_tolower,-1, _SC("s n n")},
