@@ -2086,6 +2086,23 @@ static SQInteger class_rawnewmember(HSQUIRRELVM v)
     return SQ_SUCCEEDED(sq_rawnewmember(v,-4,bstatic))?1:SQ_ERROR;
 }
 
+
+static SQInteger get_class_metamethod(HSQUIRRELVM v)
+{
+    SQInteger mmidx = _ss(v)->GetMetaMethodIdxByName(stack_get(v, 2));
+    if (mmidx < 0)
+        return sq_throwerror(v, "Unknown metamethod");
+
+    SQClass *cls = nullptr;
+    if (sq_gettype(v, 1) == OT_CLASS)
+        cls = _class(stack_get(v, 1));
+    else // instance
+        cls = _instance(stack_get(v, 1))->_class;
+    v->Push(cls->_metamethods[mmidx]);
+    return 1;
+}
+
+
 const SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
     {_SC("rawget"),container_rawget,2, _SC("y")},
     {_SC("rawset"),container_rawset,3, _SC("y")},
@@ -2103,6 +2120,7 @@ const SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
     {_SC("pacall"),closure_pacall,2, _SC("ya")},
     {_SC("__update"),container_update, -2, _SC("t|yt|y|x") },
     {_SC("__merge"),container_merge, -2, _SC("t|yt|y|x") },
+    {_SC("getmetamethod"),get_class_metamethod, 2, _SC("ys")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -2122,6 +2140,7 @@ const SQRegFunction SQSharedState::_instance_default_delegate_funcz[] = {
     {_SC("weakref"),obj_delegate_weakref,1, NULL },
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
     {_SC("getfuncinfos"),delegable_getfuncinfos,1, _SC("x")},
+    {_SC("getmetamethod"),get_class_metamethod, 2, _SC("xs")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 

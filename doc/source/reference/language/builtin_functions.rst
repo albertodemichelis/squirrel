@@ -728,6 +728,10 @@ sets/adds the slot 'key' with the value 'val'. If bstatic is true the slot will 
 
 If class has _call() metamethod, get info about it (see function.getfuncinfos() for details).
 
+.. sq:function:: class.getmetamethod(name)
+
+Returns metamethod closure (e.g. Foo.getmetamethod("_add")) or null if method is not implemented in class.
+
 .. sq:function:: class.__merge(table_or_class_1, [table_or_class_2], [table_or_class_3], ...)
 
 This delegate is used to create new class from old and given.
@@ -776,6 +780,11 @@ sets the slot 'key' with the value 'val' without employing delegation. If the sl
 .. sq:function:: instance.getfuncinfos()
 
 If instance has _call() metamethod, get info about it (see function.getfuncinfos() for details).
+
+.. sq:function:: instance.getmetamethod(name)
+
+Returns metamethod closure (e.g. foo.getmetamethod("_add")) or null if method is not implemented in class.
+
 
 ^^^^^^^^^^^^^^
 Generator
