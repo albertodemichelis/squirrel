@@ -402,6 +402,9 @@ returns an array containing all the keys of the table slots.
 
 returns an array containing all the values of the table slots.
 
+.. sq:function:: table.topairs()
+
+returns an array containing arrays of pairs [key, value]. Useful when you need to sort data from table.
 
 .. sq:function:: table.map(func(slot_value, [slot_key], [table_ref]))
 
@@ -533,6 +536,11 @@ returns a weak reference to the object.
 .. sq:function:: array.tostring()
 
 returns the string "(array : pointer)".
+
+
+.. sq:function:: array.totable(func(item_value, [item_index], [array_ref]))
+
+Creates a table from arrays containing arrays of pairs [key,value]. Reverse of table.topairs().
 
 
 .. sq:function:: array.clear()

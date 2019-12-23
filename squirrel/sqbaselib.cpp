@@ -746,11 +746,9 @@ static SQInteger table_filter(HSQUIRRELVM v)
 	SQObject &o = stack_get(v, 1); \
 	SQTable *t = _table(o); \
 	SQObjectPtr itr, key, val; \
-	SQObjectPtr _null; \
 	SQInteger nitr, n = 0; \
 	SQInteger nitems = t->CountUsed(); \
 	SQArray *a = SQArray::Create(_ss(v), nitems); \
-	a->Resize(nitems, _null); \
 	if (nitems) { \
 		while ((nitr = t->Next(false, itr, key, val)) != -1) { \
 			itr = (SQInteger)nitr; \
@@ -764,6 +762,57 @@ static SQInteger table_filter(HSQUIRRELVM v)
 
 TABLE_TO_ARRAY_FUNC(table_keys, key)
 TABLE_TO_ARRAY_FUNC(table_values, val)
+
+
+static SQInteger table_to_pairs(HSQUIRRELVM v)
+{
+    SQObject &o = stack_get(v, 1);
+    SQTable *t = _table(o);
+    SQObjectPtr itr, key, val;
+    SQInteger nitr, n = 0;
+    SQInteger nitems = t->CountUsed();
+    SQArray *result = SQArray::Create(_ss(v), nitems);
+    if (nitems) {
+        while ((nitr = t->Next(false, itr, key, val)) != -1) {
+            itr = (SQInteger)nitr;
+            SQArray *item = SQArray::Create(_ss(v), 2);
+            item->Set(0, key);
+            item->Set(1, val);
+            result->Set(n, item);
+            n++;
+        }
+    }
+    v->Push(result);
+    return 1;
+}
+
+
+static SQInteger pairs_to_table(HSQUIRRELVM v)
+{
+    SQObject &o = stack_get(v, 1);
+    SQArray *arr = _array(o);
+    SQInteger count = arr->Size();
+    SQTable *result = SQTable::Create(_ss(v), count);
+    for (SQInteger i = 0; i < count; i++)
+    {
+        SQObjectPtr item;
+        SQObjectPtr key;
+        SQObjectPtr val;
+        if (arr->Get(i, item) && sq_isarray(item) &&
+            _array(item)->Get(0, key) && _array(item)->Get(1, val))
+        {
+             result->NewSlot(key, val);
+        }
+        else
+        {
+            return sq_throwerror(v, _SC("totable() expected array of pairs [[key, value], ...]"));
+        }
+    }
+
+    v->Push(result);
+    return 1;
+}
+
 
 static SQInteger __map_table(SQTable *dest, SQTable *src, HSQUIRRELVM v) {
     SQObjectPtr temp;
@@ -877,6 +926,7 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
     {_SC("values"),table_values,1, _SC("t") },
     {_SC("__update"),container_update, -2, _SC("t|yt|y|x") },
     {_SC("__merge"),container_merge, -2, _SC("t|yt|y|x") },
+    {_SC("topairs"),table_to_pairs, 1, _SC("t") },
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -1292,6 +1342,8 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("each"),container_each,2, _SC("ac")},
     {_SC("findindex"),container_findindex,2, _SC("ac")},
     {_SC("findvalue"),container_findvalue,-2, _SC("ac.")},
+    {_SC("totable"),pairs_to_table,1, _SC("a") },
+
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
