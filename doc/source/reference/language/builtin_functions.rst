@@ -656,6 +656,7 @@ returns a table containing informations about the function, like parameters, nam
       parameters = ["a","b","c"]
       defparams = [1,"def"]
       varargs = 2
+      freevars = 0
     }
     //native C function
     {
@@ -663,8 +664,13 @@ returns a table containing informations about the function, like parameters, nam
       name = "zefuncname"
       paramscheck = 2
       typecheck = [83886082,83886384] //this is the typemask (see C defines OT_INTEGER,OT_FLOAT etc...)
+      freevars = 2
     }
 
+.. sq:function:: function.getfreevar(idx)
+
+returns a table containing information about given free variable ::
+  { name="foo", value=5 }
 
 
 ^^^^^

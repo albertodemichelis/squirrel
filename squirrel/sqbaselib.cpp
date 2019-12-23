@@ -1701,6 +1701,22 @@ static SQInteger closure_setroot(HSQUIRRELVM v)
     return 1;
 }
 
+static SQInteger closure_getfreevar(HSQUIRRELVM v)
+{
+    SQInteger varidx;
+    sq_getinteger(v, 2, &varidx);
+    const SQChar *name = sq_getfreevariable(v, 1, SQUnsignedInteger(varidx));
+    if (!name)
+        return sq_throwerror(v, _SC("Invalid free variable index"));
+    SQObjectPtr val = v->PopGet();
+    SQTable *res = SQTable::Create(_ss(v),2);
+    res->NewSlot(SQString::Create(_ss(v),_SC("name"),-1), SQString::Create(_ss(v),name,-1));
+    res->NewSlot(SQString::Create(_ss(v),_SC("value"),-1), val);
+    v->Push(res);
+    return 1;
+}
+
+
 static SQInteger closure_getfuncinfos_obj(HSQUIRRELVM v, SQObjectPtr & o) {
     SQTable *res = SQTable::Create(_ss(v),4);
     if(sq_type(o) == OT_CLOSURE) {
@@ -1722,7 +1738,8 @@ static SQInteger closure_getfuncinfos_obj(HSQUIRRELVM v, SQObjectPtr & o) {
         res->NewSlot(SQString::Create(_ss(v),_SC("src"),-1),f->_sourcename);
         res->NewSlot(SQString::Create(_ss(v),_SC("parameters"),-1),params);
         res->NewSlot(SQString::Create(_ss(v),_SC("varargs"),-1),f->_varparams);
-    res->NewSlot(SQString::Create(_ss(v),_SC("defparams"),-1),defparams);
+        res->NewSlot(SQString::Create(_ss(v),_SC("defparams"),-1),defparams);
+        res->NewSlot(SQString::Create(_ss(v),_SC("freevars"),-1),f->_noutervalues);
         res->NewSlot(SQString::Create(_ss(v),_SC("docstring"),-1),f->_docstring);
     }
     else { //OT_NATIVECLOSURE
@@ -1730,6 +1747,7 @@ static SQInteger closure_getfuncinfos_obj(HSQUIRRELVM v, SQObjectPtr & o) {
         res->NewSlot(SQString::Create(_ss(v),_SC("native"),-1),true);
         res->NewSlot(SQString::Create(_ss(v),_SC("name"),-1),nc->_name);
         res->NewSlot(SQString::Create(_ss(v),_SC("paramscheck"),-1),nc->_nparamscheck);
+        res->NewSlot(SQString::Create(_ss(v),_SC("freevars"),-1),SQInteger(nc->_noutervalues));
         SQObjectPtr typecheck;
         if(nc->_typecheck.size() > 0) {
             typecheck =
@@ -1790,6 +1808,7 @@ const SQRegFunction SQSharedState::_closure_default_delegate_funcz[]={
     {_SC("getfuncinfos"),closure_getfuncinfos,1, _SC("c")},
     {_SC("getroot"),closure_getroot,1, _SC("c")},
     {_SC("setroot"),closure_setroot,2, _SC("ct")},
+    {_SC("getfreevar"),closure_getfreevar,2, _SC("ci")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
