@@ -62,12 +62,14 @@ Changes
 * array.append() can take multiple arguments
 * changed arguments order for array.filter() to unify with other functions
 
-----------------
-Planned changes
-----------------
+--------------------------------
+Possible future changes
+--------------------------------
 
 * remove + for string concatenation
 * don't accept non-boolean values in logical operation ({} && 0 || null || "foo", {} ? 1 : 2, if ("foo") print(a))
+* add typedef and typehinting for analyzer like Python does (function (var: Int):Int{}. @(v:String):String v.tostring())
+* change compiler to AST base (source->ast->bytecode) with optimizations
 
 ----------------
 Known issues
