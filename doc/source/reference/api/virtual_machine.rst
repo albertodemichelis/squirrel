@@ -329,12 +329,12 @@ Suspends the execution of the specified vm.
 
 .. _sq_wakeupvm:
 
-.. c:function:: HRESULT sq_wakeupvm(HSQUIRRELVM v, SQBool resumedret, SQBool retval, SQBool raiseerror, SQBool throwerror)
+.. c:function:: HRESULT sq_wakeupvm(HSQUIRRELVM v, SQBool resumedret, SQBool retval, SQBool invoke_err_handler, SQBool throwerror)
 
     :param HSQUIRRELVM v: the target VM
     :param SQBool resumedret: if true the function will pop a value from the stack and use it as return value for the function that has previously suspended the virtual machine.
     :param SQBool retval: if true the function will push the return value of the function that suspend the excution or the main function one.
-    :param SQBool raiseerror: if true, if a runtime error occurs during the execution of the call, the vm will invoke the error handler.
+    :param SQBool invoke_err_handler: if true, if a runtime error occurs during the execution of the call, the vm will invoke the error handler.
     :param SQBool throwerror: if true, the vm will thow an exception as soon as is resumed. the exception payload must be set beforehand invoking sq_thowerror().
     :returns: an HRESULT.
 

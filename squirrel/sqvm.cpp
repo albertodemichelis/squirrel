@@ -715,7 +715,7 @@ SQVM::BooleanResult SQVM::ResolveBooleanResult(const SQObjectPtr &o)
 }
 
 extern SQInstructionDesc g_InstrDesc[];
-bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQObjectPtr &outres, SQBool raiseerror,ExecutionType et)
+bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQObjectPtr &outres, SQBool invoke_err_handler,ExecutionType et)
 {
     VT_CODE(
       struct ResoreVmOnExit
@@ -1207,7 +1207,7 @@ exception_trap:
 //      SQInteger n = 0;
         SQInteger last_top = _top;
 
-        if(_ss(this)->_notifyallexceptions || (!traps && raiseerror)) CallErrorHandler(currerror);
+        if(_ss(this)->_notifyallexceptions || (!traps && invoke_err_handler)) CallErrorHandler(currerror);
 
         while( ci ) {
             if(ci->_etraps > 0) {
@@ -1801,11 +1801,11 @@ bool SQVM::DeleteSlot(const SQObjectPtr &self,const SQObjectPtr &key,SQObjectPtr
     return true;
 }
 
-bool SQVM::Call(SQObjectPtr &closure,SQInteger nparams,SQInteger stackbase,SQObjectPtr &outres,SQBool raiseerror)
+bool SQVM::Call(SQObjectPtr &closure,SQInteger nparams,SQInteger stackbase,SQObjectPtr &outres,SQBool invoke_err_handler)
 {
     switch(sq_type(closure)) {
     case OT_CLOSURE:
-        return Execute(closure, nparams, stackbase, outres, raiseerror);
+        return Execute(closure, nparams, stackbase, outres, invoke_err_handler);
     case OT_NATIVECLOSURE:{
         bool dummy;
         return CallNative(_nativeclosure(closure), nparams, stackbase, outres, -1, dummy, dummy);
@@ -1817,7 +1817,7 @@ bool SQVM::Call(SQObjectPtr &closure,SQInteger nparams,SQInteger stackbase,SQObj
         SQObjectType ctype = sq_type(constr);
         if (ctype == OT_NATIVECLOSURE || ctype == OT_CLOSURE) {
             _stack[stackbase] = outres;
-            return Call(constr,nparams,stackbase,temp,raiseerror);
+            return Call(constr,nparams,stackbase,temp,invoke_err_handler);
         }
         return true;
     }

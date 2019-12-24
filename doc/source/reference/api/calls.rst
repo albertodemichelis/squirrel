@@ -6,12 +6,12 @@ Calls
 
 .. _sq_call:
 
-.. c:function:: SQRESULT sq_call(HSQUIRRELVM v, SQInteger params, SQBool retval, SQBool raiseerror)
+.. c:function:: SQRESULT sq_call(HSQUIRRELVM v, SQInteger params, SQBool retval, SQBool invoke_err_handler)
 
     :param HSQUIRRELVM v: the target VM
     :param SQInteger params: number of parameters of the function
     :param SQBool retval: if true the function will push the return value in the stack
-    :param SQBool raiseerror: if true, if a runtime error occurs during the execution of the call, the vm will invoke the error handler.
+    :param SQBool invoke_err_handler: if true, if a runtime error occurs during the execution of the call, the vm will invoke the error handler.
     :returns: a SQRESULT
 
 calls a closure or a native closure. The function pops all the parameters and leave the closure in the stack; if retval is true the return value of the closure is pushed. If the execution of the function is suspended through sq_suspendvm(), the closure and the arguments will not be automatically popped from the stack.
@@ -76,11 +76,11 @@ reset the last error in the virtual machine to null
 
 .. _sq_resume:
 
-.. c:function:: SQRESULT sq_resume(HSQUIRRELVM v, SQBool retval, SQBool raiseerror)
+.. c:function:: SQRESULT sq_resume(HSQUIRRELVM v, SQBool retval, SQBool invoke_err_handler)
 
     :param HSQUIRRELVM v: the target VM
     :param SQBool retval: if true the function will push the return value in the stack
-    :param SQBool raiseerror: if true, if a runtime error occurs during the execution of the call, the vm will invoke the error handler.
+    :param SQBool invoke_err_handler: if true, if a runtime error occurs during the execution of the call, the vm will invoke the error handler.
     :returns: a SQRESULT
     :remarks: if retval != 0 the return value of the generator is pushed.
 

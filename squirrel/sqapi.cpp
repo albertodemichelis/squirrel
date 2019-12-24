@@ -1210,12 +1210,12 @@ SQRESULT sq_reservestack(HSQUIRRELVM v,SQInteger nsize)
     return SQ_OK;
 }
 
-SQRESULT sq_resume(HSQUIRRELVM v,SQBool retval,SQBool raiseerror)
+SQRESULT sq_resume(HSQUIRRELVM v,SQBool retval,SQBool invoke_err_handler)
 {
     if (sq_type(v->GetUp(-1)) == OT_GENERATOR)
     {
         v->PushNull(); //retval
-        if (!v->Execute(v->GetUp(-2), 0, v->_top, v->GetUp(-1), raiseerror, SQVM::ET_RESUME_GENERATOR))
+        if (!v->Execute(v->GetUp(-2), 0, v->_top, v->GetUp(-1), invoke_err_handler, SQVM::ET_RESUME_GENERATOR))
         {v->Raise_Error(v->_lasterror); return SQ_ERROR;}
         if(!retval)
             v->Pop();
@@ -1224,10 +1224,10 @@ SQRESULT sq_resume(HSQUIRRELVM v,SQBool retval,SQBool raiseerror)
     return sq_throwerror(v,_SC("only generators can be resumed"));
 }
 
-SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool raiseerror)
+SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool invoke_err_handler)
 {
     SQObjectPtr res;
-    if(!v->Call(v->GetUp(-(params+1)),params,v->_top-params,res,raiseerror?true:false)){
+    if(!v->Call(v->GetUp(-(params+1)),params,v->_top-params,res,invoke_err_handler?true:false)){
         v->Pop(params); //pop args
         return SQ_ERROR;
     }
@@ -1262,7 +1262,7 @@ SQRESULT sq_suspendvm(HSQUIRRELVM v)
     return v->Suspend();
 }
 
-SQRESULT sq_wakeupvm(HSQUIRRELVM v,SQBool wakeupret,SQBool retval,SQBool raiseerror,SQBool throwerror)
+SQRESULT sq_wakeupvm(HSQUIRRELVM v,SQBool wakeupret,SQBool retval,SQBool invoke_err_handler,SQBool throwerror)
 {
     SQObjectPtr ret;
     if(!v->_suspended)
@@ -1275,7 +1275,7 @@ SQRESULT sq_wakeupvm(HSQUIRRELVM v,SQBool wakeupret,SQBool retval,SQBool raiseer
         v->Pop();
     } else if(target != -1) { v->GetAt(v->_stackbase+v->_suspended_target).Null(); }
     SQObjectPtr dummy;
-    if(!v->Execute(dummy,-1,-1,ret,raiseerror,throwerror?SQVM::ET_RESUME_THROW_VM : SQVM::ET_RESUME_VM)) {
+    if(!v->Execute(dummy,-1,-1,ret,invoke_err_handler,throwerror?SQVM::ET_RESUME_THROW_VM : SQVM::ET_RESUME_VM)) {
         return SQ_ERROR;
     }
     if(retval)
