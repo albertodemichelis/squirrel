@@ -4,8 +4,10 @@
   Quirrel 4.0 Reference Manual
 #################################
 
+Project source code is available at https://github.com/GaijinEntertainment/quirrel
+
 Copyright (c) 2003-2016 Alberto Demichelis
-Copyright (c) 2016-2019 Gaijin Entertainment
+Copyright (c) 2016-2020 Gaijin Entertainment
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

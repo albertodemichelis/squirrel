@@ -4,6 +4,8 @@
 Modules
 ************
 
+Project source code is available at https://github.com/GaijinEntertainment/quirrel
+
 Quirrel provides modules functionality via separate library.
 Modules are useful to encapsulate code (only explicitly exported data/methods become
 available outside), to make the code reusable and to prevent contaminating global namespace

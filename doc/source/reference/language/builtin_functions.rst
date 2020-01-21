@@ -438,6 +438,11 @@ Iteration order is not determined.
 This delegate is used to create new table from old and given.
 Arguments to merge fields from can be tables, classes and instances.
 
+.. sq:function:: table.getfuncinfos()
+
+If table has a delegate with _call() metamethod, get info about it (see function.getfuncinfos() for details).
+
+
 Example: ::
 
     local foo = {fizz=1}
@@ -538,7 +543,7 @@ returns a weak reference to the object.
 returns the string "(array : pointer)".
 
 
-.. sq:function:: array.totable(func(item_value, [item_index], [array_ref]))
+.. sq:function:: array.totable()
 
 Creates a table from arrays containing arrays of pairs [key,value]. Reverse of table.topairs().
 
