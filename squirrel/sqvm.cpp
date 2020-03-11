@@ -1822,6 +1822,7 @@ bool SQVM::Call(SQObjectPtr &closure,SQInteger nparams,SQInteger stackbase,SQObj
         return true;
     }
     default:
+        Raise_Error(_SC("attempt to call '%s'"), GetTypeName(closure));
         return false;
     }
 }
