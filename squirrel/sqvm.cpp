@@ -671,7 +671,7 @@ bool SQVM::IsFalse(SQObjectPtr &o)
 #if !defined(SQUSEDOUBLE) || (defined(SQUSEDOUBLE) && defined(_SQ64))
         || (_integer(o) == 0) )  //OT_NULL|OT_INTEGER|OT_BOOL
 #else
-        || (((type(o) != OT_FLOAT) && (_integer(o) == 0))) )  //OT_NULL|OT_INTEGER|OT_BOOL
+        || (((sq_type(o) != OT_FLOAT) && (_integer(o) == 0))) )  //OT_NULL|OT_INTEGER|OT_BOOL
 #endif
     {
         return true;
