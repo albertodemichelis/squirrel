@@ -28,6 +28,8 @@
 
 
 static SqModules *module_mgr = nullptr;
+char ** __argv = nullptr;
+int __argc = 0;
 
 
 void PrintVersionInfos();
@@ -325,6 +327,9 @@ void Interactive(HSQUIRRELVM v)
 
 int main(int argc, char* argv[])
 {
+    __argv = argv;
+    __argc = argc;
+
     HSQUIRRELVM v;
     SQInteger retval = 0;
 #if defined(_MSC_VER) && defined(_DEBUG)
