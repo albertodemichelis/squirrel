@@ -11,8 +11,13 @@
 
 #include <string.h>
 #include <assert.h>
-#include <io.h>
 
+#ifdef _WIN32
+#  include <io.h>
+#else
+#  include <unistd.h>
+#  define _access access
+#endif
 
 const char* SqModules::__main__ = "__main__";
 const char* SqModules::__fn__ = nullptr;
@@ -129,7 +134,22 @@ SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn,
   }
 
   std::vector<char> buf;
-  int len = _filelength(_fileno(f));
+
+#ifdef _WIN32
+  long len = _filelength(_fileno(f));
+#else
+  fseek(f, 0, SEEK_END);
+  long len = ftell(f);
+  if (len < 0)
+  {
+    fclose(f);
+    out_err_msg = std::string("Cannot read script file: ") + requested_fn +" / " + resolved_fn;
+    return CompileScriptResult::FileNotFound;
+  }
+
+  fseek(f, 0, SEEK_SET);
+#endif
+
   buf.resize(len+1);
   fread(&buf[0], 1, len, f);
   buf[len] = 0;

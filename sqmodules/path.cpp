@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <string.h>
 
+#ifndef _WIN32
+#include <strings.h>
+#define _stricmp strcasecmp
+#endif
+
 // file path operations
 
 #define PATH_DELIM '/'

@@ -21,6 +21,10 @@ typedef unsigned int SQHash; /*should be the same size of a pointer*/
 #endif
 
 
+#ifndef __forceinline
+#define __forceinline inline
+#endif
+
 #ifdef SQUSEDOUBLE
 typedef double SQFloat;
 #else
