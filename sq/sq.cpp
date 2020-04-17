@@ -28,8 +28,6 @@
 
 
 static SqModules *module_mgr = nullptr;
-char ** __argv = nullptr;
-int __argc = 0;
 
 
 void PrintVersionInfos();
@@ -327,9 +325,6 @@ void Interactive(HSQUIRRELVM v)
 
 int main(int argc, char* argv[])
 {
-    __argv = argv;
-    __argc = argc;
-
     HSQUIRRELVM v;
     SQInteger retval = 0;
 #if defined(_MSC_VER) && defined(_DEBUG)
@@ -355,6 +350,8 @@ int main(int argc, char* argv[])
     module_mgr->registerBaseLibs();
     module_mgr->registerIoLib();
     module_mgr->registerSystemLib();
+
+    sqstd_register_command_line_args(v, argc, argv);
 
     //gets arguments
     switch(getargs(v,argc,argv,&retval))

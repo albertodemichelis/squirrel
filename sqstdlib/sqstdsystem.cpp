@@ -131,19 +131,20 @@ static const SQRegFunction systemlib_funcs[]={
 #undef _DECL_FUNC
 
 
-static void add_command_line_arguments(HSQUIRRELVM v)
+SQRESULT sqstd_register_command_line_args(HSQUIRRELVM v, int argc, char ** argv)
 {
-    extern char ** __argv;
-    extern int __argc;
-
-    sq_pushstring(v, "argv", -1);
+    sq_pushroottable(v);
+    sq_pushstring(v, "__argv", -1);
     sq_newarray(v, 0);
-    for (SQInteger idx = 0; idx < __argc; idx++)
+    for (int idx = 0; idx < argc; idx++)
     {
-        sq_pushstring(v, __argv[idx], -1);
+        sq_pushstring(v, argv[idx], -1);
         sq_arrayappend(v, -2);
     }
     sq_newslot(v, -3, SQFalse);
+    sq_pop(v,1);
+
+    return SQ_OK;
 }
 
 
@@ -159,8 +160,5 @@ SQRESULT sqstd_register_systemlib(HSQUIRRELVM v)
         sq_newslot(v,-3,SQFalse);
         i++;
     }
-
-    add_command_line_arguments(v);
-
     return SQ_OK;
 }

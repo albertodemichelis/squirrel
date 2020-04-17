@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 
+SQUIRREL_API SQRESULT sqstd_register_command_line_args(HSQUIRRELVM v, int argc, char ** argv);
 SQUIRREL_API SQRESULT sqstd_register_systemlib(HSQUIRRELVM v);
 
 #ifdef __cplusplus
