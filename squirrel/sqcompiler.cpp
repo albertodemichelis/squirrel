@@ -635,7 +635,7 @@ public:
                 }
                 break;
             case _SC('['):
-                if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot brake deref/or comma needed after [exp]=exp slot declaration"));
+                if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot break deref/or comma needed after [exp]=exp slot declaration"));
                 Lex(); Expression(); Expect(_SC(']'));
                 pos = -1;
                 if(_es.etype==BASE) {

@@ -296,6 +296,9 @@ bool SQVM::ToString(const SQObjectPtr &o,SQObjectPtr &res)
     case OT_BOOL:
         scsprintf(_sp(sq_rsl(6)),sq_rsl(6),_integer(o)?_SC("true"):_SC("false"));
         break;
+    case OT_NULL:
+        scsprintf(_sp(sq_rsl(5)),sq_rsl(5),_SC("null"));
+        break;
     case OT_TABLE:
     case OT_USERDATA:
     case OT_INSTANCE:
@@ -668,7 +671,7 @@ bool SQVM::IsFalse(SQObjectPtr &o)
 #if !defined(SQUSEDOUBLE) || (defined(SQUSEDOUBLE) && defined(_SQ64))
         || (_integer(o) == 0) )  //OT_NULL|OT_INTEGER|OT_BOOL
 #else
-        || (((type(o) != OT_FLOAT) && (_integer(o) == 0))) )  //OT_NULL|OT_INTEGER|OT_BOOL
+        || (((sq_type(o) != OT_FLOAT) && (_integer(o) == 0))) )  //OT_NULL|OT_INTEGER|OT_BOOL
 #endif
     {
         return true;
@@ -1602,6 +1605,7 @@ SQInteger prevstackbase = _stackbase;
                    }
         break;
     default:
+        Raise_Error(_SC("attempt to call '%s'"), GetTypeName(closure));
         return false;
     }
 #ifdef _DEBUG
@@ -1772,7 +1776,7 @@ void SQVM::dumpstack(SQInteger stackbase,bool dumpall)
         case OT_USERPOINTER:    scprintf(_SC("USERPOINTER %p"),_userpointer(obj));break;
         case OT_CLASS:          scprintf(_SC("CLASS %p"),_class(obj));break;
         case OT_INSTANCE:       scprintf(_SC("INSTANCE %p"),_instance(obj));break;
-        case OT_WEAKREF:        scprintf(_SC("WEAKERF %p"),_weakref(obj));break;
+        case OT_WEAKREF:        scprintf(_SC("WEAKREF %p"),_weakref(obj));break;
         default:
             assert(0);
             break;

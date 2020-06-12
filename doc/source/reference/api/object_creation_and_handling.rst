@@ -560,7 +560,7 @@ sets the userpointer of the class instance at position idx in the stack.
     :param const SQChar * name: the name that has to be set
     :returns: an SQRESULT
 
-sets the name of the native closure at the position idx in the stack. The name of a native closure is purely for debug purposes. The name is retrieved trough the function sq_stackinfos() while the closure is in the call stack.
+sets the name of the native closure at the position idx in the stack. The name of a native closure is purely for debug purposes. The name is retrieved through the function sq_stackinfos() while the closure is in the call stack.
 
 
 
