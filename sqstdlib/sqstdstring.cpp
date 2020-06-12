@@ -12,6 +12,8 @@
 #define MAX_WFORMAT_LEN 3
 #define ADDITIONAL_FORMAT_SPACE (100*sizeof(SQChar))
 
+static SQUserPointer rex_typetag = NULL;
+
 static SQBool isfmtchr(SQChar ch)
 {
     switch(ch) {
@@ -384,7 +386,9 @@ static SQInteger _string_endswith(HSQUIRRELVM v)
 
 #define SETUP_REX(v) \
     SQRex *self = NULL; \
-    sq_getinstanceup(v,1,(SQUserPointer *)&self,0);
+    if(SQ_FAILED(sq_getinstanceup(v,1,(SQUserPointer *)&self,rex_typetag))) { \
+		return sq_throwerror(v,_SC("invalid type tag")); \
+	}
 
 static SQInteger _rexobj_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(size))
 {
@@ -465,6 +469,13 @@ static SQInteger _regexp_subexpcount(HSQUIRRELVM v)
 
 static SQInteger _regexp_constructor(HSQUIRRELVM v)
 {
+	SQRex *self = NULL;
+	if (SQ_FAILED(sq_getinstanceup(v, 1, (SQUserPointer *)&self, rex_typetag))) {
+		return sq_throwerror(v, _SC("invalid type tag"));
+	}
+	if (self != NULL) {
+		return sq_throwerror(v, _SC("invalid regexp object"));
+	}
     const SQChar *error,*pattern;
     sq_getstring(v,2,&pattern);
     SQRex *rex = sqstd_rex_compile(sq_getallocctx(v),pattern,&error);
@@ -512,6 +523,8 @@ SQRESULT sqstd_register_stringlib(HSQUIRRELVM v)
 {
     sq_pushstring(v,_SC("regexp"),-1);
     sq_newclass(v,SQFalse);
+	rex_typetag = (SQUserPointer)rexobj_funcs;
+	sq_settypetag(v, -1, rex_typetag);
     SQInteger i = 0;
     while(rexobj_funcs[i].name != 0) {
         const SQRegFunction &f = rexobj_funcs[i];
