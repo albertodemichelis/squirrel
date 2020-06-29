@@ -405,7 +405,7 @@ SQUIRREL_API void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook);
 #define SQ_FAILED(res) ((res)<0)
 #define SQ_SUCCEEDED(res) ((res)>=0)
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 # define SQ_UNUSED_ARG(x) x __attribute__((__unused__))
 #else
 # define SQ_UNUSED_ARG(x) x

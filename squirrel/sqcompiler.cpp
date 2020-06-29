@@ -1349,7 +1349,6 @@ public:
         } while(1);
 
         if (deconstructor) {
-            SQInteger prevTargets = _fs->_targetstack.size();
             Expect(deconstructor==_SC('[') ? _SC(']') : _SC('}'));
             Expect(_SC('='));
             Expression(SQE_REGULAR);
