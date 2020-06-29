@@ -29,7 +29,7 @@ struct SQExceptionTrap{
     SQInteger _extarget;
 };
 
-#define _INLINE
+#define _SQ_INLINE
 
 typedef sqvector<SQExceptionTrap> ExceptionsTraps;
 
@@ -103,17 +103,17 @@ public:
     bool ArithMetaMethod(SQInteger op, const SQObjectPtr &o1, const SQObjectPtr &o2, SQObjectPtr &dest);
     bool Return(SQInteger _arg0, SQInteger _arg1, SQObjectPtr &retval);
     //new stuff
-    _INLINE bool ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2);
-    _INLINE bool BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2);
-    _INLINE bool NEG_OP(SQObjectPtr &trg,const SQObjectPtr &o1);
-    _INLINE bool CMP_OP(CmpOP op, const SQObjectPtr &o1,const SQObjectPtr &o2,SQObjectPtr &res);
+    _SQ_INLINE bool ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2);
+    _SQ_INLINE bool BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2);
+    _SQ_INLINE bool NEG_OP(SQObjectPtr &trg,const SQObjectPtr &o1);
+    _SQ_INLINE bool CMP_OP(CmpOP op, const SQObjectPtr &o1,const SQObjectPtr &o2,SQObjectPtr &res);
     bool CLOSURE_OP(SQObjectPtr &target, SQFunctionProto *func);
     bool CLASS_OP(SQObjectPtr &target,SQInteger base);
     //return true if the loop is finished
     bool FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr &o3,SQObjectPtr &o4,SQInteger arg_2,int exitpos,int &jump);
-    //_INLINE bool LOCAL_INC(SQInteger op,SQObjectPtr &target, SQObjectPtr &a, SQObjectPtr &incr);
-    _INLINE bool PLOCAL_INC(SQInteger op,SQObjectPtr &target, SQObjectPtr &a, SQObjectPtr &incr);
-    _INLINE bool DerefInc(SQInteger op,SQObjectPtr &target, SQObjectPtr &self, SQObjectPtr &key, SQObjectPtr &incr, bool postfix,SQInteger arg0);
+    //_SQ_INLINE bool LOCAL_INC(SQInteger op,SQObjectPtr &target, SQObjectPtr &a, SQObjectPtr &incr);
+    _SQ_INLINE bool PLOCAL_INC(SQInteger op,SQObjectPtr &target, SQObjectPtr &a, SQObjectPtr &incr);
+    _SQ_INLINE bool DerefInc(SQInteger op,SQObjectPtr &target, SQObjectPtr &self, SQObjectPtr &key, SQObjectPtr &incr, bool postfix,SQInteger arg0);
 #ifdef _DEBUG_DUMP
     void dumpstack(SQInteger stackbase=-1, bool dumpall = false);
 #endif
