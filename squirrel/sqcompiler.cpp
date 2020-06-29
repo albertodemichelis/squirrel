@@ -54,9 +54,9 @@ enum SQExpressionContext
                      _scope.stacksize = _fs->GetStackSize(); \
                      _scopedconsts.push_back();
 
-#define RESOLVE_OUTERS() if(_fs->GetStackSize() != _scope.stacksize) { \
-                            if(_fs->CountOuters(_scope.stacksize)) { \
-                                _fs->AddInstruction(_OP_CLOSE,0,_scope.stacksize); \
+#define RESOLVE_OUTERS() if(_fs->GetStackSize() != _fs->_blockstacksizes.top()) { \
+                            if(_fs->CountOuters(_fs->_blockstacksizes.top())) { \
+                                _fs->AddInstruction(_OP_CLOSE,0,_fs->_blockstacksizes.top()); \
                             } \
                         }
 
@@ -81,13 +81,16 @@ enum SQExpressionContext
 
 #define BEGIN_BREAKBLE_BLOCK()  SQInteger __nbreaks__=_fs->_unresolvedbreaks.size(); \
                             SQInteger __ncontinues__=_fs->_unresolvedcontinues.size(); \
-                            _fs->_breaktargets.push_back(0);_fs->_continuetargets.push_back(0);
+                            _fs->_breaktargets.push_back(0);_fs->_continuetargets.push_back(0); \
+                            _fs->_blockstacksizes.push_back(_scope.stacksize);
+
 
 #define END_BREAKBLE_BLOCK(continue_target) {__nbreaks__=_fs->_unresolvedbreaks.size()-__nbreaks__; \
                     __ncontinues__=_fs->_unresolvedcontinues.size()-__ncontinues__; \
                     if(__ncontinues__>0)ResolveContinues(_fs,__ncontinues__,continue_target); \
                     if(__nbreaks__>0)ResolveBreaks(_fs,__nbreaks__); \
-                    _fs->_breaktargets.pop_back();_fs->_continuetargets.pop_back();}
+                    _fs->_breaktargets.pop_back();_fs->_continuetargets.pop_back(); \
+                    _fs->_blockstacksizes.pop_back(); }
 
 class SQCompiler
 {
@@ -1563,6 +1566,7 @@ public:
         SQInteger skipcondjmp = -1;
         SQInteger __nbreaks__ = _fs->_unresolvedbreaks.size();
         _fs->_breaktargets.push_back(0);
+        _fs->_blockstacksizes.push_back(_scope.stacksize);
         while(_token == TK_CASE) {
             if(!bfirst) {
                 _fs->AddInstruction(_OP_JMP, 0, 0);
@@ -1606,6 +1610,7 @@ public:
         __nbreaks__ = _fs->_unresolvedbreaks.size() - __nbreaks__;
         if(__nbreaks__ > 0)ResolveBreaks(_fs, __nbreaks__);
         _fs->_breaktargets.pop_back();
+        _fs->_blockstacksizes.pop_back();
     }
     void FunctionStatement()
     {

@@ -77,6 +77,7 @@ struct SQFuncState
     SQIntVec _scope_blocks;
     SQIntVec _breaktargets;
     SQIntVec _continuetargets;
+    SQIntVec _blockstacksizes;
     SQIntVec _defaultparams;
     SQInteger _lastline;
     SQInteger _traps; //contains number of nested exception traps

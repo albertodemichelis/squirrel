@@ -46,6 +46,7 @@ SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc
     _scope_blocks(ss->_alloc_ctx),
     _breaktargets(ss->_alloc_ctx),
     _continuetargets(ss->_alloc_ctx),
+    _blockstacksizes(ss->_alloc_ctx),
     _defaultparams(ss->_alloc_ctx),
     _childstates(ss->_alloc_ctx)
 {
