@@ -200,19 +200,23 @@ returns the second argument.
 The '!' operator will return null if the given value to negate was different than null, or a
 value different than null if the given value was null.
 
-^^^^^^^^^^^^^^^
-in operator
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+in operator, not in operator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. index::
-    pair: in operator; Operators
+    pair: in operator, not in operator; Operators
 
 ::
 
     exp:= keyexp 'in' tableexp
+    exp:= keyexp 'not in' tableexp
 
 Tests the existence of a slot in a table.
-Returns true if *keyexp* is a valid key in *tableexp* ::
+'in' operator returns true if *keyexp* is a valid key in *tableexp*
+'not in' operator returns true if *keyexp* is missing in *tableexp*
+
+::
 
     local t=
     {
@@ -222,6 +226,7 @@ Returns true if *keyexp* is a valid key in *tableexp* ::
 
     if("foo" in t) dostuff("yep");
     if(123 in t) dostuff();
+    if(123 not in t) dostuff();
 
 ^^^^^^^^^^^^^^^^^^^
 instanceof operator

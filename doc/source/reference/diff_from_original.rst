@@ -26,6 +26,7 @@ New features
 
 * Check for conflicting local variable, local functions, function arguments and constant names
 * Null propagation, null-call and null-coalescing operators
+* 'not in' operator
 * Destructuring assignment
 * String interpolation
 * Functions declared in expressions can be named now (local foo = function foo() {})
