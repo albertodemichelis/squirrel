@@ -744,6 +744,16 @@ public:
         case TK_LE: BIN_EXP(_OP_CMP, &SQCompiler::ShiftExp,CMP_LE); break;
         case TK_IN: BIN_EXP(_OP_EXISTS, &SQCompiler::ShiftExp); break;
         case TK_INSTANCEOF: BIN_EXP(_OP_INSTANCEOF, &SQCompiler::ShiftExp); break;
+        case TK_NOT: {
+            Lex();
+            if (_token == TK_IN) {
+                BIN_EXP(_OP_EXISTS, &SQCompiler::ShiftExp);
+                SQInteger src = _fs->PopTarget();
+                _fs->AddInstruction(_OP_NOT, _fs->PushTarget(), src);
+            }
+            else
+                Error(_SC("'in' expected "));
+        }
         default: return;
         }
     }
