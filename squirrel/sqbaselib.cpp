@@ -947,8 +947,15 @@ static SQInteger array_append(HSQUIRRELVM v)
 
 static SQInteger array_extend(HSQUIRRELVM v)
 {
-    _array(stack_get(v,1))->Extend(_array(stack_get(v,2)));
-    sq_pop(v,1);
+    SQArray *arr = _array(stack_get(v, 1));
+    SQInteger n = sq_gettop(v)-1;
+    for (SQInteger i=0; i<n; ++i) {
+        SQObject &o=stack_get(v,2+i);
+        if (sq_type(o) != OT_ARRAY)
+            return sq_throwerror(v, _SC("only arrays can be used to extend array"));
+        arr->Extend(_array(o));
+    }
+    sq_pop(v,n);
     return 1;
 }
 
@@ -1298,7 +1305,7 @@ static SQInteger array_slice(HSQUIRRELVM v)
 const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("a")},
     {_SC("append"),array_append,-2, _SC("a")},
-    {_SC("extend"),array_extend,2, _SC("aa")},
+    {_SC("extend"),array_extend,-2, _SC("aaaaaaaa")},
     {_SC("pop"),array_pop,1, _SC("a")},
     {_SC("top"),array_top,1, _SC("a")},
     {_SC("insert"),array_insert,3, _SC("an")},

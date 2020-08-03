@@ -476,9 +476,9 @@ returns the length of the array
 sequentially appends the values of arguments 'val' to the end of the array. Returns array itself.
 
 
-.. sq:function:: array.extend(array)
+.. sq:function:: array.extend(array_1, [array_2], [array_3], ...)
 
-Extends the array by appending all the items in the given array. Returns array itself.
+Extends the array by appending all the items in all the arrays passed as arguments. Returns target array itself.
 
 
 .. sq:function:: array.pop()
