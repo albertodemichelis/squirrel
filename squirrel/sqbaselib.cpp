@@ -1136,35 +1136,6 @@ static SQInteger array_filter(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger array_filter_inplace(HSQUIRRELVM v)
-{
-    SQObject &o = stack_get(v,1);
-    SQArray *a = _array(o);
-    SQObject &closure = stack_get(v, 2);
-    SQInteger nArgs = get_allowed_args_count(closure, 4);
-
-    SQInteger size = a->Size();
-    SQObjectPtr val;
-    for(SQInteger n = size-1; n >= 0; --n) {
-        a->Get(n,val);
-        v->Push(o);
-        v->Push(val);
-        if (nArgs >= 3)
-            v->Push(n);
-        if (nArgs >= 4)
-            v->Push(o);
-        if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
-            return SQ_ERROR;
-        }
-        if(SQVM::IsFalse(v->GetUp(-1))) {
-            a->Remove(n, false);
-        }
-        v->Pop();
-    }
-    a->ShrinkIfNeeded();
-    v->Pop(1);
-    return 1;
-}
 
 static SQInteger array_indexof(HSQUIRRELVM v)
 {
@@ -1343,7 +1314,6 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("apply"),array_apply,2, _SC("ac")},
     {_SC("reduce"),array_reduce,-2, _SC("ac.")},
     {_SC("filter"),array_filter,2, _SC("ac")},
-    {_SC("filter_inplace"),array_filter_inplace,2, _SC("ac")},
     {_SC("indexof"),array_indexof,2, _SC("a.")},
     {_SC("each"),container_each,2, _SC("ac")},
     {_SC("findindex"),container_findindex,2, _SC("ac")},

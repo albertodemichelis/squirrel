@@ -588,11 +588,6 @@ Finally, returns the return value of the last invocation of func.
 
 Creates a new array with all elements that pass the test implemented by the provided function. In detail, it creates a new array, for each element in the original array invokes the specified function passing the index of the element and it's value; if the function returns 'true', then the value of the corresponding element is added on the newly created array.
 
-.. sq:function:: array.filter_inplace(func(val, [index], [array_ref]))
-
-Similar to array.filter(), but modifies given array instead of creating new one.
-It removes all elements for which provided function returns false.
-
 .. sq:function:: array.indexof(value)
 
 Performs a linear search for the value in the array. Returns the index of the value if it was found null otherwise.
