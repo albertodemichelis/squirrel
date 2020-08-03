@@ -602,6 +602,10 @@ Returns the index of the value if it was found (callback returned true (non-fals
 Performs a linear search calling provided function for each value in the array.
 Returns matched value (for which callback returned non-false value) or default value otherwise (null if not provided).
 
+.. sq:function:: array.replace(source_arr)
+
+Copies content of source array into given array by replacing its contents. Returns target array itself.
+
 ^^^^^^^^
 Function
 ^^^^^^^^

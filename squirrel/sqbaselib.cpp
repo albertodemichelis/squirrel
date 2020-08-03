@@ -1301,6 +1301,15 @@ static SQInteger array_slice(HSQUIRRELVM v)
 
 }
 
+static SQInteger array_replace(HSQUIRRELVM v)
+{
+    SQArray *dst = _array(stack_get(v, 1));
+    SQArray *src = _array(stack_get(v, 2));
+    dst->_values.copy(src->_values);
+    dst->ShrinkIfNeeded();
+    v->Pop(1);
+    return 1;
+}
 
 const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("a")},
@@ -1326,6 +1335,7 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("findindex"),container_findindex,2, _SC("ac")},
     {_SC("findvalue"),container_findvalue,-2, _SC("ac.")},
     {_SC("totable"),pairs_to_table,1, _SC("a") },
+    {_SC("replace"),array_replace,2, _SC("aa")},
 
     {NULL,(SQFUNCTION)0,0,NULL}
 };
