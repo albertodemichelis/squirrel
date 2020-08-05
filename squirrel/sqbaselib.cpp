@@ -13,6 +13,11 @@
 #include <stdarg.h>
 #include <ctype.h>
 
+#ifndef SQ_BASELIB_INVOKE_CB_ERR_HANDLER
+#define SQ_BASELIB_INVOKE_CB_ERR_HANDLER SQTrue
+#endif
+
+
 static SQInteger delegable_getfuncinfos(HSQUIRRELVM v);
 static SQInteger class_getfuncinfos(HSQUIRRELVM v);
 
@@ -587,7 +592,7 @@ static SQInteger container_each(HSQUIRRELVM v)
         if (nArgs >= 4)
             v->Push(o);
 
-        if (SQ_FAILED(sq_call(v,nArgs,SQFalse,SQFalse))) {
+        if (SQ_FAILED(sq_call(v,nArgs,SQFalse,SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
             return SQ_ERROR;
         }
         v->Pop(3);
@@ -615,7 +620,7 @@ static SQInteger container_findindex(HSQUIRRELVM v)
         if (nArgs >= 4)
             v->Push(o);
 
-        if (SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
+        if (SQ_FAILED(sq_call(v,nArgs,SQTrue,SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
             return SQ_ERROR;
         }
         if (!v->IsFalse(stack_get(v, -1))) {
@@ -649,7 +654,7 @@ static SQInteger container_findvalue(HSQUIRRELVM v)
         if (nArgs >= 4)
             v->Push(o);
 
-        if (SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
+        if (SQ_FAILED(sq_call(v,nArgs,SQTrue,SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
             return SQ_ERROR;
         }
         if (!v->IsFalse(stack_get(v, -1))) {
@@ -728,7 +733,7 @@ static SQInteger table_filter(HSQUIRRELVM v)
             v->Push(key);
         if (nArgs >= 4)
             v->Push(o);
-        if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
+        if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
             return SQ_ERROR;
         }
         if(!SQVM::IsFalse(v->GetUp(-1))) {
@@ -831,7 +836,7 @@ static SQInteger __map_table(SQTable *dest, SQTable *src, HSQUIRRELVM v) {
             v->Push(key);
         if (nArgs >= 4)
             v->Push(src);
-        if (SQ_FAILED(sq_call(v, nArgs, SQTrue, SQFalse))) {
+        if (SQ_FAILED(sq_call(v, nArgs, SQTrue, SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
             return SQ_ERROR;
         }
         dest->NewSlot(key, v->GetUp(-1));
@@ -887,7 +892,7 @@ static SQInteger table_reduce(HSQUIRRELVM v)
             if (nArgs >= 5)
                 v->Push(tbl);
 
-            if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
+            if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
                 return SQ_ERROR;
             }
 
@@ -1039,7 +1044,7 @@ static SQInteger __map_array(SQArray *dest,SQArray *src,HSQUIRRELVM v) {
             v->Push(SQObjectPtr(n));
         if (nArgs >= 4)
             v->Push(src);
-        if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
+        if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
             return SQ_ERROR;
         }
         dest->Set(n,v->GetUp(-1));
@@ -1101,7 +1106,7 @@ static SQInteger array_reduce(HSQUIRRELVM v)
                 v->Push(SQObjectPtr(n));
             if (nArgs >= 5)
                 v->Push(o);
-            if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
+            if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
                 return SQ_ERROR;
             }
             res = v->GetUp(-1);
@@ -1131,7 +1136,7 @@ static SQInteger array_filter(HSQUIRRELVM v)
             v->Push(n);
         if (nArgs >= 4)
             v->Push(o);
-        if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQFalse))) {
+        if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
             return SQ_ERROR;
         }
         if(!SQVM::IsFalse(v->GetUp(-1))) {
@@ -1534,7 +1539,7 @@ static SQInteger string_join(HSQUIRRELVM v)
             sq_push(v, 1);
             sq_pushobject(v, item);
 
-            if (SQ_FAILED(sq_call(v,2,SQTrue,SQFalse)))
+            if (SQ_FAILED(sq_call(v,2,SQTrue,SQ_BASELIB_INVOKE_CB_ERR_HANDLER)))
                 return SQ_ERROR;
             bool use = !SQVM::IsFalse(v->GetUp(-1));
             v->Pop();
