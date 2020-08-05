@@ -837,8 +837,11 @@ static SQInteger __map_table(SQTable *dest, SQTable *src, HSQUIRRELVM v) {
         if (nArgs >= 4)
             v->Push(src);
         if (SQ_FAILED(sq_call(v, nArgs, SQTrue, SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
+            if (sq_isnull(v->_lasterror))
+                continue;
             return SQ_ERROR;
         }
+
         dest->NewSlot(key, v->GetUp(-1));
         v->Pop();
     }
@@ -1028,7 +1031,7 @@ static SQInteger array_resize(HSQUIRRELVM v)
     return sq_throwerror(v, _SC("size must be a number"));
 }
 
-static SQInteger __map_array(SQArray *dest,SQArray *src,HSQUIRRELVM v) {
+static SQInteger __map_array(SQArray *dest,SQArray *src,HSQUIRRELVM v, bool append) {
     SQObjectPtr temp;
     SQInteger size = src->Size();
     SQObject &closure = stack_get(v, 2);
@@ -1045,8 +1048,13 @@ static SQInteger __map_array(SQArray *dest,SQArray *src,HSQUIRRELVM v) {
         if (nArgs >= 4)
             v->Push(src);
         if(SQ_FAILED(sq_call(v,nArgs,SQTrue,SQ_BASELIB_INVOKE_CB_ERR_HANDLER))) {
+            if (append && sq_isnull(v->_lasterror))
+                continue;
             return SQ_ERROR;
         }
+        if (append)
+            dest->Append(v->GetUp(-1));
+        else
         dest->Set(n,v->GetUp(-1));
         v->Pop();
     }
@@ -1058,9 +1066,12 @@ static SQInteger array_map(HSQUIRRELVM v)
 {
     SQObject &o = stack_get(v,1);
     SQInteger size = _array(o)->Size();
-    SQObjectPtr ret = SQArray::Create(_ss(v),size);
-    if(SQ_FAILED(__map_array(_array(ret),_array(o),v)))
+    SQArray *dest = SQArray::Create(_ss(v),0);
+    dest->Reserve(size);
+    SQObjectPtr ret = dest;
+    if(SQ_FAILED(__map_array(dest,_array(o),v,true)))
         return SQ_ERROR;
+    dest->ShrinkIfNeeded();
     v->Push(ret);
     return 1;
 }
@@ -1068,7 +1079,7 @@ static SQInteger array_map(HSQUIRRELVM v)
 static SQInteger array_apply(HSQUIRRELVM v)
 {
     SQObject &o = stack_get(v,1);
-    if(SQ_FAILED(__map_array(_array(o),_array(o),v)))
+    if(SQ_FAILED(__map_array(_array(o),_array(o),v,false)))
         return SQ_ERROR;
     sq_pop(v,1);
     return 1;

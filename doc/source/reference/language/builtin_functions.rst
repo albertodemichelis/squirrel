@@ -410,6 +410,7 @@ returns an array containing arrays of pairs [key, value]. Useful when you need t
 
 Creates a new table of the same size. For each element in the original table invokes the function 'func' and assigns the return value of the function to the corresponding slot of the newly created table.
 Provided func can accept up to 3 arguments: slot value (required), slot key in table (optional), reference to table itself (optional).
+If callback func throws null, the element is skipped and not added to destination table.
 
 .. sq:function:: table.each(func(slot_value, [slot_key], [table_ref]))
 
@@ -557,6 +558,7 @@ removes all the items from the array
 
 Creates a new array of the same size. For each element in the original array invokes the function 'func' and assigns the return value of the function to the corresponding element of the newly created array.
 Provided func can accept up to 3 arguments: array item value (required), array item index (optional), reference to array itself (optional).
+If callback func throws null, the element is skipped and not added to destination array.
 
 
 .. sq:function:: array.apply(func([item_value, [item_index], [array_ref]))
