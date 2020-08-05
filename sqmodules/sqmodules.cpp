@@ -113,7 +113,7 @@ void SqModules::resolveFileName(const char *requested_fn, std::string &res)
 }
 
 
-bool SqModules::checkCircularReferences(const char* resolved_fn, const char *requested_fn)
+bool SqModules::checkCircularReferences(const char* resolved_fn, const char *)
 {
   for (const std::string& scriptFn : runningScripts)
     if (scriptFn == resolved_fn)
@@ -168,9 +168,8 @@ SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn,
 }
 
 
-SqModules::SqObjPtr SqModules::setupStateStorage(HSQOBJECT hContext, const char* resolved_fn)
+SqModules::SqObjPtr SqModules::setupStateStorage(HSQOBJECT /*hContext*/, const char* resolved_fn)
 {
-  bool havePrevState = false;
   for (const Module &prevMod : prevModules)
     if (dd_fname_equal(prevMod.fn.c_str(), resolved_fn))
       return prevMod.stateStorage;
@@ -352,11 +351,6 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
 bool SqModules::reloadModule(const char *fn, bool must_exist, const char *__name__, SqObjPtr &exports, std::string &out_err_msg)
 {
   assert(prevModules.empty());
-
-  std::string resolvedFn;
-  resolveFileName(fn, resolvedFn);
-
-  Module * found = findModule(resolvedFn.c_str());
 
   modules.swap(prevModules);
   modules.clear(); // just in case
