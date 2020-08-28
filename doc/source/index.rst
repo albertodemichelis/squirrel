@@ -6,6 +6,8 @@
 Quirrel's documentation
 =========================================
 
+Project source code is available at https://github.com/GaijinEntertainment/quirrel
+
 Contents:
 
 .. toctree::
