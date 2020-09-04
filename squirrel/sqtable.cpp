@@ -23,7 +23,7 @@ SQTable::SQTable(SQSharedState *ss,SQInteger nInitialSize) :
 
 void SQTable::Remove(const SQObjectPtr &key)
 {
-    _HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
+    _HashNode *n = _Get(key, HashObj(key) & _numofnodes_minus_one);
     if (n) {
         n->val.Null();
         n->key.Null();
@@ -41,14 +41,14 @@ void SQTable::AllocNodes(SQInteger nSize)
         new (&n) _HashNode;
         n.next=NULL;
     }
-    _numofnodes=nSize;
+    _numofnodes_minus_one=nSize-1;
     _nodes=nodes;
-    _firstfree=&_nodes[_numofnodes-1];
+    _firstfree=&_nodes[_numofnodes_minus_one];
 }
 
 void SQTable::Rehash(bool force)
 {
-    SQInteger oldsize=_numofnodes;
+    SQInteger oldsize=_numofnodes_minus_one+1;
     //prevent problems with the integer division
     if(oldsize<4)oldsize=4;
     _HashNode *nold=_nodes;
@@ -75,14 +75,13 @@ void SQTable::Rehash(bool force)
 
 SQTable *SQTable::Clone()
 {
-    SQTable *nt=Create(_opt_ss(this),_numofnodes);
+    SQTable *nt=Create(_opt_ss(this),_numofnodes_minus_one+1);
 #ifdef _FAST_CLONE
     _HashNode *basesrc = _nodes;
     _HashNode *basedst = nt->_nodes;
     _HashNode *src = _nodes;
     _HashNode *dst = nt->_nodes;
-    SQInteger n = 0;
-    for(n = 0; n < _numofnodes; n++) {
+    for(uint32_t n = 0; n <= _numofnodes_minus_one; n++) {
         dst->key = src->key;
         dst->val = src->val;
         VT_COPY_SINGLE(src, dst);
@@ -117,9 +116,9 @@ bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val)
 
     _HashNode *n;
     if (sq_type(key) == OT_STRING)
-        n = _GetStr(_rawval(key), _string(key)->_hash & (_numofnodes - 1));
+        n = _GetStr(_rawval(key), _string(key)->_hash & _numofnodes_minus_one);
     else
-        n = _Get(key, HashObj(key) & (_numofnodes - 1));
+        n = _Get(key, HashObj(key) & _numofnodes_minus_one);
     if (n) {
         val = _realval(n->val);
         return true;
@@ -130,7 +129,7 @@ bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val)
 #if SQ_VAR_TRACE_ENABLED == 1
 VarTrace * SQTable::GetVarTracePtr(const SQObjectPtr &key)
 {
-  _HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
+  _HashNode *n = _Get(key, HashObj(key) & _numofnodes_minus_one);
   if (n)
     return &(n->varTrace);
   else
@@ -142,7 +141,7 @@ VarTrace * SQTable::GetVarTracePtr(const SQObjectPtr &key)
 bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val  VT_DECL_ARG)
 {
     assert(sq_type(key) != OT_NULL);
-    SQHash h = HashObj(key) & (_numofnodes - 1);
+    SQHash h = HashObj(key) & _numofnodes_minus_one;
     _HashNode *n = _Get(key, h);
     if (n) {
         n->val = val;
@@ -158,7 +157,7 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val  VT_DECL_ARG
 
     if(sq_type(mp->key) != OT_NULL) {
         n = _firstfree;  /* get a free place */
-        SQHash mph = HashObj(mp->key) & (_numofnodes - 1);
+        SQHash mph = HashObj(mp->key) & _numofnodes_minus_one;
         _HashNode *othern;  /* main position of colliding node */
 
         if (mp > n && (othern = &_nodes[mph]) != mp){
@@ -203,8 +202,8 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val  VT_DECL_ARG
 
 SQInteger SQTable::Next(bool getweakrefs,const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObjectPtr &outval)
 {
-    SQInteger idx = (SQInteger)TranslateIndex(refpos);
-    while (idx < _numofnodes) {
+    uint32_t idx = TranslateIndex(refpos);
+    while (idx <= _numofnodes_minus_one) {
         if(sq_type(_nodes[idx].key) != OT_NULL) {
             //first found
             _HashNode &n = _nodes[idx];
@@ -222,7 +221,7 @@ SQInteger SQTable::Next(bool getweakrefs,const SQObjectPtr &refpos, SQObjectPtr 
 
 bool SQTable::Set(const SQObjectPtr &key, const SQObjectPtr &val)
 {
-    _HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
+    _HashNode *n = _Get(key, HashObj(key) & _numofnodes_minus_one);
     if (n) {
         n->val = val;
         VT_TRACE_SINGLE(n, val);
@@ -233,7 +232,12 @@ bool SQTable::Set(const SQObjectPtr &key, const SQObjectPtr &val)
 
 void SQTable::_ClearNodes()
 {
-    for(SQInteger i = 0;i < _numofnodes; i++) { _HashNode &n = _nodes[i]; n.key.Null(); n.val.Null(); VT_CLEAR_SINGLE((&n)); }
+    for (uint32_t i = 0; i <= _numofnodes_minus_one; i++) {
+      _HashNode &n = _nodes[i];
+      n.key.Null();
+      n.val.Null();
+      VT_CLEAR_SINGLE((&n));
+    }
 }
 
 void SQTable::Finalize()

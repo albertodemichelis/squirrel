@@ -35,8 +35,8 @@ private:
     };
     _HashNode *_firstfree;
     _HashNode *_nodes;
-    SQInteger _numofnodes;
-    SQInteger _usednodes;
+    uint32_t _numofnodes_minus_one;
+    uint32_t _usednodes;
     SQAllocContext _alloc_ctx;
 
 ///////////////////////////
@@ -58,8 +58,9 @@ public:
     {
         SetDelegate(NULL);
         REMOVE_FROM_CHAIN(&_sharedstate->_gc_chain, this);
-        for (SQInteger i = 0; i < _numofnodes; i++) _nodes[i].~_HashNode();
-        SQ_FREE(_alloc_ctx, _nodes, _numofnodes * sizeof(_HashNode));
+        for (uint32_t i = 0; i <= _numofnodes_minus_one; i++)
+          _nodes[i].~_HashNode();
+        SQ_FREE(_alloc_ctx, _nodes, (_numofnodes_minus_one + 1) * sizeof(_HashNode));
     }
 #ifndef NO_GARBAGE_COLLECTOR
     void Mark(SQCollectable **chain);
@@ -89,7 +90,7 @@ public:
     inline bool GetStr(const SQChar* key,SQInteger keylen,SQObjectPtr &val)
     {
         SQHash hash = _hashstr(key,keylen);
-        _HashNode *n = &_nodes[hash & (_numofnodes - 1)];
+        _HashNode *n = &_nodes[hash & _numofnodes_minus_one];
         _HashNode *res = NULL;
         do{
             if(sq_type(n->key) == OT_STRING && (scstrcmp(_stringval(n->key),key) == 0)){
