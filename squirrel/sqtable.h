@@ -93,7 +93,9 @@ public:
         _HashNode *n = &_nodes[hash & _numofnodes_minus_one];
         _HashNode *res = NULL;
         do{
-            if(sq_type(n->key) == OT_STRING && (scstrcmp(_stringval(n->key),key) == 0)){
+            if (sq_type(n->key) == OT_STRING &&
+               (keylen == _string(n->key)->_len && scstrncmp(_stringval(n->key), key, keylen) == 0))
+            {
                 res = n;
                 break;
             }
