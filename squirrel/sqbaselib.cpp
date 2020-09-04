@@ -1429,6 +1429,22 @@ static SQChar* replace_all(SQAllocContext allocctx, SQChar *s, SQInteger &buf_le
     return s;
 }
 
+static SQChar* replace_substring_internal(SQAllocContext allocctx, SQChar *s, SQInteger &buf_len, SQInteger &len,
+    int pos, SQInteger len_from, const SQChar *to, SQInteger len_to)
+{
+    SQInteger d_size = len_to - len_from;
+    if (d_size > 0) {
+        s = (SQChar*)sq_realloc(allocctx, s, buf_len * sizeof(SQChar), (buf_len + d_size) * sizeof(SQChar));
+        buf_len += d_size;
+    }
+    if (d_size != 0)
+        memmove(s + pos + len_to, s + pos + len_from, (len - pos - len_from) * sizeof(SQChar));
+    memcpy(s + pos, to, len_to * sizeof(SQChar));
+    len += d_size;
+
+    return s;
+}
+
 
 static SQInteger string_substitute(HSQUIRRELVM v)
 {
@@ -1437,46 +1453,81 @@ static SQInteger string_substitute(HSQUIRRELVM v)
     SQInteger len;
     sq_getstringandsize(v, 1, &fmt, &len);
     SQInteger buf_len = len;
-    SQChar *s = (SQChar*)sq_malloc(allocctx, len*sizeof(SQChar));
-    memcpy(s, fmt, len*sizeof(SQChar));
+    SQChar *s = (SQChar *)sq_malloc(allocctx, len*sizeof(SQChar));
+    memcpy(s, fmt, len * sizeof(SQChar));
 
     SQInteger top = sq_gettop(v);
-    sqvector<SQChar> bufFrom(allocctx);
 
-    for (int idx = 2; idx <= top; ++idx) {
-        SQObjectPtr &arg = stack_get(v, idx);
+    for (int i = 0; i < int(len) - 2; i++)
+        if (s[i] == _SC('{')) {
+            int depth = 0;
+            for (int j = i + 1; j < len; j++) {
+                if (s[j] == _SC('}')) {
+                    depth--;
+                    if (depth < 0) {
+                        if (i + 1 == j)
+                          break;
 
-        if (sq_type(arg) == OT_TABLE) {
-            SQTable *table = _table(arg);
-            SQInteger ridx = 0;
-            SQObjectPtr key, val;
-            SQObjectPtr keyStr, valStr;
-            while ((ridx = table->Next(true, ridx, key, val)) != -1) {
-                if (!v->ToString(key, keyStr) || !v->ToString(val, valStr)) {
-                    sq_free(allocctx, s, buf_len*sizeof(SQChar));
-                    return sq_throwerror(v, _SC("subst: Failed to convert key or value to string"));
+                        int index = 0;
+                        for (int k = i + 1; k < j; k++)
+                            if (s[k] >= _SC('0') && s[k] <= _SC('9'))
+                                index = index * 10 + s[k] - _SC('0');
+                            else {
+                                index = -1;
+                                break;
+                            }
+
+                        if (index >= 0) {
+                            index += 2;
+                            if (index <= top) {
+                                SQObjectPtr &val = stack_get(v, index);
+                                SQObjectPtr valStr;
+                                if (v->ToString(val, valStr)) {
+                                    int delta = _string(valStr)->_len - (j + 1 - i);
+                                    s = replace_substring_internal(allocctx, s, buf_len, len, i, j + 1 - i,
+                                        _stringval(valStr), _string(valStr)->_len);
+                                    i = j + delta;
+                                    break;
+                                }
+                                else {
+                                    sq_free(allocctx, s, buf_len * sizeof(SQChar));
+                                    return sq_throwerror(v, _SC("subst: Failed to convert value to string"));
+                                }
+                            }
+                        }
+
+                        for (int idx = 2; idx <= top; idx++) {
+                            SQObjectPtr &arg = stack_get(v, idx);
+                            if (sq_type(arg) == OT_TABLE) {
+                                SQTable *table = _table(arg);
+                                SQObjectPtr val;
+                                SQObjectPtr valStr;
+                                if (table->GetStr(s + i + 1, j - i - 1, val)) {
+                                    if (v->ToString(val, valStr)) {
+                                        int delta = _string(valStr)->_len - (j + 1 - i);
+                                        s = replace_substring_internal(allocctx, s, buf_len, len, i, j + 1 - i,
+                                            _stringval(valStr), _string(valStr)->_len);
+                                        i = j + delta;
+                                        break;
+                                    }
+                                    else {
+                                        sq_free(allocctx, s, buf_len * sizeof(SQChar));
+                                        return sq_throwerror(v, _SC("subst: Failed to convert value to string"));
+                                    }
+                                }
+                            }
+                        }
+
+                        break; // depth < 0
+                    }
                 }
-
-                bufFrom.resize(2 + _string(keyStr)->_len);
-                memcpy(bufFrom._vals+1, _stringval(keyStr), _string(keyStr)->_len * sizeof(SQChar));
-                bufFrom[0] = _SC('{');
-                bufFrom[1+_string(keyStr)->_len] = _SC('}');
-                s = replace_all(allocctx, s, buf_len, len, bufFrom._vals, bufFrom.size(), _stringval(valStr), _string(valStr)->_len);
+                else if (s[j] == _SC('{'))
+                  depth++;
             }
-        } else {
-            SQObjectPtr valStr;
-            if (!v->ToString(arg, valStr)) {
-                sq_free(allocctx, s, buf_len*sizeof(SQChar));
-                return sq_throwerror(v, _SC("subst: Failed to convert key or value to string"));
-            }
-            SQChar bufKey[8];
-            int n = scsprintf(bufKey, 8, _SC("{%d}"), idx - 2);
-            s = replace_all(allocctx, s, buf_len, len, bufKey, n, _stringval(valStr), _string(valStr)->_len);
         }
-    }
 
     sq_pushstring(v, s, len);
-    sq_free(allocctx, s, buf_len*sizeof(SQChar));
+    sq_free(allocctx, s, buf_len * sizeof(SQChar));
     return 1;
 }
 
