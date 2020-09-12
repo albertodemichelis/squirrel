@@ -1216,6 +1216,7 @@ public:
     {
         SQInteger tpos = _fs->GetCurrentPos(),nkeys = 0;
         sqvector<SQObject> memberConstantKeys(_fs->_sharedstate->_alloc_ctx);
+        NewObjectType otype = separator==_SC(',') ? NOT_TABLE : NOT_CLASS;
         while(_token != terminator) {
             #if SQ_LINE_INFO_IN_STRUCTURES
             if (nkeys < 100)
@@ -1223,7 +1224,7 @@ public:
             #endif
             bool isstatic = false;
             //check if is an static
-            if(separator == ';') {
+            if(otype == NOT_CLASS) {
                 if(_token == TK_STATIC) {
                     isstatic = true;
                     Lex();
@@ -1262,7 +1263,7 @@ public:
                 break;
             }
             case TK_STRING_LITERAL: //JSON
-                if(separator == ',') { //only works for tables
+                if(otype == NOT_TABLE) { //only works for tables
                     SQObject id = Expect(TK_STRING_LITERAL);
                     CheckMemberUniqueness(memberConstantKeys, id);
                     _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
@@ -1273,7 +1274,23 @@ public:
                 SQObject id = Expect(TK_IDENTIFIER);
                 CheckMemberUniqueness(memberConstantKeys, id);
                 _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
-                Expect(_SC('=')); Expression(SQE_REGULAR);
+
+                if ((otype == NOT_TABLE) &&
+                    (_token == TK_IDENTIFIER || _token == separator || _token == terminator || _token == _SC('['))) {
+                    SQObject constant;
+                    SQInteger pos = -1;
+                    if((pos = _fs->GetLocalVariable(id)) != -1)
+                        _fs->PushTarget(pos);
+                    else if((pos = _fs->GetOuterVariable(id)) != -1)
+                        _fs->AddInstruction(_OP_GETOUTER, _fs->PushTarget(), pos);
+                    else if(IsConstant(id, constant))
+                        _fs->AddInstruction(_OP_LOAD,_fs->PushTarget(),_fs->GetConstant(constant));
+                    else
+                        Error(_SC("Invalid slot initializer '%s' - no such variable/constant or incorrect expression"), _stringval(id));
+                }
+                else {
+                    Expect(_SC('=')); Expression(SQE_REGULAR);
+                }
             }
             }
             if(_token == separator) Lex();//optional comma/semicolon
@@ -1282,14 +1299,14 @@ public:
             SQInteger key = _fs->PopTarget();
             unsigned char flags = isstatic ? NEW_SLOT_STATIC_FLAG : 0;
             SQInteger table = _fs->TopTarget(); //<<BECAUSE OF THIS NO COMMON EMIT FUNC IS POSSIBLE
-            if(separator == _SC(',')) { //hack recognizes a table from the separator
+            if (otype == NOT_TABLE) {
                 _fs->AddInstruction(_OP_NEWSLOT, 0xFF, table, key, val);
             }
             else {
                 _fs->AddInstruction(_OP_NEWSLOTA, flags, table, key, val); //this for classes only as it invokes _newmember
             }
         }
-        if(separator == _SC(',')) //hack recognizes a table from the separator
+        if(otype==NOT_TABLE)
             _fs->SetInstructionParam(tpos, 1, nkeys);
         Lex();
     }

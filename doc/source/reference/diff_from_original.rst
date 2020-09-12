@@ -28,6 +28,7 @@ New features
 * Null propagation, null-call and null-coalescing operators
 * 'not in' operator
 * Destructuring assignment
+* ES2015-style shorthand table initialization
 * String interpolation
 * Functions declared in expressions can be named now (local foo = function foo() {})
 * Support local class declaration (local class C {})

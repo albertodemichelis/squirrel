@@ -95,13 +95,16 @@ lower priority than ||
 
     exp := value '?.' key
 
+
 ::
 
     exp := value '?[' key ']'
 
+
 If key exists, return result of 'get' operations, else return null.
 
 ::
+
     local tbl = {bar=123}
     
     tbl.bar // returns 123
@@ -113,11 +116,14 @@ If key exists, return result of 'get' operations, else return null.
     tbl?["bar"] // returns 123
     tbl?[4567] // returns null
 
+
 This works for any type (internally done via SQVM::Get(), like an 'in' operator), including null.
 Therefore operator can be chained
 
 ::
+
     local x = tbl?.foo?.bar?.baz?["spam"]
+
 
 ^^^^^^^^^^^^^
 Arithmetic
@@ -321,7 +327,7 @@ Table Constructor
 
 ::
 
-    tslots := ( 'id' '=' exp | '[' exp ']' '=' exp ) [',']
+    tslots := ( 'id' '=' exp | '[' exp ']' '=' exp  | 'id' ) [',']
     exp := '{' [tslots] '}'
 
 Creates a new table.::
@@ -345,12 +351,27 @@ A new slot with exp1 as key and exp2 as value is created::
         [1]="I'm the value"
     }
 
-Both syntaxes can be mixed::
+ES2015-style shorthand table initialization is supported, so the code like below ::
 
+    local x = 123
+    local y = 345
+    local tbl = {x=x, y=y}
+
+can also be written as ::
+
+    local x = 123
+    local y = 345
+    local tbl = {x, y}
+
+
+All syntaxes can be mixed::
+
+    local x = "bar"
     local table=
     {
         a=10,
         b="string",
+        x,
         [10]={},
         function bau(a,b)
         {
