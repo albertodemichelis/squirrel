@@ -182,8 +182,6 @@ The following compilers have been confirmed to be working:
 ### Planned
 
 * Modules library documentation
-* Static analyzer release
-
 
 ### Likely to be implemented
 
@@ -193,7 +191,6 @@ The following compilers have been confirmed to be working:
 
 * Pure functions (and a special keyword for this)
 * const declaration of mutable values (forbid to assign new value for such consts)
-* Static analyzer
 * Better regexp library
 * Better Unicode support (slice, replace, etc)
 * reversed view for arrays
