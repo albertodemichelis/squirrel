@@ -1160,7 +1160,24 @@ static SQInteger array_filter(HSQUIRRELVM v)
 }
 
 
-static SQInteger array_indexof(HSQUIRRELVM v)
+static SQInteger _push_scan_index(HSQUIRRELVM v, SQInteger index)
+{
+    if (index >= 0) {
+        sq_pushinteger(v, index);
+        return 1;
+    } else
+        return 0;
+}
+
+
+static SQInteger _push_scan_found_flag(HSQUIRRELVM v, SQInteger index)
+{
+    sq_pushbool(v, index>=0);
+    return 1;
+}
+
+
+static SQInteger _array_scan_for_value(HSQUIRRELVM v, SQInteger (*push_result)(HSQUIRRELVM v, SQInteger index))
 {
     SQObject &o = stack_get(v,1);
     SQObjectPtr &val = stack_get(v,2);
@@ -1170,12 +1187,22 @@ static SQInteger array_indexof(HSQUIRRELVM v)
     for(SQInteger n = 0; n < size; n++) {
         bool res = false;
         a->Get(n,temp);
-        if(SQVM::IsEqual(temp,val,res) && res) {
-            v->Push(n);
-            return 1;
-        }
+        if(SQVM::IsEqual(temp,val,res) && res)
+            return push_result(v, n);
     }
-    return 0;
+    return push_result(v, -1);
+}
+
+
+static SQInteger array_indexof(HSQUIRRELVM v)
+{
+    return _array_scan_for_value(v, _push_scan_index);
+}
+
+
+static SQInteger array_contains(HSQUIRRELVM v)
+{
+    return _array_scan_for_value(v, _push_scan_found_flag);
 }
 
 
@@ -1347,6 +1374,7 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("reduce"),array_reduce,-2, _SC("ac.")},
     {_SC("filter"),array_filter,2, _SC("ac")},
     {_SC("indexof"),array_indexof,2, _SC("a.")},
+    {_SC("contains"),array_contains,2, _SC("a.")},
     {_SC("each"),container_each,2, _SC("ac")},
     {_SC("findindex"),container_findindex,2, _SC("ac")},
     {_SC("findvalue"),container_findvalue,-2, _SC("ac.")},
@@ -1389,7 +1417,7 @@ static SQInteger string_slice(HSQUIRRELVM v)
     return 1;
 }
 
-static SQInteger string_indexof(HSQUIRRELVM v)
+static SQInteger _string_scan_for_substring(HSQUIRRELVM v, SQInteger (*push_result)(HSQUIRRELVM v, SQInteger index))
 {
     SQInteger top,start_idx=0;
     const SQChar *str,*substr,*ret;
@@ -1397,14 +1425,22 @@ static SQInteger string_indexof(HSQUIRRELVM v)
         if(top>2)sq_getinteger(v,3,&start_idx);
         if((sq_getsize(v,1)>start_idx) && (start_idx>=0)){
             ret=scstrstr(&str[start_idx],substr);
-            if(ret){
-                sq_pushinteger(v,(SQInteger)(ret-str));
-                return 1;
-            }
+            if(ret)
+                return push_result(v, ret-str);
         }
-        return 0;
+        return push_result(v, -1);
     }
     return sq_throwerror(v,_SC("invalid param"));
+}
+
+static SQInteger string_indexof(HSQUIRRELVM v)
+{
+    return _string_scan_for_substring(v, _push_scan_index);
+}
+
+static SQInteger string_contains(HSQUIRRELVM v)
+{
+    return _string_scan_for_substring(v, _push_scan_found_flag);
 }
 
 static SQChar* replace_all(SQAllocContext allocctx, SQChar *s, SQInteger &buf_len, SQInteger &len,
@@ -1736,6 +1772,7 @@ const SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
     {_SC("hash"),string_hash, 1, _SC("s")},
     {_SC("slice"),string_slice,-1, _SC("s n  n")},
     {_SC("indexof"),string_indexof,-2, _SC("s s n")},
+    {_SC("contains"),string_contains,-2, _SC("s s n")},
     {_SC("tolower"),string_tolower,-1, _SC("s n n")},
     {_SC("toupper"),string_toupper,-1, _SC("s n n")},
     {_SC("subst"),string_substitute,-2, _SC("s")},

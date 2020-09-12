@@ -262,7 +262,11 @@ returns a section of the string as new string. Copies from start to the end (not
 
 .. sq:function:: string.indexof(substr,[startidx])
 
-Searches a sub string (substr) starting from the index startidx and returns the index of its first occurrence. If startidx is omitted the search operation starts from the beginning of the string. The function returns null if substr is not found.
+Searches for a sub string (substr) starting from the index startidx and returns the position of its first occurrence. If startidx is omitted the search operation starts from the beginning of the string. The function returns null if substr is not found.
+
+.. sq:function:: string.contains(substr,[startidx])
+
+Checks if the string contains a sub string (substr) anywhere starting from the index startidx. Returns boolean value.
 
 
 .. sq:function:: string.tolower()
@@ -593,6 +597,10 @@ Creates a new array with all elements that pass the test implemented by the prov
 .. sq:function:: array.indexof(value)
 
 Performs a linear search for the value in the array. Returns the index of the value if it was found null otherwise.
+
+.. sq:function:: array.contains(value)
+
+Performs a linear search for the value in the array. Returns true if it was found and false otherwise.
 
 .. sq:function:: array.findindex(func(item_value, [item_index], [array_ref]))
 
