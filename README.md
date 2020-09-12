@@ -143,7 +143,9 @@ Initially we have submitted a few PRs for original language.
 Our philosophy during development is inspired by [Zen of Python](https://www.python.org/dev/peps/pep-0020/) as we found that it leads to better and faster code.
 
 Guided by this and by our practice we have removed all aliases in Squirrel (like push==append) and renamed some ambiguous methods (namely 'find').
-This made language backward incompatible.
+Constants scope was made local by default, new keyword 'global' was introduced.
+Duplicate names of variables/constants and table slots raise errors now.
+This made language backward incompatible (see [documentation](http://quirrel.io/doc/reference/diff_from_original.html) for more details).
 Noticeably it was very easy to support these changes to support - just simple search & replace.
 
 But as we have made incompatibile changes we have to made a fork.
