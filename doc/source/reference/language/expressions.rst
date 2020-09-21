@@ -124,6 +124,22 @@ Therefore operator can be chained
 
     local x = tbl?.foo?.bar?.baz?["spam"]
 
+To avoid extra typing, null-propagation operators affect the rest of expression.
+Otherwise, an expression like
+
+::
+
+    a?.b.c.d
+
+would make no sense because without automatic propagation a null value's slot could possibly be accessed in runtime.
+One would have to type ?. everywhere, writing it as
+
+::
+
+    a?.b?.c?.d
+
+Instead it is done by compiler - once a null-operator is met, it is also assumed for the subsequent ., [] and () operators in an expression.
+
 
 ^^^^^^^^^^^^^
 Arithmetic

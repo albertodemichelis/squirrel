@@ -3,6 +3,7 @@
 ***************************
   The language
 ***************************
+Project source code is available at https://github.com/GaijinEntertainment/quirrel
 
 .. toctree::
    language/lexical_structure.rst

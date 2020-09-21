@@ -31,6 +31,7 @@ A float represents a 32 bit (or better) floating point number.::
 
     local a=1.0
     local b=0.234
+    local c = 6.5e-11 //exponential notation
 
 --------
 String
