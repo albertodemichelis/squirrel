@@ -1109,7 +1109,6 @@ exception_trap:
         _lasterror = currerror;
         return false;
     }
-    assert(0);
 }
 
 bool SQVM::CreateClassInstance(SQClass *theclass, SQObjectPtr &inst, SQObjectPtr &constructor)
