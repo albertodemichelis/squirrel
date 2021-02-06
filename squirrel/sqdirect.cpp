@@ -1,6 +1,7 @@
 #include "sqpcheader.h"
 #include "sqvm.h"
 #include "squserdata.h"
+#include "sqdirect.h"
 
 
 SQRESULT sq_direct_get(HSQUIRRELVM v, const HSQOBJECT *obj, const HSQOBJECT *slot,
