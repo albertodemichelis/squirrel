@@ -41,7 +41,7 @@ void SQTable::AllocNodes(SQInteger nSize)
         new (&n) _HashNode;
         n.next=NULL;
     }
-    _numofnodes_minus_one=nSize-1;
+    _numofnodes_minus_one=(uint32_t)(nSize-1);
     _nodes=nodes;
     _firstfree=&_nodes[_numofnodes_minus_one];
 }
@@ -202,7 +202,7 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val  VT_DECL_ARG
 
 SQInteger SQTable::Next(bool getweakrefs,const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObjectPtr &outval)
 {
-    uint32_t idx = TranslateIndex(refpos);
+    uint32_t idx = (uint32_t)TranslateIndex(refpos);
     while (idx <= _numofnodes_minus_one) {
         if(sq_type(_nodes[idx].key) != OT_NULL) {
             //first found

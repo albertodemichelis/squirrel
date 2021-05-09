@@ -1521,7 +1521,7 @@ static SQInteger string_substitute(HSQUIRRELVM v)
                                 SQObjectPtr &val = stack_get(v, index);
                                 SQObjectPtr valStr;
                                 if (v->ToString(val, valStr)) {
-                                    int delta = _string(valStr)->_len - (j + 1 - i);
+                                    int delta = (int)_string(valStr)->_len - (j + 1 - i);
                                     s = replace_substring_internal(allocctx, s, buf_len, len, i, j + 1 - i,
                                         _stringval(valStr), _string(valStr)->_len);
                                     i = j + delta;
@@ -1542,7 +1542,7 @@ static SQInteger string_substitute(HSQUIRRELVM v)
                                 SQObjectPtr valStr;
                                 if (table->GetStr(s + i + 1, j - i - 1, val)) {
                                     if (v->ToString(val, valStr)) {
-                                        int delta = _string(valStr)->_len - (j + 1 - i);
+                                        int delta = (int)_string(valStr)->_len - (j + 1 - i);
                                         s = replace_substring_internal(allocctx, s, buf_len, len, i, j + 1 - i,
                                             _stringval(valStr), _string(valStr)->_len);
                                         i = j + delta;
@@ -1757,7 +1757,7 @@ static SQInteger string_split(HSQUIRRELVM v)
     const SQChar *sthis=_stringval(str); \
     SQChar *snew=(_ss(v)->GetScratchPad(sq_rsl(len))); \
     memcpy(snew,sthis,sq_rsl(len));\
-    for(SQInteger i=sidx;i<eidx;i++) snew[i] = func(sthis[i]); \
+    for(SQInteger i=sidx;i<eidx;i++) snew[i] = (SQChar)func(sthis[i]); \
     v->Push(SQString::Create(_ss(v),snew,len)); \
     return 1; \
 }
