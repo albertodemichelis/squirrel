@@ -11,7 +11,7 @@ Compiler
     :param HSQUIRRELVM v: the target VM
     :param HSQLEXREADFUNC read: a pointer to a read function that will feed the compiler with the program.
     :param SQUserPointer p: a user defined pointer that will be passed by the compiler to the read function at each invocation.
-    :param const SQChar * sourcename: the symbolic name of the program (used only for more meaningful runtime errors)
+    :param SQChar * sourcename: the symbolic name of the program (used only for more meaningful runtime errors)
     :param SQBool raiseerror: if this value is true the compiler error handler will be called in case of an error
     :returns: a SQRESULT. If the sq_compile fails nothing is pushed in the stack.
     :remarks: in case of an error the function will call the function set by sq_setcompilererrorhandler().
@@ -27,9 +27,9 @@ compiles a squirrel program; if it succeeds, push the compiled script as functio
 .. c:function:: SQRESULT sq_compilebuffer(HSQUIRRELVM v, const SQChar* s, SQInteger size, const SQChar * sourcename, SQBool raiseerror)
 
     :param HSQUIRRELVM v: the target VM
-    :param const SQChar* s: a pointer to the buffer that has to be compiled.
+    :param SQChar * s: a pointer to the buffer that has to be compiled.
     :param SQInteger size: size in characters of the buffer passed in the parameter 's'.
-    :param const SQChar * sourcename: the symbolic name of the program (used only for more meaningful runtime errors)
+    :param SQChar * sourcename: the symbolic name of the program (used only for more meaningful runtime errors)
     :param SQBool raiseerror: if this value true the compiler error handler will be called in case of an error
     :returns: a SQRESULT. If the sq_compilebuffer fails nothing is pushed in the stack.
     :remarks: in case of an error the function will call the function set by sq_setcompilererrorhandler().
