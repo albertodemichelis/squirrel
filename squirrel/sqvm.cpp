@@ -1336,7 +1336,7 @@ SQInteger SQVM::FallBackGet(const SQObjectPtr &self,const SQObjectPtr &key,SQObj
     case OT_USERDATA:
         //delegation
         if(_delegable(self)->_delegate) {
-            if(Get(SQObjectPtr(_delegable(self)->_delegate),key,dest,0,DONT_FALL_BACK)) return FALLBACK_OK;
+            if(Get(SQObjectPtr(_delegable(self)->_delegate),key,dest, GET_FLAG_DO_NOT_RAISE_ERROR,DONT_FALL_BACK)) return FALLBACK_OK;
         }
         else {
             return FALLBACK_NO_MATCH;

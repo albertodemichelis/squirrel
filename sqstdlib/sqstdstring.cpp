@@ -387,7 +387,7 @@ static SQInteger _string_endswith(HSQUIRRELVM v)
 
 #define SETUP_REX(v) \
     SQRex *self = NULL; \
-    if(SQ_FAILED(sq_getinstanceup(v,1,(SQUserPointer *)&self,rex_typetag))) { \
+    if(SQ_FAILED(sq_getinstanceup(v,1,(SQUserPointer *)&self,rex_typetag,SQFalse))) { \
 		return sq_throwerror(v,_SC("invalid type tag")); \
 	}
 
@@ -471,7 +471,7 @@ static SQInteger _regexp_subexpcount(HSQUIRRELVM v)
 static SQInteger _regexp_constructor(HSQUIRRELVM v)
 {
 	SQRex *self = NULL;
-	if (SQ_FAILED(sq_getinstanceup(v, 1, (SQUserPointer *)&self, rex_typetag))) {
+	if (SQ_FAILED(sq_getinstanceup(v, 1, (SQUserPointer *)&self, rex_typetag, SQFalse))) {
 		return sq_throwerror(v, _SC("invalid type tag"));
 	}
 	if (self != NULL) {

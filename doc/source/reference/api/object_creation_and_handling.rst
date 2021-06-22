@@ -140,12 +140,13 @@ returns the hash key of a value at the idx position in the stack.
 
 .. _sq_getinstanceup:
 
-.. c:function:: SQRESULT sq_getinstanceup(HSQUIRRELVM v, SQInteger idx, SQUserPointer * up, SQUSerPointer typetag)
+.. c:function:: SQRESULT sq_getinstanceup(HSQUIRRELVM v, SQInteger idx, SQUserPointer * up, SQUSerPointer typetag,SQBool throwerror)
 
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: an index in the stack
     :param SQUserPointer * up: a pointer to the userpointer that will store the result
     :param SQUSerPointer typetag: the typetag that has to be checked, if this value is set to 0 the typetag is ignored.
+	:param SQBool throwerror: if SQTrue the function sets the last error string in case of failure
     :returns: a SQRESULT
 
 gets the userpointer of the class instance at position idx in the stack. if the parameter 'typetag' is different than 0, the function checks that the class or a base class of the instance is tagged with the specified tag; if not the function fails. If 'typetag' is 0 the function will ignore the tag check.
