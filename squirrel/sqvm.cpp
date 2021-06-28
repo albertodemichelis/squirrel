@@ -613,7 +613,7 @@ bool SQVM::CLOSURE_OP(SQObjectPtr &target, SQFunctionProto *func,SQInteger bound
 	if (boundtarget != 0xFF) {
 		SQObjectPtr &val = _stack._vals[_stackbase + boundtarget];
 		SQObjectType t = sq_type(val);
-		if (t == OT_TABLE || t == OT_CLASS || t == OT_CLOSURE || t == OT_ARRAY) {
+		if (t == OT_TABLE || t == OT_CLASS || t == OT_INSTANCE || t == OT_ARRAY) {
 			closure->_env = _refcounted(val)->GetWeakRef(t);
 			__ObjAddRef(closure->_env);
 		}
