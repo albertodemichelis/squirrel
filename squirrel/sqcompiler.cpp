@@ -529,8 +529,13 @@ public:
         _es.epos      = -1;
         _es.donot_get = false;
         LogicalNullCoalesceExp();
+
+        if (_token == TK_INEXPR_ASSIGNMENT && (expression_context == SQE_REGULAR || expression_context == SQE_FUNCTION_ARG))
+            Error(_SC(": intra-expression assignment can be used only in 'if', 'for', 'while' or 'switch'"));
+
         switch(_token)  {
         case _SC('='):
+        case TK_INEXPR_ASSIGNMENT:
         case TK_NEWSLOT:
         case TK_MINUSEQ:
         case TK_PLUSEQ:
@@ -551,24 +556,27 @@ public:
                 else //if _derefstate != DEREF_NO_DEREF && DEREF_FIELD so is the index of a local
                     Error(_SC("can't 'create' a local slot"));
                 break;
+
+            case TK_INEXPR_ASSIGNMENT:
             case _SC('='): //ASSIGN
-                switch (expression_context)
-                {
-                    case SQE_IF:
-                        Error(_SC("'=' inside 'if' is forbidden"));
-                        break;
-                    case SQE_LOOP_CONDITION:
-                        Error(_SC("'=' inside loop condition is forbidden"));
-                        break;
-                    case SQE_SWITCH:
-                        Error(_SC("'=' inside switch is forbidden"));
-                        break;
-                    case SQE_FUNCTION_ARG:
-                        Error(_SC("'=' inside function argument is forbidden"));
-                        break;
-                    case SQE_REGULAR:
-                        break;
-                }
+                if (op == _SC('='))
+                    switch (expression_context)
+                    {
+                        case SQE_IF:
+                            Error(_SC("'=' inside 'if' is forbidden"));
+                            break;
+                        case SQE_LOOP_CONDITION:
+                            Error(_SC("'=' inside loop condition is forbidden"));
+                            break;
+                        case SQE_SWITCH:
+                            Error(_SC("'=' inside switch is forbidden"));
+                            break;
+                        case SQE_FUNCTION_ARG:
+                            Error(_SC("'=' inside function argument is forbidden"));
+                            break;
+                        case SQE_REGULAR:
+                            break;
+                    }
 
                 switch(ds) {
                 case LOCAL:

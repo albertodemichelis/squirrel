@@ -78,6 +78,7 @@ struct SQVM;
 #define TK_DIRECTIVE 332
 #define TK_READERMACRO 333
 #define TK_NOT 334
+#define TK_INEXPR_ASSIGNMENT 335
 
 
 typedef void(*CompilerErrorFunc)(void *ud, const SQChar *s);

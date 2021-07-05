@@ -460,7 +460,8 @@ SQInteger SQLexer::LexSingleToken()
             else { NEXT(); RETURN_TOKEN(TK_OR); }
         case _SC(':'):
             NEXT();
-            if (CUR_CHAR != _SC(':')){ RETURN_TOKEN(':') }
+            if (CUR_CHAR == '=') { NEXT(); RETURN_TOKEN(TK_INEXPR_ASSIGNMENT) }
+            else if (CUR_CHAR != _SC(':')){ RETURN_TOKEN(':') }
             else { NEXT(); RETURN_TOKEN(TK_DOUBLE_COLON); }
         case _SC('*'):
             NEXT();
