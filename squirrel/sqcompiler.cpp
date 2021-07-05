@@ -963,6 +963,22 @@ public:
     }
     SQInteger Factor()
     {
+        if (_token == TK_LOCAL && (_expression_context == SQE_IF
+                                || _expression_context == SQE_SWITCH || _expression_context == SQE_LOOP_CONDITION))
+        {
+            Lex();
+            if (_token != TK_IDENTIFIER)
+                Error(_SC("Identifier expected"));
+
+            SQObject id = _fs->CreateString(_lex._svalue);
+            CheckDuplicateLocalIdentifier(id, _SC("In-expr local"), false);
+            _fs->PushLocalVariable(id);
+            SQInteger res = Factor();
+            if (_token != TK_INEXPR_ASSIGNMENT)
+                Error(_SC(":= expected"));
+            return res;
+        }
+
         //_es.etype = EXPR;
         switch(_token)
         {
@@ -1433,8 +1449,11 @@ public:
     }
     void IfStatement()
     {
+        BEGIN_SCOPE();
+
         SQInteger jmppos;
         bool haselse = false;
+
         Lex(); Expect(_SC('(')); Expression(SQE_IF); Expect(_SC(')'));
         _fs->AddInstruction(_OP_JZ, _fs->PopTarget());
         SQInteger jnepos = _fs->GetCurrentPos();
@@ -1468,9 +1487,13 @@ public:
             _fs->SetInstructionParam(jmppos, 1, _fs->GetCurrentPos() - jmppos);
         }
         _fs->SetInstructionParam(jnepos, 1, endifblock - jnepos + (haselse?1:0));
+        END_SCOPE();
     }
     void WhileStatement()
     {
+        BEGIN_SCOPE();
+        {
+
         SQInteger jzpos, jmppos;
         jmppos = _fs->GetCurrentPos();
         Lex(); Expect(_SC('(')); Expression(SQE_LOOP_CONDITION); Expect(_SC(')'));
@@ -1487,9 +1510,15 @@ public:
         _fs->SetInstructionParam(jzpos, 1, _fs->GetCurrentPos() - jzpos);
 
         END_BREAKBLE_BLOCK(jmppos);
+
+        }
+        END_SCOPE();
     }
     void DoWhileStatement()
     {
+        BEGIN_SCOPE();
+        {
+
         Lex();
         SQInteger jmptrg = _fs->GetCurrentPos();
         BEGIN_BREAKBLE_BLOCK()
@@ -1502,6 +1531,9 @@ public:
         _fs->AddInstruction(_OP_JZ, _fs->PopTarget(), 1);
         _fs->AddInstruction(_OP_JMP, 0, jmptrg - _fs->GetCurrentPos() - 1);
         END_BREAKBLE_BLOCK(continuetrg);
+
+        }
+        END_SCOPE();
     }
     void ForStatement()
     {
@@ -1596,6 +1628,7 @@ public:
     }
     void SwitchStatement()
     {
+        BEGIN_SCOPE();
         Lex(); Expect(_SC('(')); Expression(SQE_SWITCH); Expect(_SC(')'));
         Expect(_SC('{'));
         SQInteger expr = _fs->TopTarget();
@@ -1649,6 +1682,7 @@ public:
         if(__nbreaks__ > 0)ResolveBreaks(_fs, __nbreaks__);
         _fs->_breaktargets.pop_back();
         _fs->_blockstacksizes.pop_back();
+        END_SCOPE();
     }
     void FunctionStatement()
     {
