@@ -1422,6 +1422,8 @@ static SQInteger _string_scan_for_substring(HSQUIRRELVM v, SQInteger (*push_resu
     SQInteger top,start_idx=0;
     const SQChar *str,*substr,*ret;
     if(((top=sq_gettop(v))>1) && SQ_SUCCEEDED(sq_getstring(v,1,&str)) && SQ_SUCCEEDED(sq_getstring(v,2,&substr))){
+        if (sq_getsize(v,2)<1)
+            return sq_throwerror(v, _SC("empty substring"));
         if(top>2)sq_getinteger(v,3,&start_idx);
         if((sq_getsize(v,1)>start_idx) && (start_idx>=0)){
             ret=scstrstr(&str[start_idx],substr);
