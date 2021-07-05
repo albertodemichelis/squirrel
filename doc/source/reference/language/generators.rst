@@ -19,16 +19,15 @@ statement or by exiting the function body; If an unhandled exception (or runtime
 occurs while a generator is running, the generator will automatically die. A dead
 generator cannot be resumed anymore.::
 
-    function geny(n)
-    {
-        for(local i=1;i<=n;i+=1)
-            yield i;
-        return null;
+    function geny(n) {
+        for (local i=1; i<=n; ++i)
+            yield i
+        return null
     }
 
-    local gtor=geny(10);
-    local x;
-    while(x=resume gtor) print(x+"\n");
+    local gtor = geny(10)
+    for(local x=resume gtor; x; x=resume gtor)
+        ::print(x+"\n")
 
 the output of this program will be::
 
