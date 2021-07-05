@@ -47,6 +47,7 @@ enum SQExpressionContext
   SQE_SWITCH,
   SQE_LOOP_CONDITION,
   SQE_FUNCTION_ARG,
+  SQE_RVALUE,
 };
 
 #define BEGIN_SCOPE() SQScope __oldscope__ = _scope; \
@@ -368,7 +369,7 @@ public:
             Lex();
             if(!IsEndOfStatement()) {
                 SQInteger retexp = _fs->GetCurrentPos()+1;
-                Expression(SQE_REGULAR);
+                Expression(SQE_RVALUE);
                 if(op == _OP_RETURN && _fs->_traps > 0)
                     _fs->AddInstruction(_OP_POPTRAP, _fs->_traps, 0);
                 _fs->_returnexp = retexp;
@@ -434,7 +435,7 @@ public:
             break;
         case TK_THROW:
             Lex();
-            Expression(SQE_REGULAR);
+            Expression(SQE_RVALUE);
             _fs->AddInstruction(_OP_THROW, _fs->PopTarget());
             break;
         case TK_CONST:
@@ -547,7 +548,7 @@ public:
             SQInteger pos = _es.epos;
             if(ds == EXPR) Error(_SC("can't assign expression"));
             else if(ds == BASE) Error(_SC("'base' cannot be modified"));
-            Lex(); Expression(expression_context);
+            Lex(); Expression(SQE_RVALUE);
 
             switch(op){
             case TK_NEWSLOT:
@@ -573,6 +574,9 @@ public:
                             break;
                         case SQE_FUNCTION_ARG:
                             Error(_SC("'=' inside function argument is forbidden"));
+                            break;
+                        case SQE_RVALUE:
+                            Error(_SC("'=' inside expression is forbidden"));
                             break;
                         case SQE_REGULAR:
                             break;
@@ -613,14 +617,14 @@ public:
             _fs->AddInstruction(_OP_JZ, _fs->PopTarget());
             SQInteger jzpos = _fs->GetCurrentPos();
             SQInteger trg = _fs->PushTarget();
-            Expression(expression_context);
+            Expression(SQE_RVALUE);
             SQInteger first_exp = _fs->PopTarget();
             if(trg != first_exp) _fs->AddInstruction(_OP_MOVE, trg, first_exp);
             SQInteger endfirstexp = _fs->GetCurrentPos();
             _fs->AddInstruction(_OP_JMP, 0, 0);
             Expect(_SC(':'));
             SQInteger jmppos = _fs->GetCurrentPos();
-            Expression(expression_context);
+            Expression(SQE_RVALUE);
             SQInteger second_exp = _fs->PopTarget();
             if(trg != second_exp) _fs->AddInstruction(_OP_MOVE, trg, second_exp);
             _fs->SetInstructionParam(jmppos, 1, _fs->GetCurrentPos() - jmppos);
@@ -866,7 +870,7 @@ public:
                     nextIsNullable = true;
                 }
                 if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot brake deref/or comma needed after [exp]=exp slot declaration"));
-                Lex(); Expression(SQE_REGULAR); Expect(_SC(']'));
+                Lex(); Expression(SQE_RVALUE); Expect(_SC(']'));
                 pos = -1;
                 if(_es.etype==BASE) {
                     Emit2ArgsOP(_OP_GET, flags);
@@ -1090,7 +1094,7 @@ public:
                     if (key < 100)
                       _fs->AddLineInfos(_lex._currentline, false);
                     #endif
-                    Expression(SQE_REGULAR);
+                    Expression(SQE_RVALUE);
                     if(_token == _SC(',')) Lex();
                     SQInteger val = _fs->PopTarget();
                     SQInteger array = _fs->TopTarget();
@@ -1260,14 +1264,14 @@ public:
                     firstId = _fs->CreateString(_lex._svalue,_lex._longstr.size()-1);
                 else if (_token == TK_INTEGER)
                     firstId = SQObjectPtr(_lex._nvalue);
-                Expression(SQE_REGULAR);
+                Expression(SQE_RVALUE);
                 if (!sq_isnull(firstId) && _fs->_instructions.size() == prevInstrSize+1) {
                     unsigned char op = _fs->_instructions.back().op;
                     if (op == _OP_LOAD || op == _OP_LOADINT)
                         CheckMemberUniqueness(memberConstantKeys, firstId);
                 }
                 Expect(_SC(']'));
-                Expect(_SC('=')); Expression(SQE_REGULAR);
+                Expect(_SC('=')); Expression(SQE_RVALUE);
                 break;
             }
             case TK_STRING_LITERAL: //JSON
@@ -1275,7 +1279,7 @@ public:
                     SQObject id = Expect(TK_STRING_LITERAL);
                     CheckMemberUniqueness(memberConstantKeys, id);
                     _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
-                    Expect(_SC(':')); Expression(SQE_REGULAR);
+                    Expect(_SC(':')); Expression(SQE_RVALUE);
                     break;
                 }
             default : {
@@ -1297,7 +1301,7 @@ public:
                         Error(_SC("Invalid slot initializer '%s' - no such variable/constant or incorrect expression"), _stringval(id));
                 }
                 else {
-                    Expect(_SC('=')); Expression(SQE_REGULAR);
+                    Expect(_SC('=')); Expression(SQE_RVALUE);
                 }
             }
             }
@@ -1386,7 +1390,7 @@ public:
         if (deconstructor) {
             Expect(deconstructor==_SC('[') ? _SC(']') : _SC('}'));
             Expect(_SC('='));
-            Expression(SQE_REGULAR);
+            Expression(SQE_RVALUE);
             SQInteger src = _fs->TopTarget();
             SQInteger key_pos = _fs->PushTarget();
             if (deconstructor == _SC('[')) {
@@ -1564,7 +1568,7 @@ public:
         //save the stack size
         BEGIN_SCOPE();
         //put the table in the stack(evaluate the table expression)
-        Expression(SQE_REGULAR); Expect(_SC(')'));
+        Expression(SQE_RVALUE); Expect(_SC(')'));
         SQInteger container = _fs->TopTarget();
         //push the index local var
         SQInteger indexpos = _fs->PushLocalVariable(idxname);
@@ -1608,7 +1612,7 @@ public:
                 _fs->SetInstructionParam(tonextcondjmp, 1, _fs->GetCurrentPos() - tonextcondjmp);
             }
             //condition
-            Lex(); Expression(SQE_REGULAR); Expect(_SC(':'));
+            Lex(); Expression(SQE_RVALUE); Expect(_SC(':'));
             SQInteger trg = _fs->PopTarget();
             SQInteger eqtarget = trg;
             bool local = _fs->IsLocal(trg);
@@ -1837,7 +1841,7 @@ public:
     {
         SQInteger base = -1;
         if(_token == TK_EXTENDS) {
-            Lex(); Expression(SQE_REGULAR);
+            Lex(); Expression(SQE_RVALUE);
             base = _fs->TopTarget();
         }
         Expect(_SC('{'));
@@ -1911,7 +1915,7 @@ public:
                 funcstate->AddParameter(paramname);
                 if(_token == _SC('=')) {
                     Lex();
-                    Expression(SQE_REGULAR);
+                    Expression(SQE_RVALUE);
                     funcstate->AddDefaultParam(_fs->TopTarget());
                     defparams++;
                 }
