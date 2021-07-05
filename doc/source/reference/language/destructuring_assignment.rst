@@ -30,3 +30,4 @@ Example
 
 If default value is provided it will be used if slot does not exist in source object.
 If no default value is given and slot with this name/index is missing, a runtime erro will be raised.
+Comma separators are optional.

@@ -1400,7 +1400,12 @@ public:
             targets.push_back(_fs->PopTarget());
             _fs->PushLocalVariable(varname);
             names.push_back(varname);
-            if(_token == _SC(',')) Lex(); else break;
+            if(_token == _SC(','))
+                Lex();
+            else if (destructurer && _token==TK_IDENTIFIER)
+                continue;
+            else
+                break;
         } while(1);
 
         if (destructurer) {
