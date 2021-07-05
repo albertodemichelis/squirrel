@@ -1373,9 +1373,9 @@ public:
             return;
         }
 
-        SQInteger deconstructor = 0;
+        SQInteger destructurer = 0;
         if (_token == _SC('{') || _token == _SC('[')) {
-            deconstructor = _token;
+            destructurer = _token;
             Lex();
         }
 
@@ -1403,13 +1403,13 @@ public:
             if(_token == _SC(',')) Lex(); else break;
         } while(1);
 
-        if (deconstructor) {
-            Expect(deconstructor==_SC('[') ? _SC(']') : _SC('}'));
+        if (destructurer) {
+            Expect(destructurer==_SC('[') ? _SC(']') : _SC('}'));
             Expect(_SC('='));
             Expression(SQE_RVALUE);
             SQInteger src = _fs->TopTarget();
             SQInteger key_pos = _fs->PushTarget();
-            if (deconstructor == _SC('[')) {
+            if (destructurer == _SC('[')) {
                 for (SQUnsignedInteger i=0; i<targets.size(); ++i) {
                     EmitLoadConstInt(i, key_pos);
                     _fs->AddInstruction(_OP_GET, targets[i], src, key_pos, flags[i]);
