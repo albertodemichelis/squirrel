@@ -15,11 +15,9 @@ When a table (or userdata) is indexed with a key that doesn't correspond to one 
 slots, the interpreter automatically delegates the get (or set) operation to its parent.::
 
     Entity <- {
-    }
-
-    function Entity::DoStuff()
-    {
+      function DoStuff() {
         ::print(_name);
+      }
     }
 
     local newentity = {
