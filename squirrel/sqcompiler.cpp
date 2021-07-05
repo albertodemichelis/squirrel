@@ -208,6 +208,10 @@ public:
             setFlags = LF_NO_PLUS_CONCAT;
         else if (scstrcmp(sval, _SC("allow-plus-concat")) == 0)
             clearFlags = LF_NO_PLUS_CONCAT;
+        else if (scstrcmp(sval, _SC("explicit-this")) == 0)
+            setFlags = LF_EXPLICIT_THIS;
+        else if (scstrcmp(sval, _SC("implicit-this")) == 0)
+            clearFlags = LF_EXPLICIT_THIS;
         else
             Error(_SC("unsupported directive"));
 
@@ -1074,6 +1078,9 @@ public:
                     * for the latter. If we are not using the variable as a dref expr, generate
                     * the _OP_GET instruction.
                     */
+                    if (_fs->lang_features & LF_EXPLICIT_THIS)
+                        Error(_SC("Unknown variable [%s]"), _stringval(id));
+
                     _fs->PushTarget(0);
                     _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
                     if(NeedGet()) {

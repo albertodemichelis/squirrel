@@ -94,6 +94,31 @@ Enable root fallback
 
 Allow to search for variable in root table
 
+------------------------------------
+Force explicit access to 'this'
+------------------------------------
+
+::
+
+     #explicit-this
+
+Require to explicitly specify 'this' or :: to access fields of function environment ('this') or root table.
+This behavior is similar to one in Python.
+Identifiers must be known local variables, free variables or constants.
+For unknown names a compilation error is thrown.
+
+------------------------------------
+Allow implicit access to 'this'
+------------------------------------
+
+::
+
+     #implicit-this
+
+Original Squirrel 3.1 behavior.
+For identifiers not known as local or free variables or constants/enums fallback code performing get/set operations
+in 'this' or root table will be generated.
+
 
 ----------------------------------------
 Disable function declaration sugar

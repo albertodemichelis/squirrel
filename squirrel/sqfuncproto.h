@@ -15,6 +15,7 @@ enum SQLangFeature {
     LF_NO_FUNC_DECL_SUGAR = 0x04,
     LF_NO_CLASS_DECL_SUGAR = 0x08,
     LF_NO_PLUS_CONCAT = 0x10,
+    LF_EXPLICIT_THIS = 0x20
 };
 
 struct SQOuterVar
