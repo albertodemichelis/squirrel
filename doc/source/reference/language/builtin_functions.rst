@@ -30,8 +30,14 @@ returns the currently running closure
 
 .. sq:function:: setdebughook(hook_func)
 
-
 sets the debug hook
+
+hook_func should have follow signature
+  hook_func(hook_type:integer, source_file:string, line_num:integer, func_name:string)
+
+hook_type can be 'l' - line, 'r' - return, 'c' - call or 'x' for VM shutdown
+
+call of debughook for each line performed only when debuginfo is enabled
 
 .. sq:function:: enabledebuginfo(enable)
 

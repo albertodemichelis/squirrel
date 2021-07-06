@@ -142,6 +142,9 @@ SQVM::SQVM(SQSharedState *ss) :
 
 void SQVM::Finalize()
 {
+    if (_debughook)
+        CallDebugHook(_SC('x'));
+
     if(_releasehook) { _releasehook(_foreignptr,0); _releasehook = NULL; }
     if(_openouters) CloseOuters(&_stack._vals[0]);
     _roottable.Null();
