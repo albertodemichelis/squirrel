@@ -96,7 +96,7 @@ enum SQExpressionContext
 class SQCompiler
 {
 public:
-    SQCompiler(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, bool raiseerror, bool lineinfo) :
+    SQCompiler(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar* sourcename, bool raiseerror, bool lineinfo) :
       _lex(_ss(v)),
       _scopedconsts(_ss(v)->_alloc_ctx)
     {
@@ -109,6 +109,12 @@ public:
         _scope.stacksize = 0;
         _compilererror[0] = _SC('\0');
         _expression_context = SQE_REGULAR;
+        _num_initial_bindings = bindings ? 1 : 0;
+
+        if (bindings) {
+            assert(sq_type(*bindings)==OT_TABLE);
+            _scopedconsts.push_back(*bindings);
+        }
     }
 
     bool IsConstant(const SQObject &name,SQObject &e)
@@ -338,7 +344,7 @@ public:
             _vm->_lasterror = SQString::Create(_ss(_vm), _compilererror, -1);
             return false;
         }
-        assert(_scopedconsts.size()==1);
+        assert(_scopedconsts.size() == 1 + _num_initial_bindings);
         return true;
     }
     void Statements()
@@ -2064,11 +2070,12 @@ private:
     jmp_buf _errorjmp;
     SQVM *_vm;
     SQObjectPtrVec _scopedconsts;
+    SQUnsignedInteger _num_initial_bindings;
 };
 
-bool Compile(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
+bool Compile(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
 {
-    SQCompiler p(vm, rg, up, sourcename, raiseerror, lineinfo);
+    SQCompiler p(vm, rg, up, bindings, sourcename, raiseerror, lineinfo);
     return p.Compile(out);
 }
 
