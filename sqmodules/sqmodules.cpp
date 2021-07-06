@@ -123,6 +123,7 @@ bool SqModules::checkCircularReferences(const char* resolved_fn, const char *)
 
 
 SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn, const char *requested_fn,
+                                                        const HSQOBJECT *bindings,
                                                         SqObjPtr &script_closure, std::string &out_err_msg)
 {
   script_closure.release();
@@ -155,7 +156,7 @@ SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn,
   buf[len] = 0;
   fclose(f);
 
-  if (SQ_FAILED(sq_compilebuffer(sqvm, &buf[0], len, resolved_fn, true)))
+  if (SQ_FAILED(sq_compilebuffer(sqvm, &buf[0], len, resolved_fn, true, bindings)))
   {
     out_err_msg = std::string("Failed to compile file: ") + requested_fn +" / " + resolved_fn;
     return CompileScriptResult::CompilationFailed;
@@ -168,7 +169,7 @@ SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn,
 }
 
 
-SqModules::SqObjPtr SqModules::setupStateStorage(HSQOBJECT /*hContext*/, const char* resolved_fn)
+SqModules::SqObjPtr SqModules::setupStateStorage(const char* resolved_fn)
 {
   for (const Module &prevMod : prevModules)
     if (dd_fname_equal(prevMod.fn.c_str(), resolved_fn))
@@ -192,40 +193,23 @@ SqModules::Module * SqModules::findModule(const char * resolved_fn)
 }
 
 
-// replaces closure at stack position -1 with one bound to environment
-static void bind_closure(HSQUIRRELVM vm, HSQOBJECT env)
+void SqModules::bindRequireApi(HSQOBJECT bindings)
 {
-  HSQOBJECT hBoundClosure;
-
-  sq_pushobject(vm, env);
-  sq_bindenv(vm, -2);
-  sq_getstackobj(vm, -1, &hBoundClosure);
-  sq_addref(vm, &hBoundClosure);
-  sq_pop(vm, 2);
-  sq_pushobject(vm, hBoundClosure);
-  sq_release(vm, &hBoundClosure);
-}
-
-
-void SqModules::bindRequireApi(HSQOBJECT module_this)
-{
-  sq_pushobject(sqvm, module_this);
+  sq_pushobject(sqvm, bindings);
 
   sq_pushstring(sqvm, _SC("require"), 7);
   sq_pushuserpointer(sqvm, this);
   sq_newclosure(sqvm, sqRequire<true>, 1);
   sq_setparamscheck(sqvm, 2, _SC(".s"));
-  bind_closure(sqvm, module_this);
   sq_rawset(sqvm, -3);
 
   sq_pushstring(sqvm, _SC("require_optional"), 16);
   sq_pushuserpointer(sqvm, this);
   sq_newclosure(sqvm, sqRequire<false>, 1);
   sq_setparamscheck(sqvm, 2, _SC(".s"));
-  bind_closure(sqvm, module_this);
   sq_rawset(sqvm, -3);
 
-  sq_poptop(sqvm); // module_this
+  sq_poptop(sqvm); // bindings
 }
 
 
@@ -251,11 +235,50 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
     return true;
   }
 
+  HSQUIRRELVM vm = sqvm;
   SQInteger prevTop = sq_gettop(sqvm);
   (void)prevTop;
 
+
+  sq_newtable(vm);
+  HSQOBJECT hBindings;
+  sq_getstackobj(vm, -1, &hBindings);
+  SqObjPtr bindingsTbl(vm, hBindings); // add ref
+  SqObjPtr stateStorage = setupStateStorage(resolvedFn.c_str());
+
+  assert(sq_gettop(vm) == prevTop+1); // bindings table
+
+  sq_pushstring(vm, "persist", 7);
+  sq_pushobject(vm, stateStorage.o);
+  sq_newclosure(vm, persist_state, 1);
+  sq_setparamscheck(vm, 3, ".sc");
+  sq_rawset(vm, -3);
+
+  sq_newarray(vm, 0);
+  SqObjPtr refHolder;
+  refHolder.attachToStack(vm, -1);
+  sq_poptop(vm);
+
+  sq_pushstring(vm, "keepref", 7);
+  sq_pushobject(vm, refHolder.o);
+  sq_newclosure(vm, keepref, 1);
+  sq_rawset(vm, -3);
+
+
+  sq_pushstring(vm, "__name__", 8);
+  sq_pushstring(vm, __name__, -1);
+  sq_rawset(vm, -3);
+
+  assert(sq_gettop(vm) == prevTop+1); // bindings table
+
+  bindRequireApi(hBindings);
+
+  assert(sq_gettop(vm) == prevTop+1); // bindings table
+  sq_poptop(vm); //bindings table
+
+
   SqObjPtr scriptClosure;
-  CompileScriptResult res = compileScript(resolvedFn.c_str(), requested_fn, scriptClosure, out_err_msg);
+  CompileScriptResult res = compileScript(resolvedFn.c_str(), requested_fn, &hBindings, scriptClosure, out_err_msg);
   if (!must_exist && res == CompileScriptResult::FileNotFound)
   {
     exports.release();
@@ -267,51 +290,17 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
   if (__name__ == __fn__)
     __name__ = resolvedFn.c_str();
 
-  HSQUIRRELVM vm = sqvm;
-  sq_pushobject(vm, scriptClosure.o);
-
-  sq_newtable(vm);
-
-  HSQOBJECT hThis;
-  sq_getstackobj(vm, -1, &hThis);
-  assert(sq_gettype(vm, -1) == OT_TABLE);
-  SqObjPtr objThis(vm, hThis);
-
-  SqObjPtr stateStorage = setupStateStorage(hThis, resolvedFn.c_str());
-
-  assert(sq_gettop(vm) == prevTop+2); // module closure+context
-
-  sq_pushstring(vm, "persist", 7);
-  sq_pushobject(vm, stateStorage.o);
-  sq_newclosure(vm, persist_state, 1);
-  sq_setparamscheck(vm, 3, ".sc");
-  bind_closure(vm, hThis);
-  sq_rawset(vm, -3);
-
-  sq_newarray(vm, 0);
-  SqObjPtr refHolder;
-  refHolder.attachToStack(vm, -1);
-  sq_poptop(vm);
-
-  sq_pushstring(vm, "keepref", 7);
-  sq_pushobject(vm, refHolder.o);
-  sq_newclosure(vm, keepref, 1);
-  bind_closure(vm, hThis);
-  sq_rawset(vm, -3);
-
-
-  sq_pushstring(vm, "__name__", 8);
-  sq_pushstring(vm, __name__, -1);
-  sq_rawset(vm, -3);
-
-  assert(sq_gettop(vm) == prevTop+2); // module closure+context
-
-  bindRequireApi(hThis);
-
-  assert(sq_gettop(vm) == prevTop+2); // module closure+context
-
   size_t rsIdx = runningScripts.size();
   runningScripts.emplace_back(resolvedFn.c_str());
+
+
+  sq_pushobject(vm, scriptClosure.o);
+  sq_newtable(vm);
+
+  assert(sq_gettype(vm, -1) == OT_TABLE);
+  SqObjPtr objThis;
+  objThis.attachToStack(vm, -1);
+
 
   SQRESULT callRes = sq_call(vm, 1, true, true);
 
