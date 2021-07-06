@@ -75,7 +75,6 @@ void PrintUsage()
 {
     scfprintf(stderr,_SC("usage: sq <options> <scriptpath [args]>.\n")
         _SC("Available options are:\n")
-        _SC("   -m              enable module support and run file as module\n")
         _SC("   -c              compiles the file to bytecode(default output 'out.cnut')\n")
         _SC("   -o              specifies output file for the -c option\n")
         _SC("   -c              compiles only\n")
@@ -90,9 +89,7 @@ void PrintUsage()
 //<<FIXME>> this func is a mess
 int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
 {
-    int i;
     int compiles_only = 0;
-	int run_as_module = 0;
 #ifdef SQUNICODE
     static SQChar temp[500];
 #endif
@@ -115,9 +112,6 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                     break;
                 case 'c':
                     compiles_only = 1;
-                    break;
-                case 'm':
-                    run_as_module = 1;
                     break;
                 case 'o':
                     if(arg < argc) {
@@ -157,12 +151,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
 
             arg++;
 
-            //sq_pushstring(v,_SC("ARGS"),-1);
-            //sq_newarray(v,0);
-
-            //sq_createslot(v,-3);
-            //sq_pop(v,1);
-            if(compiles_only) {
+            if (compiles_only) {
                 if(SQ_SUCCEEDED(sqstd_loadfile(v,filename,SQTrue))){
                     const SQChar *outfile = _SC("out.cnut");
                     if(output) {
@@ -178,7 +167,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                         return _DONE;
                 }
             }
-            else if (run_as_module) {
+            else {
                 SqModules::SqObjPtr exports;
                 std::string errMsg;
                 if (!module_mgr->requireModule(filename, true, "__main__", exports, errMsg)) {
@@ -187,43 +176,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                 }
                 return _DONE;
             }
-            else {
-                //if(SQ_SUCCEEDED(sqstd_dofile(v,filename,SQFalse,SQTrue))) {
-                    //return _DONE;
-                //}
 
-                if(SQ_SUCCEEDED(sqstd_loadfile(v,filename,SQTrue))) {
-                    int callargs = 1;
-                    sq_pushroottable(v);
-                    for(i=arg;i<argc;i++)
-                    {
-                        const SQChar *a;
-#ifdef SQUNICODE
-                        int alen=(int)strlen(argv[i]);
-                        a=sq_getscratchpad(v,(int)(alen*sizeof(SQChar)));
-                        mbstowcs(sq_getscratchpad(v,-1),argv[i],alen);
-                        sq_getscratchpad(v,-1)[alen] = _SC('\0');
-#else
-                        a=argv[i];
-#endif
-                        sq_pushstring(v,a,-1);
-                        callargs++;
-                        //sq_arrayappend(v,-2);
-                    }
-                    if(SQ_SUCCEEDED(sq_call(v,callargs,SQTrue,SQTrue))) {
-                        SQObjectType type = sq_gettype(v,-1);
-                        if(type == OT_INTEGER) {
-                            *retval = type;
-                            sq_getinteger(v,-1,retval);
-                        }
-                        return _DONE;
-                    }
-                    else{
-                        return _ERROR;
-                    }
-
-                }
-            }
             //if this point is reached an error occurred
             {
                 const SQChar *err;
