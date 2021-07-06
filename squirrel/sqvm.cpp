@@ -1286,6 +1286,24 @@ void SQVM::CallErrorHandler(SQObjectPtr &error)
 void SQVM::CallDebugHook(SQInteger type,SQInteger forcedline)
 {
     _debughook = false;
+    if (!ci) {
+        if (_debughook_native)
+            _debughook_native(this, type, _SC(""), -1, _SC(""));
+        else {
+            SQObjectPtr temp_reg; // -V688
+            SQInteger nparams = 5;
+            Push(_roottable);
+            Push(type);
+            Push(SQString::Create(_ss(this), ""));
+            Push(SQInteger(-1));
+            Push(SQString::Create(_ss(this), ""));
+            Call(_debughook_closure, nparams, _top - nparams, temp_reg, SQFalse);
+            Pop(nparams);
+        }
+        _debughook = true;
+        return;
+    }
+
     SQFunctionProto *func=_closure(ci->_closure)->_function;
     if(_debughook_native) {
         const SQChar *src = sq_type(func->_sourcename) == OT_STRING?_stringval(func->_sourcename):NULL;
