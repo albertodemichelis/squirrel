@@ -635,7 +635,7 @@ public:
                 }
                 break;
             case _SC('['):
-                if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot brake deref/or comma needed after [exp]=exp slot declaration"));
+                if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot break deref/or comma needed after [exp]=exp slot declaration"));
                 Lex(); Expression(); Expect(_SC(']'));
                 pos = -1;
                 if(_es.etype==BASE) {
@@ -940,6 +940,30 @@ public:
          SQInteger stackbase = _fs->PopTarget();
          SQInteger closure = _fs->PopTarget();
          _fs->AddInstruction(_OP_CALL, _fs->PushTarget(), closure, stackbase, nargs);
+		 if (_token == '{')
+		 {
+			 SQInteger retval = _fs->TopTarget();
+			 SQInteger nkeys = 0;
+			 Lex();
+			 while (_token != '}') {
+				 switch (_token) {
+				 case _SC('['):
+					 Lex(); CommaExpr(); Expect(_SC(']'));
+					 Expect(_SC('=')); Expression();
+					 break;
+				 default:
+					 _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(Expect(TK_IDENTIFIER)));
+					 Expect(_SC('=')); Expression();
+					 break;
+				 }
+				 if (_token == ',') Lex();
+				 nkeys++;
+				 SQInteger val = _fs->PopTarget();
+				 SQInteger key = _fs->PopTarget();
+				 _fs->AddInstruction(_OP_SET, 0xFF, retval, key, val);
+			 }
+			 Lex();
+		 }
     }
     void ParseTableOrClass(SQInteger separator,SQInteger terminator)
     {

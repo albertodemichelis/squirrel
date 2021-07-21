@@ -6,10 +6,13 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <assert.h>
+#include <stdarg.h>
 
 #define MAX_FORMAT_LEN  20
 #define MAX_WFORMAT_LEN 3
 #define ADDITIONAL_FORMAT_SPACE (100*sizeof(SQChar))
+
+static SQUserPointer rex_typetag = NULL;
 
 static SQBool isfmtchr(SQChar ch)
 {
@@ -153,6 +156,25 @@ SQRESULT sqstd_format(HSQUIRRELVM v,SQInteger nformatstringidx,SQInteger *outlen
     return SQ_OK;
 }
 
+void sqstd_pushstringf(HSQUIRRELVM v,const SQChar *s,...)
+{
+    SQInteger n=256;
+    va_list args;
+begin:
+    va_start(args,s);
+    SQChar *b=sq_getscratchpad(v,n);
+    SQInteger r=scvsprintf(b,n,s,args);
+    va_end(args);
+    if (r>=n) {
+        n=r+1;//required+null
+        goto begin;
+    } else if (r<0) {
+        sq_pushnull(v);
+    } else {
+        sq_pushstring(v,b,r);
+    }
+}
+
 static SQInteger _string_printf(HSQUIRRELVM v)
 {
     SQChar *dest = NULL;
@@ -161,7 +183,7 @@ static SQInteger _string_printf(HSQUIRRELVM v)
         return -1;
 
     SQPRINTFUNCTION printfunc = sq_getprintfunc(v);
-    if(printfunc) printfunc(v,dest);
+    if(printfunc) printfunc(v,_SC("%s"),dest);
 
     return 0;
 }
@@ -227,16 +249,16 @@ static SQInteger _string_rstrip(HSQUIRRELVM v)
 static SQInteger _string_split(HSQUIRRELVM v)
 {
     const SQChar *str,*seps;
-    SQChar *stemp;
+    SQInteger sepsize;
+    SQBool skipempty = SQFalse;
     sq_getstring(v,2,&str);
-    sq_getstring(v,3,&seps);
-    SQInteger sepsize = sq_getsize(v,3);
+    sq_getstringandsize(v,3,&seps,&sepsize);
     if(sepsize == 0) return sq_throwerror(v,_SC("empty separators string"));
-    SQInteger memsize = (sq_getsize(v,2)+1)*sizeof(SQChar);
-    stemp = sq_getscratchpad(v,memsize);
-    memcpy(stemp,str,memsize);
-    SQChar *start = stemp;
-    SQChar *end = stemp;
+    if(sq_gettop(v)>3) {
+        sq_getbool(v,4,&skipempty);
+    }
+    const SQChar *start = str;
+    const SQChar *end = str;
     sq_newarray(v,0);
     while(*end != '\0')
     {
@@ -245,9 +267,10 @@ static SQInteger _string_split(HSQUIRRELVM v)
         {
             if(cur == seps[i])
             {
-                *end = 0;
-                sq_pushstring(v,start,-1);
-                sq_arrayappend(v,-2);
+                if(!skipempty || (end != start)) {
+                    sq_pushstring(v,start,end-start);
+                    sq_arrayappend(v,-2);
+                }
                 start = end + 1;
                 break;
             }
@@ -256,7 +279,7 @@ static SQInteger _string_split(HSQUIRRELVM v)
     }
     if(end != start)
     {
-        sq_pushstring(v,start,-1);
+        sq_pushstring(v,start,end-start);
         sq_arrayappend(v,-2);
     }
     return 1;
@@ -364,7 +387,9 @@ static SQInteger _string_endswith(HSQUIRRELVM v)
 
 #define SETUP_REX(v) \
     SQRex *self = NULL; \
-    sq_getinstanceup(v,1,(SQUserPointer *)&self,0);
+    if(SQ_FAILED(sq_getinstanceup(v,1,(SQUserPointer *)&self,rex_typetag))) { \
+		return sq_throwerror(v,_SC("invalid type tag")); \
+	}
 
 static SQInteger _rexobj_releasehook(SQUserPointer p, SQInteger SQ_UNUSED_ARG(size))
 {
@@ -445,6 +470,13 @@ static SQInteger _regexp_subexpcount(HSQUIRRELVM v)
 
 static SQInteger _regexp_constructor(HSQUIRRELVM v)
 {
+	SQRex *self = NULL;
+	if (SQ_FAILED(sq_getinstanceup(v, 1, (SQUserPointer *)&self, rex_typetag))) {
+		return sq_throwerror(v, _SC("invalid type tag"));
+	}
+	if (self != NULL) {
+		return sq_throwerror(v, _SC("invalid regexp object"));
+	}
     const SQChar *error,*pattern;
     sq_getstring(v,2,&pattern);
     SQRex *rex = sqstd_rex_compile(pattern,&error);
@@ -479,7 +511,7 @@ static const SQRegFunction stringlib_funcs[]={
     _DECL_FUNC(strip,2,_SC(".s")),
     _DECL_FUNC(lstrip,2,_SC(".s")),
     _DECL_FUNC(rstrip,2,_SC(".s")),
-    _DECL_FUNC(split,3,_SC(".ss")),
+    _DECL_FUNC(split,-3,_SC(".ssb")),
     _DECL_FUNC(escape,2,_SC(".s")),
     _DECL_FUNC(startswith,3,_SC(".ss")),
     _DECL_FUNC(endswith,3,_SC(".ss")),
@@ -492,6 +524,8 @@ SQInteger sqstd_register_stringlib(HSQUIRRELVM v)
 {
     sq_pushstring(v,_SC("regexp"),-1);
     sq_newclass(v,SQFalse);
+	rex_typetag = (SQUserPointer)rexobj_funcs;
+	sq_settypetag(v, -1, rex_typetag);
     SQInteger i = 0;
     while(rexobj_funcs[i].name != 0) {
         const SQRegFunction &f = rexobj_funcs[i];

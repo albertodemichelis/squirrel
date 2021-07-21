@@ -5,6 +5,7 @@ This project has successfully been compiled and run on
  * Windows (x86 and amd64)
  * Linux (x86, amd64 and ARM)
  * Illumos (x86 and amd64)
+ * FreeBSD (x86 and ARM)
 
 The following compilers have been confirmed to be working:
     MS Visual C++  6.0 (all on x86 and amd64)

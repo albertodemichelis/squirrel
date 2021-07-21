@@ -296,6 +296,9 @@ bool SQVM::ToString(const SQObjectPtr &o,SQObjectPtr &res)
     case OT_BOOL:
         scsprintf(_sp(sq_rsl(6)),sq_rsl(6),_integer(o)?_SC("true"):_SC("false"));
         break;
+    case OT_NULL:
+        scsprintf(_sp(sq_rsl(5)),sq_rsl(5),_SC("null"));
+        break;
     case OT_TABLE:
     case OT_USERDATA:
     case OT_INSTANCE:
@@ -641,8 +644,14 @@ bool SQVM::CLASS_OP(SQObjectPtr &target,SQInteger baseclass,SQInteger attributes
 
 bool SQVM::IsEqual(const SQObjectPtr &o1,const SQObjectPtr &o2,bool &res)
 {
-    if(sq_type(o1) == sq_type(o2)) {
-        res = (_rawval(o1) == _rawval(o2));
+	SQObjectType t1 = sq_type(o1), t2 = sq_type(o2);
+    if(t1 == t2) {
+		if (t1 == OT_FLOAT) {
+			res = (_float(o1) == _float(o2));
+		}
+		else {
+			res = (_rawval(o1) == _rawval(o2));
+		}
     }
     else {
         if(sq_isnumeric(o1) && sq_isnumeric(o2)) {
@@ -662,7 +671,7 @@ bool SQVM::IsFalse(SQObjectPtr &o)
 #if !defined(SQUSEDOUBLE) || (defined(SQUSEDOUBLE) && defined(_SQ64))
         || (_integer(o) == 0) )  //OT_NULL|OT_INTEGER|OT_BOOL
 #else
-        || (((type(o) != OT_FLOAT) && (_integer(o) == 0))) )  //OT_NULL|OT_INTEGER|OT_BOOL
+        || (((sq_type(o) != OT_FLOAT) && (_integer(o) == 0))) )  //OT_NULL|OT_INTEGER|OT_BOOL
 #endif
     {
         return true;
@@ -1000,8 +1009,9 @@ exception_restore:
             case _OP_YIELD:{
                 if(ci->_generator) {
                     if(sarg1 != MAX_FUNC_STACKSIZE) temp_reg = STK(arg1);
+					if (_openouters) CloseOuters(&_stack._vals[_stackbase]);
                     _GUARD(ci->_generator->Yield(this,arg2));
-                    traps -= ci->_etraps;
+					traps -= ci->_etraps;
                     if(sarg1 != MAX_FUNC_STACKSIZE) _Swap(STK(arg1),temp_reg);//STK(arg1) = temp_reg;
                 }
                 else { Raise_Error(_SC("trying to yield a '%s',only genenerator can be yielded"), GetTypeName(ci->_generator)); SQ_THROW();}
@@ -1595,6 +1605,7 @@ SQInteger prevstackbase = _stackbase;
                    }
         break;
     default:
+        Raise_Error(_SC("attempt to call '%s'"), GetTypeName(closure));
         return false;
     }
 #ifdef _DEBUG
@@ -1765,7 +1776,7 @@ void SQVM::dumpstack(SQInteger stackbase,bool dumpall)
         case OT_USERPOINTER:    scprintf(_SC("USERPOINTER %p"),_userpointer(obj));break;
         case OT_CLASS:          scprintf(_SC("CLASS %p"),_class(obj));break;
         case OT_INSTANCE:       scprintf(_SC("INSTANCE %p"),_instance(obj));break;
-        case OT_WEAKREF:        scprintf(_SC("WEAKERF %p"),_weakref(obj));break;
+        case OT_WEAKREF:        scprintf(_SC("WEAKREF %p"),_weakref(obj));break;
         default:
             assert(0);
             break;
