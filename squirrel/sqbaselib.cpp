@@ -377,6 +377,24 @@ static SQInteger base_getobjflags(HSQUIRRELVM v)
     return 1;
 }
 
+static SQInteger base_getbuildinfo(HSQUIRRELVM v)
+{
+    sq_newtable(v);
+    sq_pushstring(v,_SC("version"),-1);
+    sq_pushstring(v,SQUIRREL_VERSION,-1);
+    sq_newslot(v,-3, SQFalse);
+    sq_pushstring(v,_SC("charsize"),-1);
+    sq_pushinteger(v,sizeof(SQChar));
+    sq_newslot(v,-3, SQFalse);
+    sq_pushstring(v,_SC("intsize"),-1);
+    sq_pushinteger(v,sizeof(SQInteger));
+    sq_newslot(v,-3, SQFalse);
+    sq_pushstring(v,_SC("floatsize"),-1);
+    sq_pushinteger(v,sizeof(SQFloat));
+    sq_newslot(v,-3, SQFalse);
+    return 1;
+}
+
 
 static const SQRegFunction base_funcs[]={
     //generic
@@ -404,6 +422,7 @@ static const SQRegFunction base_funcs[]={
     {_SC("clamp"),base_clamp,4,_SC(".nnn")},
     {_SC("freeze"),base_freeze,2,NULL},
     {_SC("getobjflags"), base_getobjflags,2,NULL},
+    {_SC("getbuildinfo"), base_getbuildinfo,1,NULL},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -420,18 +439,6 @@ void sq_base_register(HSQUIRRELVM v)
         i++;
     }
 
-    sq_pushstring(v,_SC("_version_"),-1);
-    sq_pushstring(v,SQUIRREL_VERSION,-1);
-    sq_newslot(v,-3, SQFalse);
-    sq_pushstring(v,_SC("_charsize_"),-1);
-    sq_pushinteger(v,sizeof(SQChar));
-    sq_newslot(v,-3, SQFalse);
-    sq_pushstring(v,_SC("_intsize_"),-1);
-    sq_pushinteger(v,sizeof(SQInteger));
-    sq_newslot(v,-3, SQFalse);
-    sq_pushstring(v,_SC("_floatsize_"),-1);
-    sq_pushinteger(v,sizeof(SQFloat));
-    sq_newslot(v,-3, SQFalse);
     sq_pop(v,1);
 }
 

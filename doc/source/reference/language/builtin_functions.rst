@@ -124,25 +124,14 @@ returns value limited by provided min-max range
 
 creates a new cooperative thread object(coroutine) and returns it
 
-.. sq:data:: _versionnumber_
+.. sq:function:: getbuildinfo(x)
 
-integer values describing the version of VM and compiler. e.g. for Quirrel 4.0.0 this value will be 400
+returns table containing information on VM build parameters.
 
-.. sq:data:: _version_
-
-string values describing the version of VM and compiler.
-
-.. sq:data:: _charsize_
-
-size in bytes of the internal VM representation for characters(1 for ASCII builds 2 for UNICODE builds).
-
-.. sq:data:: _intsize_
-
-size in bytes of the internal VM representation for integers(4 for 32bits builds 8 for 64bits builds).
-
-.. sq:data:: _floatsize_
-
-size in bytes of the internal VM representation for floats(4 for single precision builds 8 for double precision builds).
+  * **version** - string values describing the version of VM and compiler.
+  * **charsize** - size in bytes of the internal VM representation for characters(1 for ASCII builds 2 for UNICODE builds).
+  * **intsize** - size in bytes of the internal VM representation for integers(4 for 32bits builds 8 for 64bits builds).
+  * **floatsize** - size in bytes of the internal VM representation for floats(4 for single precision builds 8 for double precision builds).
 
 -----------------
 Default delegates
