@@ -82,18 +82,6 @@ Returns the shared release hook of a group of friend VMs
 
 
 
-.. _sq_getversion:
-
-.. c:function:: SQInteger sq_getversion()
-
-    :returns: version number of the vm(as in SQUIRREL_VERSION_NUMBER).
-
-returns the version number of the vm
-
-
-
-
-
 .. _sq_getvmreleasehook:
 
 .. c:function:: SQUserPointer sq_getvmreleasehook(HSQUIRRELVM v)

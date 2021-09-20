@@ -151,11 +151,11 @@ Noticeably it was very easy to support these changes to support - just simple se
 But as we have made incompatibile changes we have to made a fork.
 
 And as language nowadays is different enough and to avoid ambiguity we have renamed our fork to Quirrel.
-We continued versioning from Squirrel version, so now Quirrel has version 4.0.0.
+We continued versioning from Squirrel version, so Quirrel started from version 4.0.0.
 
 ## Development state
 
-Quirrel is in stable version 4.0.0.
+Quirrel is in stable version 4.1.0.
 
 This project has successfully been compiled and run on
   * Windows (x86 and amd64)

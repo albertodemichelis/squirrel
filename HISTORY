@@ -1,4 +1,12 @@
 ***version 4.0 stable***
+***version 4.1.0 stable***
+-introduced immutable objects
+-switched to semantic versioning
+-changed SQUIRREL_VERSION_NUMBER to SQUIRREL_VERSION_NUMBER_MAJOR, SQUIRREL_VERSION_NUMBER_MINOR
+  and SQUIRREL_VERSION_PATCH and removed sq_getversion() because of ambiguity of encoding
+  semantic version into single integer number
+
+***version 4.0.0 stable***
 -renamed to Quirrel
 -bumped version
 -lots of changes - see diff_from_original_squirrel

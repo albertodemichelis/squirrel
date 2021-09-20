@@ -66,9 +66,12 @@ struct SQOuter;
 
 #include "sqconfig.h"
 
-#define SQUIRREL_VERSION    _SC("Quirrel 4.0 stable")
-#define SQUIRREL_COPYRIGHT  _SC("Copyright (C) 2003-2016 Alberto Demichelis; 2016-2019 Gaijin Entertainment")
-#define SQUIRREL_VERSION_NUMBER 400
+#define SQUIRREL_VERSION_NUMBER_MAJOR 4
+#define SQUIRREL_VERSION_NUMBER_MINOR 1
+#define SQUIRREL_VERSION_NUMBER_PATCH 0
+
+#define SQUIRREL_VERSION    _SC("4.1.0")
+#define SQUIRREL_COPYRIGHT  _SC("Copyright (C) 2003-2016 Alberto Demichelis; 2016-2021 Gaijin Entertainment")
 
 #define SQ_VMSTATE_IDLE         0
 #define SQ_VMSTATE_RUNNING      1
@@ -223,7 +226,6 @@ SQUIRREL_API SQPRINTFUNCTION sq_geterrorfunc(HSQUIRRELVM v);
 SQUIRREL_API SQRESULT sq_suspendvm(HSQUIRRELVM v);
 SQUIRREL_API SQRESULT sq_wakeupvm(HSQUIRRELVM v,SQBool resumedret,SQBool retval,SQBool invoke_err_handler,SQBool throwerror);
 SQUIRREL_API SQInteger sq_getvmstate(HSQUIRRELVM v);
-SQUIRREL_API SQInteger sq_getversion();
 
 /*compiler*/
 SQUIRREL_API SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,const SQChar *sourcename,SQBool raiseerror,const HSQOBJECT *bindings=nullptr);

@@ -438,9 +438,6 @@ void sq_base_register(HSQUIRRELVM v)
         i++;
     }
 
-    sq_pushstring(v,_SC("_versionnumber_"),-1);
-    sq_pushinteger(v,SQUIRREL_VERSION_NUMBER);
-    sq_newslot(v,-3, SQFalse);
     sq_pushstring(v,_SC("_version_"),-1);
     sq_pushstring(v,SQUIRREL_VERSION,-1);
     sq_newslot(v,-3, SQFalse);
