@@ -156,14 +156,7 @@ struct SQObjectPtr;
 #define _userdataval(obj) ((SQUserPointer)sq_aligning((obj)._unVal.pUserData + 1))
 
 #define tofloat(num) ((sq_type(num)==OT_INTEGER)?(SQFloat)_integer(num):_float(num))
-#if SQ_LIMIT_FLOAT_TO_INT_CONVERSION
-//when we cast float to int64 on 32 bit platform it produces huge amount of imstructions
-//additionally, clang until 10.0 version couldn't make this code FPE safe, so it will raise FPE (on just reading -1 integer)
-//this define allows to trunk all floats to int32_t, which is faster on 32bit platforms and no FPE code is generated
-#define tointeger(num) ((sq_type(num)==OT_FLOAT)?(SQInteger)(int(_float(num))):_integer(num))
-#else
 #define tointeger(num) ((sq_type(num)==OT_FLOAT)?(SQInteger)_float(num):_integer(num))
-#endif
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 #if defined(SQUSEDOUBLE) && !defined(_SQ64) || !defined(SQUSEDOUBLE) && defined(_SQ64)
