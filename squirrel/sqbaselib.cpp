@@ -103,22 +103,6 @@ static SQInteger base_getconsttable(HSQUIRRELVM v)
 }
 
 
-static SQInteger base_setroottable(HSQUIRRELVM v)
-{
-    SQObjectPtr o = v->_roottable;
-    if(SQ_FAILED(sq_setroottable(v))) return SQ_ERROR;
-    v->Push(o);
-    return 1;
-}
-
-static SQInteger base_setconsttable(HSQUIRRELVM v)
-{
-    SQObjectPtr o = _ss(v)->_consts;
-    if(SQ_FAILED(sq_setconsttable(v))) return SQ_ERROR;
-    v->Push(o);
-    return 1;
-}
-
 static SQInteger base_seterrorhandler(HSQUIRRELVM v)
 {
     sq_seterrorhandler(v);
@@ -401,9 +385,7 @@ static const SQRegFunction base_funcs[]={
     {_SC("enabledebuginfo"),base_enabledebuginfo,2, NULL},
     {_SC("getstackinfos"),base_getstackinfos,2, _SC(".n")},
     {_SC("getroottable"),base_getroottable,1, NULL},
-    {_SC("setroottable"),base_setroottable,2, NULL},
     {_SC("getconsttable"),base_getconsttable,1, NULL},
-    {_SC("setconsttable"),base_setconsttable,2, NULL},
     {_SC("assert"),base_assert,-2, NULL},
     {_SC("print"),base_print,2, NULL},
     {_SC("error"),base_error,2, NULL},

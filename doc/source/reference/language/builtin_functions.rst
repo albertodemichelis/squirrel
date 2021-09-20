@@ -47,17 +47,9 @@ enable/disable the debug line information generation at compile time. enable != 
 
 returns the root table of the VM.
 
-.. sq:function:: setroottable(table)
-
-sets the root table of the VM. And returns the previous root table.
-
 .. sq:function:: getconsttable()
 
 returns the const table of the VM.
-
-.. sq:function:: setconsttable(table)
-
-sets the const table of the VM; returns the previous const table.
 
 .. sq:function:: assert(exp, [message])
 
