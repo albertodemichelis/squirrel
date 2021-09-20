@@ -22,6 +22,15 @@ static SQInteger delegable_getfuncinfos(HSQUIRRELVM v);
 static SQInteger class_getfuncinfos(HSQUIRRELVM v);
 
 
+#define SQ_CHECK_IMMUTABLE_SELF \
+    if (sq_objflags(stack_get(v,1)) & SQOBJ_FLAG_IMMUTABLE) \
+        return sq_throwerror(v, _SC("Cannot modify immutable object"));
+
+#define SQ_CHECK_IMMUTABLE_OBJ(o) \
+    if (sq_objflags(o) & SQOBJ_FLAG_IMMUTABLE) \
+        return sq_throwerror(v, _SC("Cannot modify immutable object"));
+
+
 static bool str2num(const SQChar *s,SQObjectPtr &res,SQInteger base)
 {
     SQChar *end;
@@ -373,6 +382,17 @@ static SQInteger base_clamp(HSQUIRRELVM v)
     return 1;
 }
 
+static SQInteger base_freeze(HSQUIRRELVM v)
+{
+    return SQ_SUCCEEDED(sq_freeze(v, 2)) ? 1 : SQ_ERROR;
+}
+
+static SQInteger base_getobjflags(HSQUIRRELVM v)
+{
+    sq_pushinteger(v, sq_objflags(stack_get(v, 2)));
+    return 1;
+}
+
 
 static const SQRegFunction base_funcs[]={
     //generic
@@ -400,6 +420,8 @@ static const SQRegFunction base_funcs[]={
     {_SC("min"),base_min_max<-1>,-3,_SC(".nnnnnnnn")},
     {_SC("max"),base_min_max<1>,-3,_SC(".nnnnnnnn")},
     {_SC("clamp"),base_clamp,4,_SC(".nnn")},
+    {_SC("freeze"),base_freeze,2,NULL},
+    {_SC("getobjflags"), base_getobjflags,2,NULL},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -509,6 +531,7 @@ static SQInteger obj_delegate_weakref(HSQUIRRELVM v)
 
 static SQInteger obj_clear(HSQUIRRELVM v)
 {
+    SQ_CHECK_IMMUTABLE_SELF;
     return SQ_SUCCEEDED(sq_clear(v,-1)) ? 1 : SQ_ERROR;
 }
 
@@ -524,6 +547,8 @@ static SQInteger number_delegate_tochar(HSQUIRRELVM v)
 
 static SQInteger container_update(HSQUIRRELVM v)
 {
+    SQ_CHECK_IMMUTABLE_SELF;
+
     SQInteger top = sq_gettop(v);
     for (int arg=2; arg<=top; ++arg) {
         SQObjectType argType = sq_gettype(v, arg);
@@ -545,9 +570,10 @@ static SQInteger container_update(HSQUIRRELVM v)
 
 static SQInteger container_merge(HSQUIRRELVM v)
 {
+    SQObject &o = stack_get(v,1);
+
     SQInteger top = sq_gettop(v);
-    SQObjectType tp = sq_gettype(v, 1);
-    switch (tp) {
+    switch (sq_type(o)) {
         case OT_TABLE:
             sq_newtableex(v, sq_getsize(v, 1));
             break;
@@ -673,6 +699,8 @@ static SQInteger container_findvalue(HSQUIRRELVM v)
 
 static SQInteger table_rawdelete(HSQUIRRELVM v)
 {
+    SQ_CHECK_IMMUTABLE_SELF;
+
     if(SQ_FAILED(sq_rawdeleteslot(v,1,SQTrue)))
         return SQ_ERROR;
     return 1;
@@ -691,6 +719,8 @@ static SQInteger container_rawexists(HSQUIRRELVM v)
 
 static SQInteger container_rawset(HSQUIRRELVM v)
 {
+    SQ_CHECK_IMMUTABLE_SELF;
+
     return SQ_SUCCEEDED(sq_rawset(v,-3)) ? 1 : SQ_ERROR;
 }
 
@@ -699,6 +729,7 @@ static SQInteger container_rawget(HSQUIRRELVM v)
 {
     return SQ_SUCCEEDED(sq_rawget(v,-2))?1:SQ_ERROR;
 }
+
 
 static SQInteger table_setdelegate(HSQUIRRELVM v)
 {
@@ -942,6 +973,8 @@ const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
 
 static SQInteger array_append(HSQUIRRELVM v)
 {
+    SQ_CHECK_IMMUTABLE_SELF;
+
     SQArray *arr = _array(stack_get(v, 1));
     SQInteger nitems = sq_gettop(v)-1;
     SQInteger offs = arr->Size();
@@ -955,6 +988,8 @@ static SQInteger array_append(HSQUIRRELVM v)
 
 static SQInteger array_extend(HSQUIRRELVM v)
 {
+    SQ_CHECK_IMMUTABLE_SELF;
+
     SQArray *arr = _array(stack_get(v, 1));
     SQInteger n = sq_gettop(v)-1;
     for (SQInteger i=0; i<n; ++i) {
@@ -969,11 +1004,15 @@ static SQInteger array_extend(HSQUIRRELVM v)
 
 static SQInteger array_reverse(HSQUIRRELVM v)
 {
+    SQ_CHECK_IMMUTABLE_SELF;
+
     return SQ_SUCCEEDED(sq_arrayreverse(v,-1)) ? 1 : SQ_ERROR;
 }
 
 static SQInteger array_pop(HSQUIRRELVM v)
 {
+    SQ_CHECK_IMMUTABLE_SELF;
+
     return SQ_SUCCEEDED(sq_arraypop(v,1,SQTrue))?1:SQ_ERROR;
 }
 
@@ -990,6 +1029,9 @@ static SQInteger array_top(HSQUIRRELVM v)
 static SQInteger array_insert(HSQUIRRELVM v)
 {
     SQObject &o=stack_get(v,1);
+
+    SQ_CHECK_IMMUTABLE_OBJ(o);
+
     SQObject &idx=stack_get(v,2);
     SQObject &val=stack_get(v,3);
     if(!_array(o)->Insert(tointeger(idx),val))
@@ -1001,6 +1043,8 @@ static SQInteger array_insert(HSQUIRRELVM v)
 static SQInteger array_remove(HSQUIRRELVM v)
 {
     SQObject &o = stack_get(v, 1);
+    SQ_CHECK_IMMUTABLE_OBJ(o);
+
     SQObject &idx = stack_get(v, 2);
     if(!sq_isnumeric(idx)) return sq_throwerror(v, _SC("wrong type"));
     SQObjectPtr val;
@@ -1015,6 +1059,8 @@ static SQInteger array_remove(HSQUIRRELVM v)
 static SQInteger array_resize(HSQUIRRELVM v)
 {
     SQObject &o = stack_get(v, 1);
+    SQ_CHECK_IMMUTABLE_OBJ(o);
+
     SQObject &nsize = stack_get(v, 2);
     SQObjectPtr fill;
     if(sq_isnumeric(nsize)) {
@@ -1079,6 +1125,8 @@ static SQInteger array_map(HSQUIRRELVM v)
 static SQInteger array_apply(HSQUIRRELVM v)
 {
     SQObject &o = stack_get(v,1);
+    SQ_CHECK_IMMUTABLE_OBJ(o);
+
     if(SQ_FAILED(__map_array(_array(o),_array(o),v,false)))
         return SQ_ERROR;
     sq_pop(v,1);
@@ -1299,6 +1347,8 @@ static SQInteger array_sort(HSQUIRRELVM v)
 {
     SQInteger func = -1;
     SQObjectPtr &o = stack_get(v,1);
+    SQ_CHECK_IMMUTABLE_OBJ(o);
+
     if(_array(o)->Size() > 1) {
         if(sq_gettop(v) == 2) func = 2;
         if(!_hsort(v, o, 0, _array(o)->Size()-1, func))
@@ -1346,6 +1396,8 @@ static SQInteger array_slice(HSQUIRRELVM v)
 
 static SQInteger array_replace(HSQUIRRELVM v)
 {
+    SQ_CHECK_IMMUTABLE_SELF;
+
     SQArray *dst = _array(stack_get(v, 1));
     SQArray *src = _array(stack_get(v, 2));
     dst->_values.copy(src->_values);
@@ -1380,7 +1432,6 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("findvalue"),container_findvalue,-2, _SC("ac.")},
     {_SC("totable"),pairs_to_table,1, _SC("a") },
     {_SC("replace"),array_replace,2, _SC("aa")},
-
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 

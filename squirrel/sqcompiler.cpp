@@ -133,6 +133,8 @@ public:
             SQObjectPtr &tbl = _scopedconsts[i];
             if (!sq_isnull(tbl) && _table(tbl)->Get(name,val)) {
                 e = val;
+                if (tbl._flags & SQOBJ_FLAG_IMMUTABLE)
+                    e._flags |= SQOBJ_FLAG_IMMUTABLE;
                 return true;
             }
         }
@@ -1052,18 +1054,14 @@ public:
 
                 else if(IsConstant(id, constant)) {
                     /* Handle named constant */
-                    SQObjectPtr constval;
-                    SQObject    constid;
-                    if(sq_type(constant) == OT_TABLE) {
+                    SQObjectPtr constval = constant;
+                    while (sq_type(constval) == OT_TABLE && (sq_objflags(constval) & SQOBJ_FLAG_IMMUTABLE) && _token==_SC('.')) {
                         Expect('.');
-                        constid = Expect(TK_IDENTIFIER);
-                        if(!_table(constant)->Get(constid, constval)) {
+                        SQObject constid = Expect(TK_IDENTIFIER);
+                        if(!_table(constval)->Get(constid, constval)) {
                             constval.Null();
-                            Error(_SC("invalid constant [%s.%s]"), _stringval(id), _stringval(constid));
+                            Error(_SC("invalid enum [no '%s' field in '%s']"), _stringval(constid), _stringval(id));
                         }
-                    }
-                    else {
-                        constval = constant;
                     }
                     _es.epos = _fs->PushTarget();
 
@@ -1738,6 +1736,7 @@ public:
     {
         SQObject val;
         val._type = OT_NULL; val._unVal.nInteger = 0; //shut up GCC 4.x
+        val._flags = 0;
         switch(_token) {
             case TK_INTEGER:
                 val._type = OT_INTEGER;
@@ -1813,6 +1812,7 @@ public:
         Expect(_SC('{'));
 
         SQObject table = _fs->CreateTable();
+        table._flags = SQOBJ_FLAG_IMMUTABLE;
         SQInteger nval = 0;
         while(_token != _SC('}')) {
             SQObject key = Expect(TK_IDENTIFIER);
@@ -1824,6 +1824,7 @@ public:
             else {
                 val._type = OT_INTEGER;
                 val._unVal.nInteger = nval++;
+                val._flags = 0;
             }
             _table(table)->NewSlot(SQObjectPtr(key),SQObjectPtr(val));
             if(_token == ',') Lex();

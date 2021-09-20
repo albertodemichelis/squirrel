@@ -82,6 +82,8 @@ struct SQOuter;
 #define SQOBJECT_DELEGABLE      0x02000000
 #define SQOBJECT_CANBEFALSE     0x01000000
 
+#define SQOBJ_FLAG_IMMUTABLE    0x01
+
 #define SQ_MATCHTYPEMASKSTRING (-99999)
 
 #define _RT_MASK 0x00FFFFFF
@@ -127,6 +129,8 @@ typedef enum tagSQObjectType{
     OT_OUTER =          (_RT_OUTER|SQOBJECT_REF_COUNTED) //internal usage only
 }SQObjectType;
 
+typedef uint8_t SQObjectFlags;
+
 #define ISREFCOUNTED(t) ((t)&SQOBJECT_REF_COUNTED)
 
 
@@ -157,6 +161,7 @@ typedef union tagSQObjectValue
 typedef struct tagSQObject
 {
     SQObjectType _type;
+    SQObjectFlags _flags;
     SQObjectValue _unVal;
 }SQObject;
 
@@ -325,6 +330,7 @@ SQUIRREL_API SQRESULT sq_setfreevariable(HSQUIRRELVM v,SQInteger idx,SQUnsignedI
 SQUIRREL_API SQRESULT sq_next(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_getweakrefval(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_clear(HSQUIRRELVM v,SQInteger idx);
+SQUIRREL_API SQRESULT sq_freeze(HSQUIRRELVM v, SQInteger idx);
 
 /*calls*/
 SQUIRREL_API SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool invoke_err_handler);
@@ -397,6 +403,7 @@ SQUIRREL_API void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook);
 #define sq_isbool(o) ((o)._type==OT_BOOL)
 #define sq_isweakref(o) ((o)._type==OT_WEAKREF)
 #define sq_type(o) ((o)._type)
+#define sq_objflags(o) ((o)._flags)
 
 
 #define SQ_OK (0)

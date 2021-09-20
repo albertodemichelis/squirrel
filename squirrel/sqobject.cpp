@@ -82,13 +82,14 @@ SQUnsignedInteger TranslateIndex(const SQObjectPtr &idx)
     return 0;
 }
 
-SQWeakRef *SQRefCounted::GetWeakRef(SQAllocContext alloc_ctx, SQObjectType type)
+SQWeakRef *SQRefCounted::GetWeakRef(SQAllocContext alloc_ctx, SQObjectType type, SQObjectFlags flags)
 {
     if(!_weakref) {
         sq_new(alloc_ctx, _weakref, SQWeakRef);
         _weakref->_alloc_ctx = alloc_ctx;
         _weakref->_obj._unVal.raw = 0;
         _weakref->_obj._type = type;
+        _weakref->_obj._flags = flags;
         _weakref->_obj._unVal.pRefCounted = this;
     }
     return _weakref;
@@ -138,7 +139,10 @@ bool SQGenerator::Yield(SQVM *v,SQInteger target)
 
     _stack.resize(size);
     SQObject _this = v->_stack[v->_stackbase];
-    _stack._vals[0] = ISREFCOUNTED(sq_type(_this)) ? SQObjectPtr(_refcounted(_this)->GetWeakRef(_ss(v)->_alloc_ctx, sq_type(_this))) : _this;
+    _stack._vals[0] = ISREFCOUNTED(sq_type(_this))
+        ? SQObjectPtr(_refcounted(_this)->GetWeakRef(_ss(v)->_alloc_ctx, sq_type(_this), _this._flags))
+        : _this;
+
     for(SQInteger n =1; n<target; n++) {
         _stack._vals[n] = v->_stack[v->_stackbase+n];
     }
@@ -387,7 +391,7 @@ bool SQClosure::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &ret)
     SQObjectPtr func;
     _CHECK_IO(SQFunctionProto::Load(v,up,read,func));
     _CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_TAIL));
-    ret = SQClosure::Create(_ss(v),_funcproto(func),_table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE));
+    ret = SQClosure::Create(_ss(v),_funcproto(func),_table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0));
     //FIXME: load an root for this closure
     return true;
 }

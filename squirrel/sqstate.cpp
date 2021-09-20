@@ -297,6 +297,7 @@ SQInteger SQSharedState::ResurrectUnreachable(SQVM *vm)
                 SQObject sqo;
                 sqo._type = type;
                 sqo._unVal.pRefCounted = t;
+                sqo._flags = 0; //< FIXME: we lose information on mutability, so it turns everyhing into mutable
                 ret->Append(sqo);
             }
             t = t->_next;

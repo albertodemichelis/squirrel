@@ -90,7 +90,7 @@ struct SQRefCounted
     struct SQWeakRef *_weakref;
     SQRefCounted() { _uiRef = 0; _weakref = NULL; }
     virtual ~SQRefCounted();
-    SQWeakRef *GetWeakRef(SQAllocContext alloc_ctx, SQObjectType type);
+    SQWeakRef *GetWeakRef(SQAllocContext alloc_ctx, SQObjectType type, SQObjectFlags flags);
     virtual void Release()=0;
 
 };
@@ -177,6 +177,7 @@ struct SQObjectPtr;
     { \
         SQ_OBJECT_RAWINIT() \
         _type=type; \
+        _flags=0; \
         _unVal.sym = x; \
         assert(_unVal.pTable); \
         _unVal.pRefCounted->_uiRef++; \
@@ -188,6 +189,7 @@ struct SQObjectPtr;
         tOldType=_type; \
         unOldVal=_unVal; \
         _type = type; \
+        _flags = 0; \
         SQ_REFOBJECT_INIT() \
         _unVal.sym = x; \
         _unVal.pRefCounted->_uiRef++; \
@@ -200,12 +202,14 @@ struct SQObjectPtr;
     { \
         SQ_OBJECT_RAWINIT() \
         _type=type; \
+        _flags = 0; \
         _unVal.sym = x; \
     } \
     inline SQObjectPtr& operator=(_class x) \
     {  \
         __Release(_type,_unVal); \
         _type = type; \
+        _flags = 0; \
         SQ_OBJECT_RAWINIT() \
         _unVal.sym = x; \
         return *this; \
@@ -216,17 +220,20 @@ struct SQObjectPtr : public SQObject
     {
         SQ_OBJECT_RAWINIT()
         _type=OT_NULL;
+        _flags=0;
         _unVal.pUserPointer=NULL;
     }
     SQObjectPtr(const SQObjectPtr &o)
     {
         _type = o._type;
+        _flags = o._flags;
         _unVal = o._unVal;
         __AddRef(_type,_unVal);
     }
     SQObjectPtr(const SQObject &o)
     {
         _type = o._type;
+        _flags = o._flags;
         _unVal = o._unVal;
         __AddRef(_type,_unVal);
     }
@@ -252,6 +259,7 @@ struct SQObjectPtr : public SQObject
     {
         SQ_OBJECT_RAWINIT()
         _type = OT_BOOL;
+        _flags = 0;
         _unVal.nInteger = bBool?1:0;
     }
     inline SQObjectPtr& operator=(bool b)
@@ -259,6 +267,7 @@ struct SQObjectPtr : public SQObject
         __Release(_type,_unVal);
         SQ_OBJECT_RAWINIT()
         _type = OT_BOOL;
+        _flags = 0;
         _unVal.nInteger = b?1:0;
         return *this;
     }
@@ -276,6 +285,7 @@ struct SQObjectPtr : public SQObject
         unOldVal=_unVal;
         _unVal = obj._unVal;
         _type = obj._type;
+        _flags = obj._flags;
         __AddRef(_type,_unVal);
         __Release(tOldType,unOldVal);
         return *this;
@@ -288,6 +298,7 @@ struct SQObjectPtr : public SQObject
         unOldVal=_unVal;
         _unVal = obj._unVal;
         _type = obj._type;
+        _flags = obj._flags;
         __AddRef(_type,_unVal);
         __Release(tOldType,unOldVal);
         return *this;
@@ -297,6 +308,7 @@ struct SQObjectPtr : public SQObject
         SQObjectType tOldType = _type;
         SQObjectValue unOldVal = _unVal;
         _type = OT_NULL;
+        _flags = 0;
         _unVal.raw = (SQRawObjectVal)NULL;
         __Release(tOldType ,unOldVal);
     }
@@ -308,10 +320,14 @@ struct SQObjectPtr : public SQObject
 inline void _Swap(SQObject &a,SQObject &b)
 {
     SQObjectType tOldType = a._type;
+    SQObjectFlags fOldFlags = a._flags;
     SQObjectValue unOldVal = a._unVal;
+
     a._type = b._type;
+    a._flags = b._flags;
     a._unVal = b._unVal;
     b._type = tOldType;
+    b._flags = fOldFlags;
     b._unVal = unOldVal;
 }
 

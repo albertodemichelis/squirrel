@@ -610,7 +610,7 @@ bool SQVM::FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr
 bool SQVM::CLOSURE_OP(SQObjectPtr &target, SQFunctionProto *func)
 {
     SQInteger nouters;
-    SQClosure *closure = SQClosure::Create(_ss(this), func,_table(_roottable)->GetWeakRef(_sharedstate->_alloc_ctx, OT_TABLE));
+    SQClosure *closure = SQClosure::Create(_ss(this), func,_table(_roottable)->GetWeakRef(_sharedstate->_alloc_ctx, OT_TABLE, 0));
     if((nouters = func->_noutervalues)) {
         for(SQInteger i = 0; i<nouters; i++) {
             SQOuterVar &v = func->_outervalues[i];
@@ -1016,8 +1016,10 @@ exception_restore:
                 }
             case _OP_APPENDARRAY:
                 {
+                    // No need to check for immutability here since it is only used for array initialization
                     SQObject val;
                     val._unVal.raw = 0;
+                    val._flags = 0;
                 switch(arg2) {
                 case AAT_STACK:
                     val = STK(arg1); break;
@@ -1483,20 +1485,43 @@ bool SQVM::GetVarTrace(const SQObjectPtr &self, const SQObjectPtr &key, char * b
 #define FALLBACK_NO_MATCH   1
 #define FALLBACK_ERROR      2
 
+static void propagate_immutable(const SQObject &obj, SQObject &slot_val)
+{
+    if (sq_objflags(obj) & SQOBJ_FLAG_IMMUTABLE)
+        slot_val._flags |= SQOBJ_FLAG_IMMUTABLE;
+}
+
 bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &dest, SQUnsignedInteger getflags, SQInteger selfidx)
 {
     switch(sq_type(self)){
     case OT_TABLE:
-        if(_table(self)->Get(key,dest))return true;
+        if(_table(self)->Get(key,dest)) {
+            propagate_immutable(self, dest);
+            return true;
+        }
         break;
     case OT_ARRAY:
-        if (sq_isnumeric(key)) { if (_array(self)->Get(tointeger(key), dest)) { return true; } if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key); return false; }
+        if (sq_isnumeric(key)) {
+            if (_array(self)->Get(tointeger(key), dest)) {
+                propagate_immutable(self, dest);
+                return true;
+            }
+            if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0)
+                Raise_IdxError(key);
+            return false;
+        }
         break;
     case OT_INSTANCE:
-        if(_instance(self)->Get(key,dest)) return true;
+        if(_instance(self)->Get(key,dest)) {
+            propagate_immutable(self, dest);
+            return true;
+        }
         break;
     case OT_CLASS:
-        if(_class(self)->Get(key,dest)) return true;
+        if(_class(self)->Get(key,dest)) {
+            propagate_immutable(self, dest);
+            return true;
+        }
         break;
     case OT_STRING:
         if(sq_isnumeric(key)){
@@ -1515,7 +1540,9 @@ bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &des
     }
     if ((getflags & GET_FLAG_RAW) == 0) {
         switch(FallBackGet(self,key,dest)) {
-            case FALLBACK_OK: return true; //okie
+            case FALLBACK_OK:
+                propagate_immutable(self, dest);
+                return true; //okie
             case FALLBACK_NO_MATCH: break; //keep falling back
             case FALLBACK_ERROR: return false; // the metamethod failed
         }
@@ -1523,6 +1550,7 @@ bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &des
     if (!(getflags & (GET_FLAG_RAW | GET_FLAG_NO_DEF_DELEGATE)))
     {
         if(InvokeDefaultDelegate(self,key,dest)) {
+            propagate_immutable(self, dest);
             return true;
         }
     }
@@ -1531,7 +1559,10 @@ bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &des
         SQWeakRef *w = _closure(ci->_closure)->_root;
         if(sq_type(w->_obj) != OT_NULL)
         {
-            if(Get(*((const SQObjectPtr *)&w->_obj),key,dest,0,DONT_FALL_BACK)) return true;
+            if(Get(*((const SQObjectPtr *)&w->_obj),key,dest,0,DONT_FALL_BACK)) {
+                propagate_immutable(self, dest);
+                return true;
+            }
         }
 
     }
@@ -1601,6 +1632,11 @@ SQInteger SQVM::FallBackGet(const SQObjectPtr &self,const SQObjectPtr &key,SQObj
 
 bool SQVM::Set(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val,SQInteger selfidx)
 {
+    if (self._flags & SQOBJ_FLAG_IMMUTABLE) {
+        Raise_Error(_SC("trying to modify immutable '%s'"),GetTypeName(self));
+        return false;
+    }
+
     switch(sq_type(self)){
     case OT_TABLE:
         if(_table(self)->Set(key,val)) return true;
@@ -1725,6 +1761,11 @@ bool SQVM::NewSlotA(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjec
 
 bool SQVM::NewSlot(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val,bool bstatic)
 {
+    if (self._flags & SQOBJ_FLAG_IMMUTABLE) {
+        Raise_Error(_SC("trying to modify immutable '%s'"),GetTypeName(self));
+        return false;
+    }
+
     if(sq_type(key) == OT_NULL) { Raise_Error(_SC("null cannot be used as index")); return false; }
     switch(sq_type(self)) {
     case OT_TABLE: {
@@ -1786,6 +1827,11 @@ bool SQVM::NewSlot(const SQObjectPtr &self,const SQObjectPtr &key,const SQObject
 
 bool SQVM::DeleteSlot(const SQObjectPtr &self,const SQObjectPtr &key,SQObjectPtr &res)
 {
+    if (self._flags & SQOBJ_FLAG_IMMUTABLE) {
+        Raise_Error(_SC("trying to modify immutable '%s'"),GetTypeName(self));
+        return false;
+    }
+
     switch(sq_type(self)) {
     case OT_TABLE:
     case OT_INSTANCE:

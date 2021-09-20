@@ -1,4 +1,11 @@
 
+#if !defined(_MSC_VER) || defined(__clang__) || (_MSC_VER >= 1800)
+#define USE_STDINT
+#endif
+
+#ifdef USE_STDINT
+#include <stdint.h>
+#endif
 #ifdef _SQ64
 
 #ifdef _MSC_VER
