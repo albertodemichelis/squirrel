@@ -893,10 +893,15 @@ SQRESULT sq_newslot(HSQUIRRELVM v, SQInteger idx, SQBool bstatic)
     if(sq_type(self) == OT_TABLE || sq_type(self) == OT_CLASS) {
         SQObjectPtr &key = v->GetUp(-2);
         if(sq_type(key) == OT_NULL) return sq_throwerror(v, _SC("null is not a valid key"));
-        v->NewSlot(self, key, v->GetUp(-1),bstatic?true:false);
+        if (!v->NewSlot(self, key, v->GetUp(-1),bstatic?true:false))
+            return SQ_ERROR;
         v->Pop(2);
+        return SQ_OK;
     }
-    return SQ_OK;
+    else {
+        v->Raise_Error(_SC("cannot add slot to '%s'"), GetTypeName(self));
+        return SQ_ERROR;
+    }
 }
 
 SQRESULT sq_deleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
