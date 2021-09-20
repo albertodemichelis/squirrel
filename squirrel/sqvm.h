@@ -202,7 +202,9 @@ inline SQObjectPtr &stack_get(HSQUIRRELVM v,SQInteger idx){return ((idx>=0)?(v->
 #ifndef NO_GARBAGE_COLLECTOR
 #define _opt_ss(_vm_) (_vm_)->_sharedstate
 #else
-#define _opt_ss(_vm_) NULL
+// This change is needed to make use of alloc_ctx
+// Without alloc_ctx NULL can be returned
+#define _opt_ss(_vm_) (_vm_)->_sharedstate
 #endif
 
 #define PUSH_CALLINFO(v,nci){ \

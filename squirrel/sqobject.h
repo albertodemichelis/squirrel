@@ -347,10 +347,17 @@ struct SQCollectable : public SQRefCounted {
 #define INIT_CHAIN() {_next=NULL;_prev=NULL;_sharedstate=ss;}
 #else
 
+// Need this to keep SQSharedState pointer to access alloc_ctx
+// Otherwise, just use SQRefCounted as CHAINABLE_OBJ in the way it was initially
+struct SQRefCountedWithSharedState : public SQRefCounted
+{
+    SQSharedState *_sharedstate;
+};
 #define ADD_TO_CHAIN(chain,obj) ((void)0)
 #define REMOVE_FROM_CHAIN(chain,obj) ((void)0)
-#define CHAINABLE_OBJ SQRefCounted
-#define INIT_CHAIN() ((void)0)
+#define CHAINABLE_OBJ SQRefCountedWithSharedState
+#define INIT_CHAIN() {_sharedstate=ss;}
+
 #endif
 
 struct SQDelegable : public CHAINABLE_OBJ {
