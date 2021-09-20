@@ -124,6 +124,18 @@ returns value limited by provided min-max range
 
 creates a new cooperative thread object(coroutine) and returns it
 
+.. sq:function:: freeze(x)
+
+returns immutable reference to given object.
+Throws an error if argument is of POD type (to help prevent errors).
+
+.. sq:function:: getobjflags(x)
+
+Given object handle, return its flags that may be:
+
+  * 0 - no special flags
+  * SQOBJ_FLAG_IMMUTABLE - bit set if the object handle is immutable
+
 .. sq:function:: getbuildinfo(x)
 
 returns table containing information on VM build parameters.
