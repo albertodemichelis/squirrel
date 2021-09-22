@@ -20,12 +20,17 @@ static void collect_stack_sting(HSQUIRRELVM v, PrintFunc pf)
     SQInteger i;
     SQFloat f;
     const SQChar *s;
-    SQInteger level=1; //1 is to skip this function that is level 0
+    SQInteger level=0;
     const SQChar *name=0;
     SQInteger seq=0;
     pf(v,_SC("\nCALLSTACK\n"));
     while(SQ_SUCCEEDED(sq_stackinfos(v,level,&si)))
     {
+        if (si.line < 0 && level == 0) { // skip top native function
+            ++level;
+            continue;
+        }
+
         const SQChar *fn=_SC("unknown");
         const SQChar *src=_SC("unknown");
         if(si.funcname)fn=si.funcname;
