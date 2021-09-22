@@ -3,7 +3,15 @@
 #include <sqstdaux.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 #include <stdarg.h>
+
+#ifdef SQ_STACK_DUMP_SECRET_PREFIX
+    #define STRINGIZE(x) #x
+    #define SQ_STRING_EXPAND(x) _SC(STRINGIZE(x))
+    #define SECRET_PREFIX SQ_STRING_EXPAND(SQ_STACK_DUMP_SECRET_PREFIX)
+#endif
+
 
 template<typename PrintFunc>
 static void collect_stack_sting(HSQUIRRELVM v, PrintFunc pf)
@@ -33,6 +41,13 @@ static void collect_stack_sting(HSQUIRRELVM v, PrintFunc pf)
         while((name = sq_getlocal(v,level,seq)))
         {
             seq++;
+#ifdef SQ_STACK_DUMP_SECRET_PREFIX
+            bool should_keep_secret = (scstrncmp(name, SECRET_PREFIX, sizeof(SECRET_PREFIX)/sizeof(SQChar) - 1) == 0);
+            if (should_keep_secret) {
+                sq_pop(v, 1);
+                continue;
+            }
+#endif
             switch(sq_gettype(v,-1))
             {
             case OT_NULL:
