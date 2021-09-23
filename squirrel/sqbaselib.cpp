@@ -426,10 +426,9 @@ static const SQRegFunction base_funcs[]={
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
-void sq_base_register(HSQUIRRELVM v)
+SQRESULT sq_registerbaselib(HSQUIRRELVM v)
 {
     SQInteger i=0;
-    sq_pushroottable(v);
     while(base_funcs[i].name!=0) {
         sq_pushstring(v,base_funcs[i].name,-1);
         sq_newclosure(v,base_funcs[i].f,0);
@@ -438,7 +437,19 @@ void sq_base_register(HSQUIRRELVM v)
         sq_newslot(v,-3, SQFalse);
         i++;
     }
+    return SQ_OK;
+}
 
+void sq_base_register(HSQUIRRELVM v)
+{
+    sq_pushroottable(v);
+    sq_registerbaselib(v);
+    sq_pop(v,1);
+
+    sq_pushconsttable(v);
+    sq_pushstring(v, _SC("SQOBJ_FLAG_IMMUTABLE"), -1);
+    sq_pushinteger(v, SQOBJ_FLAG_IMMUTABLE);
+    sq_newslot(v, -3, SQFalse);
     sq_pop(v,1);
 }
 
