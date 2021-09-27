@@ -720,23 +720,6 @@ SQVM::BooleanResult SQVM::ResolveBooleanResult(const SQObjectPtr &o)
 extern SQInstructionDesc g_InstrDesc[];
 bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQObjectPtr &outres, SQBool invoke_err_handler,ExecutionType et)
 {
-    VT_CODE(
-      struct ResoreVmOnExit
-      {
-        HSQUIRRELVM savedVm;
-        bool savedVtEnabled;
-        ~ResoreVmOnExit()
-        {
-          VarTrace::vm = savedVm;
-          VarTrace::enabled = savedVtEnabled;
-        }
-      } restoreVm;
-      restoreVm.savedVm = VarTrace::vm;
-      restoreVm.savedVtEnabled = VarTrace::enabled;
-      VarTrace::vm = this;
-      VarTrace::enabled = _ss(this)->_varTraceEnabled;
-    );
-
     if ((_nnativecalls + 1) > MAX_NATIVE_CALLS) { Raise_Error(_SC("Native stack overflow")); return false; }
     _nnativecalls++;
     AutoDec ad(&_nnativecalls);

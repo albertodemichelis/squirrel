@@ -15,7 +15,6 @@
 #define VAR_TRACE_STACK_DEPTH 4
 #define VAR_TRACE_STACK_HISTORY 4
 
-typedef struct SQVM* HSQUIRRELVM;
 
 struct VarTrace
 {
@@ -34,8 +33,6 @@ struct VarTrace
     SQChar flags;
 #endif
   };
-
-  static volatile bool enabled;
 
   int pos;
   int setCnt;
@@ -63,7 +60,8 @@ struct VarTrace
     }
   }
 
-  void saveStack(const SQObject & value, HSQUIRRELVM var_vm = NULL);
+  void saveStack(const SQObject & value, const SQObject &vm);
+  void saveStack(const SQObject & value, HSQUIRRELVM vm);
   void printStack(char * buf, int size);
 
 private:
@@ -84,12 +82,11 @@ private:
 #define VT_REF(ptr) VT_COMMA &(ptr->varTrace)
 #define VT_RESIZE(x) varTrace.resize(x)
 #define VT_RESERVE(x) varTrace.reserve(x)
-#define VT_TRACE(x, val) varTrace[x].saveStack(val)
-#define VT_TRACE_SINGLE(ptr, val) ptr->varTrace.saveStack(val)
-#define VT_TRACE_SINGLE_VM(ptr, val, vm) ptr->varTrace.saveStack(val, vm)
+#define VT_TRACE(x, val, vm) varTrace[x].saveStack(val, vm)
+#define VT_TRACE_SINGLE(ptr, val, vm) ptr->varTrace.saveStack(val, vm)
 #define VT_CLEAR_SINGLE(ptr) ptr->varTrace.clear()
-#define VT_INSERT(x, val) { VarTrace tmp; varTrace.insert(x, tmp); VT_TRACE(x, val); }
-#define VT_PUSHBACK(val) { VarTrace tmp; varTrace.push_back(tmp); VT_TRACE(varTrace.size() - 1, val); }
+#define VT_INSERT(x, val, vm) { VarTrace tmp; varTrace.insert(x, tmp); VT_TRACE(x, val, vm); }
+#define VT_PUSHBACK(val, vm) { VarTrace tmp; varTrace.push_back(tmp); VT_TRACE(varTrace.size() - 1, val, vm); }
 #define VT_POPBACK() varTrace.pop_back()
 #define VT_REMOVE(x) varTrace.remove(x)
 #define VT_CLONE_TO(to) to->varTrace.copy(varTrace)
@@ -112,12 +109,11 @@ typedef sqvector<VarTrace> SQVarTraceVec;
 #define VT_REF(ptr)
 #define VT_RESIZE(x)
 #define VT_RESERVE(x)
-#define VT_TRACE(x, val)
-#define VT_TRACE_SINGLE(ptr, val)
-#define VT_TRACE_SINGLE_VM(ptr, val, vm)
+#define VT_TRACE(x, val, vm)
+#define VT_TRACE_SINGLE(ptr, val, vm)
 #define VT_CLEAR_SINGLE(ptr)
-#define VT_INSERT(x, val)
-#define VT_PUSHBACK(val)
+#define VT_INSERT(x, val, vm)
+#define VT_PUSHBACK(val, vm)
 #define VT_POPBACK()
 #define VT_REMOVE(x)
 #define VT_CLONE_TO(to)

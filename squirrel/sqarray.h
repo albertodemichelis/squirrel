@@ -48,7 +48,7 @@ public:
     {
         if(nidx>=0 && nidx<(SQInteger)_values.size()){
             _values[nidx]=val;
-            VT_TRACE(nidx, val);
+            VT_TRACE(nidx, val, _ss(this)->_root_vm);
             return true;
         }
         else return false;
@@ -76,7 +76,7 @@ public:
     }
     void Resize(SQInteger size,SQObjectPtr &fill) { _values.resize(size,fill); VT_RESIZE(size); ShrinkIfNeeded(); }
     void Reserve(SQInteger size) { _values.reserve(size); VT_RESERVE(size); }
-    void Append(const SQObject &o){_values.push_back(o); VT_PUSHBACK(o); }
+    void Append(const SQObject &o){_values.push_back(o); VT_PUSHBACK(o, _ss(this)->_root_vm); }
     void Extend(const SQArray *a);
     SQObjectPtr &Top(){return _values.top();}
     void Pop(){_values.pop_back(); VT_POPBACK(); ShrinkIfNeeded(); }
@@ -84,7 +84,7 @@ public:
         if(idx < 0 || idx > (SQInteger)_values.size())
             return false;
         _values.insert(idx,val);
-        VT_INSERT(idx, val);
+        VT_INSERT(idx, val, _ss(this)->_root_vm);
         return true;
     }
     void ShrinkIfNeeded() {

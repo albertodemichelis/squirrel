@@ -85,7 +85,7 @@ SQTable *SQTable::Clone()
         dst->key = src->key;
         dst->val = src->val;
         VT_COPY_SINGLE(src, dst);
-        VT_TRACE_SINGLE(dst, dst->val);
+        VT_TRACE_SINGLE(dst, dst->val, _ss(this)->_root_vm);
         if(src->next) {
             assert(src->next > basesrc);
             dst->next = basedst + (src->next - basesrc);
@@ -146,7 +146,7 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val  VT_DECL_ARG
     if (n) {
         n->val = val;
         VT_CODE(if (var_trace_arg) n->varTrace = *var_trace_arg);
-        VT_TRACE_SINGLE(n, val);
+        VT_TRACE_SINGLE(n, val, _ss(this)->_root_vm);
         return false;
     }
     _HashNode *mp = &_nodes[h];
@@ -189,7 +189,7 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val  VT_DECL_ARG
         if (sq_type(_firstfree->key) == OT_NULL && _firstfree->next == NULL) {
             mp->val = val;
             VT_CODE(if (var_trace_arg) mp->varTrace = *var_trace_arg);
-            VT_TRACE_SINGLE(mp, val);
+            VT_TRACE_SINGLE(mp, val, _ss(this)->_root_vm);
             _usednodes++;
             return true;  /* OK; table still has a free place */
         }
@@ -224,7 +224,7 @@ bool SQTable::Set(const SQObjectPtr &key, const SQObjectPtr &val)
     _HashNode *n = _Get(key, HashObj(key) & _numofnodes_minus_one);
     if (n) {
         n->val = val;
-        VT_TRACE_SINGLE(n, val);
+        VT_TRACE_SINGLE(n, val, _ss(this)->_root_vm);
         return true;
     }
     return false;

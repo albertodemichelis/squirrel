@@ -10,7 +10,6 @@
 #define VT_FLAG_STRING (1<<0)
 #define VT_FLAG_ELLIPSIS (1<<1)
 
-volatile bool VarTrace::enabled = true;
 
 bool VarTrace::isStacksEqual(int a, int b)
 {
@@ -29,18 +28,25 @@ bool VarTrace::isStacksEqual(int a, int b)
   return true;
 }
 
-void VarTrace::saveStack(const SQObject & value, HSQUIRRELVM var_vm)
+void VarTrace::saveStack(const SQObject & value, const SQObject &vm_ref)
 {
-  if (!enabled)
+  // NULL vm may happen for objects created during SQSharedState initialization
+  assert(sq_isthread(vm_ref) || sq_isnull(vm_ref));
+
+  if (!sq_isthread(vm_ref))
+    return;
+
+  HSQUIRRELVM vm = static_cast<HSQUIRRELVM>(vm_ref._unVal.pRefCounted);
+  saveStack(value, vm);
+}
+
+
+void VarTrace::saveStack(const SQObject & value, HSQUIRRELVM vm)
+{
+  if (!_ss(vm)->_varTraceEnabled)
     return;
 
   setCnt++;
-
-  if (!var_vm)
-    var_vm = SQVM::GetCurrentVM();
-
-  if (!var_vm)
-    return;
 
   SQInteger level = 0;
 
@@ -51,7 +57,7 @@ void VarTrace::saveStack(const SQObject & value, HSQUIRRELVM var_vm)
 
   SQObjectPtr obj(value);
   SQObjectPtr res;
-  if (var_vm->ToString(obj, res))
+  if (vm->ToString(obj, res))
   {
     const SQChar *valueAsString = sq_objtostring(&res);
     if (valueAsString)
@@ -67,7 +73,7 @@ void VarTrace::saveStack(const SQObject & value, HSQUIRRELVM var_vm)
 #endif
 
   int count = 0;
-  int cssize = var_vm->_callsstacksize;
+  int cssize = vm->_callsstacksize;
 
   for (;;)
   {
@@ -75,7 +81,7 @@ void VarTrace::saveStack(const SQObject & value, HSQUIRRELVM var_vm)
       break;
 
     int idx = cssize - level - 1;
-    SQVM::CallInfo &ci = var_vm->_callsstack[idx];
+    SQVM::CallInfo &ci = vm->_callsstack[idx];
 
     if (sq_type(ci._closure) == OT_CLOSURE)
     {
