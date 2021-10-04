@@ -276,14 +276,17 @@ static SQInteger base_suspend(HSQUIRRELVM v)
 
 static SQInteger base_array(HSQUIRRELVM v)
 {
+    SQInteger size = tointeger(stack_get(v,2));
+    if (size < 0)
+        return sq_throwerror(v, "array size must be non-negative");
+
     SQArray *a;
-    SQObject &size = stack_get(v,2);
     if(sq_gettop(v) > 2) {
         a = SQArray::Create(_ss(v),0);
-        a->Resize(tointeger(size),stack_get(v,3));
+        a->Resize(size,stack_get(v,3));
     }
     else {
-        a = SQArray::Create(_ss(v),tointeger(size));
+        a = SQArray::Create(_ss(v),size);
     }
     v->Push(a);
     return 1;
