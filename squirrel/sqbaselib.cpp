@@ -218,30 +218,38 @@ static SQInteger get_slice_params(HSQUIRRELVM v,SQInteger &sidx,SQInteger &eidx,
     return 1;
 }
 
-static SQInteger base_print(HSQUIRRELVM v)
+static SQInteger base_print(HSQUIRRELVM v, SQPRINTFUNCTION pf, bool newline)
 {
-    const SQChar *str;
     if(SQ_SUCCEEDED(sq_tostring(v,2)))
     {
+        const SQChar *str;
         if(SQ_SUCCEEDED(sq_getstring(v,-1,&str))) {
-            if(_ss(v)->_printfunc) _ss(v)->_printfunc(v,_SC("%s"),str);
+            if(pf)
+                pf(v, newline ? _SC("%s\n") : _SC("%s"), str);
             return 0;
         }
     }
     return SQ_ERROR;
 }
 
-static SQInteger base_error(HSQUIRRELVM v)
+static SQInteger base_print_newline(HSQUIRRELVM v)
 {
-    const SQChar *str;
-    if(SQ_SUCCEEDED(sq_tostring(v,2)))
-    {
-        if(SQ_SUCCEEDED(sq_getstring(v,-1,&str))) {
-            if(_ss(v)->_errorfunc) _ss(v)->_errorfunc(v,_SC("%s"),str);
-            return 0;
-        }
-    }
-    return SQ_ERROR;
+    return base_print(v, _ss(v)->_printfunc, true);
+}
+
+static SQInteger base_print_(HSQUIRRELVM v)
+{
+    return base_print(v, _ss(v)->_printfunc, false);
+}
+
+static SQInteger base_error_newline(HSQUIRRELVM v)
+{
+    return base_print(v, _ss(v)->_errorfunc, true);
+}
+
+static SQInteger base_error_(HSQUIRRELVM v)
+{
+    return base_print(v, _ss(v)->_errorfunc, false);
 }
 
 static SQInteger base_compilestring(HSQUIRRELVM v)
@@ -407,9 +415,11 @@ static const SQRegFunction base_funcs[]={
     {_SC("getstackinfos"),base_getstackinfos,2, _SC(".n")},
     {_SC("getroottable"),base_getroottable,1, NULL},
     {_SC("getconsttable"),base_getconsttable,1, NULL},
-    {_SC("assert"),base_assert,-2, NULL},
-    {_SC("print"),base_print,2, NULL},
-    {_SC("error"),base_error,2, NULL},
+    {_SC("assert"),base_assert, -2, NULL},
+    {_SC("print"),base_print_, 2, NULL},
+    {_SC("println"),base_print_newline, 2, NULL},
+    {_SC("error"),base_error_, 2, NULL},
+    {_SC("errorln"),base_error_newline, 2, NULL},
     {_SC("compilestring"),base_compilestring,-2, _SC(".ss")},
     {_SC("newthread"),base_newthread,2, _SC(".c")},
     {_SC("suspend"),base_suspend,-1, NULL},
