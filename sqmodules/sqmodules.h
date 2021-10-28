@@ -67,6 +67,7 @@ public:
   void  registerBaseLibs();
   void  registerSystemLib();
   void  registerIoLib();
+  void  registerDateTimeLib();
 
 private:
   // Script API

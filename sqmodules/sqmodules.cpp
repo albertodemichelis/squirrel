@@ -6,6 +6,7 @@
 #include <sqstdblob.h>
 #include <sqstdio.h>
 #include <sqstdsystem.h>
+#include <sqstddatetime.h>
 #include <sqstdaux.h>
 #include <sqdirect.h>
 
@@ -462,3 +463,7 @@ void SqModules::registerIoLib()
   registerBaseLibNativeModule("io", sqstd_register_iolib);
 }
 
+void SqModules::registerDateTimeLib()
+{
+  registerBaseLibNativeModule("datetime", sqstd_register_datetimelib);
+}

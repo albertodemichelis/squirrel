@@ -5,6 +5,7 @@ set(SQSTDLIB_SRC sqstdaux.cpp
                  sqstdrex.cpp
                  sqstdstream.cpp
                  sqstdstring.cpp
+                 sqstddatetime.cpp
                  sqstdsystem.cpp)
 
 if(NOT DISABLE_DYNAMIC)

@@ -303,6 +303,7 @@ int main(int argc, char* argv[])
     module_mgr->registerBaseLibs();
     module_mgr->registerIoLib();
     module_mgr->registerSystemLib();
+    module_mgr->registerDateTimeLib();
 
     sqstd_register_command_line_args(v, argc, argv);
 

@@ -37,6 +37,7 @@ THE SOFTWARE.
    stdbloblib.rst
    stdmathlib.rst
    stdsystemlib.rst
+   stddatetimelib.rst
    stdstringlib.rst
    stdauxlib.rst
 
