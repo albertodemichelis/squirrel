@@ -59,11 +59,19 @@ unnecessary string formatting when it is not needed.
 
 .. sq:function:: print(x)
 
-prints x to the standard output
+prints x calling host app printing function set by (:ref:`sq_setprintfunc <sq_setprintfunc>`) call
+
+.. sq:function:: println(x)
+
+prints x adding line feed ('\n') to the resulting string
 
 .. sq:function:: error(x)
 
-prints x in the standard error output
+prints x calling host app error printing function set by (:ref:`sq_setprintfunc <sq_setprintfunc>`) call
+
+.. sq:function:: errorln(x)
+
+same as error(x) but adds line feed ('\n') to the resulting string
 
 .. sq:function:: compilestring(string,[buffername])
 
