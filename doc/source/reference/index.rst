@@ -1,8 +1,8 @@
 .. _reference:
 
-#################################
-  Quirrel 4.0 Reference Manual
-#################################
+#####################################
+  Quirrel |version| Reference Manual
+#####################################
 
 Project source code is available at https://github.com/GaijinEntertainment/quirrel
 

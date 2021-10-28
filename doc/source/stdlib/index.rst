@@ -1,8 +1,8 @@
 .. _stdlib:
 
-#################################
-  Quirrel Standard Library 4.0
-#################################
+######################################
+  Quirrel |version| Standard Library
+######################################
 
 Project source code is available at https://github.com/GaijinEntertainment/quirrel
 
