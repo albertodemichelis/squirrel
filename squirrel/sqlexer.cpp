@@ -271,7 +271,7 @@ bool SQLexer::ProcessReaderMacro()
     }
 
     if (macroState.macroParams.size() != 0) {
-        append_string_to_vec(macroState.macroStr, ".subst(");
+        append_string_to_vec(macroState.macroStr, _SC(".subst("));
 
         for (SQUnsignedInteger i = 0; i < macroState.macroParams.size(); i++)
             macroState.macroStr.push_back(macroState.macroParams[i]);

@@ -286,7 +286,7 @@ static SQInteger base_array(HSQUIRRELVM v)
 {
     SQInteger size = tointeger(stack_get(v,2));
     if (size < 0)
-        return sq_throwerror(v, "array size must be non-negative");
+        return sq_throwerror(v, _SC("array size must be non-negative"));
 
     SQArray *a;
     if(sq_gettop(v) > 2) {
@@ -2251,7 +2251,7 @@ static SQInteger get_class_metamethod(HSQUIRRELVM v)
 {
     SQInteger mmidx = _ss(v)->GetMetaMethodIdxByName(stack_get(v, 2));
     if (mmidx < 0)
-        return sq_throwerror(v, "Unknown metamethod");
+        return sq_throwerror(v, _SC("Unknown metamethod"));
 
     SQClass *cls = nullptr;
     if (sq_gettype(v, 1) == OT_CLASS)

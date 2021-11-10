@@ -1244,7 +1244,7 @@ void SQVM::CallErrorHandler(SQObjectPtr &error)
     if (ci->_closure._type == OT_NATIVECLOSURE)
     {
       const SQChar *errStr = _stringval(error);
-      _debughook_native(this, _SC('e'), "", 0, errStr);
+      _debughook_native(this, _SC('e'), _SC(""), 0, errStr);
     }
     else
     {
@@ -1279,9 +1279,9 @@ void SQVM::CallDebugHook(SQInteger type,SQInteger forcedline)
             SQInteger nparams = 5;
             Push(_roottable);
             Push(type);
-            Push(SQString::Create(_ss(this), ""));
+            Push(SQString::Create(_ss(this), _SC("")));
             Push(SQInteger(-1));
-            Push(SQString::Create(_ss(this), ""));
+            Push(SQString::Create(_ss(this), _SC("")));
             Call(_debughook_closure, nparams, _top - nparams, temp_reg, SQFalse);
             Pop(nparams);
         }

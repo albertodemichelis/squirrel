@@ -75,7 +75,7 @@ static const SQRegFunction systemlib_funcs[]={
 SQRESULT sqstd_register_command_line_args(HSQUIRRELVM v, int argc, char ** argv)
 {
     sq_pushroottable(v);
-    sq_pushstring(v, "__argv", -1);
+    sq_pushstring(v, _SC("__argv"), -1);
     sq_newarray(v, 0);
     for (int idx = 0; idx < argc; idx++)
     {
