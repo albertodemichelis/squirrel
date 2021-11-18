@@ -646,7 +646,7 @@ bool SQVM::CLASS_OP(SQObjectPtr &target,SQInteger baseclass)
     }
     target = SQClass::Create(_ss(this),base);
     if(sq_type(_class(target)->_metamethods[MT_INHERITED]) != OT_NULL) {
-        int nparams = 2;
+        int nparams = 1;
         SQObjectPtr ret;
         Push(target);
         if(!Call(_class(target)->_metamethods[MT_INHERITED],nparams,_top - nparams, ret, false)) {
