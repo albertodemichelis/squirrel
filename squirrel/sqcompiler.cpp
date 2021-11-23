@@ -1869,7 +1869,7 @@ public:
         }
     }
 
-    SQObjectPtr generateSurrogateFunctionName()
+    SQObject generateSurrogateFunctionName()
     {
         const SQChar * fileName = (sq_type(_sourcename) == OT_STRING) ? _stringval(_sourcename) : _SC("unknown");
         int lineNum = int(_lex._currentline);
@@ -1884,7 +1884,7 @@ public:
     void FunctionExp(SQInteger ftype,bool lambda = false)
     {
         Lex();
-        SQObjectPtr functionName = (_token == TK_IDENTIFIER) ? Expect(TK_IDENTIFIER) : generateSurrogateFunctionName();
+        SQObject functionName = (_token == TK_IDENTIFIER) ? Expect(TK_IDENTIFIER) : generateSurrogateFunctionName();
         Expect(_SC('('));
 
         CreateFunction(functionName, lambda);
