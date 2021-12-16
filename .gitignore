@@ -2,6 +2,9 @@
 bin/
 lib/
 
+# CMake output
+build/
+
 # Folders created at documentation generation
 doc/build/
 
