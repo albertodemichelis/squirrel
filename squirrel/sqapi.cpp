@@ -161,6 +161,16 @@ void sq_enablevartrace(HSQUIRRELVM v, SQBool enable)
     _ss(v)->_varTraceEnabled = enable ? true : false;
 }
 
+SQBool sq_isvartracesupported()
+{
+#if SQ_VAR_TRACE_ENABLED == 1
+    return SQTrue;
+#else
+    return SQFalse;
+#endif
+}
+
+
 void sq_enabledebuginfo(HSQUIRRELVM v, SQBool enable)
 {
     _ss(v)->_debuginfo = enable?true:false;

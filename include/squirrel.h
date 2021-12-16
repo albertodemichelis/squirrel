@@ -233,6 +233,7 @@ SQUIRREL_API SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer 
 SQUIRREL_API SQRESULT sq_compilebuffer(HSQUIRRELVM v,const SQChar *s,SQInteger size,const SQChar *sourcename,SQBool raiseerror,const HSQOBJECT *bindings=nullptr);
 SQUIRREL_API void sq_enabledebuginfo(HSQUIRRELVM v, SQBool enable);
 SQUIRREL_API void sq_enablevartrace(HSQUIRRELVM v, SQBool enable);
+SQUIRREL_API SQBool sq_isvartracesupported();
 SQUIRREL_API void sq_lineinfo_in_expressions(HSQUIRRELVM v, SQBool enable);
 SQUIRREL_API void sq_notifyallexceptions(HSQUIRRELVM v, SQBool enable);
 SQUIRREL_API void sq_setcompilererrorhandler(HSQUIRRELVM v,SQCOMPILERERROR f);
