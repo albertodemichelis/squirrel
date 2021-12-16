@@ -1261,6 +1261,7 @@ void SQVM::CallErrorHandler(SQObjectPtr &error)
 
     if(sq_type(_errorhandler) != OT_NULL) {
         SQObjectPtr out;
+        assert(_top+2 <= _stack.size());
         Push(_roottable); Push(error);
         Call(_errorhandler, 2, _top-2, out,SQFalse);
         Pop(2);
