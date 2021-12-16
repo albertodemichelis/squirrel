@@ -268,7 +268,7 @@ static const SQRegFunction _stream_methods[] = {
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
-void init_streamclass(HSQUIRRELVM v)
+SQRESULT sqstd_init_streamclass(HSQUIRRELVM v)
 {
     sq_pushregistrytable(v);
     sq_pushstring(v,_SC("std_stream"),-1);
@@ -285,18 +285,18 @@ void init_streamclass(HSQUIRRELVM v)
             sq_newslot(v,-3,SQFalse);
             i++;
         }
-        sq_newslot(v,-3,SQFalse);
-        sq_pushroottable(v);
+        sq_newslot(v,-3,SQFalse); // put to registry table
+
         sq_pushstring(v,_SC("stream"),-1);
         sq_pushstring(v,_SC("std_stream"),-1);
-        sq_get(v,-4);
-        sq_newslot(v,-3,SQFalse);
-        sq_pop(v,1);
+        sq_get(v,-3);
+        sq_newslot(v,-4,SQFalse); // put to destination table (and name the class 'stream')
     }
     else {
         sq_pop(v,1); //result
     }
     sq_pop(v,1);
+    return SQ_OK;
 }
 
 SQRESULT declare_stream(HSQUIRRELVM v,const SQChar* name,SQUserPointer typetag,const SQChar* reg_name,const SQRegFunction *methods,const SQRegFunction *globals)
@@ -304,8 +304,8 @@ SQRESULT declare_stream(HSQUIRRELVM v,const SQChar* name,SQUserPointer typetag,c
     if(sq_gettype(v,-1) != OT_TABLE)
         return sq_throwerror(v,_SC("table expected"));
     SQInteger top = sq_gettop(v);
-    //create delegate
-    init_streamclass(v);
+    //create base stream class
+    sqstd_init_streamclass(v);
     sq_pushregistrytable(v);
     sq_pushstring(v,reg_name,-1);
     sq_pushstring(v,_SC("std_stream"),-1);

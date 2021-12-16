@@ -44,6 +44,7 @@ SQUIRREL_API SQRESULT sqstd_loadfile(HSQUIRRELVM v,const SQChar *filename,SQBool
 SQUIRREL_API SQRESULT sqstd_dofile(HSQUIRRELVM v,const SQChar *filename,SQBool retval,SQBool printerror);
 SQUIRREL_API SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM v,const SQChar *filename);
 
+SQUIRREL_API SQRESULT sqstd_init_streamclass(HSQUIRRELVM v);
 SQUIRREL_API SQRESULT sqstd_register_iolib(HSQUIRRELVM v);
 
 #ifdef __cplusplus
