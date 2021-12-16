@@ -80,7 +80,7 @@ Returns module manager VM.
     :param bool must_exist: if set to false treat missing file as success (return true)
     :param const char \*__name__: value of module's __name__ field (set nullptr to use actual file name)
     :param SqObjPtr &exports: object to store export to
-    :param std::string &out_err_msg: receives error message if call failed
+    :param std\:\:string &out_err_msg: receives error message if call failed
     :returns: true if succeeded
     :remarks: Actually this is a function bound to script as require()
 
