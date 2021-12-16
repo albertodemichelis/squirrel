@@ -6,6 +6,7 @@
 
 void sq_vm_init_alloc_context(SQAllocContext *) {}
 void sq_vm_destroy_alloc_context(SQAllocContext *) {}
+void sq_vm_assign_to_alloc_context(SQAllocContext, HSQUIRRELVM) {}
 
 void *sq_vm_malloc(SQAllocContext SQ_UNUSED_ARG(ctx), SQUnsignedInteger size){ return malloc(size); }
 

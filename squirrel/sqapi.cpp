@@ -56,6 +56,7 @@ HSQUIRRELVM sq_open(SQInteger initialstacksize)
     SQVM *v = (SQVM *)SQ_MALLOC(allocctx, sizeof(SQVM));
     new (v) SQVM(ss);
     ss->_root_vm = v;
+    sq_vm_assign_to_alloc_context(allocctx, v);
     if(v->Init(NULL, initialstacksize)) {
         return v;
     } else {

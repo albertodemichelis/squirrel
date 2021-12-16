@@ -8,6 +8,7 @@ typedef struct SQAllocContextT * SQAllocContext;
 
 void sq_vm_init_alloc_context(SQAllocContext * ctx);
 void sq_vm_destroy_alloc_context(SQAllocContext * ctx);
+void sq_vm_assign_to_alloc_context(SQAllocContext ctx, HSQUIRRELVM vm);
 void *sq_vm_malloc(SQAllocContext ctx, SQUnsignedInteger size);
 void *sq_vm_realloc(SQAllocContext ctx, void *p,SQUnsignedInteger oldsize,SQUnsignedInteger size);
 void sq_vm_free(SQAllocContext ctx, void *p,SQUnsignedInteger size);
