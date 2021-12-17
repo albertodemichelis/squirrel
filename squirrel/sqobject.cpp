@@ -442,6 +442,8 @@ bool SQFunctionProto::Save(SQVM *v,SQUserPointer up,SQWRITEFUNC write)
         _CHECK_IO(SafeWrite(v,write,up,&_outervalues[i]._type,sizeof(SQUnsignedInteger)));
         _CHECK_IO(WriteObject(v,up,write,_outervalues[i]._src));
         _CHECK_IO(WriteObject(v,up,write,_outervalues[i]._name));
+        SQInteger assignable = _outervalues[i]._assignable;
+        _CHECK_IO(SafeWrite(v,write,up,&assignable,sizeof(SQInteger)));
     }
 
     _CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
@@ -521,10 +523,12 @@ bool SQFunctionProto::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr 
     for(i = 0; i < noutervalues; i++){
         SQUnsignedInteger type;
         SQObjectPtr name;
+        SQInteger assignable;
         _CHECK_IO(SafeRead(v,read,up, &type, sizeof(SQUnsignedInteger)));
         _CHECK_IO(ReadObject(v, up, read, o));
         _CHECK_IO(ReadObject(v, up, read, name));
-        f->_outervalues[i] = SQOuterVar(name,o, (SQOuterType)type);
+        _CHECK_IO(SafeRead(v, read, up, &assignable, sizeof(SQInteger)));
+        f->_outervalues[i] = SQOuterVar(name,o, (SQOuterType)type, assignable);
     }
     _CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));
 

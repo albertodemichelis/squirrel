@@ -1,4 +1,30 @@
-***version 4.0 stable***
+***version 4.5.0***
+* add 'let' keyword and unsassignable named bindings
+
+***version 4.4.0***
+* base lib: container methods check object immutability
+* more meaningful error for wrong enum field
+* put 'stream' class into target table instead of root
+  Also expose expicit sqstd_init_streamclass() to allow placing
+  stream class into specific table
+* register base lib as compile-time bindings
+* remove setroottable()/setconsttable() script functions
+* base lib: add println() and errorln() functions
+
+***version 4.3.0 stable***
+* baselib: move some global constants to getbuildinfo() method
+* always use modules in commandline interpreter
+* use compile-time bindings for reference modules implementation
+* check thread-safety during code execution
+* str.indexof and str.contains now throws error on empty substring.
+* (bugfix) don't add object to ref table in GetRefCount()
+* (experimental) new operator ':=' for assignment inside if, for, while, switch
+
+***version 4.2.0 stable***
+* make commas in destructuring assignment optional
+* change constant tables handling by compiler
+  Earlier only enums could be found in compile-time constants. But now we have immutable objects
+
 ***version 4.1.0 stable***
 -introduced immutable objects
 -switched to semantic versioning

@@ -75,6 +75,7 @@ void SQLexer::Init(SQSharedState *ss, SQLEXREADFUNC rg, SQUserPointer up,Compile
     ADD_KEYWORD(rawcall, TK_RAWCALL);
     ADD_KEYWORD(global, TK_GLOBAL);
     ADD_KEYWORD(not, TK_NOT);
+    ADD_KEYWORD(let, TK_LET);
 
 
     macroState.reset();

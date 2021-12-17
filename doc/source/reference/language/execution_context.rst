@@ -16,12 +16,36 @@ function caller (see see :ref:`functions <functions>`).
 The root table is a table associated to the function during its creation.
 The root table value of a function is the root table of the VM at the function creation.
 The root table of function can also be changed after creation with closure.setroot().
-During the execution, the body of a function can only transparently refer to his execution
+During the execution, the body of a function can only transparently refer to its execution
 context.
-This mean that a single identifier can refer to a local variable, to an environment object slot
-or to the slot of the closure root table;
+This means that a single identifier can refer to one of the following:
+
+1. named binding
+2. local variable
+3. an environment object slot
+4. or to the slot of the closure root table;
+
+Implicit lookups (3. and 4.) can be turned off using :ref:`compiler directives <compiler_directives>`
+and are subject for removal in future versions.
 The environment object can be explicitly accessed by the keyword ``this``.
 The closure root table can be explicitly accessed through the operator ``::`` (see :ref:`Variables <variables>`).
+
+.. _named_bindings:
+
+-----------------
+Named bindings
+-----------------
+
+Named binding is an object that holds the result of evaluated initializer expressions.
+Unlike variables it cannot change its value.
+
+Examples:
+
+::
+
+    let a = 23+34
+    let b = [1, 2, 3]
+    let function foo() { return "some_value" }
 
 .. _variables:
 

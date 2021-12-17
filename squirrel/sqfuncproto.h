@@ -20,39 +20,43 @@ enum SQLangFeature {
 
 struct SQOuterVar
 {
-
-    SQOuterVar(){}
-    SQOuterVar(const SQObjectPtr &name,const SQObjectPtr &src,SQOuterType t)
+    SQOuterVar() : _assignable(true) {}
+    SQOuterVar(const SQObjectPtr &name,const SQObjectPtr &src,SQOuterType t,bool assignable)
     {
         _name = name;
         _src=src;
         _type=t;
+        _assignable=assignable;
     }
     SQOuterVar(const SQOuterVar &ov)
     {
         _type=ov._type;
         _src=ov._src;
         _name=ov._name;
+        _assignable=ov._assignable;
     }
     SQOuterType _type;
     SQObjectPtr _name;
     SQObjectPtr _src;
+    bool _assignable;
 };
 
 struct SQLocalVarInfo
 {
-    SQLocalVarInfo():_start_op(0),_end_op(0),_pos(0){}
+    SQLocalVarInfo():_start_op(0),_end_op(0),_pos(0),_assignable(true){}
     SQLocalVarInfo(const SQLocalVarInfo &lvi)
     {
         _name=lvi._name;
         _start_op=lvi._start_op;
         _end_op=lvi._end_op;
         _pos=lvi._pos;
+        _assignable=lvi._assignable;
     }
     SQObjectPtr _name;
     SQUnsignedInteger _start_op;
     SQUnsignedInteger _end_op;
     SQUnsignedInteger _pos;
+    bool _assignable;
 };
 
 struct SQLineInfo { SQInteger _line;SQInteger _op; };

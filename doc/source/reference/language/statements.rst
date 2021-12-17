@@ -284,6 +284,23 @@ declaration to the end of the block where they have been declared.
     for(local a=0;a<10;a+=1)
         print(a);
 
+---------------------------
+Named bindings declaration
+---------------------------
+
+.. index::
+    pair: Named bindings declaration; statement
+
+::
+
+    initz := id = exp[',' initz]
+    stat := 'let' initz
+
+Named bindings like Local variables can be declared at any point in the program;
+they exist between their
+declaration to the end of the block where they have been declared.
+Named bindings MUST be initialized.
+
 --------------------
 Function declaration
 --------------------

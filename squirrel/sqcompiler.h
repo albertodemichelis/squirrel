@@ -79,6 +79,7 @@ struct SQVM;
 #define TK_READERMACRO 333
 #define TK_NOT 334
 #define TK_INEXPR_ASSIGNMENT 335
+#define TK_LET 336
 
 
 typedef void(*CompilerErrorFunc)(void *ud, const SQChar *s);

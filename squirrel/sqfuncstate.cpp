@@ -303,13 +303,14 @@ bool SQFuncState::IsLocal(SQUnsignedInteger stkpos)
     return false;
 }
 
-SQInteger SQFuncState::PushLocalVariable(const SQObject &name)
+SQInteger SQFuncState::PushLocalVariable(const SQObject &name, bool assignable)
 {
     SQInteger pos=_vlocals.size();
     SQLocalVarInfo lvi;
     lvi._name=name;
     lvi._start_op=GetCurrentPos()+1;
     lvi._pos=_vlocals.size();
+    lvi._assignable=assignable;
     _vlocals.push_back(lvi);
     if(_vlocals.size()>((SQUnsignedInteger)_stacksize))_stacksize=_vlocals.size();
     return pos;
@@ -317,16 +318,18 @@ SQInteger SQFuncState::PushLocalVariable(const SQObject &name)
 
 
 
-SQInteger SQFuncState::GetLocalVariable(const SQObject &name)
+SQInteger SQFuncState::GetLocalVariable(const SQObject &name, bool &is_assignable)
 {
     SQInteger locals=_vlocals.size();
     while(locals>=1){
         SQLocalVarInfo &lvi = _vlocals[locals-1];
         if(sq_type(lvi._name)==OT_STRING && _string(lvi._name)==_string(name)){
+            is_assignable = lvi._assignable;
             return locals-1;
         }
         locals--;
     }
+    is_assignable = false;
     return -1;
 }
 
@@ -337,29 +340,30 @@ void SQFuncState::MarkLocalAsOuter(SQInteger pos)
     _outers++;
 }
 
-SQInteger SQFuncState::GetOuterVariable(const SQObject &name)
+
+SQInteger SQFuncState::GetOuterVariable(const SQObject &name, bool &is_assignable)
 {
     SQInteger outers = _outervalues.size();
     for(SQInteger i = 0; i<outers; i++) {
-        if(_string(_outervalues[i]._name) == _string(name))
+        if(_string(_outervalues[i]._name) == _string(name)) {
+            is_assignable = _outervalues[i]._assignable;
             return i;
+    }
     }
     SQInteger pos=-1;
     if(_parent) {
-        pos = _parent->GetLocalVariable(name);
+        pos = _parent->GetLocalVariable(name, is_assignable);
         if(pos == -1) {
-            pos = _parent->GetOuterVariable(name);
+            pos = _parent->GetOuterVariable(name,is_assignable);
             if(pos != -1) {
-                _outervalues.push_back(SQOuterVar(name,SQObjectPtr(SQInteger(pos)),otOUTER)); //local
+                _outervalues.push_back(SQOuterVar(name,SQObjectPtr(SQInteger(pos)),otOUTER,is_assignable)); //local
                 return _outervalues.size() - 1;
             }
         }
         else {
             _parent->MarkLocalAsOuter(pos);
-            _outervalues.push_back(SQOuterVar(name,SQObjectPtr(SQInteger(pos)),otLOCAL)); //local
+            _outervalues.push_back(SQOuterVar(name,SQObjectPtr(SQInteger(pos)),otLOCAL,is_assignable)); //local
             return _outervalues.size() - 1;
-
-
         }
     }
     return -1;
@@ -367,7 +371,7 @@ SQInteger SQFuncState::GetOuterVariable(const SQObject &name)
 
 void SQFuncState::AddParameter(const SQObject &name)
 {
-    PushLocalVariable(name);
+    PushLocalVariable(name, true);
     _parameters.push_back(name);
 }
 

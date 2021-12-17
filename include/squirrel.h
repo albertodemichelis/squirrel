@@ -67,10 +67,10 @@ struct SQOuter;
 #include "sqconfig.h"
 
 #define SQUIRREL_VERSION_NUMBER_MAJOR 4
-#define SQUIRREL_VERSION_NUMBER_MINOR 1
+#define SQUIRREL_VERSION_NUMBER_MINOR 5
 #define SQUIRREL_VERSION_NUMBER_PATCH 0
 
-#define SQUIRREL_VERSION    _SC("4.1.0")
+#define SQUIRREL_VERSION    _SC("4.5.0")
 #define SQUIRREL_COPYRIGHT  _SC("Copyright (C) 2003-2016 Alberto Demichelis; 2016-2021 Gaijin Entertainment")
 
 #define SQ_VMSTATE_IDLE         0

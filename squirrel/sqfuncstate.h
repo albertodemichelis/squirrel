@@ -28,12 +28,12 @@ struct SQFuncState
     SQInteger GetCurrentPos(){return _instructions.size()-1;}
     SQInteger GetNumericConstant(const SQInteger cons);
     SQInteger GetNumericConstant(const SQFloat cons);
-    SQInteger PushLocalVariable(const SQObject &name);
+    SQInteger PushLocalVariable(const SQObject &name, bool assignable);
     void AddParameter(const SQObject &name);
     //void AddOuterValue(const SQObject &name);
-    SQInteger GetLocalVariable(const SQObject &name);
+    SQInteger GetLocalVariable(const SQObject &name, bool &is_assignable);
     void MarkLocalAsOuter(SQInteger pos);
-    SQInteger GetOuterVariable(const SQObject &name);
+    SQInteger GetOuterVariable(const SQObject &name, bool &is_assignable);
     SQInteger GenerateCode();
     SQInteger GetStackSize();
     SQInteger CalcStackFrameSize();
