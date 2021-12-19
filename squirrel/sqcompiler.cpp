@@ -26,6 +26,9 @@ struct SQExpState {
   SQInteger  etype;       /* expr. type; one of EXPR, OBJECT, BASE, OUTER or LOCAL */
   SQInteger  epos;        /* expr. location on stack; -1 for OBJECT and BASE */
   bool       donot_get;   /* signal not to deref the next value */
+  bool       is_assignable_var; // for LOCAL and OUTER
+
+  bool isBinding() { return (etype==LOCAL || etype==OUTER) && !is_assignable_var; }
 };
 
 #ifndef SQ_LINE_INFO_IN_STRUCTURES
@@ -561,8 +564,9 @@ public:
             SQInteger op = _token;
             SQInteger ds = _es.etype;
             SQInteger pos = _es.epos;
-            if(ds == EXPR) Error(_SC("can't assign to expression or binding"));
+            if(ds == EXPR) Error(_SC("can't assign to expression"));
             else if(ds == BASE) Error(_SC("'base' cannot be modified"));
+            else if (_es.isBinding()) Error(_SC("can't assign to binding"));
             Lex(); Expression(SQE_RVALUE);
 
             switch(op){
@@ -908,6 +912,8 @@ public:
                     if(IsEndOfStatement()) return;
                     SQInteger diff = (_token==TK_MINUSMINUS) ? -1 : 1;
                     Lex();
+                    if (_es.isBinding())
+                        Error(_SC("can't '++' or '--' a binding"));
                     switch(_es.etype)
                     {
                         case EXPR: Error(_SC("can't '++' or '--' an expression")); break;
@@ -1039,8 +1045,9 @@ public:
                 if((pos = _fs->GetLocalVariable(id, assignable)) != -1) {
                     /* Handle a local variable (includes 'this') */
                     _fs->PushTarget(pos);
-                    _es.etype  = assignable ? LOCAL : EXPR;
+                    _es.etype  = LOCAL;
                     _es.epos   = pos;
+                    _es.is_assignable_var = assignable;
                 }
 
                 else if((pos = _fs->GetOuterVariable(id, assignable)) != -1) {
@@ -1051,8 +1058,9 @@ public:
                         /* _es.etype = EXPR; already default value */
                     }
                     else {
-                        _es.etype = assignable ? OUTER : EXPR;
+                        _es.etype = OUTER;
                         _es.epos  = pos;
+                        _es.is_assignable_var = assignable;
                     }
                 }
 
@@ -1411,7 +1419,7 @@ public:
                 flags.push_back(OP_GET_FLAG_NO_ERROR | OP_GET_FLAG_KEEP_VAL);
             }
             else{
-                if (!assignable)
+                if (!assignable && !destructurer)
                     Error(_SC("Binding '%s' must be initialized"), _stringval(varname));
                 _fs->AddInstruction(_OP_LOADNULLS, _fs->PushTarget(),1);
                 flags.push_back(0);
@@ -1917,7 +1925,7 @@ public:
         es = _es;
         _es.donot_get = true;
         PrefixedExpr();
-        if(_es.etype==EXPR) Error(_SC("can't delete an expression / binding"));
+        if(_es.etype==EXPR) Error(_SC("can't delete an expression"));
         if(_es.etype==OBJECT || _es.etype==BASE) {
             Emit2ArgsOP(_OP_DELETE);
         }
@@ -1935,10 +1943,13 @@ public:
         _es.donot_get = true;
         PrefixedExpr();
         if(_es.etype==EXPR) {
-            Error(_SC("can't '++' or '--' an expression / binding"));
+            Error(_SC("can't '++' or '--' an expression"));
         }
         else if(_es.etype==OBJECT || _es.etype==BASE) {
             Emit2ArgsOP(_OP_INC, diff);
+        }
+        else if (_es.isBinding()) {
+            Error(_SC("can't '++' or '--' a binding"));
         }
         else if(_es.etype==LOCAL) {
             SQInteger src = _fs->TopTarget();
