@@ -814,25 +814,36 @@ exception_restore:
                                            }
                         continue;
                     case OT_CLASS:{
-                        SQObjectPtr inst;
-                        _GUARD(CreateClassInstance(_class(clo),inst,clo));
+                        SQObjectPtr inst, ctor;
+                        _GUARD(CreateClassInstance(_class(clo),inst,ctor));
                         if(tgt0 != -1) {
                             STK(tgt0) = inst;
                         }
                         SQInteger stkbase;
-                        switch(sq_type(clo)) {
+                        switch(sq_type(ctor)) {
                             case OT_CLOSURE:
                                 stkbase = _stackbase+arg2;
                                 _stack._vals[stkbase] = inst;
-                                _GUARD(StartCall(_closure(clo), -1, arg3, stkbase, false));
+                                _GUARD(StartCall(_closure(ctor), -1, arg3, stkbase, false));
                                 break;
                             case OT_NATIVECLOSURE:
                                 bool dummy;
                                 stkbase = _stackbase+arg2;
                                 _stack._vals[stkbase] = inst;
-                                _GUARD(CallNative(_nativeclosure(clo), arg3, stkbase, clo, -1, dummy, dummy));
+                                _GUARD(CallNative(_nativeclosure(ctor), arg3, stkbase, ctor, -1, dummy, dummy));
                                 break;
-                            default: break; //shutup GCC 4.x
+                            case OT_NULL:
+                                if (arg3 > 1) {
+                                    Raise_Error(_SC("cannot call default constructor with arguments"));
+                                    SQ_THROW();
+                                }
+                                break;
+                            default:
+                                // cannot happen, but still...
+                                assert(!"invalid constructor type");
+                                Raise_Error(_SC("invalid constructor type %s"), IdType2Name(sq_type(ctor)));
+                                SQ_THROW();
+                                break;
                         }
                         }
                         break;
