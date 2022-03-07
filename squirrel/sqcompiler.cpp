@@ -566,7 +566,7 @@ public:
             SQInteger pos = _es.epos;
             if(ds == EXPR) Error(_SC("can't assign to expression"));
             else if(ds == BASE) Error(_SC("'base' cannot be modified"));
-            else if (_es.isBinding()) Error(_SC("can't assign to binding"));
+            else if (_es.isBinding() && _token!=TK_INEXPR_ASSIGNMENT) Error(_SC("can't assign to binding"));
             Lex(); Expression(SQE_RVALUE);
 
             switch(op){
@@ -984,8 +984,8 @@ public:
     }
     SQInteger Factor()
     {
-        if (_token == TK_LOCAL && (_expression_context == SQE_IF
-                                || _expression_context == SQE_SWITCH || _expression_context == SQE_LOOP_CONDITION))
+        if ((_token == TK_LOCAL || _token == TK_LET)
+            && (_expression_context == SQE_IF || _expression_context == SQE_SWITCH || _expression_context == SQE_LOOP_CONDITION))
         {
             Lex();
             if (_token != TK_IDENTIFIER)
@@ -993,7 +993,7 @@ public:
 
             SQObject id = _fs->CreateString(_lex._svalue);
             CheckDuplicateLocalIdentifier(id, _SC("In-expr local"), false);
-            _fs->PushLocalVariable(id, true);
+            _fs->PushLocalVariable(id, _token == TK_LOCAL);
             SQInteger res = Factor();
             if (_token != TK_INEXPR_ASSIGNMENT)
                 Error(_SC(":= expected"));
