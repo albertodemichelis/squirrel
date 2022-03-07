@@ -311,7 +311,7 @@ Function declaration
 ::
 
     funcname := id ['::' id]
-    stat:= 'function' id + '(' args ')' stat
+    stat:= 'function' id + '(' args ')' '{' stat '}'
 
 creates a new function.
 

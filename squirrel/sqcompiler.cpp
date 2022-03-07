@@ -2010,6 +2010,8 @@ public:
             Expression(SQE_REGULAR);
             _fs->AddInstruction(_OP_RETURN, 1, _fs->PopTarget());}
         else {
+            if (_token != '{')
+                Error(_SC("'{' expected"));
             Statement(false);
         }
         funcstate->AddLineInfos(_lex._prevtoken == _SC('\n')?_lex._lasttokenline:_lex._currentline, _lineinfo, true);
