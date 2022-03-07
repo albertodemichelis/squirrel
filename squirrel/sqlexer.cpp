@@ -703,6 +703,7 @@ SQInteger isexponent(SQInteger c) { return c == 'e' || c=='E'; }
 
 
 #define MAX_HEX_DIGITS (sizeof(SQInteger)*2)
+#define NUM_NEXT() { do NEXT() while (CUR_CHAR==_SC('_')); }
 SQInteger SQLexer::ReadNumber()
 {
 #define TINT 1
@@ -713,22 +714,22 @@ SQInteger SQLexer::ReadNumber()
     SQInteger type = TINT, firstchar = CUR_CHAR;
     SQChar *sTemp;
     INIT_TEMP_STRING();
-    NEXT();
+    NUM_NEXT();
     if(firstchar == _SC('0') && (toupper(CUR_CHAR) == _SC('X') || scisodigit(CUR_CHAR)) ) {
         if(scisodigit(CUR_CHAR)) {
             type = TOCTAL;
             while(scisodigit(CUR_CHAR)) {
                 APPEND_CHAR(CUR_CHAR);
-                NEXT();
+                NUM_NEXT();
             }
             if(scisdigit(CUR_CHAR)) Error(_SC("invalid octal number"));
         }
         else {
-            NEXT();
+            NUM_NEXT();
             type = THEX;
             while(isxdigit(CUR_CHAR)) {
                 APPEND_CHAR(CUR_CHAR);
-                NEXT();
+                NUM_NEXT();
             }
             if(_longstr.size() > MAX_HEX_DIGITS) Error(_SC("too many digits for an Hex number"));
         }
@@ -750,7 +751,7 @@ SQInteger SQLexer::ReadNumber()
             }
 
             APPEND_CHAR(CUR_CHAR);
-            NEXT();
+            NUM_NEXT();
         }
     }
     TERMINATE_BUFFER();

@@ -22,6 +22,8 @@ An Integer represents a 32 bit (or better) signed number.::
     local b = 0x0012 //hexadecimal
     local c = 075 //octal
     local d = 'w' //char code
+    local e = 123_456 // underscores may be used to visually sepearate digit groups
+    local f = 0xAB_CD_01_23 // also underscores
 
 --------
 Float
@@ -29,9 +31,10 @@ Float
 
 A float represents a 32 bit (or better) floating point number.::
 
-    local a=1.0
-    local b=0.234
+    local a = 1.0
+    local b = 0.234
     local c = 6.5e-11 //exponential notation
+    local d = 12.345_67e+2 // digit group separators
 
 --------
 String
