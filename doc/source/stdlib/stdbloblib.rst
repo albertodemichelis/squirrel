@@ -131,6 +131,10 @@ A blob can also be accessed byte by byte through the `[]` operator.
 
     returns the read/write pointer absolute position
 
+.. sq:function:: blob.as_string()
+
+    creates string from blob
+
 .. sq:function:: blob.writeblob(src)
 
     :param blob src: the source blob containing the data to be written
@@ -175,7 +179,7 @@ C API
 
     :param HSQUIRRELVM v: the target VM
     :returns: an SQRESULT
-    :remarks: The function aspects a table on top of the stack where to register the global library functions.
+    :remarks: The function expects a table on top of the stack where to register the global library functions.
 
     initializes and registers the blob library in the given VM.
 
