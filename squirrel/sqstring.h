@@ -23,18 +23,32 @@ inline SQHash _hashstr_djb2(const SQChar *s, size_t l)
 }
 
 //fnv1
-inline SQHash _hashstr_fnv1a(const SQChar *s, size_t l)
+inline uint32_t _hashstr_fnv1a(const SQChar *s, size_t l)
 {
-  SQHash result = 2166136261U;
+  uint32_t result = 2166136261U;
   size_t step = (l>>5)+1;  /* if string is too long, don't hash all its chars */
 
   for (; l>=step; l-=step)
     result = (result ^ s[l-1])* 16777619;
   return result;
 }
+
+inline uint64_t _hashstr_fnv1a_64(const SQChar *s, size_t l)
+{
+  uint64_t result = 14695981039346656037LU;
+  size_t step = (l>>5)+1;  /* if string is too long, don't hash all its chars */
+
+  for (; l>=step; l-=step)
+    result = (result ^ s[l-1]) * 1099511628211LU;
+  return result;
+}
 //__forceinline SQHash _hashstr (const SQChar *s, size_t l){return _hashstr_lua5(s, l);}//worst
 //__forceinline SQHash _hashstr (const SQChar *s, size_t l){return _hashstr_djb2(s, l);}//good
+#ifdef _SQ64//assume we run on 64 bit platform
+__forceinline SQHash _hashstr (const SQChar *s, size_t l){return _hashstr_fnv1a_64(s, l);}
+#else
 __forceinline SQHash _hashstr (const SQChar *s, size_t l){return _hashstr_fnv1a(s, l);}
+#endif
 
 struct SQString : public SQRefCounted
 {
