@@ -1327,7 +1327,8 @@ public:
                 _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
 
                 if ((otype == NOT_TABLE) &&
-                    (_token == TK_IDENTIFIER || _token == separator || _token == terminator || _token == _SC('['))) {
+                    (_token == TK_IDENTIFIER || _token == separator || _token == terminator || _token == _SC('[')
+                        || _token == TK_FUNCTION)) {
                     SQObject constant;
                     SQInteger pos = -1;
                     bool assignable = false;
