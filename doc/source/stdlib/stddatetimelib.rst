@@ -1,8 +1,8 @@
 .. _stdlib_stddatetimelib:
 
-==================
+====================
 The Datetime library
-==================
+====================
 
 The datetime library date and time manipulation facilities
 
@@ -43,10 +43,6 @@ Global Symbols
 if `time` is omitted the current time is used.
 
 if `format` can be 'l' local time or 'u' UTC time, if omitted is defaulted as 'l'(local time).
-
-.. sq:function:: getenv(varaname)
-
-    Returns a string containing the value of the environment variable `varname`
 
 .. sq:function:: time()
 

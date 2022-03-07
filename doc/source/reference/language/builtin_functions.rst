@@ -366,7 +366,7 @@ tries to get a value from the slot 'key' without employing delegation
 Sets the slot 'key' with the value 'val' without employing delegation. If the slot does not exists, it will be created. Returns table itself.
 
 
-.. sq:function:: table.rawdelete()
+.. sq:function:: table.rawdelete(key)
 
 Deletes the slot key without employing delegation and returns its value. If the slot does not exists, returns null.
 
