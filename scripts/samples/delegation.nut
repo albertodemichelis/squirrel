@@ -1,18 +1,21 @@
-::PEntity <- {
+local PEntity, PPlayer
+
+PEntity = {
     name="noname"
     pos={x=0,y=0,z=0}
     type="entity"
+
     //methamethod
     function _typeof() {
-        return type;
+        return type
     }
 
     function PrintPos() {
-      ::print($"x={pos.x} y={pos.y} z={pos.z}\n")
+      println($"x={pos.x} y={pos.y} z={pos.z}")
     }
 
     function new(name, pos) {
-      local newentity=clone ::PEntity
+      local newentity = clone PEntity
       if(name)
           newentity.name=name
       if(pos)
@@ -22,7 +25,7 @@
 }
 
 
-::PPlayer <- {
+PPlayer = {
     model="warrior.mdl"
     weapon="fist"
     health=100
@@ -31,18 +34,18 @@
     type="player"
 
     function new(name,pos) {
-        local p = clone ::PPlayer
-        local newplayer = ::PEntity.new(name,pos)
+        local p = clone PPlayer
+        local newplayer = PEntity.new(name,pos)
         newplayer.setdelegate(p)
         return newplayer
     }
 }
 
 
-local player = PPlayer.new("godzilla",{x=10,y=20,z=30})
+let player = PPlayer.new("godzilla",{x=10,y=20,z=30})
 
-::print($"PLAYER NAME: {player.name}\n")
-::print($"ENTITY TYPE: {typeof player}\n")
+println($"PLAYER NAME: {player.name}")
+println($"ENTITY TYPE: {typeof player}")
 
 player.PrintPos()
 

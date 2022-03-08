@@ -1,11 +1,11 @@
-if(::min(100,200)>::max(50,20))
-    ::print("I'm useless statement just to show up the if/else\n")
+if (min(100,200) > max(50,20))
+    println("I'm useless statement just to show up the if/else")
 else
-    ::print("squirrel!!\n")
+    println("squirrel!!")
 
-::print("\n")
+print("\n")
 
-local function typy(obj) {
+let function typy(obj) {
     switch(typeof obj) {
         case "integer":
         case "float":
@@ -21,6 +21,6 @@ local function typy(obj) {
 local a=1, b={}
 local function c(a,b){return a+b}
 
-print("a "+typy(a)+"\n")
-print("b "+typy(b)+"\n")
-print("c "+typy(c)+"\n")
+println($"a {typy(a)}")
+println($"b {typy(b)}")
+println($"c {typy(c)}")

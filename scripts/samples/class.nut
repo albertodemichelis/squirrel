@@ -1,6 +1,5 @@
-local class BaseVector {
-    constructor(...)
-    {
+let class BaseVector {
+    constructor(...)     {
         if (vargv.len() >= 3) {
             x = vargv[0]
             y = vargv[1]
@@ -8,30 +7,28 @@ local class BaseVector {
         }
     }
 
-
     x = 0
     y = 0
     z = 0
 }
 
-local class Vector3 extends BaseVector {
-    function _add(other)
-    {
+let class Vector3 extends BaseVector {
+    function _add(other) {
         local cls = this.getclass()
         if (other instanceof cls)
             return cls(x+other.x,y+other.y,z+other.z)
         else
-            throw "wrong parameter";
+            throw "wrong parameter"
     }
-    function Print()
-    {
-        ::print($"{x}, {y}, {z}\n")
+
+    function Print() {
+        println($"{x}, {y}, {z}")
     }
 }
 
-local v0 = Vector3(1,2,3)
-local v1 = Vector3(11,12,13)
-local v2 = v0 + v1
+let v0 = Vector3(1,2,3)
+let v1 = Vector3(11,12,13)
+let v2 = v0 + v1
 v2.Print()
 
 ::FakeNamespace <- {
@@ -40,7 +37,7 @@ v2.Print()
 
 FakeNamespace.Utils.SuperClass <- class  {
     constructor() {
-        ::print("FakeNamespace.Utils.SuperClass")
+        println("FakeNamespace.Utils.SuperClass")
     }
 }
 

@@ -1,13 +1,15 @@
-local string = require("string")
+let string = require("string")
 
-local ex = string.regexp("[a-zA-Z]+")
-local s = "123 Test; strlen(str);"
-local res = ex.search(s)
-::print(s.slice(res.begin,res.end)) //prints "Test"
-::print("\n")
+{
+  let ex = string.regexp("[a-zA-Z]+")
+  let s = "123 Test; strlen(str);"
+  let res = ex.search(s)
+  println(s.slice(res.begin,res.end)) //prints "Test"
+}
 
-ex = string.regexp(@"\m()");
-s = "123 Test; doSomething(str, getTemp(), (a+(b/c)));"
-res = ex.search(s)
-::print(s.slice(res.begin,res.end)) //prints "(...)"
-::print("\n")
+{
+  let ex = string.regexp(@"\m()");
+  let s = "123 Test; doSomething(str, getTemp(), (a+(b/c)));"
+  let res = ex.search(s)
+  println(s.slice(res.begin,res.end)) //prints "(...)"
+}

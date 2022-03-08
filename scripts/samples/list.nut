@@ -1,20 +1,20 @@
 /*translation of the list test from The Great Computer Language Shootout
 */
 
-local function compare_arr(a1,a2) {
+let function compare_arr(a1,a2) {
     foreach(i,val in a1)
         if(val!=a2[i])
           return null
     return 1
 }
 
-local function test() {
-    local size=10000
-    local l1=::array(size)
-    for(local i=0;i<size;++i)
+let function test() {
+    let size=10000
+    let l1 = array(size)
+    for (local i=0; i<size; ++i)
       l1[i]=i
-    local l2=clone l1
-    local l3=[]
+    let l2=clone l1
+    let  l3=[]
 
     l2.reverse()
     while(l2.len()>0)
@@ -23,17 +23,18 @@ local function test() {
         l2.append(l3.pop())
     l1.reverse()
 
-    if(compare_arr(l1,l2))
+    if (compare_arr(l1,l2))
         return l1.len()
     return null
 }
 
-local n = vargv.len()!=0?vargv[0].tointeger():1
+let n = vargv.len()!=0?vargv[0].tointeger():1
+
 for(local i=0;i<n;++i) {
     if(!test()) {
-        print("failed")
+        println("failed")
         return
     }
 }
 
-print("oki doki")
+println("oki doki")

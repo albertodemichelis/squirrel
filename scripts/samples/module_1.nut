@@ -1,4 +1,4 @@
-local function foo() {
+let function foo() {
   return "<call from module>"
 }
 

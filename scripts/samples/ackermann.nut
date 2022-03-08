@@ -13,10 +13,10 @@ local function Ack(M, N) {
 local n
 
 if(vargv.len()!=0) {
-  n = ::max(1, vargv[0].tointeger())
+  n = max(1, vargv[0].tointeger())
 } else {
   n = 1
 }
 
-print($"n={n}\n")
-print($"Ack(3,{n}):{Ack(3, n)}")
+println($"n={n}")
+println($"Ack(3,{n}):{Ack(3, n)}")

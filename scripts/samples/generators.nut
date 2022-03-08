@@ -3,37 +3,40 @@
 *converted to a generator func
 */
 
-local function gen_random(max) {
+let function gen_random(max) {
     local last=42
     local IM = 139968
     local IA = 3877
     local IC = 29573
-    for(;;){  //loops forever
-        yield (max * (last = (last * IA + IC) % IM) / IM)
+    for (;;) {  //loops forever
+        last = (last * IA + IC) % IM
+        yield (max * last / IM)
     }
 }
 
-local randtor=gen_random(100);
+let randtor = gen_random(100)
 
-print("RAND NUMBERS \n")
+println("RAND NUMBERS")
 
-for(local i=0;i<10;i+=1)
-    print(">"+resume randtor+"\n")
+for (local i=0;i<10;i+=1)
+    println($"> {resume randtor}")
 
-print("FIBONACCI \n")
-function fiboz(n) {
+println("FIBONACCI")
+
+let function fiboz(n) {
     local prev=0
     local curr=1
     yield 1
 
-    for(local i=0;i<n-1;++i) {
-        local res=prev+curr
+    for (local i=0;i<n-1;++i) {
+        let res=prev+curr
         prev=curr
-        yield curr=res
+        curr=res
+        yield curr
     }
     return prev+curr
 }
 
-foreach(val in fiboz(10)) {
-    ::print($"> {val}\n")
+foreach (val in fiboz(10)) {
+    println($"> {val}")
 }

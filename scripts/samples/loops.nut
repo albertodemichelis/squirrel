@@ -1,29 +1,30 @@
-local arr=["one","two","three"]
+let arr=["one","two","three"]
 
-::print("FOREACH\n")
+print("FOREACH\n")
 
-foreach(i,val in arr) {
-    ::print($"index [{i}]={val}\n")
+foreach (i,val in arr) {
+    println($"index [{i}]={val}")
 }
 
-::print("FOR\n")
+println("FOR")
 
 local i
 for(i=0;i<arr.len();++i){
-    ::print($"index [{i}]={arr[i]}\n")
+    println($"index [{i}]={arr[i]}")
 }
 
-::print("WHILE\n")
+println("WHILE")
 
 i=0
 while(i<arr.len()) {
-    ::print($"index [{i}]={arr[i]}\n")
+    println($"index [{i}]={arr[i]}")
     ++i
 }
-::print("DO WHILE\n");
+
+println("DO WHILE");
 
 i=0
 do {
-    ::print($"index [{i}]={arr[i]}\n")
+    println($"index [{i}]={arr[i]}")
     ++i
 }while(i<arr.len())

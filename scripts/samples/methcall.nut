@@ -1,9 +1,9 @@
 /*translation of the methcall test from The Great Computer Language Shootout
 */
 
-local system = require("system")
+let datetime = require("datetime")
 
-local class Toggle {
+let class Toggle {
     bool=null
 
     function constructor(startstate) {
@@ -21,7 +21,7 @@ local class Toggle {
 }
 
 
-local class NthToggle extends Toggle {
+let class NthToggle extends Toggle {
     count_max=null
     count=0
 
@@ -43,16 +43,15 @@ local class NthToggle extends Toggle {
 
 
 local function main() {
-    local n = vargv.len()!=0?vargv[0].tointeger():1
+    let n = vargv.len()!=0?vargv[0].tointeger():1
 
     local val = 1
-    local toggle = Toggle(val)
-    local i = n;
+    let  toggle = Toggle(val)
+    local i = n
     while(i--) {
       val = toggle.activate().value()
-
     }
-    print(toggle.value() ? "true\n" : "false\n")
+    println(toggle.value() ? "true" : "false")
 
     val = 1
     local ntoggle = NthToggle(val, 3)
@@ -60,9 +59,10 @@ local function main() {
     while(i--) {
       val = ntoggle.activate().value()
     }
-    print(ntoggle.value() ? "true\n" : "false\n")
+    println(ntoggle.value() ? "true" : "false")
 
 }
-local start=system.clock()
+
+let start=datetime.clock()
 main()
-print("TIME="+(system.clock()-start)+"\n");
+println("TIME="+(datetime.clock()-start))

@@ -1,5 +1,5 @@
-local foo = require("module_1.nut")
-local {bar, baz} = require("module_2.nut")
+let foo = require("module_1.nut")
+let {bar, baz} = require("module_2.nut")
 
-::print($"foo() result = {foo()}\n")
-::print($"bar = {bar}, baz = {baz}\n")
+println($"foo() result = {foo()}")
+println($"bar = {bar}, baz = {baz}")

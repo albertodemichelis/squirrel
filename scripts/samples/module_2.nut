@@ -1,4 +1,4 @@
-local exports = {
+let exports = {
   bar = "BAR"
   baz = "BAZ"
 }
