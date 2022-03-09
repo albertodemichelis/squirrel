@@ -15,7 +15,7 @@ endif()
 
 if(NOT DISABLE_STATIC)
   add_executable(sq_static sq.cpp)
-  add_executable(squirrel::interpreter_static ALIAS sq)
+  add_executable(squirrel::interpreter_static ALIAS sq_static)
   set_target_properties(sq_static PROPERTIES EXPORT_NAME interpreter_static)
   target_link_libraries(sq_static squirrel_static sqstdlib_static sqmodules_static)
   if(NOT SQ_DISABLE_INSTALLER)
