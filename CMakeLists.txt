@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4)
-project(squirrel VERSION 3.1 LANGUAGES C CXX)
+project(squirrel VERSION 3.2 LANGUAGES C CXX)
 
 option(DISABLE_STATIC "Avoid building/installing static libraries.")
 option(LONG_OUTPUT_NAMES "Use longer names for binaries and libraries: squirrel3 (not sq).")
@@ -87,12 +87,12 @@ configure_package_config_file(
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/squirrel"
   )
 
-export(EXPORT squirrel
-  NAMESPACE squirrel::
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-targets.cmake"
-  )
-
 if(NOT SQ_DISABLE_INSTALLER AND NOT SQ_DISABLE_CMAKE_INSTALLER)
+  export(EXPORT squirrel
+    NAMESPACE squirrel::
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-targets.cmake"
+    )
+
   install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-config-version.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-config.cmake"
