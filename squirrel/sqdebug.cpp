@@ -38,7 +38,7 @@ SQRESULT sq_stackinfos(HSQUIRRELVM v, SQInteger level, SQStackInfos *si)
             if (sq_type(func->_name) == OT_STRING)
                 si->funcname = _stringval(func->_name);
             if (sq_type(func->_sourcename) == OT_STRING)
-                si->source = func->_sourcename_ptr;
+                si->source = _stringval(func->_sourcename);
             si->line = func->GetLine(ci._ip);
                         }
             break;

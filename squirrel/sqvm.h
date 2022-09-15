@@ -186,7 +186,6 @@ public:
     SQBool _suspended_root;
     SQInteger _suspended_target;
     SQInteger _suspended_traps;
-    SQConstStringsCollection constStrings;
 };
 
 struct AutoDec{

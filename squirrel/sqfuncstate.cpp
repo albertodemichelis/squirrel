@@ -557,7 +557,6 @@ SQFunctionProto *SQFuncState::BuildProto()
 
     f->_stacksize = _stacksize;
     f->_sourcename = _sourcename;
-    f->_sourcename_ptr = _sourcename_ptr;
     f->_bgenerator = _bgenerator;
     f->_name = _name;
     f->_docstring = _docstring;

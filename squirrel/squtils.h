@@ -124,42 +124,4 @@ private:
 };
 
 
-
-class SQConstStringsCollection
-{
-  sqvector<const SQChar *> v;
-
-public:
-  SQConstStringsCollection(SQAllocContext ctx) : v(ctx) {}
-
-  ~SQConstStringsCollection()
-  {
-    while (!v.empty())
-    {
-      delete[] v.top();
-      v.pop_back();
-    }
-  }
-
-  const SQChar * perpetuate(const SQChar * s)
-  {
-    if (!s)
-      return perpetuate(_SC(""));
-
-    for (int i = int(v.size()) - 1; i >= 0; i--)
-    {
-      if (scstrcmp(v[i], s) == 0)
-        return v[i];
-    }
-
-    int count = int(scstrlen(s)) + 1;
-    SQChar * res = new SQChar[count];
-    memcpy(res, s, sizeof(SQChar) * count);
-
-    v.push_back(res);
-
-    return res;
-  }
-};
-
 #endif //_SQUTILS_H_

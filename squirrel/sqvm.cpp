@@ -118,8 +118,7 @@ bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,
 SQVM::SQVM(SQSharedState *ss) :
     _callstackdata(ss->_alloc_ctx),
     _stack(ss->_alloc_ctx),
-    _etraps(ss->_alloc_ctx),
-    constStrings(ss->_alloc_ctx)
+    _etraps(ss->_alloc_ctx)
 {
     _sharedstate=ss;
     _suspended = SQFalse;
