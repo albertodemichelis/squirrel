@@ -176,6 +176,27 @@ Allow class declaration sugar
 Allow implicitly add classes to 'this'
 
 
+-----------------------------------------------
+Disable access to root table via ``::``
+-----------------------------------------------
+
+::
+
+    #forbid-root-table
+
+Forbids use of ``::`` operator for the current unit
+Using root table is dangerous (as all global vairables)
+
+-----------------------------------------------
+Enable access to root table via ``::``
+-----------------------------------------------
+
+::
+
+    #allow-root-table
+
+Allows use of ``::`` operator for the current unit
+
 ----------------------------------------------
 Disable implicit string concatenation
 ----------------------------------------------

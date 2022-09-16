@@ -195,9 +195,9 @@ public:
         }
 
         if (scstrcmp(sval, _SC("strict")) == 0)
-            setFlags = ~SQUnsignedInteger(0);
+            setFlags = LF_STRICT;
         else if (scstrcmp(sval, _SC("relaxed")) == 0)
-            clearFlags = ~SQUnsignedInteger(0);
+            clearFlags = LF_STRICT;
         else if (scstrcmp(sval, _SC("strict-bool")) == 0)
             setFlags = LF_STRICT_BOOL;
         else if (scstrcmp(sval, _SC("relaxed-bool")) == 0)
@@ -222,6 +222,10 @@ public:
             setFlags = LF_EXPLICIT_THIS;
         else if (scstrcmp(sval, _SC("implicit-this")) == 0)
             clearFlags = LF_EXPLICIT_THIS;
+        else if (scstrcmp(sval, _SC("forbid-root-table")) == 0)
+            setFlags = LF_FORBID_ROOT_TABLE;
+        else if (scstrcmp(sval, _SC("allow-root-table")) == 0)
+            clearFlags = LF_FORBID_ROOT_TABLE;
         else
             Error(_SC("unsupported directive"));
 
@@ -1097,6 +1101,8 @@ public:
             }
             break;
         case TK_DOUBLE_COLON:  // "::"
+            if (_fs->lang_features & LF_FORBID_ROOT_TABLE)
+                Error(_SC("Access to root table is forbidden"));
             _fs->AddInstruction(_OP_LOADROOT, _fs->PushTarget());
             _es.etype = OBJECT;
             _token = _SC('.'); /* hack: drop into PrefixExpr, case '.'*/
