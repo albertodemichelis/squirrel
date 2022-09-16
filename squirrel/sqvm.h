@@ -206,19 +206,4 @@ inline SQObjectPtr &stack_get(HSQUIRRELVM v,SQInteger idx){return ((idx>=0)?(v->
 #define _opt_ss(_vm_) (_vm_)->_sharedstate
 #endif
 
-#define PUSH_CALLINFO(v,nci){ \
-    SQInteger css = v->_callsstacksize; \
-    if(css == v->_alloccallsstacksize) { \
-        v->GrowCallStack(); \
-    } \
-    v->ci = &v->_callsstack[css]; \
-    *(v->ci) = nci; \
-    v->_callsstacksize++; \
-}
-
-#define POP_CALLINFO(v){ \
-    SQInteger css = --v->_callsstacksize; \
-    v->ci->_closure.Null(); \
-    v->ci = css?&v->_callsstack[css-1]:NULL;    \
-}
 #endif //_SQVM_H_
