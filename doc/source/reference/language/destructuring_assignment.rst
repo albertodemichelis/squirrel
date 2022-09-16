@@ -15,15 +15,15 @@ This is similar to destructuring assignment in JavaScript (ECMAScript 2015)
 Example
 ::
 
-   local arr = [123, 567]
-   local [a, b] = arr
+   let arr = [123, 567]
+   let [a, b] = arr
    print(a) // => 123
    print(b) // => 567
 
-   local function foo() {
+   let function foo() {
      return {x = 555, y=777, z=999, w=111}
    }
-   local {x, y=1, q=3} = foo()
+   let {x, y=1, q=3} = foo()
    print(x) // => 555
    print(y) // => 777
    print(q) // => 3

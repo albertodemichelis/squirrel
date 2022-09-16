@@ -46,8 +46,8 @@ for classes the previous code become: ::
         name = null;
     }
 
-    local a = Comparable("Alberto");
-    local b = Comparable("Wouter");
+    let a = Comparable("Alberto");
+    let b = Comparable("Wouter");
 
     if(a>b)
         print("a>b")

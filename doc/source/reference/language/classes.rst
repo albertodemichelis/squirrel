@@ -27,44 +27,36 @@ of using ';' as optional separator rather than ','.
 
 For instance: ::
 
-    class Foo {
+    let class Foo {
         //constructor
-        constructor(a)
-        {
-            testy = ["stuff",1,2,3,a];
+        constructor(a) {
+            testy = ["stuff",1,2,3,a]
         }
         //member function
-        function PrintTesty()
-        {
-            foreach(i,val in testy)
-            {
-                ::print("idx = "+i+" = "+val+" \n");
+        function PrintTesty() {
+            foreach(i,val in testy) {
+                print("idx = "+i+" = "+val)
             }
         }
         //property
-        testy = null;
-
+        testy = null
     }
 
 the previous code example is a syntactic sugar for: ::
 
     Foo <- class {
         //constructor
-        constructor(a)
-        {
-            testy = ["stuff",1,2,3,a];
+        constructor(a) {
+            testy = ["stuff",1,2,3,a]
         }
         //member function
-        function PrintTesty()
-        {
-            foreach(i,val in testy)
-            {
-                ::print("idx = "+i+" = "+val+" \n");
+        function PrintTesty() {
+            foreach(i,val in testy) {
+                println("idx = "+i+" = "+val)
             }
         }
         //property
-        testy = null;
-
+        testy = null
     }
 
 in order to emulate namespaces, it is also possible to declare something like this::
@@ -75,27 +67,25 @@ in order to emulate namespaces, it is also possible to declare something like th
     }
 
     class FakeNamespace.Utils.SuperClass {
-        constructor()
-        {
-            ::print("FakeNamespace.Utils.SuperClass")
+        constructor() {
+            println("FakeNamespace.Utils.SuperClass")
         }
-        function DoSomething()
-        {
-            ::print("DoSomething()")
+        function DoSomething() {
+            println("DoSomething()")
         }
     }
 
-    local testy = FakeNamespace.Utils.SuperClass();
-    testy.DoSomething();
+    let testy = FakeNamespace.Utils.SuperClass()
+    testy.DoSomething()
 
 After its declaration, methods or properties can be added or modified by following
 the same rules that apply to a table(operator ``<-``).::
 
     //adds a new property
-    Foo.stuff <- 10;
+    Foo.stuff <- 10
 
     //modifies the default value of an existing property
-    Foo.testy <- "I'm a string";
+    Foo.testy <- "I'm a string"
 
 After a class is instantiated is no longer possible to add new properties however is possible to add or replace methods.
 
@@ -115,14 +105,14 @@ with the keyword ``static``; the declaration must be in the class body.
 
 ::
 
-    class Foo {
+    let class Foo {
         constructor()
         {
             //..stuff
         }
-        name = "normal variable";
+        name = "normal variable"
         //static variable
-        static classname = "The class name is foo";
+        static classname = "The class name is foo"
     };
 
 -----------------
@@ -142,7 +132,7 @@ A class instance is created by calling a class object. Can be useful to imagine 
 that returns a class instance.::
 
     //creates a new instance of Foo
-    local inst = Foo();
+    let inst = Foo()
 
 When a class instance is created its member are initialized *with the same value* specified in the
 class declaration. The values are copied verbatim, *no cloning is performed* even if the value is a container or a class instances.
@@ -153,29 +143,28 @@ class declaration. The values are copied verbatim, *no cloning is performed* eve
 
             So consider this example: ::
 
-                class Foo {
+                let class Foo {
                   myarray = [1,2,3]
                   mytable = {}
                 }
 
-                local a = Foo();
-                local b = Foo();
+                let a = Foo()
+                let b = Foo()
 
             In the snippet above both instances will refer to the same array and same table.To achieve what a C# or Java programmer would
             expect, the following approach should be taken. ::
 
-                class Foo {
+                let class Foo {
                   myarray = null
                   mytable = null
-                  constructor()
-                  {
+                  constructor() {
                     myarray = [1,2,3]
                     mytable = {}
                   }
                 }
 
-                local a = Foo();
-                local b = Foo();
+                let a = Foo()
+                let b = Foo()
 
 When a class defines a method called 'constructor', the class instantiation operation will
 automatically invoke it for the newly created instance.
@@ -183,21 +172,20 @@ The constructor method can have parameters, this will impact on the number of pa
 that the *instantiation operation* will require.
 Constructors, as normal functions, can have variable number of parameters (using the parameter ``...``).::
 
-    class Rect {
-        constructor(w,h)
-        {
-            width = w;
-            height = h;
+    let class Rect {
+        constructor(w,h) {
+            width = w
+            height = h
         }
-        x = 0;
-        y = 0;
-        width = null;
-        height = null;
+        x = 0
+        y = 0
+        width = null
+        height = null
     }
 
     //Rect's constructor has 2 parameters so the class has to be 'called'
     //with 2 parameters
-    local rc = Rect(100,100);
+    let rc = Rect(100,100)
 
 After an instance is created, its properties can be set or fetched following the
 same rules that apply to tables. Methods cannot be set.
@@ -209,12 +197,12 @@ The class object that created a certain instance can be retrieved through the bu
 
 The operator ``instanceof`` tests if a class instance is an instance of a certain class.::
 
-    local rc = Rect(100,100);
-    if(rc instanceof ::Rect) {
-        ::print("It's a rect");
+    let rc = Rect(100,100);
+    if (rc instanceof Rect) {
+        println("It's a rect")
     }
     else {
-        ::print("It isn't a rect");
+        println("It isn't a rect")
     }
 
 .. note:: Since Squirrel 3.x instanceof doesn't throw an exception if the left expression is not a class, it simply fails
@@ -231,9 +219,9 @@ Quirrel's classes support single inheritance by adding the keyword ``extends``, 
 by an expression, in the class declaration.
 The syntax for a derived class is the following: ::
 
-    class SuperFoo extends Foo {
+    let class SuperFoo extends Foo {
         function DoSomething() {
-            ::print("I'm doing something");
+            println("I'm doing something")
         }
     }
 
@@ -247,43 +235,41 @@ through the 'base' keyword.
 
 Here an example: ::
 
-    class Foo {
+    let class Foo {
         function DoSomething() {
-            ::print("I'm the base");
+            println("I'm the base")
         }
     };
 
-    class SuperFoo extends Foo {
+    let class SuperFoo extends Foo {
         //overridden method
         function DoSomething() {
             //calls the base method
-            base.DoSomething();
-            ::print("I'm doing something");
+            base.DoSomething()
+            println("I'm doing something")
         }
     }
 
 Same rule apply to the constructor. The constructor is a regular function (apart from being automatically invoked on construction).::
 
     class BaseClass {
-        constructor()
-        {
-            ::print("Base constructor\n");
+        constructor() {
+            println("Base constructor");
         }
     }
 
     class ChildClass extends BaseClass {
-        constructor()
-        {
-            base.constructor();
-            ::print("Child constructor\n");
+        constructor() {
+            base.constructor()
+            println("Child constructor")
         }
     }
 
-    local test = ChildClass();
+    let test = ChildClass();
 
 The base class of a derived class can be retrieved through the built-in method ``getbase()``.::
 
-    local thebaseclass = SuperFoo.getbase();
+    let thebaseclass = SuperFoo.getbase();
 
 Note that because methods do not have special protection policies when calling methods of the same
 objects, a method of a base class that calls a method of the same class can end up calling a overridden method of the derived class.
@@ -292,30 +278,28 @@ A method of a base class can be explicitly invoked by a method of a derived clas
 
     class Foo {
         function DoSomething() {
-            ::print("I'm the base");
+            println("I'm the base")
         }
-        function DoIt()
-        {
-            DoSomething();
+        function DoIt() {
+            DoSomething()
         }
     };
 
     class SuperFoo extends Foo {
         //overridden method
         function DoSomething() {
-            ::print("I'm the derived");
-
+            println("I'm the derived")
         }
         function DoIt() {
-            base.DoIt();
+            base.DoIt()
         }
     }
 
     //creates a new instance of SuperFoo
-    local inst = SuperFoo();
+    let inst = SuperFoo()
 
     //prints "I'm the derived"
-    inst.DoIt();
+    inst.DoIt()
 
 ----------------------
 Metamethods
@@ -336,28 +320,26 @@ Class objects instead support only 2 metamethods : ``_newmember`` and ``_inherit
 the following example show how to create a class that implements the metamethod ``_add``.::
 
     class Vector3 {
-        constructor(...)
-        {
+        constructor(...) {
             if(vargv.len() >= 3) {
-                x = vargv[0];
-                y = vargv[1];
-                z = vargv[2];
+                x = vargv[0]
+                y = vargv[1]
+                z = vargv[2]
             }
         }
-        function _add(other)
-        {
-            return ::Vector3(x+other.x,y+other.y,z+other.z);
+        function _add(other) {
+            return ::Vector3(x+other.x,y+other.y,z+other.z)
         }
 
-        x = 0;
-        y = 0;
-        z = 0;
+        x = 0
+        y = 0
+        z = 0
     }
 
-    local v0 = Vector3(1,2,3)
-    local v1 = Vector3(11,12,13)
-    local v2 = v0 + v1;
-    ::print(v2.x+","+v2.y+","+v2.z+"\n");
+    let v0 = Vector3(1,2,3)
+    let v1 = Vector3(11,12,13)
+    let v2 = v0 + v1
+    println($"{v2.x}, "{v2.y}, {v2.z}")
 
 Since version 2.1, classes support 2 metamethods ``_inherited`` and ``_newmember``.
 ``_inherited`` is invoked when a class inherits from the one that implements ``_inherited``.

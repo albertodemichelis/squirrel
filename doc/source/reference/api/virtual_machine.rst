@@ -234,7 +234,7 @@ Sets the foreign pointer of a certain VM instance. The foreign pointer is an arb
     :param SQPRINTFUNCTION errorfunc: a pointer to the error func or NULL to disable the output.
     :remarks: the print func has the following prototype: void printfunc(HSQUIRRELVM v,const SQChar \*s,...)
 
-sets the print function of the virtual machine. This function is used by the built-in function '::print()' to output text.
+sets the print function of the virtual machine. This function is used by the built-in function 'print()' to output text.
 
 
 

@@ -120,11 +120,10 @@ do/while statement
 Executes a statement once, and then repeats execution of the statement until a condition
 expression evaluates to false.::
 
-    local a=0;
-    do
-    {
-        print(a+"\n");
-        a+=1;
+    local a=0
+    do {
+        println(a)
+        a += 1
     } while(a>100)
 
 ^^^^^^^^^^^^^^^^^
@@ -173,15 +172,15 @@ for
 Executes a statement as long as a condition is different than false.::
 
     for(local a=0;a<10;a+=1)
-        print(a+"\n");
+        println(a)
     //or
     glob <- null
     for(glob=0;glob<10;glob+=1){
-        print(glob+"\n");
+        println(glob)
     }
     //or
     for(;;){
-        print(loops forever+"\n");
+        println("loops forever")
     }
 
 ^^^^^^^^
@@ -200,12 +199,12 @@ If exp is a generator it will be resumed every iteration as long as it is alive;
 be the result of 'resume' and the index the sequence number of the iteration starting
 from 0.::
 
-    local a=[10,23,33,41,589,56]
+    let a=[10,23,33,41,589,56]
     foreach(idx,val in a)
-        print("index="+idx+" value="+val+"\n");
+        println($"index={idx} value={val}")
     //or
     foreach(val in a)
-        print("value="+val+"\n");
+        println($"value={val}")
 
 -------
 break

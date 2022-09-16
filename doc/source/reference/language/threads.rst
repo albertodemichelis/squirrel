@@ -38,31 +38,29 @@ be the return value of the suspend function, if no parameter is passed the retur
 
 A thread terminates when its main function returns or when an unhandled exception occurs during its execution.::
 
-    function coroutine_test(a,b)
-    {
-        ::print(a+" "+b+"\n");
-        local ret = ::suspend("suspend 1");
-        ::print("the coroutine says "+ret+"\n");
-        ret = ::suspend("suspend 2");
-        ::print("the coroutine says "+ret+"\n");
-        ret = ::suspend("suspend 3");
-        ::print("the coroutine says "+ret+"\n");
+    function coroutine_test(a, b) {
+        println($"{a} {b}")
+        local ret = suspend("suspend 1")
+        println($"the coroutine says {ret}")
+        ret = suspend("suspend 2")
+        println($"the coroutine says {ret}")
+        ret = suspend("suspend 3")
+        println($"the coroutine says {ret}")
         return "I'm done"
     }
 
-    local coro = ::newthread(coroutine_test);
+    local coro = newthread(coroutine_test)
 
-    local susparam = coro.call("test","coroutine"); //starts the coroutine
+    local susparam = coro.call("test","coroutine") //starts the coroutine
 
-    local i = 1;
-    do
-    {
-        ::print("suspend passed ("+susparam+")\n")
-        susparam = coro.wakeup("ciao "+i);
-        ++i;
-    }while(coro.getstatus()=="suspended")
+    local i = 1
+    do {
+        println($"suspend passed {susparam}")
+        susparam = coro.wakeup("ciao "+i)
+        ++i
+    } while(coro.getstatus()=="suspended")
 
-    ::print("return passed ("+susparam+")\n")
+    println($"return passed {susparam}")
 
 the result of this program will be::
 
@@ -79,28 +77,28 @@ the result of this program will be::
 the following is an interesting example of how threads and tail recursion
 can be combined.::
 
-    function state1()
-    {
-        ::suspend("state1");
-        return state2(); //tail call
+    function state1() {
+
+        suspend("state1")
+        return state2() //tail call
     }
 
-    function state2()
-    {
-        ::suspend("state2");
-        return state3(); //tail call
+    function state2() {
+
+        suspend("state2")
+        return state3() //tail call
     }
 
-    function state3()
-    {
-        ::suspend("state3");
-        return state1(); //tail call
+    function state3() {
+
+        suspend("state3")
+        return state1() //tail call
     }
 
-    local statethread = ::newthread(state1)
+    local statethread = newthread(state1)
 
-    ::print(statethread.call()+"\n");
+    println(statethread.call())
 
-    for(local i = 0; i < 10000; i++)
-        ::print(statethread.wakeup()+"\n");
+    for (local i = 0; i < 10000; i++)
+        println(statethread.wakeup())
 

@@ -54,15 +54,15 @@ with ``@"`` and end with the matching quote.  Verbatim string literals
 also can extend over a line break. If they do, they include any white
 space characters between the quotes: ::
 
-    local a = "I'm a wonderful string\n"
+    let a = "I'm a wonderful string\n"
     // has a newline at the end of the string
-    local x = @"I'm a verbatim string\n"
+    let x = @"I'm a verbatim string\n"
     // the \n is literal, similar to "\\n" in a regular string.
 
 However, a doubled quotation mark within a verbatim string is replaced
 by a single quotation mark: ::
 
-    local multiline = @"
+    let multiline = @"
         this is a multiline string
         it will ""embed"" all the new line
         characters
@@ -85,7 +85,7 @@ Bool is a double-valued (Boolean) data type. Its literals are ``true``
 and ``false``. A bool value expresses the validity of a condition
 (tells whether the condition is true or false).::
 
-    local a = true;
+    local a = true
 
 --------
 Table
@@ -94,8 +94,8 @@ Table
 Tables are associative containers implemented as a set of key/value pairs
 called slots.::
 
-    local t={}
-    local test=
+    let t={}
+    let test=
     {
         a=10
         b=function(a) { return a+1; }
@@ -107,8 +107,8 @@ Array
 
 Arrays are simple sequence of objects. Their size is dynamic and their index always starts from 0.::
 
-    local a  = ["I'm","an","array"]
-    local b = [null]
+    let a  = ["I'm","an","array"]
+    let b = [null]
     b[0] = a[2];
 
 --------

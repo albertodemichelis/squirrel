@@ -37,7 +37,7 @@ To make constant global, use the ``global`` keyword.::
 
 Constants will shadow any global slot with the same name( the global slot will remain visible by using the ``::`` syntax).::
 
-    local x = foobar * 2
+    let x = foobar * 2
 
 ---------------
 Enumerations
@@ -70,7 +70,7 @@ An enum value is accessed in a manner that's similar to accessing a static class
 The name of the member must be qualified with the name of the enumeration, for example ``Stuff.second``
 Enumerations will shadow any global slot with the same name( the global slot will remain visible by using the ``::`` syntax).::
 
-    local x = Stuff.first * 2
+    let x = Stuff.first * 2
 
 Like with constants, to declare globally-scoped enum, use the ``global`` keyword.::
 

@@ -17,7 +17,7 @@ Example
 
    #default:strict
 
-   local function foo() {
+   let function foo() {
      #relaxed-bool
      if (123)
        print("bar")
@@ -138,7 +138,7 @@ Root functions can be added explicitely via slot creation
 Local functions can be added as
 ::
 
-    local function foo(){}
+    let function foo(){}
 
 ----------------------------------------------
 Allow function declaration sugar
@@ -163,7 +163,7 @@ The same directive as #no-func-decl-sugar but for classes.
 Local classes can be added with:
 ::
 
-    local class Foo{}
+    let class Foo{}
 
 ------------------------------------------------
 Allow class declaration sugar
@@ -213,9 +213,9 @@ But + for string concatenation is not associative, e.g.
 Example:
 ::
 
-   local a = 1
-   local b = 2
-   local c = "3"
+   let a = 1
+   let b = 2
+   let c = "3"
    (a + b) + c != a + (b + c) // "33" != "123"
 
 This actually happens especially on reduce of arrays and alike.

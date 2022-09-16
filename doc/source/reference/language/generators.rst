@@ -25,9 +25,9 @@ generator cannot be resumed anymore.::
         return null
     }
 
-    local gtor = geny(10)
-    for(local x=resume gtor; x; x=resume gtor)
-        ::print(x+"\n")
+    let gtor = geny(10)
+    for (local x=resume gtor; x; x=resume gtor)
+        print(x+"\n")
 
 the output of this program will be::
 

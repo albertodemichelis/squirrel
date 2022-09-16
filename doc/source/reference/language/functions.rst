@@ -89,19 +89,17 @@ called ``vargv``, that is passed as implicit parameter.
 
 ``vargv`` is a regular quirrel array and can be used accordingly.::
 
-    function test(a,b,...)
-    {
-        for(local i = 0; i< vargv.len(); i++)
-        {
-            ::print("varparam "+i+" = "+vargv[i]+"\n");
+    function test(a,b,...) {
+
+        for (local i = 0; i< vargv.len(); i++) {
+            println($"varparam {i} = {vargv[i]}")
         }
-      foreach(i,val in vargv)
-        {
-            ::print("varparam "+i+" = "+val+"\n");
+        foreach (i,val in vargv) {
+            println($"varparam {i} = {val}")
         }
     }
 
-    test("goes in a","goes in b",0,1,2,3,4,5,6,7,8);
+    test("goes in a","goes in b",0,1,2,3,4,5,6,7,8)
 
 ---------------
 Function calls
@@ -179,21 +177,21 @@ array.sort().
 
 here a lambda expression::
 
-    local myexp = @(a,b) a + b
+    let myexp = @(a,b) a + b
 
 that is equivalent to::
 
-    local myexp = function(a,b) { return a + b; }
+    let myexp = function(a,b) { return a + b; }
 
 a more useful usage could be::
 
-    local arr = [2,3,5,8,3,5,1,2,6];
+    let arr = [2,3,5,8,3,5,1,2,6];
     arr.sort(@(a,b) a <=> b);
     arr.sort(@(a,b) -(a <=> b));
 
 that could have been written as::
 
-    local arr = [2,3,5,8,3,5,1,2,6];
+    let arr = [2,3,5,8,3,5,1,2,6];
     arr.sort(function(a,b) { return a <=> b; } );
     arr.sort(function(a,b) { return -(a <=> b); } );
 
@@ -212,13 +210,13 @@ or parameter of the function.
 Free variables reference a local variable from a outer scope.
 In the following example the variables 'testy', 'x' and 'y' are bound to the function 'foo'.::
 
-    local x=10,y=20
-    local testy="I'm testy"
+    local x = 10
+    local y = 20
+    let testy = "I'm testy"
 
-    function foo(a,b)
-    {
-        ::print(testy);
-        return a+b+x+y;
+    let function foo(a,b) {
+        print(testy)
+        return a+b+x+y
     }
 
 A program can read or write a free variable.
@@ -237,13 +235,12 @@ If this happenes the quirrel interpreter collapses the caller stack frame before
 recursive call; because of that very deep recursions are possible without risk of a stack
 overflow.::
 
-    function loopy(n)
-    {
-        if(n>0){
-            ::print("n="+n+"\n");
-            return loopy(n-1);
+    function loopy(n) {
+        if (n > 0) {
+            println($"n={n}")
+            return loopy(n-1)
         }
     }
 
-    loopy(1000);
+    loopy(1000)
 

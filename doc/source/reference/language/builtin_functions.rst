@@ -457,8 +457,8 @@ If table has a delegate with _call() metamethod, get info about it (see function
 
 Example: ::
 
-    local foo = {fizz=1}
-    local bar = foo.__merge({buzz=2})
+    let foo = {fizz=1}
+    let bar = foo.__merge({buzz=2})
     => foo == {fizz=1}; bar={fizz=1, buzz=2}
 
 
@@ -469,8 +469,8 @@ In other words it mutates table with data from provided tables.
 
 Example: ::
 
-    local foo = {fizz=1}
-    local bar = foo.__update({buzz=2})
+    let foo = {fizz=1}
+    let bar = foo.__update({buzz=2})
     => foo == {fizz=1, bazz=2}; bar={fizz=1, buzz=2}
 
 

@@ -18,9 +18,10 @@ The following example uses both features to produce the same output:
 
 ::
 
-  local x = 123, y = 567
-  ::print("x = {0}, sin(y) = {1}".subst(x, math.sin(y)))
-  ::print($"x = {x}, sin(y) = {math.sin(y)}")
+  local x = 123
+  local y = 567
+  print("x = {0}, sin(y) = {1}".subst(x, math.sin(y)))
+  print($"x = {x}, sin(y) = {math.sin(y)}")
 
 Internally string interpolation translates to subst() call.
 
@@ -31,4 +32,4 @@ To use curly brackets {} inside interpolation string, '{' and '}' characters sho
 ::
 
   local foo = 123
-  ::print($"\{ foo = {foo} \}") // will output: { foo = 123 }
+  print($"\{ foo = {foo} \}") // will output: { foo = 123 }

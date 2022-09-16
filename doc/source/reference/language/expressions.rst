@@ -105,7 +105,7 @@ If key exists, return result of 'get' operations, else return null.
 
 ::
 
-    local tbl = {bar=123}
+    let tbl = {bar=123}
     
     tbl.bar // returns 123
     tbl.baz // throws an error
@@ -122,7 +122,7 @@ Therefore operator can be chained
 
 ::
 
-    local x = tbl?.foo?.bar?.baz?["spam"]
+    let x = tbl?.foo?.bar?.baz?["spam"]
 
 To avoid extra typing, null-propagation operators affect the rest of expression.
 Otherwise, an expression like
@@ -240,8 +240,7 @@ Tests the existence of a slot in a table.
 
 ::
 
-    local t=
-    {
+    let t = {
         foo="I'm foo",
         [123]="I'm not foo"
     }
@@ -348,11 +347,11 @@ Table Constructor
 
 Creates a new table.::
 
-    local a = {} //create an empty table
+    let a = {} //create an empty table
 
 A table constructor can also contain slots declaration; With the syntax: ::
 
-    local a = {
+    let a = {
         slot1 = "I'm the slot value"
     }
 
@@ -362,8 +361,7 @@ An alternative syntax can be::
 
 A new slot with exp1 as key and exp2 as value is created::
 
-    local a=
-    {
+    let a = {
         [1]="I'm the value"
     }
 
@@ -371,19 +369,19 @@ ES2015-style shorthand table initialization is supported, so the code like below
 
     local x = 123
     local y = 345
-    local tbl = {x=x, y=y}
+    let tbl = {x=x, y=y}
 
 can also be written as ::
 
     local x = 123
     local y = 345
-    local tbl = {x, y}
+    let tbl = {x, y}
 
 
 All syntaxes can be mixed::
 
     local x = "bar"
-    local table=
+    let table=
     {
         a=10,
         b="string",
@@ -408,7 +406,7 @@ Since Squirrel 3.0 is possible to declare a table using JSON syntax(see http://w
 
 the following JSON snippet: ::
 
-    local x = {
+    let x = {
       "id": 1,
       "name": "Foo",
       "price": 123,
@@ -417,7 +415,7 @@ the following JSON snippet: ::
 
 is equivalent to the following quirrel code: ::
 
-    local x = {
+    let x = {
       id = 1,
       name = "Foo",
       price = 123,

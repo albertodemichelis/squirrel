@@ -31,7 +31,7 @@ Adding a new slot in a existing table is done through the "new slot" operator ``
 operator behaves like a normal assignment except that if the slot does not exists it will
 be created.::
 
-    local a = {}
+    let a = {}
 
 The following line will cause an exception because the slot named 'newslot' does not exist
 in the table 'a'::

@@ -20,23 +20,20 @@ or ::
 The following code shows how a debug hook could look like(obviously is possible to
 implement this function in C as well). ::
 
-    function debughook(event_type,sourcefile,line,funcname)
-    {
-        local fname=funcname?funcname:"unknown";
+    function debughook(event_type, sourcefile, line, funcname) {
+
+        local fname=funcname?funcname:"unknown"
         local srcfile=sourcefile?sourcefile:"unknown"
         switch (event_type) {
         case 'l': //called every line(that contains some code)
-            ::print("LINE line [" + line + "] func [" + fname + "]");
-            ::print("file [" + srcfile + "]\n");
-            break;
+            println($"LINE line [{line}] func [{fname}] file [{srcfile}]")
+            break
         case 'c': //called when a function has been called
-            ::print("LINE line [" + line + "] func [" + fname + "]");
-            ::print("file [" + srcfile + "]\n");
-            break;
+            println($"LINE line [{line}] func [{fname}] file [{srcfile}]")
+            break
         case 'r': //called when a function returns
-            ::print("LINE line [" + line + "] func [" + fname + "]");
-            ::print("file [" + srcfile + "]\n");
-            break;
+            println($"LINE line [{line}] func [{fname}] file [{srcfile}]")
+            break
         }
     }
 
