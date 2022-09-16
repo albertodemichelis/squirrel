@@ -559,7 +559,6 @@ SQFunctionProto *SQFuncState::BuildProto()
     f->_sourcename = _sourcename;
     f->_bgenerator = _bgenerator;
     f->_name = _name;
-    f->_docstring = _docstring;
 
     while((idx=_table(_literals)->Next(false,refidx,key,val))!=-1) {
         f->_literals[_integer(val)]=key;

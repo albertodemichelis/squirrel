@@ -493,20 +493,7 @@ bool Lexer::process()
       break;
 
     case '@':
-      if (fetchChar() == '@' && fetchChar(1) == '\"')
-      {
-        nextChar();
-        nextChar();
-        if (parseStringLiteral(true, '\"'))
-        {
-          Token &lastToken = tokens[tokens.size() - 1];
-          if (lastToken.type != TK_STRING_LITERAL)
-            ctx.error(128, "error parsing docstring", curLine, curColumn);
-          else
-            lastToken.type = TK_DOCSTRING;
-        }
-      }
-      else if (fetchChar() == '\"')
+      if (fetchChar() == '\"')
       {
         nextChar();
         parseStringLiteral(true, '\"');

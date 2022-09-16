@@ -130,13 +130,6 @@ struct Parser
     return n;
   }
 
-  Node * createDocStringNode(Token & t)
-  {
-    Node * n = new Node(ctx, t);
-    n->nodeType = PNT_DOCSTRING;
-    return n;
-  }
-
   Node * createVarParamsNode(Token & t)
   {
     Node * n = new Node(ctx, t);
@@ -1738,10 +1731,6 @@ struct Parser
         res = parseEnumStatement(tok, true);
       else
         ctx.error(129, "global can be applied to const or enum only", tok->line, tok->column);
-    }
-    else if (accept(TK_DOCSTRING))
-    {
-      res = createDocStringNode(*tok);
     }
     else
     {

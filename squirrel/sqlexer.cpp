@@ -410,13 +410,6 @@ SQInteger SQLexer::LexSingleToken()
         case _SC('@'): {
             SQInteger stype;
             NEXT();
-            if(CUR_CHAR == _SC('@')) {
-                NEXT();
-                stype = ReadString('"',true);
-                if (stype != TK_STRING_LITERAL)
-                    Error(_SC("error parsing docstring"));
-                RETURN_TOKEN(TK_DOCSTRING);
-            }
             if(CUR_CHAR != _SC('"')) {
                 RETURN_TOKEN('@');
             }

@@ -72,7 +72,6 @@
   NODE_TYPE(PNT_ENUM, "enum") \
   NODE_TYPE(PNT_GLOBAL_ENUM, "global-enum") \
   NODE_TYPE(PNT_ENUM_MEMBER, "enum-member") \
-  NODE_TYPE(PNT_DOCSTRING, "docstring") \
   NODE_TYPE(PNT_IMPORT_VAR_DECLARATION, "import-var-declaration") \
 
 

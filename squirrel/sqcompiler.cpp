@@ -463,12 +463,6 @@ public:
             else
                 Error(_SC("global can be applied to const and enum only"));
             break;
-        case TK_DOCSTRING:
-            if (!sq_isnull(_fs->_docstring))
-                Error(_SC("function already has a docstring"));
-            _fs->_docstring = _fs->CreateString(_lex._svalue, _lex._longstr.size()-1);
-            Lex();
-            break;
         default:
             Expression(SQE_REGULAR);
             _fs->DiscardTarget();

@@ -68,7 +68,6 @@ struct SQFuncState
     SQObjectPtr _literals;
     SQObjectPtr _strings;
     SQObjectPtr _name;
-    SQObjectPtr _docstring;
     SQObjectPtr _sourcename;
     SQInteger _nliterals;
     SQLineInfoVec _lineinfos;

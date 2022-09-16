@@ -142,7 +142,6 @@ public:
 #endif
     SQObjectPtr _sourcename;
     SQObjectPtr _name;
-    SQObjectPtr _docstring;
     SQUnsignedInteger   lang_features;
     SQInteger _stacksize;
     bool _bgenerator;
