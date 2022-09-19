@@ -893,7 +893,9 @@ public:
             target = _fs->PushTarget();
         }
         if(sizeof(SQFloat) == sizeof(SQInt32)) {
-            _fs->AddInstruction(_OP_LOADFLOAT, target,*((SQInt32 *)&value));
+            SQInt32 i;
+            memcpy(&i, &value, sizeof(SQInt32));
+            _fs->AddInstruction(_OP_LOADFLOAT, target, i);
         }
         else {
             _fs->AddInstruction(_OP_LOAD, target, _fs->GetNumericConstant(value));
