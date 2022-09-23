@@ -89,7 +89,7 @@ bool SQClass::NewSlot(SQSharedState *ss,const SQObjectPtr &key,const SQObjectPtr
                 _methods.push_back(m);
             }
             else {
-                _methods[_member_idx(temp)].val = theval;
+                _methods[_member_idx(temp)].val = std::move(theval);
             }
         }
         return true;

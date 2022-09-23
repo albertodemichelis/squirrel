@@ -36,12 +36,20 @@ SQInteger sqstd_fseek(SQFILE file, SQInteger offset, SQInteger origin)
         case SQ_SEEK_SET: realorigin = SEEK_SET; break;
         default: return -1; //failed
     }
+#ifndef _WIN64
     return fseek((FILE *)file,(long)offset,(int)realorigin);
+#else
+    return _fseeki64((FILE*)file, (long)offset, (int)realorigin);
+#endif // !_WIN64
 }
 
 SQInteger sqstd_ftell(SQFILE file)
 {
+#ifndef _WIN64
     return ftell((FILE *)file);
+#else
+    return _ftelli64((FILE*)file);
+#endif // !_WIN64
 }
 
 SQInteger sqstd_fflush(SQFILE file)
