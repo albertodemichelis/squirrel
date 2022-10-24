@@ -1645,18 +1645,35 @@ void sq_move(HSQUIRRELVM dest,HSQUIRRELVM src,SQInteger idx)
     dest->Push(stack_get(src,idx));
 }
 
-SQRESULT sq_freeze(HSQUIRRELVM v, SQInteger idx)
+static bool validate_freezable(HSQUIRRELVM v, SQObjectPtr &o)
 {
-    SQObjectPtr &o = stack_get(v, idx);
     SQObjectType tp = sq_type(o);
     if (tp != OT_ARRAY && tp != OT_TABLE && tp != OT_INSTANCE && tp != OT_CLASS && tp != OT_USERDATA) {
         v->Raise_Error(_SC("Cannot freeze %s"), IdType2Name(tp));
-        return SQ_ERROR;
+        return false;
     }
+    return true;
+}
+
+SQRESULT sq_freeze(HSQUIRRELVM v, SQInteger idx)
+{
+    SQObjectPtr &o = stack_get(v, idx);
+    if (!validate_freezable(v, o))
+        return SQ_ERROR;
 
     SQObjectPtr dst = o;
     dst._flags |= SQOBJ_FLAG_IMMUTABLE;
     v->Push(dst);
+    return SQ_OK;
+}
+
+SQUIRREL_API SQRESULT sq_freeze_inplace(HSQUIRRELVM v, SQInteger idx)
+{
+    SQObjectPtr &o = stack_get(v, idx);
+    if (!validate_freezable(v, o))
+        return SQ_ERROR;
+
+    o._flags |= SQOBJ_FLAG_IMMUTABLE;
     return SQ_OK;
 }
 
