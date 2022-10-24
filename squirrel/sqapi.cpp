@@ -260,6 +260,12 @@ SQUserPointer sq_objtouserpointer(const HSQOBJECT *o)
     return 0;
 }
 
+const SQChar* sq_objtypestr(SQObjectType tp)
+{
+    const SQChar* s = IdType2Name(tp);
+    return s ? s : _SC("<unknown>");
+}
+
 void sq_pushnull(HSQUIRRELVM v)
 {
     v->PushNull();
