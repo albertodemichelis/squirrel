@@ -1203,6 +1203,8 @@ public:
     void UnaryOP(SQOpcode op)
     {
         PrefixedExpr();
+        if (_fs->_targetstack.size() == 0)
+            Error(_SC("cannot evaluate unary-op"));
         SQInteger src = _fs->PopTarget();
         _fs->AddInstruction(op, _fs->PushTarget(), src);
     }
