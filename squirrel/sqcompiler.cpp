@@ -1235,7 +1235,6 @@ public:
              nargs++;
              if(_token == _SC(',')){
                  Lex();
-                 if(_token == ')') Error(_SC("expression expected, found ')'"));
              }
          }
          Lex();
@@ -1429,12 +1428,24 @@ public:
             targets.push_back(_fs->PopTarget());
             _fs->PushLocalVariable(varname, assignable);
             names.push_back(varname);
-            if(_token == _SC(','))
-                Lex();
-            else if (destructurer && _token==TK_IDENTIFIER)
-                continue;
-            else
-                break;
+
+            if (destructurer) {
+                if (_token == _SC(',')) {
+                    Lex();
+                    if (_token == _SC(']') || _token == _SC('}'))
+                        break;
+                }
+                else if (_token == TK_IDENTIFIER)
+                    continue;
+                else
+                    break;
+            }
+            else {
+                if (_token == _SC(','))
+                    Lex();
+                else
+                    break;
+            }
         } while(1);
 
         if (destructurer) {
