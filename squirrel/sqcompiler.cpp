@@ -111,11 +111,14 @@ public:
         _scope.stacksize = 0;
         _compilererror[0] = _SC('\0');
         _expression_context = SQE_REGULAR;
-        _num_initial_bindings = bindings ? 1 : 0;
+        _num_initial_bindings = 0;
 
         if (bindings) {
-            assert(sq_type(*bindings)==OT_TABLE);
-            _scopedconsts.push_back(*bindings);
+            assert(sq_type(*bindings)==OT_TABLE || sq_type(*bindings)==OT_NULL);
+            if (sq_type(*bindings)==OT_TABLE) {
+                _scopedconsts.push_back(*bindings);
+                _num_initial_bindings = 1;
+            }
         }
     }
 

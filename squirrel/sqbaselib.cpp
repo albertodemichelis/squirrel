@@ -257,12 +257,17 @@ static SQInteger base_compilestring(HSQUIRRELVM v)
     SQInteger nargs=sq_gettop(v);
     const SQChar *src=NULL,*name=_SC("unnamedbuffer");
     SQInteger size;
-    sq_getstring(v,2,&src);
-    size=sq_getsize(v,2);
+    sq_getstringandsize(v,2,&src,&size);
     if(nargs>2){
         sq_getstring(v,3,&name);
     }
-    if(SQ_SUCCEEDED(sq_compilebuffer(v,src,size,name,SQFalse)))
+    HSQOBJECT bindings;
+    if (nargs>3)
+        sq_getstackobj(v,4,&bindings);
+    else
+        sq_resetobject(&bindings);
+
+    if(SQ_SUCCEEDED(sq_compilebuffer(v,src,size,name,SQFalse,&bindings)))
         return 1;
     else
         return SQ_ERROR;
@@ -420,7 +425,7 @@ static const SQRegFunction base_funcs[]={
     {_SC("println"),base_print_newline, 2, NULL},
     {_SC("error"),base_error_, 2, NULL},
     {_SC("errorln"),base_error_newline, 2, NULL},
-    {_SC("compilestring"),base_compilestring,-2, _SC(".ss")},
+    {_SC("compilestring"),base_compilestring,-2, _SC(".sst|o")},
     {_SC("newthread"),base_newthread,2, _SC(".c")},
     {_SC("suspend"),base_suspend,-1, NULL},
     {_SC("array"),base_array,-2, _SC(".n")},

@@ -73,13 +73,19 @@ prints x calling host app error printing function set by (:ref:`sq_setprintfunc 
 
 same as error(x) but adds line feed ('\n') to the resulting string
 
-.. sq:function:: compilestring(string,[buffername])
+.. sq:function:: compilestring(string,[buffername],[bindings])
 
 compiles a string containing a quirrel script into a function and returns it::
 
-    local compiledscript=compilestring("::print(\"ciao\")");
+    let compiledscript=compilestring("println(\"ciao\")")
     //run the script
-    compiledscript();
+    compiledscript()
+
+or providing compile-time bindings::
+
+    let api = {function foo() {println("foo() called")}}
+    let compiledscript=compilestring("foo()", "bindings_test", api)
+    compiledscript()
 
 .. sq:function:: collectgarbage()
 
