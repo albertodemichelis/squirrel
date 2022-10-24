@@ -562,7 +562,7 @@ public:
             SQInteger pos = _es.epos;
             if(ds == EXPR) Error(_SC("can't assign to expression"));
             else if(ds == BASE) Error(_SC("'base' cannot be modified"));
-            else if (_es.isBinding() && _token!=TK_INEXPR_ASSIGNMENT) Error(_SC("can't assign to binding"));
+            else if (_es.isBinding() && _token!=TK_INEXPR_ASSIGNMENT) Error(_SC("can't assign to binding (probably declaring using 'local' was intended, but 'let' was used)"));
             Lex(); Expression(SQE_RVALUE);
 
             switch(op){
