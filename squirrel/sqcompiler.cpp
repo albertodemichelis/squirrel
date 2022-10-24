@@ -101,7 +101,8 @@ class SQCompiler
 public:
     SQCompiler(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar* sourcename, bool raiseerror, bool lineinfo) :
       _lex(_ss(v)),
-      _scopedconsts(_ss(v)->_alloc_ctx)
+      _scopedconsts(_ss(v)->_alloc_ctx),
+      _member_constant_keys_check(_ss(v)->_alloc_ctx)
     {
         _vm=v;
         _lex.Init(_ss(v), rg, up,ThrowError,this);
@@ -317,6 +318,11 @@ public:
             _fs->AddInstruction(_OP_MOVE, _fs->PushTarget(), trg);
         }
     }
+    void CleanupAfterError() {
+        for (SQUnsignedInteger i=0, n=_member_constant_keys_check.size(); i<n; ++i)
+            delete _member_constant_keys_check[i];
+        _member_constant_keys_check.resize(0);
+    }
     bool Compile(SQObjectPtr &o)
     {
         _scopedconsts.push_back();
@@ -337,6 +343,9 @@ public:
             _fs->SetStackSize(stacksize);
             _fs->AddLineInfos(_lex._currentline, _lineinfo, true);
             _fs->AddInstruction(_OP_RETURN, 0xFF);
+
+            assert(_member_constant_keys_check.empty());
+
             _fs->SetStackSize(0);
             o =_fs->BuildProto();
 #ifdef _DEBUG_DUMP
@@ -349,6 +358,7 @@ public:
                     _lex._currentline, _lex._currentcolumn);
             }
             _vm->_lasterror = SQString::Create(_ss(_vm), _compilererror, -1);
+            CleanupAfterError();
             return false;
         }
         assert(_scopedconsts.size() == 1 + _num_initial_bindings);
@@ -1266,7 +1276,8 @@ public:
     void ParseTableOrClass(SQInteger separator,SQInteger terminator)
     {
         SQInteger tpos = _fs->GetCurrentPos(),nkeys = 0;
-        sqvector<SQObject> memberConstantKeys(_fs->_sharedstate->_alloc_ctx);
+        sqvector<SQObject> *memberConstantKeys = new sqvector<SQObject>(_fs->_sharedstate->_alloc_ctx);
+        _member_constant_keys_check.push_back(memberConstantKeys);
         NewObjectType otype = separator==_SC(',') ? NOT_TABLE : NOT_CLASS;
         while(_token != terminator) {
             #if SQ_LINE_INFO_IN_STRUCTURES
@@ -1287,7 +1298,7 @@ public:
                 SQInteger tk = _token;
                 Lex();
                 SQObject id = tk == TK_FUNCTION ? Expect(TK_IDENTIFIER) : _fs->CreateString(_SC("constructor"));
-                CheckMemberUniqueness(memberConstantKeys, id);
+                CheckMemberUniqueness(*memberConstantKeys, id);
                 Expect(_SC('('));
                 _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
                 CreateFunction(id);
@@ -1307,7 +1318,7 @@ public:
                 if (!sq_isnull(firstId) && _fs->_instructions.size() == prevInstrSize+1) {
                     unsigned char op = _fs->_instructions.back().op;
                     if (op == _OP_LOAD || op == _OP_LOADINT)
-                        CheckMemberUniqueness(memberConstantKeys, firstId);
+                        CheckMemberUniqueness(*memberConstantKeys, firstId);
                 }
                 Expect(_SC(']'));
                 Expect(_SC('=')); Expression(SQE_RVALUE);
@@ -1316,14 +1327,14 @@ public:
             case TK_STRING_LITERAL: //JSON
                 if(otype == NOT_TABLE) { //only works for tables
                     SQObject id = Expect(TK_STRING_LITERAL);
-                    CheckMemberUniqueness(memberConstantKeys, id);
+                    CheckMemberUniqueness(*memberConstantKeys, id);
                     _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
                     Expect(_SC(':')); Expression(SQE_RVALUE);
                     break;
                 }
             default : {
                 SQObject id = Expect(TK_IDENTIFIER);
-                CheckMemberUniqueness(memberConstantKeys, id);
+                CheckMemberUniqueness(*memberConstantKeys, id);
                 _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
 
                 if ((otype == NOT_TABLE) &&
@@ -1362,6 +1373,8 @@ public:
         if(otype==NOT_TABLE)
             _fs->SetInstructionParam(tpos, 1, nkeys);
         Lex();
+        delete memberConstantKeys;
+        _member_constant_keys_check.pop_back();
     }
     void CheckDuplicateLocalIdentifier(const SQObject &name, const SQChar *desc, bool ignore_global_consts)
     {
@@ -2104,6 +2117,7 @@ private:
     SQVM *_vm;
     SQObjectPtrVec _scopedconsts;
     SQUnsignedInteger _num_initial_bindings;
+    sqvector<sqvector<SQObject>*> _member_constant_keys_check;
 };
 
 bool Compile(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
