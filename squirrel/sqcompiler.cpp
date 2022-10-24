@@ -910,8 +910,8 @@ public:
                     switch(_es.etype)
                     {
                         case EXPR: Error(_SC("can't '++' or '--' an expression")); break;
+                        case BASE: Error(_SC("'base' cannot be modified")); break;
                         case OBJECT:
-                        case BASE:
                             if(_es.donot_get == true)  { Error(_SC("can't '++' or '--' an expression")); break; } //mmh dor this make sense?
                             Emit2ArgsOP(_OP_PINC, diff);
                             break;
@@ -1941,7 +1941,10 @@ public:
         if(_es.etype==EXPR) {
             Error(_SC("can't '++' or '--' an expression"));
         }
-        else if(_es.etype==OBJECT || _es.etype==BASE) {
+        else if (_es.etype == BASE) {
+            Error(_SC("'base' cannot be modified"));
+        }
+        else if(_es.etype==OBJECT) {
             Emit2ArgsOP(_OP_INC, diff);
         }
         else if (_es.isBinding()) {
