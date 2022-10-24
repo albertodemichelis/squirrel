@@ -6,6 +6,7 @@ set(SQUIRREL_SRC sqapi.cpp
                  sqdirect.cpp
                  sqfuncstate.cpp
                  sqoptimizer.cpp
+                 sqstringlib.cpp
                  sqlexer.cpp
                  sqmem.cpp
                  sqobject.cpp
@@ -37,6 +38,7 @@ if(NOT DISABLE_DYNAMIC)
   endif()
   target_include_directories(squirrel PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/internal>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 endif()
@@ -50,6 +52,7 @@ if(NOT DISABLE_STATIC)
   endif()
   target_include_directories(squirrel_static PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/internal>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 endif()

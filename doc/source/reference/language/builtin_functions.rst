@@ -159,6 +159,8 @@ returns table containing information on VM build parameters.
   * **intsize** - size in bytes of the internal VM representation for integers(4 for 32bits builds 8 for 64bits builds).
   * **floatsize** - size in bytes of the internal VM representation for floats(4 for single precision builds 8 for double precision builds).
 
+.. _default_delegates:
+
 -----------------
 Default delegates
 -----------------
@@ -349,9 +351,43 @@ runs of consecutive whitespace are regarded as a single separator, and the resul
 at the start or end if the string has leading or trailing whitespace.
 Consequently, splitting an empty string or a string consisting of just whitespace without providing a separator returns [].
 
+.. sq:function:: string.split_by_chars(separators [, skipempty])
+
+    returns an array of strings split at each point where a separator character occurs in `str`.
+    The separator is not returned as part of any array element.
+    The parameter `separators` is a string that specifies the characters as to be used for the splitting.
+    The parameter `skipempty` is a boolean (default false). If `skipempty` is true, empty strings are not added to array.
+
+    ::
+
+        eg.
+        let a = "1.2-3;;4/5".split_by_chars(".-/;")
+        // the result will be  [1,2,3,,4,5]
+        or
+        let b = "1.2-3;;4/5".split_by_chars(,".-/;",true)
+        // the result will be  [1,2,3,4,5]
+
 .. sq:function:: string.hash()
 
 Returns integer hash value of a string. It is always non-negative (so it doesn't always match Quirrel string internal hash value).
+
+.. sq:function:: string.lstrip()
+
+    Strips white-space-only characters that might appear at the beginning of the given string
+    and returns the new stripped string.
+
+.. sq:function:: string.rstrip()
+
+    Strips white-space-only characters that might appear at the end of the given string
+    and returns the new stripped string.
+
+.. sq:function:: string.strip()
+
+    Strips white-space-only characters that might appear at the beginning or end of the given string and returns the new stripped string.
+
+.. sq:function:: string.startswith(cmp)
+
+    returns `true` if the beginning of the string `str` matches the string `cmp`; otherwise returns `false`
 
 ^^^^^
 Table

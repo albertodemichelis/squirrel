@@ -9,6 +9,7 @@
 #include "sqfuncproto.h"
 #include "sqclosure.h"
 #include "sqclass.h"
+#include <sqstringlib.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
@@ -1832,6 +1833,19 @@ static SQInteger string_split(HSQUIRRELVM v)
 STRING_TOFUNCZ(tolower)
 STRING_TOFUNCZ(toupper)
 
+#define IMPL_STRING_FUNC(name) static SQInteger _baselib_string_##name(HSQUIRRELVM v) { return _sq_string_ ## name ## _impl(v, 1); }
+
+IMPL_STRING_FUNC(strip)
+IMPL_STRING_FUNC(lstrip)
+IMPL_STRING_FUNC(rstrip)
+IMPL_STRING_FUNC(split_by_chars)
+IMPL_STRING_FUNC(escape)
+IMPL_STRING_FUNC(startswith)
+IMPL_STRING_FUNC(endswith)
+
+#undef IMPL_STRING_FUNC
+#define _DECL_FUNC(name,nparams,pmask) {_SC(#name),_baselib_string_##name,nparams,pmask}
+
 const SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
     {_SC("len"),default_delegate_len,1, _SC("s")},
     {_SC("tointeger"),default_delegate_tointeger,-1, _SC("sn")},
@@ -1849,8 +1863,17 @@ const SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
     {_SC("concat"),string_concat, -2, _SC("s")},
     {_SC("split"),string_split, -1, _SC("s s")},
     {_SC("weakref"),obj_delegate_weakref,1, NULL },
+    _DECL_FUNC(strip,1,_SC("s")),
+    _DECL_FUNC(lstrip,1,_SC("s")),
+    _DECL_FUNC(rstrip,1,_SC("s")),
+    _DECL_FUNC(split_by_chars,-2,_SC("ssb")),
+    _DECL_FUNC(escape,1,_SC("s")),
+    _DECL_FUNC(startswith,2,_SC("ss")),
+    _DECL_FUNC(endswith,2,_SC("ss")),
     {NULL,(SQFUNCTION)0,0,NULL}
 };
+
+#undef _DECL_FUNC
 
 //INTEGER DEFAULT DELEGATE//////////////////////////
 const SQRegFunction SQSharedState::_number_default_delegate_funcz[]={

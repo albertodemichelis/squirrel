@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <sqstringlib.h>
 
 #define MAX_FORMAT_LEN  20
 #define MAX_WFORMAT_LEN 3
@@ -198,192 +199,17 @@ static SQInteger _string_format(HSQUIRRELVM v)
     return 1;
 }
 
-static void __strip_l(const SQChar *str,const SQChar **start)
-{
-    const SQChar *t = str;
-    while(((*t) != '\0') && scisspace(*t)){ t++; }
-    *start = t;
-}
+#define IMPL_STRING_FUNC(name) static SQInteger _string_##name(HSQUIRRELVM v) { return _sq_string_ ## name ## _impl(v, 2); }
 
-static void __strip_r(const SQChar *str,SQInteger len,const SQChar **end)
-{
-    if(len == 0) {
-        *end = str;
-        return;
-    }
-    const SQChar *t = &str[len-1];
-    while(t >= str && scisspace(*t)) { t--; }
-    *end = t + 1;
-}
+IMPL_STRING_FUNC(strip)
+IMPL_STRING_FUNC(lstrip)
+IMPL_STRING_FUNC(rstrip)
+IMPL_STRING_FUNC(split_by_chars)
+IMPL_STRING_FUNC(escape)
+IMPL_STRING_FUNC(startswith)
+IMPL_STRING_FUNC(endswith)
 
-static SQInteger _string_strip(HSQUIRRELVM v)
-{
-    const SQChar *str,*start,*end;
-    sq_getstring(v,2,&str);
-    SQInteger len = sq_getsize(v,2);
-    __strip_l(str,&start);
-    __strip_r(str,len,&end);
-    sq_pushstring(v,start,end - start);
-    return 1;
-}
-
-static SQInteger _string_lstrip(HSQUIRRELVM v)
-{
-    const SQChar *str,*start;
-    sq_getstring(v,2,&str);
-    __strip_l(str,&start);
-    sq_pushstring(v,start,-1);
-    return 1;
-}
-
-static SQInteger _string_rstrip(HSQUIRRELVM v)
-{
-    const SQChar *str,*end;
-    sq_getstring(v,2,&str);
-    SQInteger len = sq_getsize(v,2);
-    __strip_r(str,len,&end);
-    sq_pushstring(v,str,end - str);
-    return 1;
-}
-
-static SQInteger _string_split(HSQUIRRELVM v)
-{
-    const SQChar *str,*seps;
-    SQInteger sepsize;
-    SQBool skipempty = SQFalse;
-    sq_getstring(v,2,&str);
-    sq_getstringandsize(v,3,&seps,&sepsize);
-    if(sepsize == 0) return sq_throwerror(v,_SC("empty separators string"));
-    if(sq_gettop(v)>3) {
-        sq_getbool(v,4,&skipempty);
-    }
-    const SQChar *start = str;
-    const SQChar *end = str;
-    sq_newarray(v,0);
-    while(*end != '\0')
-    {
-        SQChar cur = *end;
-        for(SQInteger i = 0; i < sepsize; i++)
-        {
-            if(cur == seps[i])
-            {
-                if(!skipempty || (end != start)) {
-                    sq_pushstring(v,start,end-start);
-                    sq_arrayappend(v,-2);
-                }
-                start = end + 1;
-                break;
-            }
-        }
-        end++;
-    }
-    if(end != start)
-    {
-        sq_pushstring(v,start,end-start);
-        sq_arrayappend(v,-2);
-    }
-    return 1;
-}
-
-static SQInteger _string_escape(HSQUIRRELVM v)
-{
-    const SQChar *str;
-    SQChar *dest,*resstr;
-    SQInteger size;
-    sq_getstring(v,2,&str);
-    size = sq_getsize(v,2);
-    if(size == 0) {
-        sq_push(v,2);
-        return 1;
-    }
-#ifdef SQUNICODE
-#if WCHAR_SIZE == 2
-    const SQChar *escpat = _SC("\\x%04x");
-    const SQInteger maxescsize = 6;
-#else //WCHAR_SIZE == 4
-    const SQChar *escpat = _SC("\\x%08x");
-    const SQInteger maxescsize = 10;
-#endif
-#else
-    const SQChar *escpat = _SC("\\x%02x");
-    const SQInteger maxescsize = 4;
-#endif
-    SQInteger destcharsize = (size * maxescsize); //assumes every char could be escaped
-    resstr = dest = (SQChar *)sq_getscratchpad(v,destcharsize * sizeof(SQChar));
-    SQChar c;
-    SQChar escch;
-    SQInteger escaped = 0;
-    for(int n = 0; n < size; n++){
-        c = *str++;
-        escch = 0;
-        if(scisprint(c) || c == 0) {
-            switch(c) {
-            case '\a': escch = 'a'; break;
-            case '\b': escch = 'b'; break;
-            case '\t': escch = 't'; break;
-            case '\n': escch = 'n'; break;
-            case '\v': escch = 'v'; break;
-            case '\f': escch = 'f'; break;
-            case '\r': escch = 'r'; break;
-            case '\\': escch = '\\'; break;
-            case '\"': escch = '\"'; break;
-            case '\'': escch = '\''; break;
-            case 0: escch = '0'; break;
-            }
-            if(escch) {
-                *dest++ = '\\';
-                *dest++ = escch;
-                escaped++;
-            }
-            else {
-                *dest++ = c;
-            }
-        }
-        else {
-
-            dest += scsprintf(dest, destcharsize, escpat, c);
-            escaped++;
-        }
-    }
-
-    if(escaped) {
-        sq_pushstring(v,resstr,dest - resstr);
-    }
-    else {
-        sq_push(v,2); //nothing escaped
-    }
-    return 1;
-}
-
-static SQInteger _string_startswith(HSQUIRRELVM v)
-{
-    const SQChar *str,*cmp;
-    sq_getstring(v,2,&str);
-    sq_getstring(v,3,&cmp);
-    SQInteger len = sq_getsize(v,2);
-    SQInteger cmplen = sq_getsize(v,3);
-    SQBool ret = SQFalse;
-    if(cmplen <= len) {
-        ret = memcmp(str,cmp,sq_rsl(cmplen)) == 0 ? SQTrue : SQFalse;
-    }
-    sq_pushbool(v,ret);
-    return 1;
-}
-
-static SQInteger _string_endswith(HSQUIRRELVM v)
-{
-    const SQChar *str,*cmp;
-    sq_getstring(v,2,&str);
-    sq_getstring(v,3,&cmp);
-    SQInteger len = sq_getsize(v,2);
-    SQInteger cmplen = sq_getsize(v,3);
-    SQBool ret = SQFalse;
-    if(cmplen <= len) {
-        ret = memcmp(&str[len - cmplen],cmp,sq_rsl(cmplen)) == 0 ? SQTrue : SQFalse;
-    }
-    sq_pushbool(v,ret);
-    return 1;
-}
+#undef IMPL_STRING_FUNC
 
 #define SETUP_REX(v) \
     SQRex *self = NULL; \
@@ -511,7 +337,7 @@ static const SQRegFunction stringlib_funcs[]={
     _DECL_FUNC(strip,2,_SC(".s")),
     _DECL_FUNC(lstrip,2,_SC(".s")),
     _DECL_FUNC(rstrip,2,_SC(".s")),
-    _DECL_FUNC(split,-3,_SC(".ssb")),
+    _DECL_FUNC(split_by_chars,-3,_SC(".ssb")),
     _DECL_FUNC(escape,2,_SC(".s")),
     _DECL_FUNC(startswith,3,_SC(".ss")),
     _DECL_FUNC(endswith,3,_SC(".ss")),

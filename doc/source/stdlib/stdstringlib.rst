@@ -40,6 +40,8 @@ Global Symbols
         sq> printf("%s %d 0x%02X\n","this is a test :",123,10);
         this is a test : 123 0x0A
 
+.. note::  The following functions are also available as string :ref:`default delegates <default_delegates>`.
+
 .. sq:function:: lstrip(str)
 
     Strips white-space-only characters that might appear at the beginning of the given string
@@ -50,7 +52,7 @@ Global Symbols
     Strips white-space-only characters that might appear at the end of the given string
     and returns the new stripped string.
 
-.. js:function:: split(str, separators [, skipempty])
+.. js:function:: split_by_chars(str, separators [, skipempty])
 
     returns an array of strings split at each point where a separator character occurs in `str`.
     The separator is not returned as part of any array element.
@@ -60,10 +62,11 @@ Global Symbols
     ::
 
         eg.
-        local a = split("1.2-3;;4/5",".-/;");
+        let a = split_by_chars("1.2-3;;4/5", ".-/;")
         // the result will be  [1,2,3,,4,5]
         or
-        local b = split("1.2-3;;4/5",".-/;",true);
+        let b = split_by_chars("1.2-3;;4/5", ".-/;", true)
+        // the result will be  [1,2,3,4,5]
 
 
 .. sq:function:: startswith(str, cmp)
