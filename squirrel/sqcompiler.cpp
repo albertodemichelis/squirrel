@@ -929,6 +929,7 @@ public:
                             _fs->PopTarget();
                         }
                     }
+                    _es.etype = EXPR;
                 }
                 return;
                 break;
