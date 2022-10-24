@@ -12,6 +12,7 @@
 #include "sqfuncproto.h"
 #include "sqcompiler.h"
 #include "sqfuncstate.h"
+#include "sqoptimizer.h"
 #include "sqlexer.h"
 #include "sqvm.h"
 #include "sqtable.h"
@@ -230,6 +231,10 @@ public:
             setFlags = LF_FORBID_ROOT_TABLE;
         else if (scstrcmp(sval, _SC("allow-root-table")) == 0)
             clearFlags = LF_FORBID_ROOT_TABLE;
+        else if (scstrcmp(sval, _SC("disable-optimizer")) == 0)
+            setFlags = LF_DISABLE_OPTIMIZER;
+        else if (scstrcmp(sval, _SC("enable-optimizer")) == 0)
+            clearFlags = LF_DISABLE_OPTIMIZER;
         else
             Error(_SC("unsupported directive"));
 
@@ -345,6 +350,11 @@ public:
             _fs->AddInstruction(_OP_RETURN, 0xFF);
 
             assert(_member_constant_keys_check.empty());
+
+            if (!(_fs->lang_features & LF_DISABLE_OPTIMIZER)) {
+                SQOptimizer opt(*_fs);
+                opt.optimize();
+            }
 
             _fs->SetStackSize(0);
             o =_fs->BuildProto();
@@ -2044,6 +2054,12 @@ public:
         }
         funcstate->AddLineInfos(_lex._prevtoken == _SC('\n')?_lex._lasttokenline:_lex._currentline, _lineinfo, true);
         funcstate->AddInstruction(_OP_RETURN, -1);
+
+        if (!(funcstate->lang_features & LF_DISABLE_OPTIMIZER)) {
+            SQOptimizer opt(*funcstate);
+            opt.optimize();
+        }
+
         funcstate->SetStackSize(0);
 
         SQFunctionProto *func = funcstate->BuildProto();

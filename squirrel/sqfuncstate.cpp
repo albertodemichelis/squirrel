@@ -164,7 +164,18 @@ void SQFuncState::Dump(SQFunctionProto *func)
             scprintf(_SC("[%03d] %15s %d %d %d %c\n"),n,g_InstrDesc[inst.op].name,inst._arg0,inst._arg1,inst._arg2,inst._arg3);
         }*/
         else {
-            scprintf(_SC("[%03d] %15s %d %d %d %d\n"), (SQInt32)n,g_InstrDesc[inst.op].name,inst._arg0,inst._arg1,inst._arg2,inst._arg3);
+            scprintf(_SC("[%03d] %15s %d %d %d %d"), (SQInt32)n,g_InstrDesc[inst.op].name,inst._arg0,inst._arg1,inst._arg2,inst._arg3);
+            switch (inst.op) {
+                case _OP_JMP: case _OP_JCMP: case _OP_JZ: case _OP_AND: case _OP_OR: case _OP_PUSHTRAP: case _OP_POSTFOREACH: case _OP_FOREACH:
+                    scprintf(_SC("  jump to %d"), i + inst._arg1 + 1);
+                    break;
+                case _OP_NULLCOALESCE:
+                    scprintf(_SC("  jump to %d"), i + inst._arg1);
+                    break;
+                default:
+                    break;
+            }
+            scprintf(_SC("\n"));
         }
         n++;
     }

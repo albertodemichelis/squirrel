@@ -17,6 +17,7 @@ enum SQLangFeature {
     LF_NO_PLUS_CONCAT = 0x10,
     LF_EXPLICIT_THIS = 0x20,
     LF_FORBID_ROOT_TABLE = 0x40,
+    LF_DISABLE_OPTIMIZER = 0x2000,
     LF_STRICT = LF_STRICT_BOOL |
                 LF_EXPLICIT_ROOT_LOOKUP |
                 LF_NO_FUNC_DECL_SUGAR |
