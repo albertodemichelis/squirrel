@@ -1962,7 +1962,8 @@ public:
         _es.donot_get = true;
         PrefixedExpr();
         if(_es.etype==EXPR) Error(_SC("can't delete an expression"));
-        if(_es.etype==OBJECT || _es.etype==BASE) {
+        if(_es.etype==BASE) Error(_SC("can't delete 'base'"));
+        if(_es.etype==OBJECT) {
             Emit2ArgsOP(_OP_DELETE);
         }
         else {
