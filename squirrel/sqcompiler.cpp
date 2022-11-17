@@ -448,6 +448,9 @@ public:
             _fs->SnoozeOpt();
             }
             break;
+        default:
+            printf("asd");
+            break;
         }
         _es = es;
     }
@@ -660,8 +663,8 @@ public:
                     switch(_es.etype)
                     {
                         case EXPR: Error(_SC("can't '++' or '--' an expression")); break;
+                        case BASE: Error(_SC("'base' cannot be modified")); break;
                         case OBJECT:
-                        case BASE:
                             if(_es.donot_get == true)  { Error(_SC("can't '++' or '--' an expression")); break; } //mmh dor this make sense?
                             Emit2ArgsOP(_OP_PINC, diff);
                             break;
@@ -679,6 +682,7 @@ public:
                             _fs->PopTarget();
                         }
                     }
+                    _es.etype = EXPR;
                 }
                 return;
                 break;
@@ -902,6 +906,8 @@ public:
     void UnaryOP(SQOpcode op)
     {
         PrefixedExpr();
+        if (_fs->_targetstack.size() == 0)
+            Error(_SC("cannot evaluate unary operator"));
         SQInteger src = _fs->PopTarget();
         _fs->AddInstruction(op, _fs->PushTarget(), src);
     }
@@ -1085,10 +1091,8 @@ public:
             }
         }
         else {
-            //BEGIN_SCOPE();
             Statement();
             if (_lex._prevtoken != _SC('}') && _lex._prevtoken != _SC(';')) OptionalSemicolon();
-            //END_SCOPE();
         }
     }
     void IfStatement()
@@ -1099,32 +1103,15 @@ public:
         _fs->AddInstruction(_OP_JZ, _fs->PopTarget());
         SQInteger jnepos = _fs->GetCurrentPos();
 
-
-
         IfBlock();
-        //
-        /*static int n = 0;
-        if (_token != _SC('}') && _token != TK_ELSE) {
-            printf("IF %d-----------------------!!!!!!!!!\n", n);
-            if (n == 5)
-            {
-                printf("asd");
-            }
-            n++;
-            //OptionalSemicolon();
-        }*/
-
-
+      
         SQInteger endifblock = _fs->GetCurrentPos();
         if(_token == TK_ELSE){
             haselse = true;
-            //BEGIN_SCOPE();
             _fs->AddInstruction(_OP_JMP);
             jmppos = _fs->GetCurrentPos();
             Lex();
-            //Statement(); if(_lex._prevtoken != _SC('}')) OptionalSemicolon();
             IfBlock();
-            //END_SCOPE();
             _fs->SetInstructionParam(jmppos, 1, _fs->GetCurrentPos() - jmppos);
         }
         _fs->SetInstructionParam(jnepos, 1, endifblock - jnepos + (haselse?1:0));
@@ -1500,7 +1487,8 @@ public:
         _es.donot_get = true;
         PrefixedExpr();
         if(_es.etype==EXPR) Error(_SC("can't delete an expression"));
-        if(_es.etype==OBJECT || _es.etype==BASE) {
+        if(_es.etype==BASE) Error(_SC("can't delete 'base'"));
+        if(_es.etype==OBJECT) {
             Emit2ArgsOP(_OP_DELETE);
         }
         else {
@@ -1519,7 +1507,10 @@ public:
         if(_es.etype==EXPR) {
             Error(_SC("can't '++' or '--' an expression"));
         }
-        else if(_es.etype==OBJECT || _es.etype==BASE) {
+        else if (_es.etype == BASE) {
+            Error(_SC("can't '++' or '--' a base"));
+        }
+        else if(_es.etype==OBJECT) {
             Emit2ArgsOP(_OP_INC, diff);
         }
         else if(_es.etype==LOCAL) {
