@@ -905,7 +905,7 @@ public:
                     flags = OP_GET_FLAG_NO_ERROR;
                     nextIsNullable = true;
                 }
-                if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot brake deref/or comma needed after [exp]=exp slot declaration"));
+                 if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot brake deref/or comma needed after [exp]=exp slot declaration"));
                 Lex(); Expression(SQE_RVALUE); Expect(_SC(']'));
                 pos = -1;
                 if(_es.etype==BASE) {
@@ -1664,6 +1664,8 @@ public:
             idxname = valname;
             Lex(); valname = Expect(TK_IDENTIFIER);
             CheckDuplicateLocalIdentifier(valname, _SC("Iterator"), false);
+            if (_stringval(idxname) == _stringval(valname))
+                Error(_SC("foreach() key and value names are the same: %s"), _stringval(valname));
         }
         else{
             idxname = _fs->CreateString(_SC("@INDEX@"));
