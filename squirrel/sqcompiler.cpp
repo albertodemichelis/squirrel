@@ -682,6 +682,7 @@ public:
     }
     template<typename T> void BIN_EXP(SQOpcode op, T f,SQInteger op3 = 0)
     {
+        _expression_context = SQE_RVALUE;
         Lex();
         INVOKE_EXP(f);
         SQInteger op1 = _fs->PopTarget();SQInteger op2 = _fs->PopTarget();
@@ -1235,8 +1236,12 @@ public:
     bool NeedGet()
     {
         switch(_token) {
-        case _SC('='): case _SC('('): case TK_NULLCALL: case TK_NEWSLOT: case TK_MODEQ: case TK_MULEQ:
+        case _SC('('): case TK_NULLCALL:
+            return false;
+        case _SC('='): case TK_NEWSLOT: case TK_MODEQ: case TK_MULEQ:
         case TK_DIVEQ: case TK_MINUSEQ: case TK_PLUSEQ:
+            if (_expression_context != SQE_REGULAR)
+                Error("can't assign to an expression or inside return/yield");
             return false;
         case TK_PLUSPLUS: case TK_MINUSMINUS:
             if (!IsEndOfStatement()) {
