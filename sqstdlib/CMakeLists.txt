@@ -11,6 +11,7 @@ if(NOT DISABLE_DYNAMIC)
   add_library(sqstdlib SHARED ${SQSTDLIB_SRC})
   add_library(squirrel::sqstdlib ALIAS sqstdlib)
   set_property(TARGET sqstdlib PROPERTY EXPORT_NAME sqstdlib)
+  set_property(TARGET sqstdlib PROPERTY OUTPUT_NAME ${SQSTDLIB_NAME})
   target_link_libraries(sqstdlib squirrel)
   if(NOT SQ_DISABLE_INSTALLER)
     install(TARGETS sqstdlib EXPORT squirrel
@@ -42,10 +43,6 @@ if(NOT DISABLE_STATIC)
 endif()
 
 if(LONG_OUTPUT_NAMES)
-  if(NOT DISABLE_DYNAMIC)
-    set_target_properties(sqstdlib PROPERTIES OUTPUT_NAME sqstdlib3)
-  endif()
-
   if(NOT DISABLE_STATIC)
     set_target_properties(sqstdlib_static PROPERTIES OUTPUT_NAME sqstdlib3_static)
   endif()
