@@ -449,7 +449,6 @@ public:
             }
             break;
         default:
-            printf("asd");
             break;
         }
         _es = es;
