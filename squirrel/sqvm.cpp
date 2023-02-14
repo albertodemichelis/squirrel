@@ -1379,6 +1379,7 @@ SQInteger SQVM::FallBackGet(const SQObjectPtr &self,const SQObjectPtr &key,SQObj
             }
         }
                       }
+        break;
     default: break;//shutup GCC 4.x
     }
     // no metamethod or no fallback type
