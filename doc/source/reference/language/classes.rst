@@ -170,7 +170,7 @@ instead of curly brackets ``{}`` for the attribute declaration to increase reada
 
 This means that all rules that apply to tables apply to attributes.
 
-Attributes can be retrieved through the built-in function ``classobj.getattributes(membername)`` (see <link linkend="builtin">built-in functions</link>).
+Attributes can be retrieved through the built-in function ``classobj.getattributes(membername)`` (see :ref:`built-in functions <builtin_functions>`).
 and can be modified/added through the built-in function ``classobj.setattributes(membername,val)``.
 
 the following code iterates through the attributes of all Foo members.::
