@@ -264,7 +264,7 @@ pushes the object pointed by the weak reference at position idx in the stack.
 .. c:function:: SQBool sq_instanceof(HSQUIRRELVM v)
 
     :param HSQUIRRELVM v: the target VM
-    :returns: SQTrue if the instance at position -2 in the stack is an instance of the class object at position -1 in the stack.
+    :returns: SQTrue if the instance at position -1 in the stack is an instance of the class object at position -2 in the stack.
     :remarks: The function doesn't pop any object from the stack.
 
 Determines if an object is an instance of a certain class. Expects an instance and a class in the stack.

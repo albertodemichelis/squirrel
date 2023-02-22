@@ -181,11 +181,11 @@ C API
 
 .. _sqstd_getblob:
 
-.. c:function:: SQRESULT sqstd_getblob(HSQUIRRELVM v, SQInteger idx, SQUserPointer* ptr)
+.. c:function:: SQRESULT sqstd_getblob(HSQUIRRELVM v, SQInteger idx, SQUserPointer * ptr)
 
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: and index in the stack
-    :param SQUserPointer* ptr: A pointer to the userpointer that will point to the blob's payload
+    :param SQUserPointer * ptr: A pointer to the userpointer that will point to the blob's payload
     :returns: an SQRESULT
 
     retrieve the pointer of a blob's payload from an arbitrary

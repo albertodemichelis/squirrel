@@ -40,6 +40,8 @@ The following words are reserved and cannot be used as identifiers:
 +------------+------------+-----------+------------+------------+-------------+
 | instanceof | true       | false     | static     | __LINE__   | __FILE__    |
 +------------+------------+-----------+------------+------------+-------------+
+| rawcall    |            |           |            |            |             |
++------------+------------+-----------+------------+------------+-------------+
 
 Keywords are covered in detail later in this document.
 

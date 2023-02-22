@@ -167,6 +167,74 @@ so should operate on the same object.
 When calling 'mytable.foo(x,y)' it's written plainly that you're calling a member of a different object.
 
 ---------------------------------------------
+Raw calls
+---------------------------------------------
+
+.. index::
+    single: Raw calls
+	
+It is possible to call a function overriding the default calling semantics by utilizing the keywork *rawcall*.
+Rawcall allows to invoke a function specifying the *this* object explicitly::
+
+    local retval = rawcall(functionobj,thisobj,parameters);
+
+for example::
+
+    local env = {}
+    function test(a,b) {
+    	return a + b;
+    }
+    local ret = rawcall(test,env,1,2) //passes the table env as 'this' to the function test
+	
+---------------------
+Post-call Initializer
+---------------------
+
+Since version 3.2 Squirrel offers a syntactic sugar to initialize the object returned by a function call(anf class instance creation).
+The post-call initializer has the following syntax::
+
+    function test() {
+        local retval = { x = 0, y = 0};
+        return retval;
+    }
+    local ret1 = test() { x = 10, y = 20 }
+    local ret2 = test() { x = 30, y = 40 }
+    
+that is equivalent to::
+
+    function test() {
+        local retval = { x = 0, y = 0};
+        return retval;
+    }
+    local ret1 = test() { x = 10, y = 20 }
+    ret1.x = 10;
+    ret1.y = 20;
+    local ret2 = test() { x = 30, y = 40 }
+    ret1.x = 30;
+    ret1.y = 40;
+
+this is also usable with classes::
+
+    class vector3 {
+        x = 0;
+        y = 0;
+        z = 0;
+    }
+    local v0 = vector3() { x = 1, y = 2, z = 3 };
+    local v2 = vector3() { x = 4, y = 5, z = 6 };
+
+and can be nested::
+
+    class entity {
+        position = null;
+        direction = null;
+    }
+    local ret = entity() {
+        position = vector3() { x = 1, y = 2, z = 3 }
+        direction = vector3() { x = 0, y = 1, z = 0 }
+    }
+
+---------------------------------------------
 Binding an environment to a function
 ---------------------------------------------
 
@@ -175,8 +243,23 @@ Binding an environment to a function
 
 while by default a squirrel function call passes as environment object 'this', the object
 where the function was indexed from. However, is also possible to statically bind an evironment to a
-closure using the built-in method ``closure.bindenv(env_obj)``.
+closure using the following syntax.::
+
+    function test[env_obj](a,b) {
+        return a + b;
+    }
+
+    local test = function[env_obj](a,b) {
+        return a + b;
+    }
+	
+    local function test[env_obj](a,b) {
+        return a + b;
+    }
+
+It is also possible to statically bind an evironment to a closure using the built-in method ``closure.bindenv(env_obj)``.
 The method bindenv() returns a new instance of a closure with the environment bound to it.
+
 When an environment object is bound to a function, every time the function is invoked, its
 'this' parameter will always be the previously bound environent.
 This mechanism is useful to implement callbacks systems similar to C# delegates.

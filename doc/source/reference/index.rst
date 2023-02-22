@@ -1,10 +1,10 @@
 .. _reference:
 
 #################################
-  Squirrel 3.1 Reference Manual
+  Squirrel 3.2 Reference Manual
 #################################
 
-Copyright (c) 2003-2016 Alberto Demichelis
+Copyright (c) 2003-2022 Alberto Demichelis
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4)
-project(squirrel VERSION 3.1 LANGUAGES C CXX)
+project(squirrel VERSION 3.2 LANGUAGES C CXX)
 
 option(DISABLE_STATIC "Avoid building/installing static libraries.")
 option(LONG_OUTPUT_NAMES "Use longer names for binaries and libraries: squirrel3 (not sq).")
@@ -35,15 +35,23 @@ endif()
 
 add_subdirectory(squirrel)
 add_subdirectory(sqstdlib)
-add_subdirectory(sq)
+if(NOT SQ_DISABLE_INTERPRETER)
+  add_subdirectory(sq)
+endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(tgts)
   if(NOT DISABLE_DYNAMIC)
-    list(APPEND tgts squirrel sqstdlib sq)
+    list(APPEND tgts squirrel sqstdlib)
+    if(NOT SQ_DISABLE_INTERPRETER)
+      list(APPEND tgts sq)
+    endif()
   endif()
   if(NOT DISABLE_STATIC)
-    list(APPEND tgts squirrel_static sqstdlib_static sq_static)
+    list(APPEND tgts squirrel_static sqstdlib_static)
+    if(NOT SQ_DISABLE_INTERPRETER)
+      list(APPEND tgts sq_static)
+    endif()
   endif()
   foreach(t ${tgts})
     target_compile_definitions(${t} PUBLIC -D_SQ64)
@@ -87,12 +95,12 @@ configure_package_config_file(
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/squirrel"
   )
 
-export(EXPORT squirrel
-  NAMESPACE squirrel::
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-targets.cmake"
-  )
-
 if(NOT SQ_DISABLE_INSTALLER AND NOT SQ_DISABLE_CMAKE_INSTALLER)
+  export(EXPORT squirrel
+    NAMESPACE squirrel::
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-targets.cmake"
+    )
+
   install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-config-version.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/squirrel/squirrel-config.cmake"

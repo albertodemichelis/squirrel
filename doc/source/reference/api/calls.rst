@@ -92,11 +92,11 @@ resumes the generator at the top position of the stack.
 .. c:function:: SQRESULT sq_tailcall(HSQUIRRELVM v, SQInteger nparams)
 
 	:param HSQUIRRELVM v: the target VM
-    :param SQInteger params: number of parameters of the function
+	:param SQInteger params: number of parameters of the function
 
-	Calls a closure and removes the caller function from the call stack.
-	This function must be invoke from a native closure and 
-	he return value of sq_tailcall must be returned by the caller function(see example).
+    Calls a closure and removes the caller function from the call stack.
+    This function must be invoke from a native closure and 
+    he return value of sq_tailcall must be returned by the caller function(see example).
 	
 *.eg*
 
@@ -114,7 +114,7 @@ resumes the generator at the top position of the stack.
 .. c:function:: SQRESULT sq_throwerror(HSQUIRRELVM v, const SQChar * err)
 
     :param HSQUIRRELVM v: the target VM
-    :param const SQChar * err: the description of the error that has to be thrown
+    :param SQChar * err: the description of the error that has to be thrown
     :returns: the value that has to be returned by a native closure in order to throw an exception in the virtual machine.
 
 sets the last error in the virtual machine and returns the value that has to be returned by a native closure in order to trigger an exception in the virtual machine.

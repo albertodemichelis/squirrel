@@ -258,7 +258,7 @@ Operators precedence
 | ``, (comma operator)``                | lowest    |
 +---------------------------------------+-----------+
 
-.. _table_contructor:
+.. _table_constructor:
 
 -----------------
 Table Constructor
