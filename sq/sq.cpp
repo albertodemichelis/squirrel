@@ -12,6 +12,7 @@
 #include <squirrel.h>
 #include <sqstdblob.h>
 #include <sqstdsystem.h>
+#include <sqstddatetime.h>
 #include <sqstdio.h>
 #include <sqstdmath.h>
 #include <sqstdstring.h>
@@ -292,6 +293,7 @@ int main(int argc, char* argv[])
     sqstd_register_bloblib(v);
     sqstd_register_iolib(v);
     sqstd_register_systemlib(v);
+    sqstd_register_datetimelib(v);
     sqstd_register_mathlib(v);
     sqstd_register_stringlib(v);
 
@@ -300,9 +302,11 @@ int main(int argc, char* argv[])
     sqstd_seterrorhandlers(v);
 
     module_mgr = new SqModules(v);
-    module_mgr->registerBaseLibs();
-    module_mgr->registerIoLib();
+    module_mgr->registerMathLib();
+    module_mgr->registerStringLib();
     module_mgr->registerSystemLib();
+    module_mgr->registerIoStreamLib();
+    module_mgr->registerIoLib();
     module_mgr->registerDateTimeLib();
 
     sqstd_register_command_line_args(v, argc, argv);

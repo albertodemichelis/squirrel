@@ -194,6 +194,14 @@ SqModules::Module * SqModules::findModule(const char * resolved_fn)
 }
 
 
+void SqModules::bindBaseLib(HSQOBJECT bindings)
+{
+  sq_pushobject(sqvm, bindings);
+  sq_registerbaselib(sqvm);
+  sq_poptop(sqvm);
+}
+
+
 void SqModules::bindRequireApi(HSQOBJECT bindings)
 {
   sq_pushobject(sqvm, bindings);
@@ -272,6 +280,7 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
 
   assert(sq_gettop(vm) == prevTop+1); // bindings table
 
+  bindBaseLib(hBindings);
   bindRequireApi(hBindings);
 
   assert(sq_gettop(vm) == prevTop+1); // bindings table
@@ -433,7 +442,7 @@ template<bool must_exist> SQInteger SqModules::sqRequire(HSQUIRRELVM vm)
 }
 
 
-void SqModules::registerBaseLibNativeModule(const char *name, RegFunc reg_func)
+void SqModules::registerStdLibNativeModule(const char *name, RegFunc reg_func)
 {
   HSQOBJECT hModule;
   sq_newtable(sqvm);
@@ -445,25 +454,46 @@ void SqModules::registerBaseLibNativeModule(const char *name, RegFunc reg_func)
 }
 
 
-void SqModules::registerBaseLibs()
+void SqModules::registerMathLib()
 {
-  registerBaseLibNativeModule("math", sqstd_register_mathlib);
-  registerBaseLibNativeModule("string", sqstd_register_stringlib);
-  registerBaseLibNativeModule("blob", sqstd_register_bloblib);
+  registerStdLibNativeModule("math", sqstd_register_mathlib);
 }
 
+void SqModules::registerStringLib()
+{
+  registerStdLibNativeModule("string", sqstd_register_stringlib);
+}
 
 void SqModules::registerSystemLib()
 {
-  registerBaseLibNativeModule("system", sqstd_register_systemlib);
-}
-
-void SqModules::registerIoLib()
-{
-  registerBaseLibNativeModule("io", sqstd_register_iolib);
+  registerStdLibNativeModule("system", sqstd_register_systemlib);
 }
 
 void SqModules::registerDateTimeLib()
 {
-  registerBaseLibNativeModule("datetime", sqstd_register_datetimelib);
+  registerStdLibNativeModule("datetime", sqstd_register_datetimelib);
+}
+
+void SqModules::registerIoStreamLib()
+{
+  HSQOBJECT hModule;
+  sq_resetobject(&hModule);
+  sq_newtable(sqvm);
+  sq_getstackobj(sqvm, -1, &hModule);
+  sqstd_init_streamclass(sqvm);
+  sqstd_register_bloblib(sqvm);
+  bool regRes = addNativeModule("iostream", SqObjPtr(sqvm, hModule));
+  assert(regRes);
+  sq_pop(sqvm, 1);
+}
+
+void SqModules::registerIoLib()
+{
+  if (!findNativeModule("iostream"))
+  {
+    // register 'iostream' module containing basestream class and blob
+    registerIoStreamLib();
+  }
+
+  registerStdLibNativeModule("io", sqstd_register_iolib);
 }

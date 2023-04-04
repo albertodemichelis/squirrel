@@ -64,11 +64,15 @@ public:
 
   bool  addNativeModule(const char *module_name, const SqObjPtr &exports);
 
-  void  registerBaseLibs();
+  void  registerMathLib();
+  void  registerStringLib();
   void  registerSystemLib();
+  void  registerIoStreamLib();
   void  registerIoLib();
   void  registerDateTimeLib();
 
+  SqObjPtr *findNativeModule(const std::string &module_name);
+  void  bindBaseLib(HSQOBJECT bindings);
 private:
   // Script API
   //   require(file_name, must_exist=true)
@@ -90,7 +94,7 @@ private:
   Module * findModule(const char * resolved_fn);
 
   typedef SQInteger (*RegFunc)(HSQUIRRELVM);
-  void  registerBaseLibNativeModule(const char *name, RegFunc);
+  void  registerStdLibNativeModule(const char *name, RegFunc);
 
 
 public:
@@ -104,3 +108,10 @@ private:
   std::vector<std::string>  runningScripts;
   HSQUIRRELVM sqvm = nullptr;
 };
+
+
+inline SqModules::SqObjPtr *SqModules::findNativeModule(const std::string &module_name)
+{
+  auto it = nativeModules.find(module_name);
+  return (it == nativeModules.end()) ? nullptr : &it->second;
+}
