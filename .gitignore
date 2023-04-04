@@ -13,3 +13,5 @@ Release/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+.vscode/
