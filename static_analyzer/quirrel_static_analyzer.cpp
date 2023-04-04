@@ -9,6 +9,7 @@
 #include <set>
 #include <algorithm>
 #include <exception>
+#include <cctype>
 
 #include <fstream>
 #include <streambuf>
