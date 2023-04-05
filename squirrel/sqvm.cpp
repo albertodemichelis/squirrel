@@ -19,6 +19,10 @@
 #define TARGET _stack._vals[_stackbase+arg0]
 #define STK(a) _stack._vals[_stackbase+(a)]
 
+#define SLOT_RESOLVE_STATUS_OK         0
+#define SLOT_RESOLVE_STATUS_NO_MATCH   1
+#define SLOT_RESOLVE_STATUS_ERROR      2
+
 bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2)
 {
     SQInteger res;
@@ -889,8 +893,11 @@ exception_restore:
             case _OP_GETK:{
                 SQUnsignedInteger getFlagsByOp = (arg3 & OP_GET_FLAG_ALLOW_DEF_DELEGATE) ? 0 : GET_FLAG_NO_DEF_DELEGATE;
                 if (arg3 & OP_GET_FLAG_NO_ERROR) {
-                    if (Get(STK(arg2), ci->_literals[arg1], temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR | getFlagsByOp, DONT_FALL_BACK)) {
+                    SQInteger fb = GetImpl(STK(arg2), ci->_literals[arg1], temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR | getFlagsByOp, DONT_FALL_BACK);
+                    if (fb == SLOT_RESOLVE_STATUS_OK) {
                         _Swap(TARGET,temp_reg);//TARGET = temp_reg;
+                    } else if (fb == SLOT_RESOLVE_STATUS_ERROR) {
+                        SQ_THROW();
                     } else if (!(arg3 & OP_GET_FLAG_KEEP_VAL)) {
                         TARGET.Null();
                     }
@@ -915,8 +922,11 @@ exception_restore:
             case _OP_GET:{
                 SQUnsignedInteger getFlagsByOp = (arg3 & OP_GET_FLAG_ALLOW_DEF_DELEGATE) ? 0 : GET_FLAG_NO_DEF_DELEGATE;
                 if (arg3 & OP_GET_FLAG_NO_ERROR) {
-                    if (Get(STK(arg1), STK(arg2), temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR | getFlagsByOp, DONT_FALL_BACK)) {
+                    SQInteger fb = GetImpl(STK(arg1), STK(arg2), temp_reg, GET_FLAG_DO_NOT_RAISE_ERROR | getFlagsByOp, DONT_FALL_BACK);
+                    if (fb == SLOT_RESOLVE_STATUS_OK) {
                         _Swap(TARGET,temp_reg);
+                    } else if (fb == SLOT_RESOLVE_STATUS_ERROR) {
+                        SQ_THROW();
                     } else if (!(arg3 & OP_GET_FLAG_KEEP_VAL)) {
                         TARGET.Null();
                     }
@@ -1475,10 +1485,6 @@ bool SQVM::GetVarTrace(const SQObjectPtr &self, const SQObjectPtr &key, char * b
 #endif
 }
 
-#define FALLBACK_OK         0
-#define FALLBACK_NO_MATCH   1
-#define FALLBACK_ERROR      2
-
 static void propagate_immutable(const SQObject &obj, SQObject &slot_val)
 {
     if (sq_objflags(obj) & SQOBJ_FLAG_IMMUTABLE)
@@ -1487,34 +1493,40 @@ static void propagate_immutable(const SQObject &obj, SQObject &slot_val)
 
 bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &dest, SQUnsignedInteger getflags, SQInteger selfidx)
 {
+    SQInteger fb = GetImpl(self, key, dest, getflags, selfidx);
+    return fb == SLOT_RESOLVE_STATUS_OK;
+}
+
+SQInteger SQVM::GetImpl(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &dest, SQUnsignedInteger getflags, SQInteger selfidx)
+{
     switch(sq_type(self)){
     case OT_TABLE:
         if(_table(self)->Get(key,dest)) {
             propagate_immutable(self, dest);
-            return true;
+            return SLOT_RESOLVE_STATUS_OK;
         }
         break;
     case OT_ARRAY:
         if (sq_isnumeric(key)) {
             if (_array(self)->Get(tointeger(key), dest)) {
                 propagate_immutable(self, dest);
-                return true;
+                return SLOT_RESOLVE_STATUS_OK;
             }
             if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0)
                 Raise_IdxError(key);
-            return false;
+            return SLOT_RESOLVE_STATUS_NO_MATCH;
         }
         break;
     case OT_INSTANCE:
         if(_instance(self)->Get(key,dest)) {
             propagate_immutable(self, dest);
-            return true;
+            return SLOT_RESOLVE_STATUS_OK;
         }
         break;
     case OT_CLASS:
         if(_class(self)->Get(key,dest)) {
             propagate_immutable(self, dest);
-            return true;
+            return SLOT_RESOLVE_STATUS_OK;
         }
         break;
     case OT_STRING:
@@ -1524,28 +1536,28 @@ bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &des
             if (n < 0) { n += len; }
             if (n >= 0 && n < len) {
                 dest = SQInteger(_stringval(self)[n]);
-                return true;
+                return SLOT_RESOLVE_STATUS_OK;
             }
             if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key);
-            return false;
+            return SLOT_RESOLVE_STATUS_NO_MATCH;
         }
         break;
     default:break; //shut up compiler
     }
     if ((getflags & GET_FLAG_RAW) == 0) {
         switch(FallBackGet(self,key,dest)) {
-            case FALLBACK_OK:
+            case SLOT_RESOLVE_STATUS_OK:
                 propagate_immutable(self, dest);
-                return true; //okie
-            case FALLBACK_NO_MATCH: break; //keep falling back
-            case FALLBACK_ERROR: return false; // the metamethod failed
+                return SLOT_RESOLVE_STATUS_OK; //okie
+            case SLOT_RESOLVE_STATUS_NO_MATCH: break; //keep falling back
+            case SLOT_RESOLVE_STATUS_ERROR: return SLOT_RESOLVE_STATUS_ERROR; // the metamethod failed
         }
     }
     if (!(getflags & (GET_FLAG_RAW | GET_FLAG_NO_DEF_DELEGATE)))
     {
         if(InvokeDefaultDelegate(self,key,dest)) {
             propagate_immutable(self, dest);
-            return true;
+            return SLOT_RESOLVE_STATUS_OK;
         }
     }
 //#ifdef ROOT_FALLBACK
@@ -1555,14 +1567,14 @@ bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &des
         {
             if(Get(*((const SQObjectPtr *)&w->_obj),key,dest,0,DONT_FALL_BACK)) {
                 propagate_immutable(self, dest);
-                return true;
+                return SLOT_RESOLVE_STATUS_OK;
             }
         }
 
     }
 //#endif
     if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key);
-    return false;
+    return SLOT_RESOLVE_STATUS_NO_MATCH; // false
 }
 
 bool SQVM::InvokeDefaultDelegate(const SQObjectPtr &self,const SQObjectPtr &key,SQObjectPtr &dest)
@@ -1593,10 +1605,10 @@ SQInteger SQVM::FallBackGet(const SQObjectPtr &self,const SQObjectPtr &key,SQObj
     case OT_USERDATA:
         //delegation
         if(_delegable(self)->_delegate) {
-            if(Get(SQObjectPtr(_delegable(self)->_delegate),key,dest,0,DONT_FALL_BACK)) return FALLBACK_OK;
+            if(Get(SQObjectPtr(_delegable(self)->_delegate),key,dest,0,DONT_FALL_BACK)) return SLOT_RESOLVE_STATUS_OK;
         }
         else {
-            return FALLBACK_NO_MATCH;
+            return SLOT_RESOLVE_STATUS_NO_MATCH;
         }
         //go through
     case OT_INSTANCE: {
@@ -1607,12 +1619,12 @@ SQInteger SQVM::FallBackGet(const SQObjectPtr &self,const SQObjectPtr &key,SQObj
             AutoDec ad(&_nmetamethodscall);
             if(Call(closure, 2, _top - 2, dest, SQFalse)) {
                 Pop(2);
-                return FALLBACK_OK;
+                return SLOT_RESOLVE_STATUS_OK;
             }
             else {
                 Pop(2);
                 if(sq_type(_lasterror) != OT_NULL) { //NULL means "clean failure" (not found)
-                    return FALLBACK_ERROR;
+                    return SLOT_RESOLVE_STATUS_ERROR;
                 }
             }
         }
@@ -1621,7 +1633,7 @@ SQInteger SQVM::FallBackGet(const SQObjectPtr &self,const SQObjectPtr &key,SQObj
     default: break;//shutup GCC 4.x
     }
     // no metamethod or no fallback type
-    return FALLBACK_NO_MATCH;
+    return SLOT_RESOLVE_STATUS_NO_MATCH;
 }
 
 bool SQVM::Set(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val,SQInteger selfidx)
@@ -1652,9 +1664,9 @@ bool SQVM::Set(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr 
     }
 
     switch(FallBackSet(self,key,val)) {
-        case FALLBACK_OK: return true; //okie
-        case FALLBACK_NO_MATCH: break; //keep falling back
-        case FALLBACK_ERROR: return false; // the metamethod failed
+        case SLOT_RESOLVE_STATUS_OK: return true; //okie
+        case SLOT_RESOLVE_STATUS_NO_MATCH: break; //keep falling back
+        case SLOT_RESOLVE_STATUS_ERROR: return false; // the metamethod failed
     }
     if(selfidx == 0) {
         if(_table(_roottable)->Set(key,val))
@@ -1669,7 +1681,7 @@ SQInteger SQVM::FallBackSet(const SQObjectPtr &self,const SQObjectPtr &key,const
     switch(sq_type(self)) {
     case OT_TABLE:
         if(_table(self)->_delegate) {
-            if(Set(_table(self)->_delegate,key,val,DONT_FALL_BACK)) return FALLBACK_OK;
+            if(Set(_table(self)->_delegate,key,val,DONT_FALL_BACK)) return SLOT_RESOLVE_STATUS_OK;
         }
         //keps on going
     case OT_INSTANCE:
@@ -1682,12 +1694,12 @@ SQInteger SQVM::FallBackSet(const SQObjectPtr &self,const SQObjectPtr &key,const
             AutoDec ad(&_nmetamethodscall);
             if(Call(closure, 3, _top - 3, t, SQFalse)) {
                 Pop(3);
-                return FALLBACK_OK;
+                return SLOT_RESOLVE_STATUS_OK;
             }
             else {
                 Pop(3);
                 if(sq_type(_lasterror) != OT_NULL) { //NULL means "clean failure" (not found)
-                    return FALLBACK_ERROR;
+                    return SLOT_RESOLVE_STATUS_ERROR;
                 }
             }
         }
@@ -1696,7 +1708,7 @@ SQInteger SQVM::FallBackSet(const SQObjectPtr &self,const SQObjectPtr &key,const
         default: break;//shutup GCC 4.x
     }
     // no metamethod or no fallback type
-    return FALLBACK_NO_MATCH;
+    return SLOT_RESOLVE_STATUS_NO_MATCH;
 }
 
 bool SQVM::Clone(const SQObjectPtr &self,SQObjectPtr &target)
