@@ -71,6 +71,7 @@ public:
     {
         if (_alloc_ctx != v._alloc_ctx) {
             _releasedata();
+            _vals = NULL;
             _allocated = 0;
             _size = 0;
             _alloc_ctx = v._alloc_ctx;
@@ -83,7 +84,7 @@ public:
             _realloc(v._size);
         }
         for(SQUnsignedInteger i = 0; i < v._size; i++) {
-            new ((void *)&_vals[i]) T(v._vals[i]);
+            new ((void *)&_vals[i]) T(v._vals[i]); //-V522
         }
         _size = v._size;
     }
