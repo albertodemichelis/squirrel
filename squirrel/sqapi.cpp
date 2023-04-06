@@ -473,6 +473,17 @@ SQRESULT sq_setnativeclosurename(HSQUIRRELVM v,SQInteger idx,const SQChar *name)
     return sq_throwerror(v,_SC("the object is not a nativeclosure"));
 }
 
+SQRESULT sq_setnativeclosuredocstring(HSQUIRRELVM v,SQInteger idx,const SQChar *docstring)
+{
+    SQObject o = stack_get(v, idx);
+    if(sq_isnativeclosure(o)) {
+        SQNativeClosure *nc = _nativeclosure(o);
+        nc->_docstring = SQString::Create(_ss(v), docstring);
+        return SQ_OK;
+    }
+    return sq_throwerror(v,_SC("the object is not a nativeclosure"));
+}
+
 SQRESULT sq_setparamscheck(HSQUIRRELVM v,SQInteger nparamscheck,const SQChar *typemask)
 {
     SQObject o = stack_get(v, -1);

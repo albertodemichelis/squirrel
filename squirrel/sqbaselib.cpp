@@ -1985,6 +1985,7 @@ static SQInteger closure_getfuncinfos_obj(HSQUIRRELVM v, SQObjectPtr & o) {
         SQNativeClosure *nc = _nativeclosure(o);
         res->NewSlot(SQString::Create(_ss(v),_SC("native"),-1),true);
         res->NewSlot(SQString::Create(_ss(v),_SC("name"),-1),nc->_name);
+        res->NewSlot(SQString::Create(_ss(v),_SC("docstring"),-1),nc->_docstring);
         res->NewSlot(SQString::Create(_ss(v),_SC("paramscheck"),-1),nc->_nparamscheck);
         res->NewSlot(SQString::Create(_ss(v),_SC("freevars"),-1),SQInteger(nc->_noutervalues));
         SQObjectPtr typecheck;

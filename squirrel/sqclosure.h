@@ -179,6 +179,7 @@ public:
         ret->_env = _env;
         if(ret->_env) __ObjAddRef(ret->_env);
         ret->_name = _name;
+        ret->_docstring = _docstring;
         _COPY_VECTOR(ret->_outervalues,_outervalues,_noutervalues);
         ret->_typecheck.copy(_typecheck);
         ret->_nparamscheck = _nparamscheck;
@@ -209,6 +210,7 @@ public:
     SQWeakRef *_env;
     SQFUNCTION _function;
     SQObjectPtr _name;
+    SQObjectPtr _docstring;
 };
 
 
