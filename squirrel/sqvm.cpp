@@ -853,11 +853,11 @@ exception_restore:
                     case OT_TABLE:
                     case OT_USERDATA:
                     case OT_INSTANCE:{
-                        SQObjectPtr closure;
-                        if(_delegable(clo)->_delegate && _delegable(clo)->GetMetaMethod(this,MT_CALL,closure)) {
+                        SQObjectPtr mmclosure;
+                        if(_delegable(clo)->_delegate && _delegable(clo)->GetMetaMethod(this,MT_CALL,mmclosure)) {
                             Push(clo);
                             for (SQInteger i = 0; i < arg3; i++) Push(STK(arg2 + i));
-                            if(!CallMetaMethod(closure, MT_CALL, arg3+1, clo)) SQ_THROW();
+                            if(!CallMetaMethod(mmclosure, MT_CALL, arg3+1, clo)) SQ_THROW();
                             if(tgt0 != -1) {
                                 STK(tgt0) = clo;
                             }
