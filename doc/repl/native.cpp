@@ -105,15 +105,18 @@ static std::string runScript(const std::string &source_text)
   moduleMgr->registerStringLib();
   moduleMgr->registerSystemLib();
   moduleMgr->registerIoStreamLib();
-  moduleMgr->registerIoLib();
+  //moduleMgr->registerIoLib(); // not needed in browser version
   moduleMgr->registerDateTimeLib();
 
-  if (SQ_SUCCEEDED(sq_compilebuffer(vm, source_text.c_str(), source_text.length(), "console", true, nullptr)))
+  sq_newtable(vm);
+  HSQOBJECT hBindings;
+  sq_getstackobj(vm, -1, &hBindings);
+  moduleMgr->bindBaseLib(hBindings);
+  moduleMgr->bindRequireApi(hBindings);
+
+  if (SQ_SUCCEEDED(sq_compilebuffer(vm, source_text.c_str(), source_text.length(), "console", true, &hBindings)))
   {
-    sq_newtable(vm);
-    HSQOBJECT env;
-    sq_getstackobj(vm, -1, &env);
-    moduleMgr->bindRequireApi(env);
+    sq_pushnull(vm); //environment
 
     if (SQ_FAILED(sq_call(vm, 1, SQTrue, SQTrue)))
       output += "\nScript execution failed";
@@ -134,6 +137,8 @@ static std::string runScript(const std::string &source_text)
 
     sq_pop(vm, 1); // script closure
   }
+
+  sq_pop(vm, 1); // bindings table
 
   std::string result = output;
 

@@ -30,7 +30,7 @@ target_include_directories(sqjsrepl PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../../sqmodules>"
 )
 
-set_target_properties(sqjsrepl PROPERTIES LINK_FLAGS "--bind")
+set_target_properties(sqjsrepl PROPERTIES LINK_FLAGS "--bind -sFILESYSTEM=0")
 
 set_target_properties(sqjsrepl PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}"
