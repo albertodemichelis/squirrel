@@ -782,21 +782,21 @@ static SQInteger table_filter(HSQUIRRELVM v)
 
 #define TABLE_TO_ARRAY_FUNC(_funcname_,_valname_) static SQInteger _funcname_(HSQUIRRELVM v) \
 { \
-	SQObject &o = stack_get(v, 1); \
-	SQTable *t = _table(o); \
-	SQObjectPtr itr, key, val; \
-	SQInteger nitr, n = 0; \
-	SQInteger nitems = t->CountUsed(); \
-	SQArray *a = SQArray::Create(_ss(v), nitems); \
-	if (nitems) { \
-		while ((nitr = t->Next(false, itr, key, val)) != -1) { \
-			itr = (SQInteger)nitr; \
-			a->Set(n, _valname_); \
-			n++; \
-		} \
-	} \
-	v->Push(a); \
-	return 1; \
+    SQObject &o = stack_get(v, 1); \
+    SQTable *t = _table(o); \
+    SQObjectPtr itr, key, val; \
+    SQInteger nitr, n = 0; \
+    SQInteger nitems = t->CountUsed(); \
+    SQArray *a = SQArray::Create(_ss(v), nitems); \
+    if (nitems) { \
+        while ((nitr = t->Next(false, itr, key, val)) != -1) { \
+            itr = (SQInteger)nitr; \
+            a->Set(n, _valname_); \
+            n++; \
+        } \
+    } \
+    v->Push(a); \
+    return 1; \
 }
 
 TABLE_TO_ARRAY_FUNC(table_keys, key)
@@ -1102,7 +1102,7 @@ static SQInteger __map_array(SQArray *dest,SQArray *src,HSQUIRRELVM v, bool appe
         if (append)
             dest->Append(v->GetUp(-1));
         else
-        dest->Set(n,v->GetUp(-1));
+            dest->Set(n,v->GetUp(-1));
         v->Pop();
     }
     v->Pop();
@@ -1266,21 +1266,21 @@ static bool _sort_compare(HSQUIRRELVM v, SQArray *arr, SQObjectPtr &a,SQObjectPt
         sq_pushroottable(v);
         v->Push(a);
         v->Push(b);
-		SQObjectPtr *valptr = arr->_values._vals;
-		SQUnsignedInteger precallsize = arr->_values.size();
+        SQObjectPtr *valptr = arr->_values._vals;
+        SQUnsignedInteger precallsize = arr->_values.size();
         if(SQ_FAILED(sq_call(v, 3, SQTrue, SQFalse))) {
             if(!sq_isstring( v->_lasterror))
                 v->Raise_Error(_SC("compare func failed"));
             return false;
         }
-		if(SQ_FAILED(sq_getinteger(v, -1, &ret))) {
+        if(SQ_FAILED(sq_getinteger(v, -1, &ret))) {
             v->Raise_Error(_SC("numeric value expected as return value of the compare function"));
             return false;
         }
-		if (precallsize != arr->_values.size() || valptr != arr->_values._vals) {
-			v->Raise_Error(_SC("array resized during sort operation"));
-			return false;
-		}
+        if (precallsize != arr->_values.size() || valptr != arr->_values._vals) {
+            v->Raise_Error(_SC("array resized during sort operation"));
+            return false;
+        }
         sq_settop(v, top);
         return true;
     }
@@ -1878,12 +1878,12 @@ static SQInteger closure_pcall(HSQUIRRELVM v)
 
 static SQInteger closure_call(HSQUIRRELVM v)
 {
-	SQObjectPtr &c = stack_get(v, -1);
-	if (sq_type(c) == OT_CLOSURE && (_closure(c)->_function->_bgenerator == false))
-	{
-		return sq_tailcall(v, sq_gettop(v) - 1);
-	}
-	return SQ_SUCCEEDED(sq_call(v, sq_gettop(v) - 1, SQTrue, SQTrue)) ? 1 : SQ_ERROR;
+    SQObjectPtr &c = stack_get(v, -1);
+    if (sq_type(c) == OT_CLOSURE && (_closure(c)->_function->_bgenerator == false))
+    {
+        return sq_tailcall(v, sq_gettop(v) - 1);
+    }
+    return SQ_SUCCEEDED(sq_call(v, sq_gettop(v) - 1, SQTrue, SQTrue)) ? 1 : SQ_ERROR;
 }
 
 static SQInteger _closure_acall(HSQUIRRELVM v,SQBool invoke_err_handler)
@@ -1948,11 +1948,11 @@ static SQInteger closure_getfuncinfos_obj(HSQUIRRELVM v, SQObjectPtr & o) {
         SQFunctionProto *f = _closure(o)->_function;
         SQInteger nparams = f->_nparameters + (f->_varparams?1:0);
         SQObjectPtr params = SQArray::Create(_ss(v),nparams);
-    SQObjectPtr defparams = SQArray::Create(_ss(v),f->_ndefaultparams);
+        SQObjectPtr defparams = SQArray::Create(_ss(v),f->_ndefaultparams);
         for(SQInteger n = 0; n<f->_nparameters; n++) {
             _array(params)->Set((SQInteger)n,f->_parameters[n]);
         }
-    for(SQInteger j = 0; j<f->_ndefaultparams; j++) {
+        for(SQInteger j = 0; j<f->_ndefaultparams; j++) {
             _array(defparams)->Set((SQInteger)j,_closure(o)->_defaultparams[j]);
         }
         if(f->_varparams) {

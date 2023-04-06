@@ -1210,7 +1210,9 @@ public:
         case TK_CLONE : Lex(); UnaryOP(_OP_CLONE); break;
         case TK_RAWCALL: Lex(); Expect('('); FunctionCallArgs(true, false); break;
         case TK_MINUSMINUS :
-        case TK_PLUSPLUS :PrefixIncDec(_token); break;
+        case TK_PLUSPLUS :
+            PrefixIncDec(_token);
+            break;
         case TK_DELETE : DeleteExpr(); break;
         case _SC('('): Lex(); Expression(_expression_context); Expect(_SC(')'));
             break;
@@ -1366,7 +1368,7 @@ public:
                     _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
                     Expect(_SC(':')); Expression(SQE_RVALUE);
                     break;
-                }
+                }  //-V796
             default : {
                 SQObject id = Expect(TK_IDENTIFIER);
                 CheckMemberUniqueness(*memberConstantKeys, id);
@@ -1669,10 +1671,10 @@ public:
         }
         _fs->AddInstruction(_OP_JMP, 0, jmppos - _fs->GetCurrentPos() - 1, 0);
         if(jzpos>  0) _fs->SetInstructionParam(jzpos, 1, _fs->GetCurrentPos() - jzpos);
-        
+
         END_BREAKBLE_BLOCK(continuetrg);
 
-		END_SCOPE();
+        END_SCOPE();
     }
     void ForEachStatement()
     {

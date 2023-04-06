@@ -33,7 +33,7 @@ static inline void propagate_immutable(const SQObject &obj, SQObject &slot_val)
 bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2)
 {
     SQInteger res;
-    if((sq_type(o1)| sq_type(o2)) == OT_INTEGER)
+    if((sq_type(o1)|sq_type(o2)) == OT_INTEGER)
     {
         SQInteger i1 = _integer(o1), i2 = _integer(o2);
         switch(op) {
@@ -57,7 +57,7 @@ bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,con
     switch(tmask) { \
         case OT_INTEGER: trg = _integer(o1) op _integer(o2);break; \
         case (OT_FLOAT|OT_INTEGER): \
-        case (OT_FLOAT): trg = tofloat(o1) op tofloat(o2); break;\
+        case (OT_FLOAT): trg = tofloat(o1) op tofloat(o2); break; \
         default: _GUARD(ARITH_OP((#op)[0],trg,o1,o2)); break;\
     } \
 }
@@ -76,7 +76,7 @@ bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,con
 
 bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2)
 {
-    SQInteger tmask = sq_type(o1)| sq_type(o2);
+    SQInteger tmask = sq_type(o1)|sq_type(o2);
     switch(tmask) {
         case OT_INTEGER:{
             SQInteger res, i1 = _integer(o1), i2 = _integer(o2);
@@ -718,14 +718,14 @@ bool SQVM::CLASS_OP(SQObjectPtr &target,SQInteger baseclass)
 
 bool SQVM::IsEqual(const SQObjectPtr &o1,const SQObjectPtr &o2,bool &res)
 {
-	SQObjectType t1 = sq_type(o1), t2 = sq_type(o2);
+    SQObjectType t1 = sq_type(o1), t2 = sq_type(o2);
     if(t1 == t2) {
-		if (t1 == OT_FLOAT) {
-			res = (_float(o1) == _float(o2));
-		}
-		else {
-			res = (_rawval(o1) == _rawval(o2));
-		}
+        if (t1 == OT_FLOAT) {
+            res = (_float(o1) == _float(o2));
+        }
+        else {
+            res = (_rawval(o1) == _rawval(o2));
+        }
     }
     else {
         if(sq_isnumeric(o1) && sq_isnumeric(o2)) {
@@ -851,7 +851,7 @@ exception_restore:
                     for (SQInteger i = 0; i < arg3; i++) STK(i) = STK(arg2 + i);
                     _GUARD(StartCall(_closure(clo), ci->_target, arg3, _stackbase, true));
                     if (last_top >= _top) {
-                        _top = last_top;
+                      _top = last_top;
                     }
                     continue;
                 }
@@ -868,7 +868,7 @@ exception_restore:
                         continue;
                     case OT_NATIVECLOSURE: {
                         bool suspend;
-						bool tailcall;
+                        bool tailcall;
                         _GUARD(CallNative(_nativeclosure(clo), arg3, _stackbase+arg2, clo, tgt0, suspend, tailcall));
                         if(suspend){
                             _suspended = SQTrue;
@@ -1363,9 +1363,9 @@ exception_restore:
             case _OP_YIELD:{
                 if(ci->_generator) {
                     if(sarg1 != MAX_FUNC_STACKSIZE) temp_reg = STK(arg1);
-					if (_openouters) CloseOuters(&_stack._vals[_stackbase]);
+                    if (_openouters) CloseOuters(&_stack._vals[_stackbase]);
                     _GUARD(ci->_generator->Yield(this,arg2));
-					traps -= ci->_etraps;
+                    traps -= ci->_etraps;
                     if(sarg1 != MAX_FUNC_STACKSIZE) _Swap(STK(arg1),temp_reg);//STK(arg1) = temp_reg;
                 }
                 else { Raise_Error(_SC("trying to yield a '%s',only genenerator can be yielded"), GetTypeName(ci->_generator)); SQ_THROW();}
@@ -1585,7 +1585,7 @@ bool SQVM::CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newb
 
     if(!EnterFrame(newbase, newtop, false)) return false;
     ci->_closure  = nclosure;
-	ci->_target = target;
+    ci->_target = target;
 
     SQInteger outers = nclosure->_noutervalues;
     for (SQInteger i = 0; i < outers; i++) {
@@ -1600,11 +1600,11 @@ bool SQVM::CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newb
     _nnativecalls--;
 
     suspend = false;
-	tailcall = false;
-	if (ret == SQ_TAILCALL_FLAG) {
-		tailcall = true;
-		return true;
-	}
+    tailcall = false;
+    if (ret == SQ_TAILCALL_FLAG) {
+        tailcall = true;
+        return true;
+    }
     else if (ret == SQ_SUSPEND_FLAG) {
         suspend = true;
     }
@@ -1626,19 +1626,19 @@ bool SQVM::CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newb
 
 bool SQVM::TailCall(SQClosure *closure, SQInteger parambase,SQInteger nparams)
 {
-	SQInteger last_top = _top;
-	SQObjectPtr clo = closure;
-	if (ci->_root)
-	{
-		Raise_Error("root calls cannot invoke tailcalls");
-		return false;
-	}
-	for (SQInteger i = 0; i < nparams; i++) STK(i) = STK(parambase + i);
-	bool ret = StartCall(closure, ci->_target, nparams, _stackbase, true);
-	if (last_top >= _top) {
-		_top = last_top;
-	}
-	return ret;
+    SQInteger last_top = _top;
+    SQObjectPtr clo = closure;
+    if (ci->_root)
+    {
+        Raise_Error("root calls cannot invoke tailcalls");
+        return false;
+    }
+    for (SQInteger i = 0; i < nparams; i++) STK(i) = STK(parambase + i);
+    bool ret = StartCall(closure, ci->_target, nparams, _stackbase, true);
+    if (last_top >= _top) {
+        _top = last_top;
+    }
+    return ret;
 }
 
 
@@ -1789,7 +1789,7 @@ SQInteger SQVM::GetImpl(const SQObjectPtr &self, const SQObjectPtr &key, SQObjec
     }
 //#endif
     if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key);
-    return SLOT_RESOLVE_STATUS_NO_MATCH; // false
+    return SLOT_RESOLVE_STATUS_NO_MATCH;
 }
 
 bool SQVM::InvokeDefaultDelegate(const SQObjectPtr &self,const SQObjectPtr &key,SQObjectPtr &dest)
@@ -1843,7 +1843,7 @@ SQInteger SQVM::FallBackGet(const SQObjectPtr &self,const SQObjectPtr &key,SQObj
                 }
             }
         }
-                      }
+        }
         break;
     default: break;//shutup GCC 4.x
     }
@@ -1872,7 +1872,7 @@ bool SQVM::Set(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr 
             return false;
         }
         return true;
-  	case OT_USERDATA: break; // must fall back
+    case OT_USERDATA: break; // must fall back
     default:
         Raise_Error(_SC("trying to set '%s'"),GetTypeName(self));
         return false;
@@ -1894,31 +1894,31 @@ bool SQVM::Set(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr 
 SQInteger SQVM::FallBackSet(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val)
 {
     switch(sq_type(self)) {
-    case OT_TABLE:
-        if(_table(self)->_delegate) {
-            if(Set(_table(self)->_delegate,key,val,DONT_FALL_BACK)) return SLOT_RESOLVE_STATUS_OK;
-        }
-        //keps on going
-    case OT_INSTANCE:
-    case OT_USERDATA:{
-        SQObjectPtr closure;
-        SQObjectPtr t;
-        if(_delegable(self)->GetMetaMethod(this, MT_SET, closure)) {
-            Push(self);Push(key);Push(val);
-            _nmetamethodscall++;
-            AutoDec ad(&_nmetamethodscall);
-            if(Call(closure, 3, _top - 3, t, SQFalse)) {
-                Pop(3);
-                return SLOT_RESOLVE_STATUS_OK;
+        case OT_TABLE:
+            if(_table(self)->_delegate) {
+                if(Set(_table(self)->_delegate,key,val,DONT_FALL_BACK)) return SLOT_RESOLVE_STATUS_OK;
             }
-            else {
-                Pop(3);
-                if(sq_type(_lasterror) != OT_NULL) { //NULL means "clean failure" (not found)
-                    return SLOT_RESOLVE_STATUS_ERROR;
+            //keps on going
+        case OT_INSTANCE:
+        case OT_USERDATA:{
+            SQObjectPtr closure;
+            SQObjectPtr t;
+            if(_delegable(self)->GetMetaMethod(this, MT_SET, closure)) {
+                Push(self);Push(key);Push(val);
+                _nmetamethodscall++;
+                AutoDec ad(&_nmetamethodscall);
+                if(Call(closure, 3, _top - 3, t, SQFalse)) {
+                    Pop(3);
+                    return SLOT_RESOLVE_STATUS_OK;
+                }
+                else {
+                    Pop(3);
+                    if(sq_type(_lasterror) != OT_NULL) { //NULL means "clean failure" (not found)
+                        return SLOT_RESOLVE_STATUS_ERROR;
+                    }
                 }
             }
         }
-                     }
         break;
         default: break;//shutup GCC 4.x
     }

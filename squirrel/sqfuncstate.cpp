@@ -359,7 +359,7 @@ SQInteger SQFuncState::GetOuterVariable(const SQObject &name, bool &is_assignabl
         if(_string(_outervalues[i]._name) == _string(name)) {
             is_assignable = _outervalues[i]._assignable;
             return i;
-    }
+        }
     }
     SQInteger pos=-1;
     if(_parent) {

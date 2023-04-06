@@ -62,7 +62,7 @@ public:
     bool Execute(SQObjectPtr &func, SQInteger nargs, SQInteger stackbase, SQObjectPtr &outres, SQBool invoke_err_handler, ExecutionType et = ET_CALL);
     //starts a native call return when the NATIVE closure returns
     bool CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newbase, SQObjectPtr &retval, SQInt32 target, bool &suspend,bool &tailcall);
-	bool TailCall(SQClosure *closure, SQInteger firstparam, SQInteger nparams);
+    bool TailCall(SQClosure *closure, SQInteger firstparam, SQInteger nparams);
     //starts a SQUIRREL call in the same "Execution loop"
     bool StartCall(SQClosure *closure, SQInteger target, SQInteger nargs, SQInteger stackbase, bool tailcall);
     bool CreateClassInstance(SQClass *theclass, SQObjectPtr &inst, SQObjectPtr &constructor);

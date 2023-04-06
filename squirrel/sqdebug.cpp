@@ -40,8 +40,8 @@ SQRESULT sq_stackinfos(HSQUIRRELVM v, SQInteger level, SQStackInfos *si)
             if (sq_type(func->_sourcename) == OT_STRING)
                 si->source = _stringval(func->_sourcename);
             si->line = func->GetLine(ci._ip);
-                        }
             break;
+        }
         case OT_NATIVECLOSURE:
             si->source = _SC("NATIVE");
             si->funcname = _SC("unknown");

@@ -82,12 +82,12 @@ static SQInteger _blob__get(HSQUIRRELVM v)
 {
     SETUP_BLOB(v);
     SQInteger idx;
-	
-	if ((sq_gettype(v, 2) & SQOBJECT_NUMERIC) == 0)
-	{
-		sq_pushnull(v);
-		return sq_throwobject(v);
-	}
+
+    if ((sq_gettype(v, 2) & SQOBJECT_NUMERIC) == 0)
+    {
+        sq_pushnull(v);
+        return sq_throwobject(v);
+    }
     sq_getinteger(v,2,&idx);
     if(idx < 0 || idx >= self->Len())
         return sq_throwerror(v,_SC("index out of range"));
