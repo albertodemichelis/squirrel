@@ -411,7 +411,10 @@ bool SQVM::StartCall(SQClosure *closure,SQInteger target,SQInteger args,SQIntege
     {
         paramssize--;
         if (nargs < paramssize) {
-            Raise_Error(_SC("wrong number of parameters (%d passed, at least %d required)"),
+            Raise_Error(_SC("wrong number of parameters passed to '%s' %s:%d (%d passed, at least %d required)"),
+              sq_type(func->_name) == OT_STRING ? _stringval(func->_name) : _SC("unknown"),
+              sq_type(func->_sourcename) == OT_STRING ? _stringval(func->_sourcename) : _SC("unknown"),
+              int(func->_nlineinfos > 0 ? func->_lineinfos[0]._line : 0),
               (int)nargs, (int)paramssize);
             return false;
         }
@@ -438,7 +441,10 @@ bool SQVM::StartCall(SQClosure *closure,SQInteger target,SQInteger args,SQIntege
             }
         }
         else {
-            Raise_Error(_SC("wrong number of parameters (%d passed, %d required)"),
+            Raise_Error(_SC("wrong number of parameters passed to '%s' %s:%d (%d passed, %d required)"),
+              sq_type(func->_name) == OT_STRING ? _stringval(func->_name) : _SC("unknown"),
+              sq_type(func->_sourcename) == OT_STRING ? _stringval(func->_sourcename) : _SC("unknown"),
+              int(func->_nlineinfos > 0 ? func->_lineinfos[0]._line : 0),
               (int)nargs, (int)paramssize);
             return false;
         }
@@ -1536,10 +1542,12 @@ bool SQVM::CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newb
         ((nparamscheck < 0) && (nargs < (-nparamscheck)))))
     {
         if (nparamscheck > 0) {
-            Raise_Error(_SC("wrong number of parameters (%d passed, %d required)"),
+            Raise_Error(_SC("wrong number of parameters passed to native closure '%s' (%d passed, %d required)"),
+                sq_type(nclosure->_name) == OT_STRING ? _stringval(nclosure->_name) : _SC("unknown"),
                 (int)nargs, (int)nparamscheck);
         } else {
-            Raise_Error(_SC("wrong number of parameters (%d passed, at least %d required)"),
+            Raise_Error(_SC("wrong number of parameters passed to native closure '%s' (%d passed, at least %d required)"),
+                sq_type(nclosure->_name) == OT_STRING ? _stringval(nclosure->_name) : _SC("unknown"),
                 (int)nargs, (int)-nparamscheck);
         }
 
