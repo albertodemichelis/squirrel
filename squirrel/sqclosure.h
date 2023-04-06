@@ -152,7 +152,7 @@ public:
     SQGeneratorState _state;
 };
 
-#define _CALC_NATVIVECLOSURE_SIZE(noutervalues) (sizeof(SQNativeClosure) + (noutervalues*sizeof(SQObjectPtr)))
+#define _CALC_NATVIVECLOSURE_SIZE(noutervalues) (sizeof(SQNativeClosure) + ((noutervalues)*sizeof(SQObjectPtr)))
 
 struct SQNativeClosure : public CHAINABLE_OBJ
 {

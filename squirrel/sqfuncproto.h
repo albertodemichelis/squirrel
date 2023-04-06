@@ -75,10 +75,10 @@ typedef sqvector<SQLocalVarInfo> SQLocalVarInfoVec;
 typedef sqvector<SQLineInfo> SQLineInfoVec;
 
 #define _FUNC_SIZE(ni,nl,nparams,nfuncs,nouters,nlineinf,localinf,defparams) (sizeof(SQFunctionProto) \
-        +((ni-1)*sizeof(SQInstruction))+(nl*sizeof(SQObjectPtr)) \
-        +(nparams*sizeof(SQObjectPtr))+(nfuncs*sizeof(SQObjectPtr)) \
-        +(nouters*sizeof(SQOuterVar))+(nlineinf*sizeof(SQLineInfo)) \
-        +(localinf*sizeof(SQLocalVarInfo))+(defparams*sizeof(SQInteger)))
+        +(((ni)-1)*sizeof(SQInstruction))+((nl)*sizeof(SQObjectPtr)) \
+        +((nparams)*sizeof(SQObjectPtr))+((nfuncs)*sizeof(SQObjectPtr)) \
+        +((nouters)*sizeof(SQOuterVar))+((nlineinf)*sizeof(SQLineInfo)) \
+        +((localinf)*sizeof(SQLocalVarInfo))+((defparams)*sizeof(SQInteger)))
 
 
 struct SQFunctionProto : public CHAINABLE_OBJ
