@@ -61,11 +61,13 @@ public:
     SQTable *Clone();
     ~SQTable()
     {
+        uint32_t cnt = _numofnodes_minus_one + 1;
+        _HashNode *__restrict lNodes = _nodes;
         SetDelegate(NULL);
         REMOVE_FROM_CHAIN(&_sharedstate->_gc_chain, this);
-        for (uint32_t i = 0; i <= _numofnodes_minus_one; i++)
-          _nodes[i].~_HashNode();
-        SQ_FREE(_alloc_ctx, _nodes, (_numofnodes_minus_one + 1) * sizeof(_HashNode));
+        for (_HashNode *i = lNodes, *e = i + cnt; i != e; i++)
+          i->~_HashNode();
+        SQ_FREE(_alloc_ctx, lNodes, cnt  * sizeof(_HashNode));
     }
 #ifndef NO_GARBAGE_COLLECTOR
     void Mark(SQCollectable **chain);

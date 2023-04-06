@@ -70,18 +70,6 @@ SQInteger SQString::Next(const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObjec
     return -1;
 }
 
-SQUnsignedInteger TranslateIndex(const SQObjectPtr &idx)
-{
-    switch(sq_type(idx)){
-        case OT_NULL:
-            return 0;
-        case OT_INTEGER:
-            return (SQUnsignedInteger)_integer(idx);
-        default: assert(0); break;
-    }
-    return 0;
-}
-
 SQWeakRef *SQRefCounted::GetWeakRef(SQAllocContext alloc_ctx, SQObjectType type, SQObjectFlags flags)
 {
     if(!_weakref) {

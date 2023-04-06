@@ -348,7 +348,18 @@ struct SQDelegable : public CHAINABLE_OBJ {
     SQTable *_delegate;
 };
 
-SQUnsignedInteger TranslateIndex(const SQObjectPtr &idx);
+inline SQUnsignedInteger TranslateIndex(const SQObjectPtr &idx)
+{
+    switch(sq_type(idx)){
+        case OT_NULL:
+            return 0;
+        case OT_INTEGER:
+            return (SQUnsignedInteger)_integer(idx);
+        default: assert(0); break;
+    }
+    return 0;
+}
+
 typedef sqvector<SQObjectPtr> SQObjectPtrVec;
 typedef sqvector<SQInteger> SQIntVec;
 const SQChar *GetTypeName(const SQObjectPtr &obj1);
