@@ -70,7 +70,7 @@ private:
   void error(const char * message)
   {
     if (errorCb && !errors)
-      errorCb(cbUserPointer, message, line, p - curLinePtr + 1);
+      errorCb(cbUserPointer, message, line, int(p - curLinePtr + 1));
     errors = true;
   }
 
@@ -254,7 +254,7 @@ private:
     else
     {
       MODULE_PARSE_STL::string result(s);
-      for (int i=0, n=result.length(); i<n; ++i)
+      for (int i = 0, n = int(result.length()); i < n; ++i)
       {
         char c = result[i];
         if (!isalnum(c) && c!='_')
@@ -327,7 +327,7 @@ public:
       {
         ModuleImport m;
         m.line = line;
-        m.column = p - curLinePtr + 1;
+        m.column = int(p - curLinePtr + 1);
         m.moduleName = parseIdentifier();
 
         if (accept("as"))
@@ -342,7 +342,7 @@ public:
       {
         ModuleImport m;
         m.line = line;
-        m.column = p - curLinePtr + 1;
+        m.column = int(p - curLinePtr + 1);
         m.moduleName = parseIdentifier();
 
         if (accept("as"))
@@ -356,7 +356,7 @@ public:
         {
           ModuleImport::Slot slot;
           slot.line = line;
-          slot.column = p - curLinePtr + 1;
+          slot.column = int(p - curLinePtr + 1);
           bool importAll = false;
           while (!errors)
           {
@@ -399,7 +399,7 @@ public:
 
     *src = p;
     line_ = line;
-    column_ = p - curLinePtr + 1;
+    column_ = int(p - curLinePtr + 1);
     return !errors;
   }
 };
