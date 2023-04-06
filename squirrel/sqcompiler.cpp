@@ -924,6 +924,7 @@ public:
                     nextIsNullable = true;
                 }
                  if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot brake deref/or comma needed after [exp]=exp slot declaration"));
+                _es.literal_field = false;
                 Lex(); Expression(SQE_RVALUE); Expect(_SC(']'));
                 pos = -1;
                 if(_es.etype==BASE) {
