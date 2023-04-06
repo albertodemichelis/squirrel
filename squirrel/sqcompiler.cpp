@@ -1868,7 +1868,8 @@ public:
     {
         Lex();
         SQObject id = Expect(TK_IDENTIFIER);
-        CheckDuplicateLocalIdentifier(id, _SC("Constant"), global);
+        bool ignoreGlobalConst = global && !(_fs->lang_features & LF_FORBID_GLOBAL_CONST_REWRITE);
+        CheckDuplicateLocalIdentifier(id, _SC("Constant"), ignoreGlobalConst);
 
         Expect('=');
         SQObject val = ExpectScalar();
@@ -1885,7 +1886,8 @@ public:
     {
         Lex();
         SQObject id = Expect(TK_IDENTIFIER);
-        CheckDuplicateLocalIdentifier(id, _SC("Enum"), global);
+        bool ignoreGlobalConst = global && !(_fs->lang_features & LF_FORBID_GLOBAL_CONST_REWRITE);
+        CheckDuplicateLocalIdentifier(id, _SC("Enum"), ignoreGlobalConst);
 
         Expect(_SC('{'));
 

@@ -110,6 +110,14 @@ HSQOBJECT sq_geterrorhandler(HSQUIRRELVM v)
 }
 
 
+void sq_forbidglobalconstrewrite(HSQUIRRELVM v, SQBool on)
+{
+    if (on)
+        _ss(v)->defaultLangFeatures |= LF_FORBID_GLOBAL_CONST_REWRITE;
+    else
+        _ss(v)->defaultLangFeatures &= ~LF_FORBID_GLOBAL_CONST_REWRITE;
+}
+
 void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook)
 {
     v->_debughook_native = hook;
