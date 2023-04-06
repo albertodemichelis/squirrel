@@ -173,7 +173,7 @@ VarTrace * SQTable::GetVarTracePtr(const SQObjectPtr &key)
 #endif
 
 
-bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val  VT_DECL_ARG)
+bool SQTable::NewSlot(const SQObjectPtr &__restrict key,const SQObjectPtr &__restrict val  VT_DECL_ARG)
 {
     assert(sq_type(key) != OT_NULL);
     SQHash h = HashObj(key) & _numofnodes_minus_one;
