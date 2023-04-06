@@ -312,16 +312,9 @@ struct SQObjectPtr : public SQObject
 
 inline void _Swap(SQObject &a,SQObject &b)
 {
-    SQObjectType tOldType = a._type;
-    SQObjectFlags fOldFlags = a._flags;
-    SQObjectValue unOldVal = a._unVal;
-
-    a._type = b._type;
-    a._flags = b._flags;
-    a._unVal = b._unVal;
-    b._type = tOldType;
-    b._flags = fOldFlags;
-    b._unVal = unOldVal;
+    SQObject t = a;
+    a = b;
+    b = t;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
