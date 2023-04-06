@@ -211,23 +211,17 @@ struct SQObjectPtr : public SQObject
 {
     SQObjectPtr()
     {
-        SQ_OBJECT_RAWINIT()
+        memset(this, 0, sizeof(SQObjectPtr));
         _type=OT_NULL;
-        _flags=0;
-        _unVal.pUserPointer=NULL;
     }
     SQObjectPtr(const SQObjectPtr &__restrict o)
     {
-        _type = o._type;
-        _flags = o._flags;
-        _unVal = o._unVal;
+        memcpy(this, &o, sizeof(o));
         __AddRef(_type,_unVal);
     }
     SQObjectPtr(const SQObject &__restrict o)
     {
-        _type = o._type;
-        _flags = o._flags;
-        _unVal = o._unVal;
+        memcpy(this, &o, sizeof(o));
         __AddRef(_type,_unVal);
     }
     _REF_TYPE_DECL(OT_TABLE,SQTable,pTable)
@@ -250,10 +244,10 @@ struct SQObjectPtr : public SQObject
 
     SQObjectPtr(bool bBool)
     {
-        SQ_OBJECT_RAWINIT()
+        memset(this, 0, sizeof(SQObjectPtr));
         _type = OT_BOOL;
-        _flags = 0;
-        _unVal.nInteger = bBool?1:0;
+        if (bBool)
+            _unVal.nInteger = 1;
     }
     inline SQObjectPtr& operator=(bool b)
     {
@@ -276,9 +270,7 @@ struct SQObjectPtr : public SQObject
         SQObjectValue unOldVal;
         tOldType=_type;
         unOldVal=_unVal;
-        _unVal = obj._unVal;
-        _type = obj._type;
-        _flags = obj._flags;
+        memcpy(this, &obj, sizeof(SQObjectPtr));
         __AddRef(_type,_unVal);
         __Release(tOldType,unOldVal);
         return *this;
@@ -289,9 +281,7 @@ struct SQObjectPtr : public SQObject
         SQObjectValue unOldVal;
         tOldType=_type;
         unOldVal=_unVal;
-        _unVal = obj._unVal;
-        _type = obj._type;
-        _flags = obj._flags;
+        memcpy(this, &obj, sizeof(SQObject));
         __AddRef(_type,_unVal);
         __Release(tOldType,unOldVal);
         return *this;
@@ -300,9 +290,8 @@ struct SQObjectPtr : public SQObject
     {
         SQObjectType tOldType = _type;
         SQObjectValue unOldVal = _unVal;
+        memset(this,0, sizeof(SQObjectPtr));
         _type = OT_NULL;
-        _flags = 0;
-        _unVal.raw = (SQRawObjectVal)NULL;
         __Release(tOldType ,unOldVal);
     }
     private:
