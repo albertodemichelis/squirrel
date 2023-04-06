@@ -109,7 +109,7 @@ SQTable *SQTable::Clone()
     return nt;
 }
 
-bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val)
+bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val) const
 {
     if(sq_type(key) == OT_NULL)
         return false;

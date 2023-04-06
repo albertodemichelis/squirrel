@@ -66,7 +66,7 @@ public:
     void Mark(SQCollectable **chain);
     SQObjectType GetType() {return OT_TABLE;}
 #endif
-    inline _HashNode *_GetStr(const SQRawObjectVal key, SQHash hash)
+    inline _HashNode *_GetStr(const SQRawObjectVal key, SQHash hash) const
     {
         _HashNode *n = &_nodes[hash];
         do{
@@ -76,7 +76,7 @@ public:
         }while((n = n->next));
         return NULL;
     }
-    inline _HashNode *_Get(const SQObjectPtr &key,SQHash hash)
+    inline _HashNode *_Get(const SQObjectPtr &key, SQHash hash) const
     {
         _HashNode *n = &_nodes[hash];
         do{
@@ -87,7 +87,7 @@ public:
         return NULL;
     }
     //for compiler use
-    inline bool GetStr(const SQChar* key,SQInteger keylen,SQObjectPtr &val)
+    inline bool GetStr(const SQChar* key,SQInteger keylen,SQObjectPtr &val) const
     {
         SQHash hash = _hashstr(key,keylen);
         _HashNode *n = &_nodes[hash & _numofnodes_minus_one];
@@ -106,7 +106,7 @@ public:
         }
         return false;
     }
-    bool Get(const SQObjectPtr &key,SQObjectPtr &val);
+    bool Get(const SQObjectPtr &key,SQObjectPtr &val) const;
 
     VT_CODE(VarTrace * GetVarTracePtr(const SQObjectPtr &key));
 
