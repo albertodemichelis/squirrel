@@ -177,10 +177,8 @@ struct SQObjectPtr;
     } \
     inline SQObjectPtr& operator=(_class *__restrict x) \
     {  \
-        SQObjectType tOldType; \
-        SQObjectValue unOldVal; \
-        tOldType=_type; \
-        unOldVal=_unVal; \
+        SQObjectType  tOldType = _type; \
+        SQObjectValue unOldVal = _unVal; \
         _type = type; \
         _flags = 0; \
         SQ_REFOBJECT_INIT() \
@@ -266,10 +264,8 @@ struct SQObjectPtr : public SQObject
 
     inline SQObjectPtr& operator=(const SQObjectPtr& __restrict obj)
     {
-        SQObjectType tOldType;
-        SQObjectValue unOldVal;
-        tOldType=_type;
-        unOldVal=_unVal;
+        SQObjectType  tOldType = _type;
+        SQObjectValue unOldVal =_unVal;
         memcpy(this, &obj, sizeof(SQObjectPtr));
         __AddRef(_type,_unVal);
         __Release(tOldType,unOldVal);
@@ -277,10 +273,8 @@ struct SQObjectPtr : public SQObject
     }
     inline SQObjectPtr& operator=(const SQObject& __restrict obj)
     {
-        SQObjectType tOldType;
-        SQObjectValue unOldVal;
-        tOldType=_type;
-        unOldVal=_unVal;
+        SQObjectType  tOldType = _type;
+        SQObjectValue unOldVal =_unVal;
         memcpy(this, &obj, sizeof(SQObject));
         __AddRef(_type,_unVal);
         __Release(tOldType,unOldVal);
@@ -288,7 +282,7 @@ struct SQObjectPtr : public SQObject
     }
     inline void Null()
     {
-        SQObjectType tOldType = _type;
+        SQObjectType  tOldType = _type;
         SQObjectValue unOldVal = _unVal;
         memset(this,0, sizeof(SQObjectPtr));
         _type = OT_NULL;
