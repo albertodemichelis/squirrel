@@ -39,7 +39,7 @@ static SQInteger math_abs(HSQUIRRELVM v)
 {
     SQInteger n;
     sq_getinteger(v,2,&n);
-    sq_pushinteger(v,(SQInteger)abs((int)n));
+    sq_pushinteger(v,(SQInteger)abs((SQInteger)n));
     return 1;
 }
 
