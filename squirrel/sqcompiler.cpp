@@ -1131,7 +1131,8 @@ public:
                     * for the latter. If we are not using the variable as a dref expr, generate
                     * the _OP_GET instruction.
                     */
-                    if (_fs->lang_features & LF_EXPLICIT_THIS)
+                    if ((_fs->lang_features & LF_EXPLICIT_THIS)
+                        && !(_fs->lang_features & LF_TOOLS_COMPILE_CHECK))
                         Error(_SC("Unknown variable [%s]"), _stringval(id));
 
                     _fs->PushTarget(0);

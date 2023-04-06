@@ -389,6 +389,7 @@ SQUIRREL_API void sq_free(SQAllocContext ctx, void *p,SQUnsignedInteger size);
 SQUIRREL_API SQRESULT sq_stackinfos(HSQUIRRELVM v,SQInteger level,SQStackInfos *si);
 SQUIRREL_API void sq_setdebughook(HSQUIRRELVM v);
 SQUIRREL_API void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook);
+SQUIRREL_API void sq_setcompilecheckmode(HSQUIRRELVM v, SQBool on);
 SQUIRREL_API void sq_forbidglobalconstrewrite(HSQUIRRELVM v, SQBool on);
 
 /*UTILITY MACRO*/
