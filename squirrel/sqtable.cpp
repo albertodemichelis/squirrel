@@ -109,16 +109,20 @@ SQTable *SQTable::Clone()
     return nt;
 }
 
-bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val) const
+SQTable::_HashNode *SQTable::_Get(const SQObjectPtr &key) const
 {
     if(sq_type(key) == OT_NULL)
-        return false;
+        return nullptr;
 
-    _HashNode *n;
     if (sq_type(key) == OT_STRING)
-        n = _GetStr(_rawval(key), _string(key)->_hash & _numofnodes_minus_one);
+        return _GetStr(_rawval(key), _string(key)->_hash & _numofnodes_minus_one);
     else
-        n = _Get(key, HashObj(key) & _numofnodes_minus_one);
+        return _Get(key, HashObj(key) & _numofnodes_minus_one);
+}
+
+bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val) const
+{
+    const _HashNode *n = _Get(key);
     if (n) {
         val = _realval(n->val);
         return true;
@@ -221,7 +225,7 @@ SQInteger SQTable::Next(bool getweakrefs,const SQObjectPtr &refpos, SQObjectPtr 
 
 bool SQTable::Set(const SQObjectPtr &key, const SQObjectPtr &val)
 {
-    _HashNode *n = _Get(key, HashObj(key) & _numofnodes_minus_one);
+    _HashNode *n = _Get(key);
     if (n) {
         n->val = val;
         VT_TRACE_SINGLE(n, val, _ss(this)->_root_vm);

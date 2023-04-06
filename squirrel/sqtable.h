@@ -106,6 +106,7 @@ public:
         }
         return false;
     }
+    _HashNode *_Get(const SQObjectPtr &key) const;
     bool Get(const SQObjectPtr &key,SQObjectPtr &val) const;
 
     VT_CODE(VarTrace * GetVarTracePtr(const SQObjectPtr &key));
