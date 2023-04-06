@@ -37,7 +37,7 @@ public:
 
     bool Get(const SQInteger nidx,SQObjectPtr &val)
     {
-        if(nidx>=0 && nidx<(SQInteger)_values.size()){
+        if((SQUnsignedInteger)nidx<(SQUnsignedInteger)_values.size()){
             SQObjectPtr &o = _values[nidx];
             val = _realval(o);
             return true;
@@ -46,7 +46,7 @@ public:
     }
     bool Set(const SQInteger nidx,const SQObjectPtr &val)
     {
-        if(nidx>=0 && nidx<(SQInteger)_values.size()){
+        if((SQUnsignedInteger)nidx<(SQUnsignedInteger)_values.size()){
             _values[nidx]=val;
             VT_TRACE(nidx, val, _ss(this)->_root_vm);
             return true;
