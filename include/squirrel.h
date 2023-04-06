@@ -377,6 +377,7 @@ SQUIRREL_API SQRESULT sq_resurrectunreachable(HSQUIRRELVM v);
 SQUIRREL_API SQRESULT sq_writeclosure(HSQUIRRELVM vm,SQWRITEFUNC writef,SQUserPointer up);
 SQUIRREL_API SQRESULT sq_readclosure(HSQUIRRELVM vm,SQREADFUNC readf,SQUserPointer up);
 
+SQUIRREL_API SQRESULT sq_limitthreadaccess(HSQUIRRELVM vm, int64_t tid);
 
 typedef struct SQAllocContextT * SQAllocContext;
 SQUIRREL_API SQAllocContext sq_getallocctx(HSQUIRRELVM v);

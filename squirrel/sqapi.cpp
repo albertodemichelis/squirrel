@@ -328,6 +328,7 @@ void sq_pushthread(HSQUIRRELVM v, HSQUIRRELVM thread)
 
 SQUserPointer sq_newuserdata(HSQUIRRELVM v,SQUnsignedInteger size)
 {
+    v->ValidateThreadAccess();
     SQUserData *ud = SQUserData::Create(_ss(v), size + SQ_ALIGNMENT);
     v->Push(ud);
     return (SQUserPointer)sq_aligning(ud + 1);
@@ -335,6 +336,7 @@ SQUserPointer sq_newuserdata(HSQUIRRELVM v,SQUnsignedInteger size)
 
 void sq_newtable(HSQUIRRELVM v)
 {
+    v->ValidateThreadAccess();
     v->Push(SQTable::Create(_ss(v), 0));
 }
 
@@ -374,6 +376,8 @@ SQBool sq_instanceof(HSQUIRRELVM v)
 
 SQRESULT sq_arrayappend(HSQUIRRELVM v,SQInteger idx)
 {
+    v->ValidateThreadAccess();
+
     sq_aux_paramscheck(v,2);
     SQObjectPtr *arr;
     _GETSAFE_OBJ(v, idx, OT_ARRAY,arr);
@@ -384,6 +388,8 @@ SQRESULT sq_arrayappend(HSQUIRRELVM v,SQInteger idx)
 
 SQRESULT sq_arraypop(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
 {
+    v->ValidateThreadAccess();
+
     sq_aux_paramscheck(v, 1);
     SQObjectPtr *arr;
     _GETSAFE_OBJ(v, idx, OT_ARRAY,arr);
@@ -397,6 +403,8 @@ SQRESULT sq_arraypop(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
 
 SQRESULT sq_arrayresize(HSQUIRRELVM v,SQInteger idx,SQInteger newsize)
 {
+    v->ValidateThreadAccess();
+
     sq_aux_paramscheck(v,1);
     SQObjectPtr *arr;
     _GETSAFE_OBJ(v, idx, OT_ARRAY,arr);
@@ -410,6 +418,8 @@ SQRESULT sq_arrayresize(HSQUIRRELVM v,SQInteger idx,SQInteger newsize)
 
 SQRESULT sq_arrayreverse(HSQUIRRELVM v,SQInteger idx)
 {
+    v->ValidateThreadAccess();
+
     sq_aux_paramscheck(v, 1);
     SQObjectPtr *o;
     _GETSAFE_OBJ(v, idx, OT_ARRAY,o);
@@ -430,6 +440,8 @@ SQRESULT sq_arrayreverse(HSQUIRRELVM v,SQInteger idx)
 
 SQRESULT sq_arrayremove(HSQUIRRELVM v,SQInteger idx,SQInteger itemidx)
 {
+    v->ValidateThreadAccess();
+
     sq_aux_paramscheck(v, 1);
     SQObjectPtr *arr;
     _GETSAFE_OBJ(v, idx, OT_ARRAY,arr);
@@ -939,6 +951,8 @@ SQInteger sq_cmp(HSQUIRRELVM v)
 
 SQRESULT sq_newslot(HSQUIRRELVM v, SQInteger idx, SQBool bstatic)
 {
+    v->ValidateThreadAccess();
+
     sq_aux_paramscheck(v, 3);
     SQObjectPtr &self = stack_get(v, idx);
     if(sq_type(self) == OT_TABLE || sq_type(self) == OT_CLASS) {
@@ -957,6 +971,8 @@ SQRESULT sq_newslot(HSQUIRRELVM v, SQInteger idx, SQBool bstatic)
 
 SQRESULT sq_deleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
 {
+    v->ValidateThreadAccess();
+
     sq_aux_paramscheck(v, 2);
     SQObjectPtr *self;
     _GETSAFE_OBJ(v, idx, OT_TABLE,self);
@@ -974,6 +990,8 @@ SQRESULT sq_deleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
 
 SQRESULT sq_set(HSQUIRRELVM v,SQInteger idx)
 {
+    v->ValidateThreadAccess();
+
     SQObjectPtr &self = stack_get(v, idx);
     if(v->Set(self, v->GetUp(-2), v->GetUp(-1),DONT_FALL_BACK)) {
         v->Pop(2);
@@ -984,6 +1002,8 @@ SQRESULT sq_set(HSQUIRRELVM v,SQInteger idx)
 
 SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx)
 {
+    v->ValidateThreadAccess();
+
     SQObjectPtr &self = stack_get(v, idx);
     SQObjectPtr &key = v->GetUp(-2);
     if(sq_type(key) == OT_NULL) {
@@ -1028,6 +1048,8 @@ SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx)
 
 SQRESULT sq_newmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
 {
+    v->ValidateThreadAccess();
+
     SQObjectPtr &self = stack_get(v, idx);
     if(sq_type(self) != OT_CLASS) return sq_throwerror(v, _SC("new member only works with classes"));
     SQObjectPtr &key = v->GetUp(-2);
@@ -1042,6 +1064,8 @@ SQRESULT sq_newmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
 
 SQRESULT sq_rawnewmember(HSQUIRRELVM v,SQInteger idx,SQBool bstatic)
 {
+    v->ValidateThreadAccess();
+
     SQObjectPtr &self = stack_get(v, idx);
     if(sq_type(self) != OT_CLASS) return sq_throwerror(v, _SC("new member only works with classes"));
     SQObjectPtr &key = v->GetUp(-2);
@@ -1087,6 +1111,8 @@ SQRESULT sq_setdelegate(HSQUIRRELVM v,SQInteger idx)
 
 SQRESULT sq_rawdeleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
 {
+    v->ValidateThreadAccess();
+
     sq_aux_paramscheck(v, 2);
     SQObjectPtr *self;
     _GETSAFE_OBJ(v, idx, OT_TABLE,self);
@@ -1110,6 +1136,8 @@ SQRESULT sq_rawdeleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
 
 SQRESULT sq_getdelegate(HSQUIRRELVM v,SQInteger idx)
 {
+    v->ValidateThreadAccess();
+
     SQObjectPtr &self=stack_get(v,idx);
     switch(sq_type(self)){
     case OT_TABLE:
@@ -1151,6 +1179,8 @@ SQRESULT sq_get_noerr(HSQUIRRELVM v,SQInteger idx)
 template <bool err_on_missing_slot>
 static SQRESULT sq_rawget_internal(HSQUIRRELVM v,SQInteger idx)
 {
+    v->ValidateThreadAccess();
+
     SQObjectPtr &self=stack_get(v,idx);
     SQObjectPtr &obj = v->GetUp(-1);
     switch(sq_type(self)) {
@@ -1290,6 +1320,8 @@ SQRESULT sq_resume(HSQUIRRELVM v,SQBool retval,SQBool invoke_err_handler)
 
 SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool invoke_err_handler)
 {
+    v->ValidateThreadAccess();
+
     SQObjectPtr res;
     if(!v->Call(v->GetUp(-(params+1)),params,v->_top-params,res,invoke_err_handler?true:false)){
         v->Pop(params); //pop args
@@ -1304,6 +1336,8 @@ SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool invoke_err_
 
 SQRESULT sq_tailcall(HSQUIRRELVM v, SQInteger nparams)
 {
+	v->ValidateThreadAccess();
+
 	SQObjectPtr &res = v->GetUp(-(nparams + 1));
 	if (sq_type(res) != OT_CLOSURE) {
 		return sq_throwerror(v, _SC("only closure can be tail called"));
@@ -1745,4 +1779,10 @@ void *sq_realloc(SQAllocContext ctx, void* p,SQUnsignedInteger oldsize,SQUnsigne
 void sq_free(SQAllocContext ctx, void *p,SQUnsignedInteger size)
 {
     SQ_FREE(ctx,p,size);
+}
+
+SQRESULT sq_limitthreadaccess(HSQUIRRELVM vm, int64_t tid)
+{
+    vm->check_thread_access = tid;
+    return SQ_OK;
 }

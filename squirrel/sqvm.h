@@ -153,6 +153,14 @@ public:
     SQObjectPtr &GetUp(SQInteger n);
     SQObjectPtr &GetAt(SQInteger n);
 
+    #if SQ_CHECK_THREAD >= SQ_CHECK_THREAD_LEVEL_DEEP
+    inline void ValidateThreadAccess() {
+        assert(!_get_current_thread_id_func || check_thread_access==0 || check_thread_access==_get_current_thread_id_func());
+    }
+    #else
+    inline void ValidateThreadAccess() {}
+    #endif
+
     SQObjectPtrVec _stack;
 
     SQInteger _top;
@@ -189,6 +197,9 @@ public:
     SQBool _suspended_root;
     SQInteger _suspended_target;
     SQInteger _suspended_traps;
+
+    int64_t check_thread_access = 0;
+
 };
 
 struct AutoDec{

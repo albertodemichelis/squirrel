@@ -777,6 +777,7 @@ SQVM::BooleanResult SQVM::ResolveBooleanResult(const SQObjectPtr &o)
 extern SQInstructionDesc g_InstrDesc[];
 bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQObjectPtr &outres, SQBool invoke_err_handler,ExecutionType et)
 {
+    ValidateThreadAccess();
 
 #if SQ_CHECK_THREAD == 1
     if (_get_current_thread_id_func)
@@ -2234,21 +2235,42 @@ void SQVM::Remove(SQInteger n) {
 }
 
 void SQVM::Pop() {
+    ValidateThreadAccess();
+
     _stack[--_top].Null();
 }
 
 void SQVM::Pop(SQInteger n) {
+    ValidateThreadAccess();
+
     for(SQInteger i = 0; i < n; i++){
         _stack[--_top].Null();
     }
 }
 
-void SQVM::PushNull() { _stack[_top++].Null(); }
-void SQVM::Push(const SQObjectPtr &o) { _stack[_top++] = o; }
+void SQVM::PushNull() {
+    ValidateThreadAccess();
+
+    _stack[_top++].Null();
+}
+void SQVM::Push(const SQObjectPtr &o) {
+    ValidateThreadAccess();
+
+    _stack[_top++] = o;
+}
 SQObjectPtr &SQVM::Top() { return _stack[_top-1]; }
-SQObjectPtr &SQVM::PopGet() { return _stack[--_top]; }
-SQObjectPtr &SQVM::GetUp(SQInteger n) { return _stack[_top+n]; }
-SQObjectPtr &SQVM::GetAt(SQInteger n) { return _stack[n]; }
+SQObjectPtr &SQVM::PopGet() {
+    ValidateThreadAccess();
+    return _stack[--_top];
+}
+SQObjectPtr &SQVM::GetUp(SQInteger n) {
+    ValidateThreadAccess();
+    return _stack[_top+n];
+}
+SQObjectPtr &SQVM::GetAt(SQInteger n) {
+    ValidateThreadAccess();
+    return _stack[n];
+}
 
 #ifdef _DEBUG_DUMP
 void SQVM::dumpstack(SQInteger stackbase,bool dumpall)
