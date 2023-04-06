@@ -14,7 +14,7 @@ applications like games.
 It is based on Squirrel Script language (http://www.squirrel-lang.org/), but modified to be safer, stricter and faster.
 Quirrel is not backward compatible with original Squirrel (see :ref:`Diff from original <diff_from_original>`)
 
-Quirrel offers a wide range of features like dynamic typing, delegation, higher
+Quirrel offers a wide range of features like dynamic typing, higher
 order functions, generators, tail recursion, exception handling, automatic memory
 management while fitting both compiler and virtual machine into about 6k lines of C++
 code.

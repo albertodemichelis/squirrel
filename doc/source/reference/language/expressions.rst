@@ -434,8 +434,7 @@ clone
     exp:= 'clone' exp
 
 Clone performs shallow copy of a table, array or class instance (copies all slots in the new object without
-recursion). If the source table has a delegate, the same delegate will be assigned as
-delegate (not copied) to the new table (see :ref:`Delegation <delegation>`).
+recursion).
 
 After the new object is ready the "_cloned" meta method is called (see :ref:`Metamethods <metamethods>`).
 

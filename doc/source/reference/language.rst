@@ -21,7 +21,6 @@ Project source code is available at https://github.com/GaijinEntertainment/quirr
    language/string_interpolation.rst
    language/threads.rst
    language/weak_references.rst
-   language/delegation.rst
    language/metamethods.rst
    language/builtin_functions.rst
    language/compiler_directives.rst

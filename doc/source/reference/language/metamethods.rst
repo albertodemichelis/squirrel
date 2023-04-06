@@ -5,32 +5,13 @@ Metamethods
 -----------
 
 Metamethods are a mechanism that allows the customization of certain aspects of the
-language semantics. Those methods are normal functions placed in a table
-parent(delegate) or class declaration; It is possible to change many aspects of a table/class instance behavior by just defining
+language semantics. Those methods are normal functions placed in a class declaration;
+It is possible to change many aspects of a table/class instance behavior by just defining
 a metamethod. Class objects (not instances) support only 2 metamethods ``_newmember, _inherited`` .
 
-For example when we use relational operators other than '==' on 2 tables, the VM will
-check if the table has a method in his parent called '_cmp'; if so it will call it to determine
-the relation between the tables.::
-
-    local comparable={
-        _cmp = function (other)
-        {
-            if(name<other.name)return -1;
-            if(name>other.name)return 1;
-            return 0;
-        }
-    }
-
-    local a={ name="Alberto" }.setdelegate(comparable);
-    local b={ name="Wouter" }.setdelegate(comparable);
-
-    if(a>b)
-        print("a>b")
-    else
-        print("b<=a");
-
-for classes the previous code become: ::
+For example when we use relational operators other than '==' on 2 instances, the VM will
+check if the class has a method in his parent called '_cmp'; if so it will call it to determine
+the relation between the objects.::
 
     class Comparable {
         constructor(n)
