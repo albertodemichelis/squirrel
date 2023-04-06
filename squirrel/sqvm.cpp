@@ -511,10 +511,46 @@ bool SQVM::PLOCAL_INC(SQInteger op,SQObjectPtr &target, SQObjectPtr &a, SQObject
 
 bool SQVM::DerefInc(SQInteger op,SQObjectPtr &target, SQObjectPtr &self, SQObjectPtr &key, SQObjectPtr &incr, bool postfix,SQInteger selfidx)
 {
+    if (self._flags & SQOBJ_FLAG_IMMUTABLE) {
+        Raise_Error(_SC("trying to modify immutable '%s'"),GetTypeName(self));
+        return false;
+    }
     SQObjectPtr tmp, tself = self, tkey = key;
-    if (!Get(tself, tkey, tmp, 0, selfidx)) { return false; }
+    SQObjectPtr *__restrict instanceValue = nullptr;
+    if (sq_type(tself) == OT_INSTANCE)
+    {
+        uint32_t memberIdx;
+        SQInstance*__restrict instance = _instance(tself);
+        const SQClass *__restrict classType = instance->_class;
+        const SQTable * __restrict members = classType->_members;
+        const SQTable::_HashNode *n = classType->_members->_Get(tkey);
+        if (n && _isfield(n->val))
+            instanceValue = instance->_values + _member_idx(n->val);
+    } else if (sq_type(tself) == OT_TABLE)
+    {
+        SQTable::_HashNode *node = _table(tself)->_Get(tkey);
+        if (node)
+            instanceValue = &node->val;
+    } else if (sq_type(tself) == OT_ARRAY){
+        if (sq_isnumeric(key)) {
+           SQArray * __restrict array = _array(tself);
+           uint32_t nidx  = tointeger(tkey);
+           if (nidx < (SQInteger)array->_values.size())
+              instanceValue = &array->_values[nidx];
+        }
+    }
+    if (instanceValue)
+        tmp = _realval(*instanceValue);
+    else
+    {
+        //delegates and OT_USERDATA option. Basically FallbackGet/FallbackSet
+        if (!Get(tself, tkey, tmp, 0, selfidx)) { return false; }
+    }
     _RET_ON_FAIL(ARITH_OP( op , target, tmp, incr))
-    if (!Set(tself, tkey, target,selfidx)) { return false; }
+    if (instanceValue)
+        *instanceValue = target;
+    else
+        if (!Set(tself, tkey, target,selfidx)) { return false; }
     if (postfix) target = tmp;
     return true;
 }

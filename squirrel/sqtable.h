@@ -25,6 +25,7 @@ inline SQHash HashObj(const SQObject &key)
 struct SQTable : public SQDelegable
 {
 private:
+    friend struct SQVM;
     struct _HashNode
     {
         _HashNode() { next = NULL; }
