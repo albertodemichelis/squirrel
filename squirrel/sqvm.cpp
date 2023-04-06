@@ -1095,7 +1095,7 @@ exception_restore:
                         }
                     }
                     if (node) {
-                        temp_reg = node->val;
+                        temp_reg = _realval(node->val);
                         propagate_immutable(from, temp_reg);
                     }
                     else {
