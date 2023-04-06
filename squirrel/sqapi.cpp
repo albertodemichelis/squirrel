@@ -841,7 +841,7 @@ SQRESULT sq_setclassudsize(HSQUIRRELVM v, SQInteger idx, SQInteger udsize)
 {
     SQObjectPtr &o = stack_get(v,idx);
     if(sq_type(o) != OT_CLASS) return sq_throwerror(v,_SC("the object is not a class"));
-    if(_class(o)->_locked) return sq_throwerror(v,_SC("the class is locked"));
+    if(_class(o)->isLocked()) return sq_throwerror(v,_SC("the class is locked"));
     _class(o)->_udsize = udsize;
     return SQ_OK;
 }

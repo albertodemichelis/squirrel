@@ -18,8 +18,8 @@ SQClass::SQClass(SQSharedState *ss,SQClass *base) :
     _typetag = 0;
     _hook = NULL;
     _udsize = 0;
-    _locked = false;
     _constructoridx = -1;
+    _lockedTypeId = 0;
     if(_base) {
         _constructoridx = _base->_constructoridx;
         _udsize = _base->_udsize;
@@ -55,7 +55,7 @@ bool SQClass::NewSlot(SQSharedState *ss,const SQObjectPtr &key,const SQObjectPtr
 {
     SQObjectPtr temp;
     bool belongs_to_static_table = sq_type(val) == OT_CLOSURE || sq_type(val) == OT_NATIVECLOSURE || bstatic;
-    if(_locked && !belongs_to_static_table)
+    if(isLocked() && !belongs_to_static_table)
         return false; //the class already has an instance so cannot be modified
     if(_members->Get(key,temp) && _isfield(temp)) //overrides the default value
     {
@@ -104,7 +104,7 @@ bool SQClass::NewSlot(SQSharedState *ss,const SQObjectPtr &key,const SQObjectPtr
 
 SQInstance *SQClass::CreateInstance()
 {
-    if(!_locked) Lock();
+    if(!isLocked()) Lock();
     return SQInstance::Create(_opt_ss(this),this);
 }
 

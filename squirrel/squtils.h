@@ -21,6 +21,10 @@ void sq_vm_free(SQAllocContext ctx, void *p,SQUnsignedInteger size);
 
 #define sq_aligning(v) (((size_t)(v) + (SQ_ALIGNMENT-1)) & (~(SQ_ALIGNMENT-1)))
 
+#ifndef G_STATIC_ASSERT
+#define G_STATIC_ASSERT(x) if (sizeof(char[2 * ((x) ? 1 : 0) - 1])); else
+#endif
+
 //sqvector mini vector class, supports objects by value
 template<typename T> class sqvector
 {

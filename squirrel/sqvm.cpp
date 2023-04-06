@@ -1810,7 +1810,7 @@ bool SQVM::NewSlot(const SQObjectPtr &self,const SQObjectPtr &key,const SQObject
         break;}
     case OT_CLASS:
         if(!_class(self)->NewSlot(_ss(this),key,val,bstatic)) {
-            if(_class(self)->_locked) {
+            if(_class(self)->isLocked()) {
                 Raise_Error(_SC("trying to modify a class that has already been instantiated"));
                 return false;
             }
