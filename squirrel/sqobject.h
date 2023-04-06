@@ -166,7 +166,7 @@ struct SQObjectPtr;
 #endif
 
 #define _REF_TYPE_DECL(type,_class,sym) \
-    SQObjectPtr(_class * x) \
+    SQObjectPtr(_class * __restrict x) \
     { \
         SQ_OBJECT_RAWINIT() \
         _type=type; \
@@ -175,7 +175,7 @@ struct SQObjectPtr;
         assert(_unVal.pTable); \
         _unVal.pRefCounted->_uiRef++; \
     } \
-    inline SQObjectPtr& operator=(_class *x) \
+    inline SQObjectPtr& operator=(_class *__restrict x) \
     {  \
         SQObjectType tOldType; \
         SQObjectValue unOldVal; \
@@ -216,14 +216,14 @@ struct SQObjectPtr : public SQObject
         _flags=0;
         _unVal.pUserPointer=NULL;
     }
-    SQObjectPtr(const SQObjectPtr &o)
+    SQObjectPtr(const SQObjectPtr &__restrict o)
     {
         _type = o._type;
         _flags = o._flags;
         _unVal = o._unVal;
         __AddRef(_type,_unVal);
     }
-    SQObjectPtr(const SQObject &o)
+    SQObjectPtr(const SQObject &__restrict o)
     {
         _type = o._type;
         _flags = o._flags;
@@ -270,7 +270,7 @@ struct SQObjectPtr : public SQObject
         __Release(_type,_unVal);
     }
 
-    inline SQObjectPtr& operator=(const SQObjectPtr& obj)
+    inline SQObjectPtr& operator=(const SQObjectPtr& __restrict obj)
     {
         SQObjectType tOldType;
         SQObjectValue unOldVal;
@@ -283,7 +283,7 @@ struct SQObjectPtr : public SQObject
         __Release(tOldType,unOldVal);
         return *this;
     }
-    inline SQObjectPtr& operator=(const SQObject& obj)
+    inline SQObjectPtr& operator=(const SQObject& __restrict obj)
     {
         SQObjectType tOldType;
         SQObjectValue unOldVal;
