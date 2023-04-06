@@ -996,7 +996,33 @@ exception_restore:
                             SQ_THROW();
                         }
                     }
-                } else
+                }
+                else if (sqType == OT_TABLE &&  !(from._flags & SQOBJ_FLAG_IMMUTABLE))//for wrong access go to normal Set
+                {
+                    SQTable *__restrict tbl = _table(from);
+                    uint64_t cid = tbl->_classTypeId;
+                    SQTable::_HashNode *node = nullptr;
+
+                    if (SQ_LIKELY(cid)) {
+                        if (SQ_LIKELY((cid & TBL_CLASS_CLASS_MASK) == (hint & TBL_CLASS_CLASS_MASK))) {
+                            node = tbl->GetNodeFromTypeHint(hint, key);
+                        } else {
+                            node = tbl->_GetStr(_rawval(key), _string(key)->_hash & tbl->_numofnodes_minus_one);
+                            if (SQ_LIKELY(node)) {
+                                size_t nodeIdx = node - tbl->_nodes;
+                                assert(nodeIdx <= TBL_CLASS_TYPE_MEMBER_MASK);
+                                *hintP = ((cid & TBL_CLASS_CLASS_MASK) | nodeIdx);
+                            }
+                        }
+                    }
+                    if (node) {
+                        node->val = val;
+                    } else {
+                        // fallback no unoptimized version
+                        if (!Set(from, key, val, arg1)) { SQ_THROW(); }
+                    }
+                }
+                else // default implementation
                 {
                     if (!Set(from, key, val, arg1)) { SQ_THROW(); }
                 }
@@ -1049,7 +1075,37 @@ exception_restore:
                        }
                     }
                     propagate_immutable(from, temp_reg);
-                } else
+                }
+                else if (sqType == OT_TABLE)
+                {
+                    SQTable *__restrict tbl = _table(from);
+                    uint64_t cid = tbl->_classTypeId;
+                    SQTable::_HashNode *node = nullptr;
+
+                    if (SQ_LIKELY(cid)) {
+                        if (SQ_LIKELY((cid & TBL_CLASS_CLASS_MASK) == (hint & TBL_CLASS_CLASS_MASK))) {
+                            node = tbl->GetNodeFromTypeHint(hint, key);
+                        } else {
+                            node = tbl->_GetStr(_rawval(key), _string(key)->_hash & tbl->_numofnodes_minus_one);
+                            if (SQ_LIKELY(node)) {
+                                size_t nodeIdx = node - tbl->_nodes;
+                                assert(nodeIdx <= TBL_CLASS_TYPE_MEMBER_MASK);
+                                *hintP = ((cid & TBL_CLASS_CLASS_MASK) | nodeIdx);
+                            }
+                        }
+                    }
+                    if (node) {
+                        temp_reg = node->val;
+                        propagate_immutable(from, temp_reg);
+                    }
+                    else {
+                        // fallback no unoptimized version
+                        if (!Get(from, key, temp_reg, getFlagsByOp, arg1)) {
+                            SQ_THROW();
+                        }
+                    }
+                }
+                else
                 {
                     if (!Get(from, key, temp_reg, getFlagsByOp, arg1)) {
                         SQ_THROW();

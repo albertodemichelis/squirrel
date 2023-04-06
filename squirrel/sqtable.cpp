@@ -9,8 +9,30 @@ see copyright notice in squirrel.h
 
 #define _FAST_CLONE
 
-SQTable::SQTable(SQSharedState *ss,SQInteger nInitialSize) :
-    _alloc_ctx(ss->_alloc_ctx)
+
+
+#define CLASS_TYPE_HASH_INIT    14695981039346656037ul
+#define CLASS_TYPE_HASH_PRIME   1099511628211ul
+
+
+static inline uint64_t class_type_hash_update_1(uint64_t hashval, uint8_t x) {
+    return (hashval ^ x) * CLASS_TYPE_HASH_PRIME;
+}
+
+static inline uint64_t class_type_hash_update_4(uint64_t hashval, uint32_t x) {
+    // Unrolled FNV1
+    const uint8_t *bytes = (const uint8_t *)&x;
+    hashval = (hashval ^ bytes[0]) * CLASS_TYPE_HASH_PRIME;
+    hashval = (hashval ^ bytes[1]) * CLASS_TYPE_HASH_PRIME;
+    hashval = (hashval ^ bytes[2]) * CLASS_TYPE_HASH_PRIME;
+    hashval = (hashval ^ bytes[3]) * CLASS_TYPE_HASH_PRIME;
+    return hashval;
+}
+
+
+SQTable::SQTable(SQSharedState *ss,SQInteger nInitialSize)
+    : _alloc_ctx(ss->_alloc_ctx)
+    , _classTypeId(0)
 {
     SQInteger pow2size=MINPOWER2;
     while(nInitialSize>pow2size)pow2size=pow2size<<1;
@@ -30,6 +52,7 @@ void SQTable::Remove(const SQObjectPtr &key)
         VT_CLEAR_SINGLE(n);
         _usednodes--;
         Rehash(false);
+        _classTypeId = 0;
     }
 }
 
@@ -105,6 +128,7 @@ SQTable *SQTable::Clone()
         nt->NewSlot(key,val VT_CODE(VT_COMMA &_nodes[ridx].varTrace));
     }
 #endif
+    nt->_classTypeId = _classTypeId;
     nt->SetDelegate(_delegate);
     return nt;
 }
@@ -205,7 +229,25 @@ bool SQTable::NewSlot(const SQObjectPtr &key,const SQObjectPtr &val  VT_DECL_ARG
             mp->val = val;
             VT_CODE(if (var_trace_arg) mp->varTrace = *var_trace_arg);
             VT_TRACE_SINGLE(mp, val, _ss(this)->_root_vm);
-            _usednodes++;
+
+            // update class type id
+            if (sq_isstring(key) && (_numofnodes_minus_one < (1<<TBL_CLASS_TYPE_MEMBER_BITS))) {
+                if (_classTypeId != 0 || _usednodes==0) {
+                    uint8_t insertPos = mp - _nodes;
+                    _classTypeId = class_type_hash_update_1(_classTypeId ? _classTypeId : CLASS_TYPE_HASH_INIT, insertPos);
+
+                    // Use SQString address as identifier, strings are unique, immutable and strored in a table.
+                    // That means that all script strings share the same reference to SQString.
+                    // 32 provides more than realistic address range.
+                    uint32_t strIdBits = uint32_t( (uintptr_t(_string(key)) >> 3) & 0xFFFFFFFF );
+                    _classTypeId = class_type_hash_update_4(_classTypeId, strIdBits);
+                }
+            } else {
+                _classTypeId = 0;
+            }
+
+            ++_usednodes;
+
             return true;  /* OK; table still has a free place */
         }
         else if (_firstfree == _nodes) break;  /* cannot decrement from here */
@@ -265,5 +307,6 @@ void SQTable::Clear()
 {
     _ClearNodes();
     _usednodes = 0;
+    _classTypeId = 0;
     Rehash(true);
 }

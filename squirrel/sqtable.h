@@ -12,6 +12,10 @@
 
 #define hashptr(p)  (SQHash((SQInteger(p) >> 4)))
 
+#define TBL_CLASS_TYPE_MEMBER_BITS 5
+#define TBL_CLASS_TYPE_MEMBER_MASK ((1u<<TBL_CLASS_TYPE_MEMBER_BITS)-1)
+#define TBL_CLASS_CLASS_MASK ( (~(uint64_t(0))) ^ TBL_CLASS_TYPE_MEMBER_MASK )
+
 inline SQHash HashObj(const SQObject &key)
 {
     switch(sq_type(key)) {
@@ -39,8 +43,8 @@ private:
     uint32_t _numofnodes_minus_one;
     uint32_t _usednodes;
     SQAllocContext _alloc_ctx;
-
-///////////////////////////
+    uint64_t _classTypeId;
+    ///////////////////////
     void AllocNodes(SQInteger nSize);
     void Rehash(bool force);
     SQTable(SQSharedState *ss, SQInteger nInitialSize);
@@ -110,6 +114,19 @@ public:
     _HashNode *_Get(const SQObjectPtr &key) const;
     bool Get(const SQObjectPtr &key,SQObjectPtr &val) const;
     bool GetStrToInt(const SQObjectPtr &key,uint32_t &val) const;//for class members
+
+    inline _HashNode *GetNodeFromTypeHint(uint64_t hint, const SQObjectPtr &key) const {
+        size_t nodeIdx = size_t(hint & TBL_CLASS_TYPE_MEMBER_MASK);
+        if (nodeIdx > _numofnodes_minus_one)
+            assert(!"Node index is out of range");
+        else if (!sq_isstring(_nodes[nodeIdx].key))
+            assert(!"Node key is not a string");
+        else if (_string(_nodes[nodeIdx].key) != _string(key))
+            assert(!"Literal key mismatch");
+        else
+            return _nodes + nodeIdx;
+        return nullptr;
+    }
 
     VT_CODE(VarTrace * GetVarTracePtr(const SQObjectPtr &key));
 
