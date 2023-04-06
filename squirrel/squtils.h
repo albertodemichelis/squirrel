@@ -21,9 +21,32 @@ void sq_vm_free(SQAllocContext ctx, void *p,SQUnsignedInteger size);
 
 #define sq_aligning(v) (((size_t)(v) + (SQ_ALIGNMENT-1)) & (~(SQ_ALIGNMENT-1)))
 
-#ifndef G_STATIC_ASSERT
-#define G_STATIC_ASSERT(x) if (sizeof(char[2 * ((x) ? 1 : 0) - 1])); else
+#ifndef SQ_LIKELY
+  #if (defined(__GNUC__) && (__GNUC__ >= 3)) || defined(__clang__)
+    #if defined(__cplusplus)
+      #define SQ_LIKELY(x)   __builtin_expect(!!(x), true)
+      #define SQ_UNLIKELY(x) __builtin_expect(!!(x), false)
+    #else
+      #define SQ_LIKELY(x)   __builtin_expect(!!(x), 1)
+      #define SQ_UNLIKELY(x) __builtin_expect(!!(x), 0)
+    #endif
+  #else
+    #define SQ_LIKELY(x)   (x)
+    #define SQ_UNLIKELY(x) (x)
+  #endif
 #endif
+
+#define HAVE_STATIC_ASSERT() ((_MSC_VER >= 1600 && !defined(__INTEL_COMPILER)) || (__cplusplus > 199711L))
+
+#if !defined(SQ_STATIC_ASSERT) && HAVE_STATIC_ASSERT()
+#define SQ_STATIC_ASSERT(x) static_assert((x), "assertion failed: " #x)
+#endif
+
+#ifndef SQ_STATIC_ASSERT
+#define SQ_STATIC_ASSERT(x) if (sizeof(char[2*((x)?1:0)-1])) ; else
+#endif
+
+#undef HAVE_STATIC_ASSERT
 
 //sqvector mini vector class, supports objects by value
 template<typename T> class sqvector

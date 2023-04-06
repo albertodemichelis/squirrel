@@ -23,6 +23,13 @@
 #define SLOT_RESOLVE_STATUS_NO_MATCH   1
 #define SLOT_RESOLVE_STATUS_ERROR      2
 
+static inline void propagate_immutable(const SQObject &obj, SQObject &slot_val)
+{
+    if (sq_objflags(obj) & SQOBJ_FLAG_IMMUTABLE)
+        slot_val._flags |= SQOBJ_FLAG_IMMUTABLE;
+}
+
+
 bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2)
 {
     SQInteger res;
@@ -951,10 +958,106 @@ exception_restore:
                 if(arg0 != 0xFF) TARGET = STK(arg3);
                 continue;
             case _OP_DELETE: _GUARD(DeleteSlot(STK(arg1), STK(arg2), TARGET)); continue;
+            case _OP_SET_LITERAL: {
+                uint64_t *__restrict hintP = ((uint64_t*__restrict )(ci->_ip++));
+                uint64_t hint = *hintP;
+                const SQObjectPtr &from = STK(arg1), &__restrict key = STK(arg2), &val = STK(arg3);
+                auto sqType = sq_type(from);
+                if (sqType == OT_INSTANCE && !(from._flags & SQOBJ_FLAG_IMMUTABLE))//for wrong access go to normal Set
+                {
+                    SQInstance *__restrict instance = _instance(from);
+                    const SQClass *__restrict classType = instance->_class;
+                    uint32_t memberIdx;
+                    //todo:key is string literal, so we better store it's index in literal, or it's hash, rather than use SQObjectPtr from generated previous LOAD command
+                    const SQTable *__restrict members = classType->_members;
+                    //some class ID. Ideally it is 32bit key, which is correct only when locked
+                    //we can achieve that. When unlocked - class has _locked == 0. When _locked != 0, it is class Index+1 in VM (can be just some hash_set, or even just 32 bit hash from pointer)
+                    //however, right now we rely on 40 bit hint - which is class pointer. still working good
+                    const uint64_t classTypeId = classType->lockedTypeId();
+                    if (SQ_LIKELY(classTypeId && SQClass::classTypeFromHint(hint) == classTypeId))
+                    {
+                        memberIdx = uint32_t(hint>>uintptr_t(SQClass::CLASS_BITS));
+                        //todo: validate cache in debug build!
+                        //val = hintedMemberIdx ? members->_nodex + hintedMemberIdx-1 : nullptr;
+                    } else
+                    {
+                        //this is optimized version, can be just memberIdx = members->Get(key, tmp_reg) ? _integer(tmp_reg) : 0u; memberIdx = _isfieldi(memberIdx) ? memberIdx : 0u;
+                        if (!members->GetStrToInt(key, memberIdx) || !_isfieldi(memberIdx))
+                            memberIdx = 0u;
+                        //store hint back
+                        *hintP = ((uint64_t(memberIdx)<<uintptr_t(SQClass::CLASS_BITS))|classTypeId);
+                    }
+                    if (SQ_LIKELY(memberIdx != 0u))
+                    {
+                        instance->SetMemberField(memberIdx, val);
+                    } else {
+                        if (SQ_UNLIKELY(FallBackSet(from,key,val) != SLOT_RESOLVE_STATUS_OK)) {
+                            Raise_IdxError(key);
+                            SQ_THROW();
+                        }
+                    }
+                } else
+                {
+                    if (!Set(from, key, val, arg1)) { SQ_THROW(); }
+                }
+                if (arg0 != 0xFF) TARGET = val;
+                continue;
+            }
             case _OP_SET:
                 if (!Set(STK(arg1), STK(arg2), STK(arg3),arg1)) { SQ_THROW(); }
                 if (arg0 != 0xFF) TARGET = STK(arg3);
                 continue;
+            case _OP_GET_LITERAL:{
+                uint64_t *__restrict hintP = ((uint64_t*__restrict )(ci->_ip++));
+                uint64_t hint = *hintP;
+                const SQUnsignedInteger getFlagsByOp = GET_FLAG_NO_DEF_DELEGATE;
+                const SQObjectPtr &__restrict from = STK(arg1), &__restrict key = STK(arg2);
+                auto sqType = sq_type(from);
+
+                //Or we can disallow table access by table.key
+                if (sqType == OT_INSTANCE)
+                {
+                    const SQInstance *__restrict instance = _instance(from);
+                    const SQClass *__restrict classType = instance->_class;
+                    uint32_t memberIdx;
+                    //todo:key is string literal, so we better store it's index in literal, or it's hash, rather than use SQObjectPtr from generated previous LOAD command
+                    const SQTable *__restrict members = classType->_members;
+                    //some class ID. Ideally it is 32bit key, which is correct only when locked
+                    //we can achieve that. When unlocked - class has _locked == 0. When _locked != 0, it is class Index+1 in VM (can be just some hash_set, or even just 32 bit hash from pointer)
+                    //however, right now we rely on 40 bit hint - which is class pointer. still working good
+                    const uint64_t classTypeId = classType->lockedTypeId();
+                    if (SQ_LIKELY(classTypeId && SQClass::classTypeFromHint(hint) == classTypeId))
+                    {
+                        memberIdx = uint32_t(hint>>uintptr_t(SQClass::CLASS_BITS));
+                        //todo: validate cache in debug build!
+                        //val = hintedMemberIdx ? members->_nodex + hintedMemberIdx-1 : nullptr;
+                    } else
+                    {
+                        //this is optimized version, can be just memberIdx = members->Get(key, tmp_reg) ? _integer(tmp_reg) : 0u;
+                        if (!members->GetStrToInt(key, memberIdx))
+                            memberIdx = 0u;
+                        //store hint back
+                        *hintP = ((uint64_t(memberIdx)<<uintptr_t(SQClass::CLASS_BITS))|classTypeId);
+                    }
+                    if (SQ_LIKELY(memberIdx != 0u))
+                    {
+                        instance->GetMember(memberIdx, temp_reg);
+                    } else {
+                       if (SQ_UNLIKELY(FallBackGet(from,key,temp_reg) != SLOT_RESOLVE_STATUS_OK)) {
+                           Raise_IdxError(key);
+                           SQ_THROW();
+                       }
+                    }
+                    propagate_immutable(from, temp_reg);
+                } else
+                {
+                    if (!Get(from, key, temp_reg, getFlagsByOp, arg1)) {
+                        SQ_THROW();
+                    }
+                }
+                _Swap(TARGET,temp_reg);//TARGET = temp_reg;
+                continue;
+            }
             case _OP_GET:{
                 SQUnsignedInteger getFlagsByOp = (arg3 & OP_GET_FLAG_ALLOW_DEF_DELEGATE) ? 0 : GET_FLAG_NO_DEF_DELEGATE;
                 if (arg3 & OP_GET_FLAG_NO_ERROR) {
@@ -1519,12 +1622,6 @@ bool SQVM::GetVarTrace(const SQObjectPtr &self, const SQObjectPtr &key, char * b
   return false;
 
 #endif
-}
-
-static void propagate_immutable(const SQObject &obj, SQObject &slot_val)
-{
-    if (sq_objflags(obj) & SQOBJ_FLAG_IMMUTABLE)
-        slot_val._flags |= SQOBJ_FLAG_IMMUTABLE;
 }
 
 bool SQVM::Get(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &dest, SQUnsignedInteger getflags, SQInteger selfidx)

@@ -13,7 +13,7 @@ struct SQClassMember {
 
 typedef sqvector<SQClassMember> SQClassMemberVec;
 
-#define MEMBER_MAX_COUNT_BIT_SHIFT 24
+#define MEMBER_MAX_COUNT_BIT_SHIFT 22
 #define MEMBER_TYPE_FIELD (0x01<<MEMBER_MAX_COUNT_BIT_SHIFT)
 #define MEMBER_TYPE_METHOD (0x02<<MEMBER_MAX_COUNT_BIT_SHIFT)
 #define MEMBER_MAX_COUNT ((1<<MEMBER_MAX_COUNT_BIT_SHIFT)-1)
@@ -73,7 +73,7 @@ public:
     bool isLocked() const {return _lockedTypeId != 0;}
     static uint64_t classTypeFromHint(uint64_t hint)
     {
-      G_STATIC_ASSERT(sizeof(SQClass)>=256);
+      SQ_STATIC_ASSERT(sizeof(SQClass)>=256);
       return hint&((1ull<<uint64_t(CLASS_BITS)) - 1);
     }
     uint64_t currentHint() const {return classTypeFromHint(uintptr_t(this)>>uintptr_t(8));}

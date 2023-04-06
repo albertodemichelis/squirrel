@@ -130,6 +130,17 @@ bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val) const
     return false;
 }
 
+bool SQTable::GetStrToInt(const SQObjectPtr &key,uint32_t &val) const//for class members
+{
+    assert(sq_type(key) == OT_STRING);
+    const _HashNode *n = _GetStr(_rawval(key), _string(key)->_hash & _numofnodes_minus_one);
+    if (!n)
+      return false;
+    assert(sq_type(n->val) == OT_INTEGER);
+    val = _integer(n->val);
+    return true;
+}
+
 #if SQ_VAR_TRACE_ENABLED == 1
 VarTrace * SQTable::GetVarTracePtr(const SQObjectPtr &key)
 {

@@ -38,6 +38,7 @@ enum AppendArrayType {
 
 
 #define SQ_OPCODES_LIST \
+    SQ_OPCODE(_OP_DATA_NOP) \
     SQ_OPCODE(_OP_LINE) \
     SQ_OPCODE(_OP_LOAD) \
     SQ_OPCODE(_OP_LOADINT) \
@@ -53,6 +54,8 @@ enum AppendArrayType {
     SQ_OPCODE(_OP_DELETE) \
     SQ_OPCODE(_OP_SET) \
     SQ_OPCODE(_OP_GET) \
+    SQ_OPCODE(_OP_SET_LITERAL) \
+    SQ_OPCODE(_OP_GET_LITERAL) \
     SQ_OPCODE(_OP_EQ) \
     SQ_OPCODE(_OP_NE) \
     SQ_OPCODE(_OP_ADD) \

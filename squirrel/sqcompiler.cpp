@@ -28,6 +28,7 @@ struct SQExpState {
   SQInteger  epos;        /* expr. location on stack; -1 for OBJECT and BASE */
   bool       donot_get;   /* signal not to deref the next value */
   bool       is_assignable_var; // for LOCAL and OUTER
+  bool       literal_field;
 
   bool isBinding() { return (etype==LOCAL || etype==OUTER) && !is_assignable_var; }
 };
@@ -563,6 +564,7 @@ public:
         _es.etype     = EXPR;
         _es.epos      = -1;
         _es.donot_get = false;
+        _es.literal_field = false;
         LogicalNullCoalesceExp();
 
         if (_token == TK_INEXPR_ASSIGNMENT && (expression_context == SQE_REGULAR || expression_context == SQE_FUNCTION_ARG))
@@ -580,6 +582,7 @@ public:
             SQInteger op = _token;
             SQInteger ds = _es.etype;
             SQInteger pos = _es.epos;
+            bool literalField = _es.literal_field;
             if(ds == EXPR) Error(_SC("can't assign to expression"));
             else if(ds == BASE) Error(_SC("'base' cannot be modified"));
             else if (_es.isBinding() && _token!=TK_INEXPR_ASSIGNMENT) Error(_SC("can't assign to binding (probably declaring using 'local' was intended, but 'let' was used)"));
@@ -627,7 +630,10 @@ public:
                     break;
                 case OBJECT:
                 case BASE:
-                    EmitDerefOp(_OP_SET);
+                    EmitDerefOp(literalField ? _OP_SET_LITERAL : _OP_SET);
+                    SQ_STATIC_ASSERT(_OP_DATA_NOP == 0);
+                    if (literalField)
+                        _fs->AddInstruction(SQOpcode(0),0,0,0,0);//hint
                     break;
                 case OUTER:
                     {
@@ -677,6 +683,7 @@ public:
         _es.etype     = EXPR;
         _es.epos      = -1;
         _es.donot_get = false;
+        _es.literal_field = false;
         (this->*f)();
         _es = es;
     }
@@ -876,13 +883,16 @@ public:
                     nextIsNullable = true;
                 }
                 pos = -1;
+                bool canBeLiteral = _es.etype!=BASE && _token == _SC('.');//todo: we can support def delegate and nullable also.
                 Lex();
 
                 SQObjectPtr constant = Expect(TK_IDENTIFIER);
                 if (CanBeDefaultDelegate(constant))
                     flags |= OP_GET_FLAG_ALLOW_DEF_DELEGATE;
+                _es.literal_field = canBeLiteral & !(flags & (OP_GET_FLAG_NO_ERROR|OP_GET_FLAG_ALLOW_DEF_DELEGATE));//todo: we can support def delegate and nullable also.
 
-                _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(constant));
+                SQInteger constantI = _fs->GetConstant(constant);
+                _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), constantI);
                 if(_es.etype==BASE) {
                     Emit2ArgsOP(_OP_GET, flags);
                     pos = _fs->TopTarget();
@@ -890,8 +900,16 @@ public:
                     _es.epos   = pos;
                 }
                 else {
+                    //todo:we can support null navigation as well
                     if(NeedGet()) {
-                        Emit2ArgsOP(_OP_GET, flags);
+                        if (!_es.literal_field)
+                        {
+                            Emit2ArgsOP(_OP_GET, flags);
+                        } else {
+                            Emit2ArgsOP(_OP_GET_LITERAL, flags);
+                            SQ_STATIC_ASSERT(_OP_DATA_NOP == 0);
+                            _fs->AddInstruction(SQOpcode(0),0,0,0,0);//hint
+                        }
                     }
                     _es.etype = OBJECT;
                 }
