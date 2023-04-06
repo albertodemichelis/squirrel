@@ -53,19 +53,29 @@ template<typename T> class sqvector
 {
 public:
     sqvector(SQAllocContext ctx)
+        : _vals(NULL)
+        ,  _size(0)
+        , _allocated(0)
+        , _alloc_ctx(ctx)
     {
-        _vals = NULL;
-        _size = 0;
-        _allocated = 0;
-        _alloc_ctx = ctx;
     }
     sqvector(const sqvector<T>& v)
+        : _vals(NULL)
+        , _size(0)
+        , _allocated(0)
+        , _alloc_ctx(v._alloc_ctx)
     {
         copy(v);
     }
     void copy(const sqvector<T>& v)
     {
-        if(_size) {
+        if (_alloc_ctx != v._alloc_ctx) {
+            _releasedata();
+            _allocated = 0;
+            _size = 0;
+            _alloc_ctx = v._alloc_ctx;
+        }
+        else if(_size) {
             resize(0); //destroys all previous stuff
         }
         //resize(v._size);
@@ -76,15 +86,10 @@ public:
             new ((void *)&_vals[i]) T(v._vals[i]);
         }
         _size = v._size;
-        _alloc_ctx = v._alloc_ctx;
     }
     ~sqvector()
     {
-        if(_allocated) {
-            for(SQUnsignedInteger i = 0; i < _size; i++)
-                _vals[i].~T();
-            SQ_FREE(_alloc_ctx, _vals, (_allocated * sizeof(T)));
-        }
+        _releasedata();
     }
     void reserve(SQUnsignedInteger newsize) { _realloc(newsize); }
     void resize(SQUnsignedInteger newsize, const T& fill = T())
@@ -145,6 +150,14 @@ private:
         newsize = (newsize > 0)?newsize:4;
         _vals = (T*)SQ_REALLOC(_alloc_ctx, _vals, _allocated * sizeof(T), newsize * sizeof(T));
         _allocated = newsize;
+    }
+    void _releasedata()
+    {
+        if(_allocated) {
+            for(SQUnsignedInteger i = 0; i < _size; i++)
+                _vals[i].~T();
+            SQ_FREE(_alloc_ctx, _vals, (_allocated * sizeof(T)));
+        }
     }
     SQUnsignedInteger _size;
     SQUnsignedInteger _allocated;
