@@ -1443,7 +1443,7 @@ exception_trap:
     return false;
 }
 
-bool SQVM::CreateClassInstance(SQClass *theclass, SQObjectPtr &inst, SQObjectPtr &constructor)
+bool SQVM::CreateClassInstance(SQClass *theclass, SQObjectPtr &__restrict inst, SQObjectPtr &__restrict constructor)
 {
     inst = theclass->CreateInstance();
     if(!theclass->GetConstructor(constructor)) {
