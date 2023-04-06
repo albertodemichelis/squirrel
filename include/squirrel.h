@@ -189,6 +189,7 @@ typedef void (*SQPRINTFUNCTION)(HSQUIRRELVM,const SQChar * ,...);
 typedef void (*SQDEBUGHOOK)(HSQUIRRELVM /*v*/, SQInteger /*type*/, const SQChar * /*sourcename*/, SQInteger /*line*/, const SQChar * /*funcname*/);
 typedef SQInteger (*SQWRITEFUNC)(SQUserPointer,SQUserPointer,SQInteger);
 typedef SQInteger (*SQREADFUNC)(SQUserPointer,SQUserPointer,SQInteger);
+typedef SQInteger (*SQGETTHREAD)();
 
 typedef SQInteger (*SQLEXREADFUNC)(SQUserPointer);
 
@@ -389,6 +390,7 @@ SQUIRREL_API void sq_free(SQAllocContext ctx, void *p,SQUnsignedInteger size);
 SQUIRREL_API SQRESULT sq_stackinfos(HSQUIRRELVM v,SQInteger level,SQStackInfos *si);
 SQUIRREL_API void sq_setdebughook(HSQUIRRELVM v);
 SQUIRREL_API void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook);
+SQUIRREL_API SQGETTHREAD sq_set_thread_id_function(HSQUIRRELVM v, SQGETTHREAD func);
 SQUIRREL_API void sq_setcompilecheckmode(HSQUIRRELVM v, SQBool on);
 SQUIRREL_API void sq_forbidglobalconstrewrite(HSQUIRRELVM v, SQBool on);
 

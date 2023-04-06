@@ -144,3 +144,7 @@ typedef char SQChar;
 #else
     #define _PRINT_INT_FMT _SC("%d")
 #endif
+
+#ifndef SQ_CHECK_THREAD
+#define SQ_CHECK_THREAD 0
+#endif

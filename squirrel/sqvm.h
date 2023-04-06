@@ -165,6 +165,8 @@ public:
     bool _debughook;
     SQDEBUGHOOK _debughook_native;
     SQObjectPtr _debughook_closure;
+    SQInteger _current_thread;
+    SQGETTHREAD _get_current_thread_id_func;
 
     SQObjectPtr temp_reg;
 

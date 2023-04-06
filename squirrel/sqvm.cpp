@@ -144,6 +144,8 @@ SQVM::SQVM(SQSharedState *ss) :
     _debughook = false;
     _debughook_native = NULL;
     _debughook_closure.Null();
+    _current_thread = -1;
+    _get_current_thread_id_func = NULL;
     _openouters = NULL;
     ci = NULL;
     _releasehook = NULL;
@@ -163,6 +165,7 @@ void SQVM::Finalize()
     _debughook = false;
     _debughook_native = NULL;
     _debughook_closure.Null();
+    _get_current_thread_id_func = NULL;
     temp_reg.Null();
     _callstackdata.resize(0);
     SQInteger size=_stack.size();
@@ -393,6 +396,8 @@ bool SQVM::Init(SQVM *friendvm, SQInteger stacksize)
         _debughook = friendvm->_debughook;
         _debughook_native = friendvm->_debughook_native;
         _debughook_closure = friendvm->_debughook_closure;
+        _current_thread = friendvm->_current_thread;
+        _get_current_thread_id_func = friendvm->_get_current_thread_id_func;
     }
 
 
@@ -772,6 +777,17 @@ SQVM::BooleanResult SQVM::ResolveBooleanResult(const SQObjectPtr &o)
 extern SQInstructionDesc g_InstrDesc[];
 bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQObjectPtr &outres, SQBool invoke_err_handler,ExecutionType et)
 {
+
+#if SQ_CHECK_THREAD == 1
+    if (_get_current_thread_id_func)
+    {
+        if (!_nnativecalls)
+            _current_thread = _get_current_thread_id_func();
+        else
+            assert(_current_thread == _get_current_thread_id_func());
+    }
+#endif
+
     if ((_nnativecalls + 1) > MAX_NATIVE_CALLS) { Raise_Error(_SC("Native stack overflow")); return false; }
     _nnativecalls++;
     AutoDec ad(&_nnativecalls);

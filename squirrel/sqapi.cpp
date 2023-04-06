@@ -110,6 +110,13 @@ HSQOBJECT sq_geterrorhandler(HSQUIRRELVM v)
 }
 
 
+SQGETTHREAD sq_set_thread_id_function(HSQUIRRELVM v, SQGETTHREAD func)
+{
+    SQGETTHREAD res = v->_get_current_thread_id_func;
+    v->_get_current_thread_id_func = func;
+    return res;
+}
+
 void sq_setcompilecheckmode(HSQUIRRELVM v, SQBool on)
 {
     if (on)
