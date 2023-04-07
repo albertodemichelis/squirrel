@@ -191,7 +191,7 @@ The regexp class
         local res = ex.capture(string);
         foreach(i,val in res)
         {
-            print(format("match number[%02d] %s\n",
+            println(format("match number[%02d] %s",
                     i,string.slice(val.begin,val.end))); //prints "Test"
         }
 

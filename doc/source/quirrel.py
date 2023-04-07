@@ -421,3 +421,21 @@ def setup(app):
         'parallel_read_safe': True,
         'parallel_write_safe': True,
     }
+
+myst_heading_anchors = 3
+
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+#    "linkify",
+    "replacements",
+    "smartquotes",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+]

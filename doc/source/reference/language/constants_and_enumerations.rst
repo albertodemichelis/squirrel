@@ -39,6 +39,17 @@ Constants will shadow any global slot with the same name( the global slot will r
 
     let x = foobar * 2
 
+..  Warning::
+  Constant values are initialized at compile-time when code is being generated, not executed.
+  And their values can be reassigned with new ones (also during compilation) while the same constant objects is being used in generated code.
+
+Example::
+
+  global const foo = 0
+  if ("foo" not in getconsttable()) 
+    global const foo = 1
+  print(foo) //prints 1
+
 ---------------
 Enumerations
 ---------------

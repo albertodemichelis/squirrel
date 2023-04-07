@@ -40,6 +40,8 @@ The following words are reserved and cannot be used as identifiers:
 +------------+------------+-----------+------------+------------+-------------+
 | instanceof | true       | false     | static     | __LINE__   | __FILE__    |
 +------------+------------+-----------+------------+------------+-------------+
+| let        |            |           |            |            |             |
++------------+------------+-----------+------------+------------+-------------+
 
 Keywords are covered in detail later in this document.
 
@@ -117,7 +119,7 @@ Pesudo BNF
 .. productionlist::
     IntegerLiteral : [1-9][0-9]* | '0x' [0-9A-Fa-f]+ | ''' [.]+ ''' | 0[0-7]+
     FloatLiteral : [0-9]+ '.' [0-9]+
-    FloatLiteral : [0-9]+ '.' 'e'|'E' '+'|'-' [0-9]+
+    FloatLiteralExp : [0-9]+ '.' 'e'|'E' '+'|'-' [0-9]+
     StringLiteral: '"'[.]* '"'
     VerbatimStringLiteral: '@''"'[.]* '"'
 

@@ -70,15 +70,14 @@ if/else statement
 
 Conditionally execute a statement depending on the result of an expression.::
 
-    if(a>b)
-        a=b;
+    if (a > b)
+        a = b
     else
-        b=a;
+        b = a
     ////
-    if(a==10)
-    {
-        b=a+b;
-        return a;
+    if ( a == 10 ) {
+        b = a + b
+        return a
     }
 
 ^^^^^^^^^^^^^^^^^
@@ -94,15 +93,14 @@ while statement
 
 Executes a statement while the condition is true.::
 
-    function testy(n)
-    {
-        local a=0;
-        while(a<n) a+=1;
+    function testy(n) {
 
-        while(1)
-        {
-            if(a<0) break;
-            a-=1;
+        local a = 0
+        while ( a < n ) a+=1
+
+        while(1) {
+            if ( a < 0 ) break;
+            a -= 1;
         }
     }
 
@@ -171,15 +169,15 @@ for
 
 Executes a statement as long as a condition is different than false.::
 
-    for(local a=0;a<10;a+=1)
+    for (local a=0;a<10;a+=1)
         println(a)
     //or
     glob <- null
-    for(glob=0;glob<10;glob+=1){
+    for (glob=0;glob<10;glob+=1) {
         println(glob)
     }
     //or
-    for(;;){
+    for (;;) {
         println("loops forever")
     }
 
@@ -200,11 +198,11 @@ be the result of 'resume' and the index the sequence number of the iteration sta
 from 0.::
 
     let a=[10,23,33,41,589,56]
-    foreach(idx,val in a)
+    foreach (idx, val in a)
         println($"index={idx} value={val}")
     //or
-    foreach(val in a)
-        println($"value={val}")
+    foreach (val in a)
+        println ($"value={val}")
 
 -------
 break
@@ -264,9 +262,9 @@ yield
 (see :ref:`Generators <generators>`).
 
 
----------------------------
-Local variables declaration
----------------------------
+--------------------------------------
+Local variables declaration ( local )
+--------------------------------------
 
 .. index::
     pair: Local variables declaration; statement
@@ -280,12 +278,12 @@ Local variables can be declared at any point in the program; they exist between 
 declaration to the end of the block where they have been declared.
 *EXCEPTION:* a local declaration statement is allowed as first expression in a for loop.::
 
-    for(local a=0;a<10;a+=1)
-        print(a);
+    for (local a=0; a<10; a+=1)
+        print(a)
 
----------------------------
-Named bindings declaration
----------------------------
+-----------------------------------
+Named bindings declaration ( let )
+-----------------------------------
 
 .. index::
     pair: Named bindings declaration; statement
@@ -299,6 +297,23 @@ Named bindings like Local variables can be declared at any point in the program;
 they exist between their
 declaration to the end of the block where they have been declared.
 Named bindings MUST be initialized.
+Named bindings works *exactly* as `const` in JavaScript ES6 (Note - big there is siginificant difference with `const` in Squirrel).
+The main difference between local variables and named bindings is that named bindings can't be reassigned.
+So if you see somewhere in function scope let foo =  you can be sure that foo will always reference object on initialization
+
+::
+
+  local foo = 2
+  foo = 3
+  print(foo) //3
+
+  let foo = 2
+  foo = 3 //error in script compilation
+
+.. note::
+  While named bindings looks like constants they do not provide immutability. Named bindings can reference mutable objects (like array or instance or table)
+
+  
 
 --------------------
 Function declaration

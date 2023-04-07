@@ -1,4 +1,4 @@
-.. compiler_directives:
+.. _compiler_directives:
 
 
 =========================

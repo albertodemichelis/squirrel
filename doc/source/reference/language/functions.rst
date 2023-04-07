@@ -20,35 +20,15 @@ Function declaration
 .. index::
     single: Function Declaration
 
-Functions are declared through the function expression::
+A local function can be declared with this function expression::
 
-    local a = function(a, b, c) { return a + b - c; }
-
-or with the syntactic sugar::
-
-    function ciao(a,b,c)
-    {
+    let function tuna(a,b,c) {
         return a+b-c;
     }
 
 that is equivalent to::
 
-    this.ciao <- function(a,b,c)
-    {
-        return a+b-c;
-    }
-
-a local function can be declared with this syntactic sugar::
-
-    local function tuna(a,b,c)
-    {
-        return a+b-c;
-    }
-
-that is equivalent to::
-
-    local tuna = function tuna(a,b,c)
-    {
+    let tuna = function tuna(a,b,c) {
         return a+b-c;
     }
 

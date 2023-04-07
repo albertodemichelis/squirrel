@@ -31,7 +31,9 @@ import time
 # ones.
 sys.path.insert(0, os.path.abspath('.'))
 extensions = [
-  'quirrel'
+  'quirrel',
+  'myst_parser',
+  'quirrel_pygment_lexer'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -64,7 +66,7 @@ version = u'4.6.0'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -275,7 +277,7 @@ texinfo_documents = [
 ]
 
 def setup(app):
-    app.add_stylesheet('custom.css')
+    app.add_css_file('custom.css')
 
 # Documents to append as an appendix to all manuals.
 #texinfo_appendices = []
