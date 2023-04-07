@@ -16,7 +16,7 @@ Contents:
    reference/index.rst
    stdlib/index.rst
    modules/index.rst
-
+   repl/index.rst
 
 Indices and tables
 ==================

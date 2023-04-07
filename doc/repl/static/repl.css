@@ -1,19 +1,8 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  text-decoration: none;
-  list-style: none;
-}
-body {
-  display: flex;
-  flex-direction: column;
+#repl-root {
+  display: none; /* shown by script after initialization */
   height: 100vh;
 }
-#main {
-  flex: 1;
-  display: none;
-}
+
 .editor-container {
   flex: 1;
   width: 100%;
@@ -25,10 +14,16 @@ body {
   margin-right: 0;
 }
 .editor-header {
+  margin: 0;
+  padding: 0;
   display: flex;
-  height: 48px;
-  padding: 4px 8px;
+  list-style: none;
 }
+
+.editor-header > li {
+  list-style: none;
+}
+
 .editor-header > li:last-child {
   margin-left: auto;
 }
@@ -67,6 +62,6 @@ body {
   flex: 1;
 }
 
-button {
+button#btn-run {
   padding: 0.25rem 1rem;
 }

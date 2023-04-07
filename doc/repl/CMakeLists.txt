@@ -15,10 +15,13 @@ target_link_libraries(sqjsrepl squirrel_static sqstdlib_static sqmodules_static)
 
 target_include_directories(squirrel_static PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../../include>"
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../../internal>"
 )
 
 target_include_directories(sqstdlib_static PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../../include>"
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../../internal>"
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../..>"
 )
 
 target_include_directories(sqmodules_static PUBLIC
@@ -33,5 +36,5 @@ target_include_directories(sqjsrepl PUBLIC
 set_target_properties(sqjsrepl PROPERTIES LINK_FLAGS "--bind -sFILESYSTEM=0")
 
 set_target_properties(sqjsrepl PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}"
+  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/static"
 )

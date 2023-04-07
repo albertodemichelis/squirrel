@@ -72,13 +72,14 @@ public:
   void  registerDateTimeLib();
 
   SqObjPtr *findNativeModule(const std::string &module_name);
+
+  void  bindRequireApi(HSQOBJECT bindings);
   void  bindBaseLib(HSQOBJECT bindings);
+
 private:
   // Script API
   //   require(file_name, must_exist=true)
   template<bool must_exist> static SQInteger sqRequire(HSQUIRRELVM vm);
-
-  void  bindRequireApi(HSQOBJECT bindings);
 
   void  resolveFileName(const char *fn, std::string &res);
   bool  checkCircularReferences(const char *resolved_fn, const char *orig_fn);
