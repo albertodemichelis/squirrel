@@ -147,6 +147,7 @@ SQVM::SQVM(SQSharedState *ss) :
     _current_thread = -1;
     _get_current_thread_id_func = NULL;
     _openouters = NULL;
+    _on_compile_file = NULL;
     ci = NULL;
     _releasehook = NULL;
     INIT_CHAIN();ADD_TO_CHAIN(&_ss(this)->_gc_chain,this);

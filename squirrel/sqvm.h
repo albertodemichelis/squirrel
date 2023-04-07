@@ -33,6 +33,8 @@ struct SQExceptionTrap{
 
 typedef sqvector<SQExceptionTrap> ExceptionsTraps;
 
+typedef void (* SQOnCompileFileCb)(HSQUIRRELVM, const SQChar *);
+
 struct SQVM : public CHAINABLE_OBJ
 {
     struct CallInfo{
@@ -197,6 +199,8 @@ public:
     SQBool _suspended_root;
     SQInteger _suspended_target;
     SQInteger _suspended_traps;
+
+    SQOnCompileFileCb _on_compile_file;
 
     int64_t check_thread_access = 0;
 

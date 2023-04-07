@@ -2169,6 +2169,10 @@ private:
 bool Compile(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
 {
     SQCompiler p(vm, rg, up, bindings, sourcename, raiseerror, lineinfo);
+
+    if (vm->_on_compile_file)
+      vm->_on_compile_file(vm, sourcename);
+
     return p.Compile(out);
 }
 
