@@ -3,23 +3,23 @@
 #include <vector>
 #include <string>
 #include <ctype.h>
-#include <map>
+#include <unordered_map>
 #include <array>
 #include <vector>
-#include <set>
+#include <unordered_set>
 #include <algorithm>
 #include <exception>
-#include <cctype>
 
 #include <fstream>
 #include <streambuf>
 
 #include <string.h>
 #include <limits.h>
+#include <time.h>
 
 #include "helpers/keyValueFile.h"
 
-#include "quirrel_parser.h"
+#include "compilation_context.h"
 #include "module_exports.h"
 #include "json_output.h"
 
@@ -28,7 +28,7 @@ using namespace std;
 using namespace sqimportparser;
 
 
-static bool variable_presense_check = true;
+//static bool variable_presense_check = true;
 
 struct AnalyzerMessage
 {
@@ -92,7 +92,7 @@ string full_ident_name(const std::vector<Token> & tokens, int begin_index)
 // returns pos of "local" or "let"
 const Token * get_var_declaration_keyword(const std::vector<Token> & tokens, const Token * var_dentifier_tok)
 {
-  if (var_dentifier_tok < &tokens[0] || var_dentifier_tok > &tokens[tokens.size() - 1])
+  if (var_dentifier_tok < &tokens[0] || var_dentifier_tok > &tokens.back())
     return nullptr;
 
   int begin_index = var_dentifier_tok - &tokens[0];
@@ -153,6 +153,7 @@ namespace settings
   vector<string> function_should_return_something_prefix;
   vector<string> function_forbidden_parent_dir;
   vector<string> function_modifies_object;
+  vector<string> function_must_be_called_from_root;
 
   void reset()
   {
@@ -296,6 +297,16 @@ namespace settings
       "insert",
       "apply",
       "clear",
+      "sort",
+      "reverse",
+      "resize",
+      "rawdelete",
+      "rawset",
+    };
+
+    function_must_be_called_from_root =
+    {
+      "keepref"
     };
   }
 
@@ -358,6 +369,9 @@ namespace settings
 
     for (auto && v : config.getValuesList("function_modifies_object"))
       function_modifies_object.push_back(v);
+
+    for (auto && v : config.getValuesList("function_must_be_called_from_root"))
+      function_must_be_called_from_root.push_back(v);
 
     return true;
   }
@@ -443,9 +457,9 @@ namespace trusted
   };
 
   bool trusted_identifiers;
-  map<string, set<string> > trusted_consts;
-  map<string, set<string> > trusted_locals;
-  map<string, set<string> > trusted_globals;
+  unordered_map<string, unordered_set<string> > trusted_consts;
+  unordered_map<string, unordered_set<string> > trusted_locals;
+  unordered_map<string, unordered_set<string> > trusted_globals;
 
   void clear()
   {
@@ -457,7 +471,7 @@ namespace trusted
 
   void add(TrustedContext ident_context, const string & parent, const string & child)
   {
-    map<string, set<string> > * m = nullptr;
+    unordered_map<string, unordered_set<string> > * m = nullptr;
     switch (ident_context)
     {
     case trusted::TR_CONST:
@@ -481,7 +495,7 @@ namespace trusted
     auto it = m->find(parent);
     if (it == m->end())
     {
-      set<string> s;
+      unordered_set<string> s;
       if (!child.empty())
         s.insert(child);
       m->insert(make_pair(parent, s));
@@ -528,19 +542,172 @@ namespace trusted
 };
 
 
+static string processing_file_name_str;
+const char * processing_file_name = "";
+
+
 // used in 2-pass scan
 static bool two_pass_scan = false;
 
 struct IdentTree
 {
-  map<string, IdentTree *> children;
+  unordered_map<string, IdentTree *> children;
   vector<string> extends; // path to class
 };
 
 IdentTree ident_root; // root
-set <string> ever_declared;
+unordered_set <string> ever_declared;
+unordered_set <string> persist_ids;
+unordered_set <string> globalConsts;
+unordered_set <string> globalIdentifiers;
+
 
 vector<pair<Node *, pair<Node *, bool> > > nearest_assignments; // name { expression, is_optional }
+
+unordered_map<string, moduleexports::ExportedIdentifier> local_visible_after_requires;
+unordered_map<string, moduleexports::ExportedIdentifier> root_visible_after_requires;
+unordered_map<string, moduleexports::ExportedIdentifier> const_visible_after_requires;
+
+bool use_colleced_idents = false;
+
+static bool contains(const vector<string> & arr, const string & value)
+{
+  return find(arr.begin(), arr.end(), value) != arr.end();
+}
+
+enum
+{
+  LOCATION_UNKNOWN = 0,
+  LOCATION_ROOT,
+  LOCATION_FIRST_LEVEL,
+};
+
+bool find_ident_in_collected(CompilationContext & ctx,
+  const char * ident, int location, moduleexports::ExportedIdentifier & exported_identifier)
+{
+  if (!use_colleced_idents)
+    return false;
+
+  unordered_map<string, moduleexports::ExportedIdentifier> * order[3] = { 0 };
+
+  if (location == LOCATION_ROOT)
+  {
+    order[0] = &root_visible_after_requires;
+    order[1] = nullptr;
+    order[2] = nullptr;
+  }
+  else if (location == LOCATION_UNKNOWN)
+  {
+    order[0] = &const_visible_after_requires;
+    order[1] = &local_visible_after_requires;
+    order[2] = &root_visible_after_requires;
+  }
+  else if (location == LOCATION_FIRST_LEVEL)
+  {
+    order[0] = &const_visible_after_requires;
+    order[1] = &local_visible_after_requires;
+    order[2] = (ctx.langFeatures & LF_EXPLICIT_ROOT_LOOKUP) ? &root_visible_after_requires : nullptr;
+  }
+  else
+    return false;
+
+  int cnt = -1;
+
+  for (auto * m : order)
+  {
+    cnt++;
+    if (!m)
+      continue;
+
+    auto it = m->find(ident);
+    if (it != m->end())
+    {
+      exported_identifier = it->second;
+      return true;
+    }
+  }
+  return false;
+}
+
+static void collect_idents_visible_after_requires(Lexer & lexer)
+{
+  const std::vector<Token> & tokens = lexer.tokens;
+  CompilationContext & ctx = lexer.getCompilationContext();
+
+  for (auto & ident : moduleexports::all_exported_identifiers_by_module["root table"])
+    root_visible_after_requires[ident.name] = ident;
+
+  for (auto & ident : moduleexports::all_exported_identifiers_by_module["const table"])
+    const_visible_after_requires[ident.name] = ident;
+
+  for (auto &ident : moduleexports::all_exported_to_root_const_from_modules)
+    if (ident.isConst)
+      const_visible_after_requires[ident.name] = ident;
+    else
+      root_visible_after_requires[ident.name] = ident;
+
+  for (int i = 2; i < int(tokens.size()) - 1; i++)
+  {
+    const char * require = nullptr;
+    bool pureRequire = false;
+    if (tokens[i].type == TK_STRING_LITERAL)
+    {
+      const char * dot = strrchr(tokens[i].u.s, '.');
+      if (dot && !strcmp(dot, ".nut"))
+        require = tokens[i].u.s;
+
+      if (tokens[i - 1].type == TK_LPAREN && tokens[i - 2].type == TK_IDENTIFIER)
+        if (!strcmp(tokens[i - 2].u.s, "require") || !strcmp(tokens[i - 2].u.s, "require_optional"))
+          if (tokens[i + 1].type == TK_RPAREN)
+          {
+            pureRequire = i + 2 >= int(tokens.size()) || (tokens[i + 2].type != TK_LPAREN && tokens[i + 2].type != TK_DOT);
+            require = tokens[i].u.s;
+          }
+    }
+
+    if (require)
+    {
+      vector<string> assignedTo;
+      if (i > 4 && tokens[i - 3].type == TK_NEWSLOT || tokens[i - 3].type == TK_ASSIGN)
+      {
+        if (tokens[i - 4].type == TK_IDENTIFIER && tokens[i - 5].type != TK_DOT)
+          assignedTo.push_back(tokens[i - 4].u.s);
+
+        if (tokens[i - 4].type == TK_RBRACE)
+        {
+          for (int j = i - 5; j > 0; j--)
+          {
+            if (tokens[j].type == TK_LBRACE)
+              break;
+            if (tokens[j].type == TK_IDENTIFIER)
+              assignedTo.push_back(tokens[j].u.s);
+          }
+        }
+      }
+
+      string absoluteFn = moduleexports::get_absolute_name(require);
+
+      auto exports = moduleexports::all_exported_identifiers_by_module.find(absoluteFn);
+      if (exports != moduleexports::all_exported_identifiers_by_module.end())
+        for (auto & ident : exports->second)
+        {
+          const string & identName = ident.name;
+          if (ident.isConst)
+            const_visible_after_requires[ident.name] = ident;
+          else if (ident.isRoot)
+            root_visible_after_requires[ident.name] = ident;
+          else if (contains(assignedTo, identName))
+            local_visible_after_requires[ident.name] = ident;
+          else if (identName == "=" && assignedTo.size() == 1 && pureRequire)
+          {
+            moduleexports::ExportedIdentifier newIdent = ident;
+            newIdent.name = assignedTo[0];
+            local_visible_after_requires[newIdent.name] = newIdent;
+          }
+        }
+    }
+  }
+}
 
 static void collect_ever_declared(Lexer & lexer)
 {
@@ -558,12 +725,21 @@ static void collect_ever_declared(Lexer & lexer)
       prev == TK_CLASS || prev == TK_FUNCTION || prev == TK_CONST))
     {
       if (prev != TK_LOCAL && prev2 != TK_LOCAL
-        && prev != TK_LET && prev2 != TK_LET
+        && prev != TK_LET && prev2 != TK_LET && prev2 != TK_NEWSLOT
         && prev != TK_DOT && prev != TK_LPAREN && prev != TK_COMMA)
       {
         ever_declared.insert(std::string(tokens[i].u.s));
       }
     }
+
+    if (tokens[i].type == TK_IDENTIFIER && next == TK_ASSIGN && prev2 == TK_GLOBAL && prev == TK_CONST)
+      globalConsts.insert(string(tokens[i].u.s));
+
+    if (tokens[i].type == TK_IDENTIFIER && next == TK_NEWSLOT && prev == TK_DOUBLE_COLON)
+      globalIdentifiers.insert(string(tokens[i].u.s));
+
+    if (tokens[i].type == TK_IDENTIFIER && next == TK_LBRACE && prev2 == TK_GLOBAL && prev == TK_ENUM)
+      globalIdentifiers.insert(string(tokens[i].u.s));
   }
 }
 
@@ -628,6 +804,10 @@ static bool global_collect_tree(Node * node, IdentTree * tree)
   if (!node || !tree)
     return false;
 
+  static vector<Node *> nodePath = { nullptr, nullptr, nullptr, nullptr };
+  nodePath.push_back(node);
+  struct OnExit { ~OnExit() { nodePath.pop_back(); } } onExit;
+
   if (node->nodeType == PNT_BINARY_OP && node->tok.type == TK_NEWSLOT)
   {
     vector<string> path = node_to_path(node->children[0]);
@@ -662,8 +842,12 @@ static bool global_collect_tree(Node * node, IdentTree * tree)
 
       if (cur->nodeType == PNT_FUNCTION)
       {
-        vector<string> path = node_to_path(cur->children[0]);
-        set_sub_tree_by_path(tree, nullptr, path);
+        if (nodePath[nodePath.size() - 2] && nodePath[nodePath.size() - 2]->tok.type != TK_NEWSLOT &&
+          nodePath[nodePath.size() - 2]->tok.type != TK_ASSIGN)
+        {
+          vector<string> path = node_to_path(cur->children[0]);
+          set_sub_tree_by_path(tree, nullptr, path);
+        }
       }
 
       if (cur->nodeType == PNT_GLOBAL_ENUM)
@@ -965,7 +1149,7 @@ class Analyzer
 
   vector<FunctionInfo> functionInfos;
 
-  set<const char *> requiredModuleNames;
+  unordered_set<const char *> requiredModuleNames;
 
 
   bool isNodeEquals(Node * a, Node * b)
@@ -1079,8 +1263,11 @@ class Analyzer
         return true;
 
     if (tree->nodeType == PNT_BINARY_OP)
-      if (tree->tok.type == TK_PLUSEQ || tree->tok.type == TK_MINUSEQ || tree->tok.type == TK_MULEQ || tree->tok.type == TK_DIVEQ)
+      if (tree->tok.type == TK_ASSIGN || tree->tok.type == TK_PLUSEQ || tree->tok.type == TK_MINUSEQ ||
+        tree->tok.type == TK_MULEQ || tree->tok.type == TK_DIVEQ)
+      {
         return true;
+      }
 
     for (size_t i = 0; i < tree->children.size(); i++)
       if (tree->children[i])
@@ -1101,6 +1288,16 @@ class Analyzer
 
     if (a->nodeType == PNT_ACCESS_MEMBER_IF_NOT_NULL || a->nodeType == PNT_FUNCTION_CALL_IF_NOT_NULL)
       return true;
+
+    if (a->nodeType == PNT_FUNCTION_CALL)
+    {
+      if (a->children[0]->nodeType == PNT_IDENTIFIER)
+      {
+        const char * name = a->children[0]->tok.u.s;
+        if (name && !strcmp(name, "require_optional"))
+          return true;
+      }
+    }
 
     if (a->nodeType == PNT_ACCESS_MEMBER || a->nodeType == PNT_FUNCTION_CALL)
       return isPotentialyNullable(a->children[0]);
@@ -1171,21 +1368,6 @@ class Analyzer
     }
   }
 
-  enum
-  {
-    RT_NOTHING = 1 << 0,
-    RT_NULL = 1 << 1,
-    RT_BOOL = 1 << 2,
-    RT_NUMBER = 1 << 3,
-    RT_STRING = 1 << 4,
-    RT_TABLE = 1 << 5,
-    RT_ARRAY = 1 << 6,
-    RT_CLOSURE = 1 << 7,
-    RT_FUNCTION_CALL = 1 << 8,
-    RT_UNRECOGNIZED = 1 << 9,
-    RT_THROW = 1 << 10,
-  };
-
   bool findFunctionReturnTypes(Node * node, unsigned & return_flags)  // returns 'all ways return value'
   {
     if (node->nodeType == PNT_RETURN)
@@ -1229,6 +1411,8 @@ class Analyzer
         return_flags |= RT_ARRAY;
       else if (val->nodeType == PNT_TABLE_CREATION)
         return_flags |= RT_TABLE;
+      else if (val->nodeType == PNT_CLASS || val->nodeType == PNT_LOCAL_CLASS)
+        return_flags |= RT_CLASS;
       else if (val->nodeType == PNT_LAMBDA)
         return_flags |= RT_CLOSURE;
       else if (val->nodeType == PNT_FUNCTION_CALL)
@@ -1421,6 +1605,18 @@ class Analyzer
 
   bool isWatchedVariable(const char * name)
   {
+    if (use_colleced_idents)
+    {
+      moduleexports::ExportedIdentifier ident;
+      if (find_ident_in_collected(ctx, name, LOCATION_UNKNOWN, ident))
+        for (string & field : ident.params)
+          if (field == "unsubscribe") // 99% looks like "Watched"
+            return true;
+    }
+
+    if (strstr(name, "Watch") != nullptr)
+      return true;
+
     for (size_t i = 0; i < lexer.tokens.size() - 1; i++)
       if (lexer.tokens[i].type == TK_IDENTIFIER && lexer.tokens[i].u.s == name) // it's ok to compare pointers in this case
       {
@@ -1433,23 +1629,26 @@ class Analyzer
               break;
 
             if (lexer.tokens[j].type == TK_IDENTIFIER &&
-              (!strcmp(lexer.tokens[j].u.s, "Watched") || !strcmp(lexer.tokens[j].u.s, "mkWatched")))
+              (!strcmp(lexer.tokens[j].u.s, "Watched") || strstr(lexer.tokens[j].u.s, "mk") == lexer.tokens[j].u.s))
             {
               return true;
             }
           }
         }
-        else if (lexer.tokens[i + 1].type == TK_DOT && lexer.tokens[i + 2].type == TK_IDENTIFIER)
+        else // if (!use_colleced_idents)
         {
-          const char * s = lexer.tokens[i + 2].u.s;
-          if (!strcmp(s, "update") || !strcmp(s, "value"))
+          if (lexer.tokens[i + 1].type == TK_DOT && lexer.tokens[i + 2].type == TK_IDENTIFIER)
+          {
+            const char * s = lexer.tokens[i + 2].u.s;
+            if (!strcmp(s, "update") || !strcmp(s, "value"))
+              return true;
+          }
+          else if (lexer.tokens[i + 1].type == TK_LPAREN &&
+            (lexer.tokens[i + 2].type == TK_TRUE || lexer.tokens[i + 2].type == TK_FALSE) &&
+            lexer.tokens[i + 3].type == TK_RPAREN)
+          {
             return true;
-        }
-        else if (lexer.tokens[i + 1].type == TK_LPAREN &&
-          (lexer.tokens[i + 2].type == TK_TRUE || lexer.tokens[i + 2].type == TK_FALSE) &&
-          lexer.tokens[i + 3].type == TK_RPAREN)
-        {
-          return true;
+          }
         }
       }
 
@@ -1495,7 +1694,8 @@ class Analyzer
       return;
 
     if (node->nodeType == PNT_FLOAT || node->nodeType == PNT_INTEGER || node->nodeType == PNT_BOOL ||
-      node->nodeType == PNT_STRING)
+      node->nodeType == PNT_STRING || node->nodeType == PNT_EXPRESSION_PAREN ||
+      node->nodeType == PNT_ARRAY_CREATION || node->nodeType == PNT_TABLE_CREATION)
     {
       ctx.warning("result-not-utilized", node->tok);
       return;
@@ -1670,7 +1870,7 @@ public:
       return;
     }
 
-    if (node->nodeType == PNT_LOCAL_VAR_DECLARATION)
+    if (node->nodeType == PNT_LOCAL_VAR_DECLARATION || node->nodeType == PNT_IMPORT_VAR_DECLARATION)
     {
       for (size_t i = 0; i < node->children.size(); i++)
       {
@@ -2076,13 +2276,13 @@ public:
       return true;
 
     if ((parent->nodeType == PNT_IF_ELSE || parent->nodeType == PNT_SWITCH_CASE || parent->nodeType == PNT_WHILE_LOOP) &&
-      nodePath[nodePath.size() - 1] != parent->children[0]) // not condition
+      nodePath.back() != parent->children[0]) // not condition
     {
       return true;
     }
 
     if ((parent->nodeType == PNT_FOR_EACH_LOOP || parent->nodeType == PNT_FOR_LOOP) &&
-      nodePath[nodePath.size() - 1] == parent->children[3])
+      nodePath.back() == parent->children[3])
     {
       return true;
     }
@@ -2193,26 +2393,15 @@ public:
 
   bool nodeCannotBeNull(Node * n)
   {
+    if (n->nodeType == PNT_UNARY_PRE_OP && n->tok.type == TK_CLONE) // (clone null) == null
+      return false;
+
     return (n->nodeType == PNT_BINARY_OP && n->tok.type != TK_NULLCOALESCE && n->tok.type != TK_MODULO) ||
         n->nodeType == PNT_UNARY_PRE_OP || n->nodeType == PNT_UNARY_POST_OP ||
         n->nodeType == PNT_INTEGER || n->nodeType == PNT_BOOL || n->nodeType == PNT_FLOAT ||
         n->nodeType == PNT_STRING || n->nodeType == PNT_ARRAY_CREATION ||
         n->nodeType == PNT_TABLE_CREATION || n->nodeType == PNT_LAMBDA || n->nodeType == PNT_FUNCTION ||
         n->nodeType == PNT_LOCAL_FUNCTION || n->nodeType == PNT_CLASS || n->nodeType == PNT_LOCAL_CLASS;
-  }
-
-
-  void minimizeName(string & s)
-  {
-    int len = s.length();
-    int to = 0;
-
-    for (int from = 0; from <= len; from++)
-      if (s[from] != '_')
-      {
-        s[to] = std::tolower(s[from]);
-        to++;
-      }
   }
 
 
@@ -2261,7 +2450,7 @@ public:
           if (p->children[0]->nodeType == PNT_IDENTIFIER)
           {
             string s = string(p->children[0]->tok.u.s);
-            minimizeName(s);
+            moduleexports::minimize_name(s);
 
             info.normalizedParamName.push_back(s);
             info.maxParams = i + 1;
@@ -2282,56 +2471,154 @@ public:
   }
 
 
-  void checkFunctionParams(Node * fn)
+  void checkFunctionParamsInLocalFile(Node * fn, bool & found_in_local_file)
   {
-    const char * functionName = fn->children[0]->tok.u.s;
+    found_in_local_file = false;
+    const char * functionName = "";
+    if (fn->children[0]->nodeType == PNT_ACCESS_MEMBER || fn->children[0]->nodeType == PNT_ACCESS_MEMBER_IF_NOT_NULL)
+    {
+      if (fn->children[0]->children[0]->nodeType == PNT_THIS)
+        functionName = fn->children[0]->children[1]->tok.u.s;
+    }
+    else if (fn->children[0]->nodeType == PNT_IDENTIFIER)
+      functionName = fn->children[0]->tok.u.s;
 
-    const IdentifierStruct * ident = getIdentifierStructPtr(functionName);
-    if (ident && (ident->declContext == DC_LOOP_VARIABLE || ident->declContext == DC_FUNCTION_PARAM))
-      return;
+    if (functionName[0])
+    {
+      const IdentifierStruct * ident = getIdentifierStructPtr(functionName);
+      if (ident && (ident->declContext == DC_LOOP_VARIABLE || ident->declContext == DC_FUNCTION_PARAM))
+        return;
 
-    int declLine = ident && ident->declaredAt ? ident->declaredAt->line : -1;
+      int declLine = ident && ident->declaredAt ? ident->declaredAt->line : -1;
 
-    for (auto && info : functionInfos)
-      if (!strcmp(info.functionName.c_str(), functionName))
-      {
-        if (declLine == -1 || abs(declLine - info.line) > 1 || declLine == fn->tok.line || ident->declContext == DC_TABLE_MEMBER)
-          continue;
-
-        int paramCount = fn->children.size() - 1;
-
-        if (paramCount < info.minParams || paramCount > info.maxParams)
-          if (!isWatchedVariable(functionName) && !(paramCount == 1 && isKwargFunction(functionName)))
-            ctx.warning("param-count", fn->tok, functionName, std::to_string(info.line).c_str());
-
-        for (int i = 1; i < int(fn->children.size()); i++)
+      for (auto && info : functionInfos)
+        if (!strcmp(info.functionName.c_str(), functionName))
         {
-          Node * param = fn->children[i];
-          if (!param)
+          if (declLine == -1 || abs(declLine - info.line) > 1 || declLine == fn->tok.line || ident->declContext == DC_TABLE_MEMBER)
             continue;
 
-          const char * callParamName = nullptr;
+          int paramCount = fn->children.size() - 1;
 
-          if (param->nodeType == PNT_UNARY_PRE_OP || param->nodeType == PNT_UNARY_POST_OP)
-            param = param->children[0];
+          if (paramCount < info.minParams || paramCount > info.maxParams)
+            if (!isWatchedVariable(functionName) && !((paramCount == 1 || paramCount == 2) && isKwargFunction(functionName)))
+              ctx.warning("param-count", fn->tok, functionName, "line", std::to_string(info.line).c_str());
 
-          if (param->nodeType == PNT_IDENTIFIER)
-            callParamName = param->tok.u.s;
-
-          if (callParamName)
+          for (int i = 1; i < int(fn->children.size()); i++)
           {
-            string s(callParamName);
-            minimizeName(s);
-            for (int j = 0; j < info.normalizedParamName.size(); j++)
-              if (j != i - 1)
-                if (!strcmp(s.c_str(), info.normalizedParamName[j].c_str()))
-                  if (!isWatchedVariable(functionName) && !(paramCount == 1 && isKwargFunction(functionName)))
-                    ctx.warning("param-pos", fn->tok, param->tok.u.s, std::to_string(info.line).c_str());
-          }
-        }
+            Node * param = fn->children[i];
+            if (!param)
+              continue;
 
-        break;
+            const char * callParamName = nullptr;
+
+            if (param->nodeType == PNT_UNARY_PRE_OP || param->nodeType == PNT_UNARY_POST_OP)
+              param = param->children[0];
+
+            if (param->nodeType == PNT_IDENTIFIER)
+              callParamName = param->tok.u.s;
+
+            if (callParamName && callParamName[0])
+            {
+              string s(callParamName);
+              moduleexports::minimize_name(s);
+              for (int j = 0; j < info.normalizedParamName.size(); j++)
+                if (j != i - 1)
+                  if (!strcmp(s.c_str(), info.normalizedParamName[j].c_str()))
+                    if (!isWatchedVariable(functionName) && !(paramCount == 1 && isKwargFunction(functionName)))
+                      ctx.warning("param-pos", fn->tok, param->tok.u.s, "line", std::to_string(info.line).c_str());
+            }
+          }
+
+          found_in_local_file = true;
+          break;
+        }
+    }
+  }
+
+  void checkFunctionParams(Node * fn, int from_scope)
+  {
+    const char *functionName = nullptr;
+    Node * functionNameNode = nullptr;
+    bool isRoot = false;
+
+    // 1-st level local function call
+    if (fn->children[0]->nodeType == PNT_IDENTIFIER)
+    {
+      functionName = fn->children[0]->tok.u.s;
+      functionNameNode = fn->children[0];
+    }
+
+    // global function call
+    if (fn->children[0]->nodeType == PNT_ACCESS_MEMBER && fn->children[0]->children[0]->nodeType == PNT_ROOT)
+    {
+      functionName = fn->children[0]->children[1]->tok.u.s;
+      functionNameNode = fn->children[0]->children[1];
+      isRoot = true;
+    }
+
+    if (!functionName)
+      return;
+
+    bool foundInLocalFile = false;
+    if (!isRoot)
+      checkFunctionParamsInLocalFile(fn, foundInLocalFile);
+    if (foundInLocalFile)
+      return;
+
+    if (!use_colleced_idents)
+      return;
+
+    moduleexports::ExportedIdentifier ident;
+    if (find_ident_in_collected(ctx, functionName, isRoot ? LOCATION_ROOT : LOCATION_FIRST_LEVEL, ident))
+    {
+      if (ident.typeMask != RT_CLOSURE)
+        return; // TODO: check arguments for class constructor
+
+      bool invalidParamCount = false;
+      string invalidParamName;
+      int paramCount = fn->children.size() - 1;
+
+      if (paramCount < ident.minParams || paramCount > ident.maxParams)
+        invalidParamCount = true;
+
+      for (int i = 1; i < int(fn->children.size()); i++)
+      {
+        Node * param = fn->children[i];
+        if (!param)
+          continue;
+
+        const char * callParamName = nullptr;
+
+        if (param->nodeType == PNT_UNARY_PRE_OP || param->nodeType == PNT_UNARY_POST_OP)
+          param = param->children[0];
+
+        if (param->nodeType == PNT_IDENTIFIER)
+          callParamName = param->tok.u.s;
+
+        if (callParamName && callParamName[0])
+        {
+          string s(callParamName);
+          moduleexports::minimize_name(s);
+          bool invalid = false;
+          for (int j = 0; j < int(ident.params.size()); j++)
+            if (j != i - 1)
+              if (!strcmp(s.c_str(), ident.params[j].c_str()))
+                ctx.warning("param-pos", fn->tok, callParamName, "module", ident.absoluteModuleName);
+        }
       }
+
+      if (invalidParamCount)
+        ctx.warning("param-count", fn->tok, functionName, "module", ident.absoluteModuleName);
+    }
+    else
+    {
+      if (!settings::find(functionNameNode->tok.u.s, settings::std_identifier))
+      {
+        DeclarationContext declContext = getIdentifiedDeclarationContext(functionNameNode->tok.u.s, "", from_scope);
+        if (declContext == DC_NONE)
+          ctx.warning(isRoot ? "undefined-global" : "unknown-identifier", functionNameNode->tok, functionNameNode->tok.u.s);
+      }
+    }
   }
 
 
@@ -2358,6 +2645,54 @@ public:
               break;
           }
       }
+    }
+
+
+    if (node->nodeType == PNT_GLOBAL_CONST_DECLARATION)
+    {
+      for (int i = (nodePath.size() - 2); i >= 0 && nodePath[i]; i--)
+        if (nodePath[i]->nodeType != PNT_STATEMENT_LIST)
+        {
+          ctx.warning("conditional-const", node->tok);
+          break;
+        }
+    }
+
+
+    {
+      Node * container = nullptr;
+      if (node->nodeType == PNT_UNARY_PRE_OP && node->tok.type == TK_DELETE &&
+        (node->children[0]->nodeType == PNT_ACCESS_MEMBER || node->children[0]->nodeType == PNT_ACCESS_MEMBER_IF_NOT_NULL))
+      {
+        container = node->children[0]->children[0];
+      }
+
+      if (node->nodeType == PNT_FUNCTION_CALL || node->nodeType == PNT_FUNCTION_CALL_IF_NOT_NULL)
+      {
+        const char * functionName = getFunctionName(node);
+        if (functionName && settings::find(functionName, settings::function_modifies_object))
+        {
+          container = node->children[0];
+          if (container && (container->nodeType == PNT_ACCESS_MEMBER || container->nodeType == PNT_ACCESS_MEMBER_IF_NOT_NULL))
+            container = container->children[0];
+        }
+      }
+
+      if (container)
+        for (size_t i = nodePath.size() - 2; nodePath[i] != nullptr; i--)
+        {
+          Node * p = nodePath[i];
+          if (p->nodeType == PNT_FOR_EACH_LOOP)
+            if (isNodeEquals(p->children[2], container))
+            {
+              Node * parent = nodePath[nodePath.size() - 2];
+              bool ignore = parent && parent->nodeType == PNT_STATEMENT_LIST &&
+                (parent->children.back()->nodeType == PNT_RETURN || parent->children.back()->nodeType == PNT_BREAK);
+
+              if (!ignore)
+                ctx.warning("modified-container", node->tok);
+            }
+        }
     }
 
 
@@ -2704,12 +3039,20 @@ public:
             strstr(node->tok.u.s, ":p2=") || strstr(node->tok.u.s, ":p3=") || strstr(node->tok.u.s, ":tm="));
           if (!isBlk && bracePtr[1] && strchr(bracePtr + 2, '}'))
           {
-            const char * functionName = nodePath[nodePath.size() - 2]->nodeType == PNT_FUNCTION_CALL ?
-              getFunctionName(nodePath[nodePath.size() - 2]) : "";
+            Node * functionCall = nodePath[nodePath.size() - 2];
+            if (functionCall)
+            {
+              const char * functionName = functionCall->nodeType == PNT_FUNCTION_CALL ?
+                getFunctionName(functionCall) : "";
 
-            bool ok = !strcmp(functionName, "loc") || !strcmp(functionName, "split") || !strcmp(functionName, "assert");
-            if (!ok)
-              ctx.warning("forgot-subst", node->tok);
+              bool ok = !strcmp(functionName, "split");
+
+              if (!strcmp(functionName, "loc") && functionCall->children.size() >= 3 && functionCall->children[2] == node)
+                ok = true;
+
+              if (!ok)
+                ctx.warning("forgot-subst", node->tok);
+            }
           }
         }
       }
@@ -2753,6 +3096,38 @@ public:
     }
 
 
+    if ((node->nodeType == PNT_FUNCTION_CALL || node->nodeType == PNT_FUNCTION_CALL_IF_NOT_NULL) &&
+       node->children.size() > 1)
+    {
+      const char * functionName = getFunctionName(node);
+      const char * id = nullptr;
+      if (!strcmp(functionName, "persist"))
+      {
+        Node * n = tryReplaceVar(node->children[1], false);
+        if (n->nodeType == PNT_STRING)
+          id = n->tok.u.s;
+      }
+
+      if (!strcmp(functionName, "mkWatched") && node->children.size() > 2)
+        if (node->children[1]->nodeType == PNT_IDENTIFIER && !strcmp(node->children[1]->tok.u.s, "persist"))
+        {
+          Node * n = tryReplaceVar(node->children[2], false);
+          if (n->nodeType == PNT_STRING)
+            id = n->tok.u.s;
+        }
+
+      if (id)
+      {
+        string idstr(id);
+        auto it = persist_ids.find(idstr);
+        if (it != persist_ids.end())
+          ctx.warning("duplicate-persist-id", node->tok, id);
+        else
+          persist_ids.insert(idstr);
+      }
+    }
+
+
     if (node->nodeType == PNT_DO_WHILE_LOOP || node->nodeType == PNT_WHILE_LOOP || node->nodeType == PNT_FOR_EACH_LOOP ||
       node->nodeType == PNT_FOR_LOOP)
     {
@@ -2762,40 +3137,43 @@ public:
       if (node->nodeType == PNT_FOR_EACH_LOOP || node->nodeType == PNT_FOR_LOOP)
         statements = node->children[3];
 
-      Token * uncReturn = nullptr;
-      Token * uncContinue = nullptr;
-      Token * uncBreak = nullptr;
-
-      if (statements->nodeType == PNT_STATEMENT_LIST)
+      if (statements)
       {
-        for (size_t i = 0; i < statements->children.size(); i++)
+        Token * uncReturn = nullptr;
+        Token * uncContinue = nullptr;
+        Token * uncBreak = nullptr;
+
+        if (statements->nodeType == PNT_STATEMENT_LIST)
         {
-          if (statements->children[i]->nodeType == PNT_RETURN)
-            uncReturn = &(statements->children[i]->tok);
-          if (statements->children[i]->nodeType == PNT_CONTINUE)
-            uncContinue = &(statements->children[i]->tok);
-          if (statements->children[i]->nodeType == PNT_BREAK)
-            uncBreak = &(statements->children[i]->tok);
+          for (size_t i = 0; i < statements->children.size(); i++)
+          {
+            if (statements->children[i]->nodeType == PNT_RETURN)
+              uncReturn = &(statements->children[i]->tok);
+            if (statements->children[i]->nodeType == PNT_CONTINUE)
+              uncContinue = &(statements->children[i]->tok);
+            if (statements->children[i]->nodeType == PNT_BREAK)
+              uncBreak = &(statements->children[i]->tok);
+          }
         }
+
+        bool conditionalBreak = false;
+        bool conditionalContinue = false;
+        bool conditionalReturn = false;
+        if (uncReturn || uncContinue || uncBreak)
+          findConditionalExit(false, statements, conditionalBreak, conditionalContinue, conditionalReturn);
+
+        if (uncReturn)
+          if (!conditionalBreak && !conditionalContinue && node->nodeType != PNT_FOR_EACH_LOOP)
+            ctx.warning("unconditional-return-loop", *uncReturn);
+
+        if (uncContinue)
+          if (!conditionalBreak && !conditionalReturn)
+            ctx.warning("unconditional-continue-loop", *uncContinue);
+
+        if (uncBreak)
+          if (!conditionalContinue && !conditionalReturn && node->nodeType != PNT_FOR_EACH_LOOP)
+            ctx.warning("unconditional-break-loop", *uncBreak);
       }
-
-      bool conditionalBreak = false;
-      bool conditionalContinue = false;
-      bool conditionalReturn = false;
-      if (uncReturn || uncContinue || uncBreak)
-        findConditionalExit(false, statements, conditionalBreak, conditionalContinue, conditionalReturn);
-
-      if (uncReturn)
-        if (!conditionalBreak && !conditionalContinue && node->nodeType != PNT_FOR_EACH_LOOP)
-          ctx.warning("unconditional-return-loop", *uncReturn);
-
-      if (uncContinue)
-        if (!conditionalBreak && !conditionalReturn)
-          ctx.warning("unconditional-continue-loop", *uncContinue);
-
-      if (uncBreak)
-        if (!conditionalContinue && !conditionalReturn && node->nodeType != PNT_FOR_EACH_LOOP)
-          ctx.warning("unconditional-break-loop", *uncBreak);
     }
 
 
@@ -2827,6 +3205,24 @@ public:
         }
       }
     }
+
+
+    if (node->nodeType == PNT_FUNCTION_CALL || node->nodeType == PNT_FUNCTION_CALL_IF_NOT_NULL)
+      if (node->children[0]->nodeType == PNT_IDENTIFIER)
+      {
+        const char * fnName = node->children[0]->tok.u.s;
+        if (settings::find(fnName, settings::function_must_be_called_from_root))
+          for (size_t i = nodePath.size() - 1; i > 0 && nodePath[i]; i--)
+          {
+            NodeType t = nodePath[i]->nodeType;
+            if (t == PNT_LAMBDA || t == PNT_FUNCTION || t == PNT_CLASS_METHOD || t == PNT_TABLE_CREATION || t == PNT_CLASS ||
+              t == PNT_CLASS_CONSTRUCTOR)
+            {
+              ctx.warning("call-from-root", node->tok, fnName);
+              break;
+            }
+          }
+      }
 
 
     {
@@ -2951,7 +3347,7 @@ public:
         }
 
       if (!!(flags & RT_NOTHING) &&
-        !!(flags & (RT_NUMBER | RT_STRING | RT_TABLE | RT_ARRAY | RT_CLOSURE | RT_UNRECOGNIZED | RT_THROW)))
+        !!(flags & (RT_NUMBER | RT_STRING | RT_TABLE | RT_CLASS | RT_ARRAY | RT_CLOSURE | RT_UNRECOGNIZED | RT_THROW)))
       {
         if ((flags & RT_THROW) == 0)
           ctx.warning("all-paths-return-value", node->tok);
@@ -3553,7 +3949,7 @@ public:
           if (expressionA)
           {
             if (expressionA->nodeType == PNT_FUNCTION || expressionA->nodeType == PNT_LOCAL_FUNCTION ||
-              expressionA->nodeType == PNT_LAMBDA)
+              expressionA->nodeType == PNT_LAMBDA || expressionA->nodeType == PNT_TABLE_CREATION) // ignore table creation because of false-positives
             {
               continue;
             }
@@ -3571,11 +3967,12 @@ public:
                   {
                     complexity = getComplexity(expressionA, 0, statementSimilarityThreshold * 2);
 
-                    if (expressionA->nodeType == PNT_TABLE_CREATION || expressionA->nodeType == PNT_ARRAY_CREATION ||
+                    if (expressionA->nodeType == PNT_ARRAY_CREATION ||
                       expressionA->nodeType == PNT_FUNCTION_CALL || expressionA->nodeType == PNT_FUNCTION_CALL_IF_NOT_NULL)
                     {
                       complexity /= 4;
                     }
+
 
                     if (diff == 0)
                       ctx.warning("duplicate-assigned-expr", expressionB->tok);
@@ -3639,9 +4036,8 @@ public:
 
 
   const char * currentClass = nullptr;
-  map<const char *, set<const char *> > globalTables; // name, identifiers inside
-  set<const char *> globalIdentifiers;
-  vector< map<const char *, IdentifierStruct> > localIdentifiers; // node, is_used
+  unordered_map<const char *, unordered_set<const char *> > globalTables; // name, identifiers inside
+  vector< unordered_map<const char *, IdentifierStruct> > localIdentifiers; // node, is_used
 
 
   void newIdentifier(int scope_depth, Node * var, DeclarationContext decl_context, short function_depth, bool is_module,
@@ -3652,7 +4048,7 @@ public:
 
     while (int(localIdentifiers.size()) <= scope_depth)
     {
-      map<const char *, IdentifierStruct> tmp;
+      unordered_map<const char *, IdentifierStruct> tmp;
       localIdentifiers.push_back(tmp);
     }
 
@@ -3794,12 +4190,33 @@ public:
       if (it != localIdentifiers[i].end())
       {
         if (it->second.declContext == DC_TABLE_MEMBER || it->second.declContext == DC_CLASS_MEMBER)
-          if (i == from_scope)
+          if (i == from_scope || (ctx.langFeatures & LF_EXPLICIT_THIS))
             continue;
 
         return it->second.declContext;
       }
     }
+
+    if (use_colleced_idents)
+    {
+      moduleexports::ExportedIdentifier ident;
+      if (find_ident_in_collected(ctx, parent, LOCATION_UNKNOWN, ident))
+      {
+        if (ident.isConst)
+        {
+          if (ident.typeMask == RT_TABLE)
+            return DC_GLOBAL_ENUM_NAME;
+          return DC_CONSTANT;
+        }
+        else if (ident.isRoot)
+        {
+          return DC_GLOBAL_VARIABLE;
+        }
+      }
+      else
+        return DC_NONE;
+    }
+
 
     if (moduleexports::is_identifier_present_in_root(parent))
       return DC_GLOBAL_VARIABLE;
@@ -3830,38 +4247,88 @@ public:
 
     auto it = globalTables.find(currentClass);
     if (it != globalTables.end())
-      if (it->second.find(parent) != it->second.end())
+      if (!(ctx.langFeatures & LF_EXPLICIT_THIS) && it->second.find(parent) != it->second.end())
         return DC_CLASS_MEMBER;
 
     if (globalIdentifiers.find(parent) != globalIdentifiers.end())
       return DC_GLOBAL_VARIABLE;
 
-    if (is_ident_visible(parent, nodePath))
-      return DC_IDENTIFIER;
+    if (globalConsts.find(parent) != globalConsts.end())
+      return DC_GLOBAL_CONSTANT;
+
+    if (!(ctx.langFeatures & LF_EXPLICIT_THIS))
+      if (is_ident_visible(parent, nodePath))
+        return DC_IDENTIFIER;
+
+    for (size_t i = nodePath.size() - 1; nodePath[i] != nullptr; i--)
+      if (nodePath[i]->nodeType == PNT_FUNCTION || nodePath[i]->nodeType == PNT_CLASS_MEMBER)
+      {
+        Node * fnName = nodePath[i]->children[0];
+        if (fnName && fnName->nodeType == PNT_IDENTIFIER && !strcmp(parent, fnName->tok.u.s))
+          return DC_LOCAL_FUNCTION_NAME;
+        break;
+      }
 
     return DC_NONE;
   }
 
-  bool isTemporaryVariable(const char * name)  // _, __, _0, _1, _2, ...
+  bool isSafeTableClassMemberUsage(const char * name, int from_scope)
   {
-    if (!name || !name[0] || name[0] != '_')
-      return false;
-
-    if (!strcmp(name, "__"))
-      return true;
-
-    name++;
-
-    while (*name)
+    int classOrTableMemeber = -1;
+    for (int i = std::min(int(localIdentifiers.size()) - 1, from_scope); i >= 0; i--)
     {
-      if (!isdigit(*name))
-        return false;
-
-      name++;
+      auto it = localIdentifiers[i].find(name);
+      if (it != localIdentifiers[i].end())
+      {
+        if (it->second.declContext == DC_TABLE_MEMBER || it->second.declContext == DC_CLASS_MEMBER ||
+          it->second.declContext == DC_CLASS_METHOD)
+        {
+          if (i < from_scope)
+          {
+            classOrTableMemeber = i;
+            break;
+          }
+        }
+        else if (it->second.declContext != DC_NONE)
+          return true;
+      }
     }
 
-    return true;
+    if (classOrTableMemeber == -1)
+      return true;
+
+    DeclarationContext dc = getIdentifiedDeclarationContext(name, "", classOrTableMemeber - 1);
+    return (dc != DC_NONE);
   }
+
+  bool findInGlobalIdentifiers(const char * name)
+  {
+    if (moduleexports::is_identifier_present_in_root(name))
+      return true;
+
+    if (trusted::trusted_identifiers)
+    {
+      trusted::TrustedContext res = trusted::find(string(name), string(""));
+      if (res == trusted::TR_CONST || res == trusted::TR_GLOBAL)
+        return true;
+    }
+
+    if (globalIdentifiers.find(name) != globalIdentifiers.end())
+      return true;
+
+    moduleexports::ExportedIdentifier ident;
+    if (find_ident_in_collected(ctx, name, LOCATION_ROOT, ident) && ident.isRoot)
+      return true;
+
+    return false;
+  }
+
+  // declared and must not be used
+  bool isDummyVariable(const char * name)  // _, _***
+  {
+    return (name && name[0] == '_');
+  }
+
 
   void leaveScope(int scope_depth)
   {
@@ -3870,35 +4337,22 @@ public:
       for (auto & it : localIdentifiers.back())
       {
         IdentifierStruct & ident = it.second;
+
         if (!ident.usedAt && ident.declaredAt)
-          if (ident.declContext == DC_LOOP_VARIABLE)
-          {
-            bool ignore = false;
+          if (ident.declContext == DC_FUNCTION_PARAM || ident.declContext == DC_LOOP_VARIABLE)
+            if (!isDummyVariable(ident.namePtr))
+              ctx.warning("unused-func-param", *ident.declaredAt, declContextToString(ident.declContext), ident.namePtr, ident.namePtr);
 
-            if (ident.loopNode)
-              for (auto & it2 : localIdentifiers.back())
-                if (&it != &it2 && ident.loopNode == it2.second.loopNode && it2.second.usedAt)
-                {
-                  ignore = true; // other variable of this loop is used
-                  break;
-                 }
+        if (ident.usedAt && ident.declaredAt)
+          if (ident.declContext == DC_FUNCTION_PARAM || ident.declContext == DC_LOOP_VARIABLE)
+            if (isDummyVariable(ident.namePtr))
+              ctx.warning("invalid-underscore", *ident.declaredAt, declContextToString(ident.declContext), ident.namePtr);
 
-            if (isTemporaryVariable(ident.namePtr))
-              ignore = true;
-
-            if (!ignore)
-              ctx.warning("declared-never-used", *ident.declaredAt, declContextToString(ident.declContext), ident.namePtr);
-          }
-      }
-
-      for (auto & it : localIdentifiers.back())
-      {
-        IdentifierStruct & ident = it.second;
         if (!ident.usedAt && ident.declaredAt)
           if (ident.declContext == DC_LOCAL_VARIABLE || ident.declContext == DC_ENUM_NAME ||
             ident.declContext == DC_GLOBAL_ENUM_NAME || ident.declContext == DC_LOCAL_FUNCTION_NAME)
           {
-            if (!isTemporaryVariable(ident.namePtr) && !ident.declaredAt->dontWarnUnusedVar())
+            if (!isDummyVariable(ident.namePtr) && !ident.declaredAt->dontWarnUnusedVar())
               ctx.warning("declared-never-used", *ident.declaredAt, declContextToString(ident.declContext), ident.namePtr);
           }
 
@@ -3906,7 +4360,7 @@ public:
           ident.useDepth == ident.assignDepth && ident.useDepth == ident.declDepth)
         {
           if (ident.declContext == DC_LOCAL_VARIABLE || ident.declContext == DC_FUNCTION_PARAM)
-            if (!isTemporaryVariable(ident.namePtr))
+            if (!isDummyVariable(ident.namePtr))
               ctx.warning("assigned-never-used", *ident.assignedAt, declContextToString(ident.declContext), ident.namePtr);
         }
 
@@ -3971,6 +4425,10 @@ public:
 
     if (inside_static && (dc == DC_CLASS_MEMBER || dc == DC_CLASS_METHOD))
       ctx.warning("used-from-static", node->tok, node->tok.u.s);
+
+    if (!inside_static)
+      if (!isSafeTableClassMemberUsage(node->tok.u.s, from_scope))
+        ctx.warning("access-without-this", node->tok, node->tok.u.s);
   }
 
 
@@ -3981,7 +4439,7 @@ public:
 
 
   void checkVariables(Node * node, int scope_depth, int line_of_next_token, bool dont_mark_used, bool inside_lambda,
-    bool inside_loop, bool inside_access_member, int function_depth, bool inside_static)
+    bool inside_loop, bool inside_access_member, int function_depth, bool inside_static, const char * assign_to)
   {
     nodePath.push_back(node);
 
@@ -3996,7 +4454,10 @@ public:
 
     // used identifiers
     if (node->nodeType == PNT_IDENTIFIER && !dont_mark_used)
-      markIdentifierAsUsed(node->tok.u.s, &node->tok, function_depth);
+    {
+      if (node->tok.u.s != assign_to)
+        markIdentifierAsUsed(node->tok.u.s, &node->tok, function_depth);
+    }
 
 
     if (node->nodeType == PNT_IDENTIFIER && !dont_mark_used && !inside_access_member)
@@ -4073,10 +4534,27 @@ public:
     }
 
 
-    if ((node->nodeType == PNT_FUNCTION_CALL || node->nodeType == PNT_FUNCTION_CALL_IF_NOT_NULL) &&
-        node->children[0]->nodeType == PNT_IDENTIFIER)
+    if (node->nodeType == PNT_FUNCTION_CALL || node->nodeType == PNT_FUNCTION_CALL_IF_NOT_NULL)
     {
-      checkFunctionParams(node);
+      checkFunctionParams(node, scope_depth);
+    }
+
+
+    if (node->nodeType == PNT_ACCESS_MEMBER && node->children[0]->nodeType == PNT_ROOT && node->children[1]->nodeType == PNT_IDENTIFIER)
+    {
+      const char * name = node->children[1]->tok.u.s;
+      if (!findInGlobalIdentifiers(name))
+      {
+        bool skip = false;
+        if (nodePath[nodePath.size() - 2] && nodePath[nodePath.size() - 2]->tok.type == TK_NEWSLOT) // skip  ::x <- 123
+        {
+          skip = true;
+          globalIdentifiers.insert(string(name));
+        }
+
+        if (!skip)
+          ctx.warning("undefined-global", node->children[1]->tok, name);
+      }
     }
 
 
@@ -4095,6 +4573,11 @@ public:
         {
           checkDeclared(node->children[1], nullptr, inside_static, scope_depth);
         }
+      }
+      else if (node->nodeType == PNT_IDENTIFIER && nodePath[nodePath.size() - 2] &&
+        nodePath[nodePath.size() - 2]->nodeType == PNT_LAMBDA)
+      {
+        checkDeclared(node, nullptr, inside_static, scope_depth);
       }
       else if (node->nodeType == PNT_VAR_DECLARATOR)
       {
@@ -4249,7 +4732,17 @@ public:
     else if (node->nodeType == PNT_FUNCTION)
     {
       declContext = DC_FUNCTION_NAME;
-      var = node->children[0];
+      if (nodePath[nodePath.size() - 3] && (nodePath[nodePath.size() - 3]->nodeType == PNT_TABLE_CREATION ||
+        nodePath[nodePath.size() - 3]->nodeType == PNT_CLASS))
+      {
+        declContext = DC_CLASS_MEMBER;
+      }
+
+      if (nodePath[nodePath.size() - 2] && nodePath[nodePath.size() - 2]->tok.type != TK_NEWSLOT &&
+        nodePath[nodePath.size() - 2]->tok.type != TK_ASSIGN)
+      {
+        var = node->children[0];
+      }
     }
     else if (node->nodeType == PNT_LOCAL_FUNCTION)
     {
@@ -4287,6 +4780,17 @@ public:
       declContext = DC_LOCAL_VARIABLE;
       var = node->children[1];
     }
+
+    if (node->nodeType == PNT_FUNCTION)
+      assign_to = nullptr;
+
+    if (node->nodeType == PNT_BINARY_OP && (node->tok.type == TK_ASSIGN || node->tok.type == TK_PLUSEQ ||
+        node->tok.type == TK_MINUSEQ || node->tok.type == TK_MULEQ || node->tok.type == TK_DIVEQ)
+      && node->children[0]->nodeType == PNT_IDENTIFIER)
+    {
+      assign_to = node->children[0]->tok.u.s;
+    }
+
 
     int nextScope = newScope ? scope_depth + 1 : scope_depth;
     int curScope = (node->nodeType == PNT_FOR_LOOP || node->nodeType == PNT_FOR_EACH_LOOP || node->nodeType == PNT_TRY_CATCH) ?
@@ -4337,7 +4841,7 @@ public:
 
         int lineOfNextToken = (nextIndex < node->children.size()) ? node->children[nextIndex]->tok.line : line_of_next_token;
         checkVariables(node->children[i], nextScope, lineOfNextToken, dontMarkUsed, inside_lambda, inside_loop,
-          accessMember, function_depth, inside_static);
+          accessMember, function_depth, inside_static, assign_to);
 
         updateNearestAssignmentsAfterCheck(node, node->children[i], i);
       }
@@ -4373,6 +4877,15 @@ public:
       if (!child)
         continue;
 
+      if (child->nodeType == PNT_ACCESS_MEMBER && child->children[0]->nodeType == PNT_ROOT &&
+        child->children[1]->nodeType == PNT_IDENTIFIER)
+      {
+        globalIdentifiers.insert(string(child->children[1]->tok.u.s));
+      }
+
+      if (child->nodeType == PNT_GLOBAL_CONST_DECLARATION && child->children[0]->nodeType == PNT_IDENTIFIER)
+        globalConsts.insert(string(child->children[0]->tok.u.s));
+
       if (child->nodeType == PNT_BINARY_OP && child->tok.type == TK_NEWSLOT)
       {
         const char * slotName = nullptr;
@@ -4387,7 +4900,7 @@ public:
 
         if (slotName)
         {
-          set<const char *> itemNames;
+          unordered_set<const char *> itemNames;
           if (child->children[1]->nodeType == PNT_TABLE_CREATION)
           {
             Node * tableNode = child->children[1];
@@ -4417,7 +4930,7 @@ public:
 
         if (slotName)
         {
-          set<const char *> itemNames;
+          unordered_set<const char *> itemNames;
           for (size_t j = 3; j < child->children.size(); j++)
             if (child->children[j]->children[0] && child->children[j]->children[0]->nodeType == PNT_IDENTIFIER)
               itemNames.insert(child->children[j]->children[0]->tok.u.s);
@@ -4430,7 +4943,7 @@ public:
       {
         if (child->children[0]->nodeType == PNT_IDENTIFIER)
         {
-          globalIdentifiers.insert(child->children[0]->tok.u.s);
+          globalIdentifiers.insert(string(child->children[0]->tok.u.s));
         }
 
         if (child->children[0]->nodeType == PNT_BINARY_OP && child->children[0]->tok.type == TK_DOUBLE_COLON)
@@ -4441,7 +4954,7 @@ public:
             auto it = globalTables.find(className);
             if (it == globalTables.end())
             {
-              set<const char *> tmp;
+              unordered_set<const char *> tmp;
               tmp.insert(functionName);
               globalTables.insert(make_pair(className, tmp));
             }
@@ -4461,13 +4974,23 @@ void print_usage()
   fprintf(out_stream, "  quirrel_static_analyzer [-wNNN] <file_name.nut>\n");
   fprintf(out_stream, "  or\n");
   fprintf(out_stream, "  quirrel_static_analyzer [-wNNN] --files:<files-list.txt>\n\n");
+  fprintf(out_stream, "  --time - print execution time.\n");
+  fprintf(out_stream, "  --just-parse - don't analyze files, just run parser.\n");
   fprintf(out_stream, "  --files:<files-list.txt> - process multiple files. <files-list.txt> contains file names, one name per line.\n");
   fprintf(out_stream, "  --predefinition-files:<files-list.txt> - this list used to collect defined classed and tables.\n");
   fprintf(out_stream, "  --output:<output-file.txt> - write output to <output-file.txt> instead of stdout.\n");
   fprintf(out_stream, "  --output-mode:<1-line | 2-lines | full>  default is 'full'.\n");
   fprintf(out_stream, "  --csq-exe:<csq.exe with path> - set path to console squirrel executable file.\n");
+  fprintf(out_stream, "  --csq-arg:<csq-argument> - pass argument to csq, multiple --csq-arg can be specified.\n");
   fprintf(out_stream, "  --warnings-list - show all supported warnings.\n");
   fprintf(out_stream, "  --show-unchanged-locals - show 'local' that can be converted to 'let'.\n");
+  fprintf(out_stream, "  --brief-ast - print brief AST, useful for debugging.\n");
+  fprintf(out_stream, "  --print-file-names - print list of files that will be processed.\n");
+  fprintf(out_stream, "  --include-comments - include comments to output AST.\n");
+  fprintf(out_stream, "  --collect:<path-to-root-nut-file> - collect all exported identifiers.\n");
+  fprintf(out_stream, "  --collect-output:<path-to-output-file> - collect all exported identifiers from output.\n"
+                      "    To generate output file with exports, execute csq with option --export-modules-content\n");
+
   fprintf(out_stream,
     "  --tokens-output-file:<file-name> - print tokens to file (JSON), 'stdout' will be used if <file-name> is empty .\n");
   fprintf(out_stream, "  --ast-output-file:<file-name> - print AST to file (JSON), 'stdout' will be used if <file-name> is empty .\n");
@@ -4527,7 +5050,7 @@ bool process_import(CompilationContext & ctx)
 }
 
 
-static std::set<int> used_args;
+static unordered_set<int> used_args;
 static int argc__ = 0;
 static char ** argv__ = nullptr;
 
@@ -4535,6 +5058,11 @@ int process_single_source(const string & file_name, const string & source_code, 
   bool use_csq, bool collect_ident_tree)
 {
   CompilationContext ctx;
+
+  persist_ids.clear();
+  root_visible_after_requires.clear();
+  local_visible_after_requires.clear();
+  const_visible_after_requires.clear();
 
   if (collect_ident_tree)
     use_csq = false;
@@ -4546,6 +5074,8 @@ int process_single_source(const string & file_name, const string & source_code, 
   bool printAstToJson = false;
   const char * tokensFileName = "";
   const char * astFileName = "";
+  processing_file_name_str = file_name;
+  processing_file_name = processing_file_name_str.c_str();
 
   for (int i = 1; i < argc__; i++)
   {
@@ -4572,10 +5102,8 @@ int process_single_source(const string & file_name, const string & source_code, 
       inverseWarnings = true;
     else if (!strcmp(arg, "--show-unchanged-locals"))
       ctx.showUnchangedLocalVar = true;
-    else if (!strncmp(arg, "--csq-exe:", 10))
-      moduleexports::csq_exe = arg + 10;
-//    else if (!strcmp(arg, "--print-ast"))  // deprecated
-//      printAst = true;
+    else if (!strcmp(arg, "--brief-ast"))
+      printAst = true;
     else if (!strncmp(arg, "--output-mode:", 14))
       ctx.outputMode = str_to_output_mode(arg + 14);
     else if (arg[0] == '-' && (toupper(arg[1]) == 'W') && isdigit(arg[2]))
@@ -4592,8 +5120,8 @@ int process_single_source(const string & file_name, const string & source_code, 
   if (inverseWarnings)
     ctx.inverseWarningsSuppression();
 
-  variable_presense_check = (!ctx.isWarningSuppressed("undefined-variable") ||
-    !ctx.isWarningSuppressed("never-declared")) && use_csq;
+//  variable_presense_check = (!ctx.isWarningSuppressed("undefined-variable") ||
+//    !ctx.isWarningSuppressed("never-declared")) && use_csq;
 
   int expectWarningNumber = 0;
   bool expectError = false;
@@ -4623,22 +5151,25 @@ int process_single_source(const string & file_name, const string & source_code, 
   ctx.setFileName(file_name);
 
 
-  string sqconfigFileName = sqconfig_file_name.empty() ? settings::search_sqconfig(file_name.c_str()) : sqconfig_file_name;
-  if (sqconfigFileName != settings::cur_config_file_name)
+  if (!CompilationContext::justParse)
   {
-    settings::reset();
-    if (!sqconfigFileName.empty())
-      if (!settings::append_from_file(sqconfigFileName.c_str()))
-        return 1;
-  }
-  else if (settings::cur_config_file_failed)
-  {
-    return 1;
-  }
+    string sqconfigFileName = sqconfig_file_name.empty() ? settings::search_sqconfig(file_name.c_str()) : sqconfig_file_name;
+    if (sqconfigFileName != settings::cur_config_file_name)
+    {
+      settings::reset();
+      if (!sqconfigFileName.empty())
+        if (!settings::append_from_file(sqconfigFileName.c_str()))
+          return 1;
+    }
+    else if (settings::cur_config_file_failed)
+    {
+      return 1;
+    }
 
-
-  if (variable_presense_check)
-    moduleexports::module_export_collector(ctx, 0, 0, nullptr);
+//    if (variable_presense_check)
+    if (use_csq)
+      moduleexports::module_export_collector(ctx, 0, 0, nullptr);
+  }
 
 
   if (!strncmp(ctx.code.c_str(), "//expect:error", sizeof("//expect:error") - 1))
@@ -4674,13 +5205,15 @@ int process_single_source(const string & file_name, const string & source_code, 
 
     if (printAstToJson)
     {
-      res &= ast_to_json(astFileName, root);
+      res &= ast_to_json(astFileName, root, lex);
       res &= !ctx.isError;
     }
 
     if (root && printAst)
       root->print();
 
+    if (CompilationContext::justParse)
+      return res ? 0 : 1;
 
     if (!ctx.isError)
     {
@@ -4699,11 +5232,12 @@ int process_single_source(const string & file_name, const string & source_code, 
 
         if (root)
         {
+          collect_idents_visible_after_requires(lex);
           collect_ever_declared(lex);
           analyzer.collectGlobalTables(root);
           analyzer.collectFunctionInfos(root);
           analyzer.check(root);
-          analyzer.checkVariables(root, 0, INT_MAX / 2, false, false, false, false, 1, false);
+          analyzer.checkVariables(root, 0, INT_MAX / 2, false, false, false, false, 1, false, nullptr);
         }
       }
     }
@@ -4884,10 +5418,33 @@ void before_exit_check_args()
 }
 
 
-int main(int argc, char ** argv)
-{
-  std::set_terminate([](){ printf("\nERROR: Unhandled exception\n\n"); std::abort();});
+static bool print_execution_time = false;
 
+struct ExeTime
+{
+  clock_t t;
+  ExeTime()
+  {
+    t = clock();
+  }
+
+  ~ExeTime()
+  {
+    if (print_execution_time)
+    {
+      t = clock() - t;
+      printf("time: %g sec\n", (float)t / CLOCKS_PER_SEC);
+    }
+  }
+};
+
+
+#ifdef DAGOR_DBGLEVEL
+int sq3_sa_main(int argc, char ** argv)
+#else
+int main(int argc, char ** argv)
+#endif
+{
   argv__ = argv;
   argc__ = argc;
 
@@ -4942,10 +5499,13 @@ int main(int argc, char ** argv)
 
   bool printTokens = false;
   bool printAst = false;
+  bool printListOfFilesToProcess = false;
 
   const char * streamFile = nullptr;
   vector <string> fileList;
   vector <string> predefinitionFileList;
+  vector <string> nutCollectRoots;
+  vector <string> collectOutputs;
 
   for (int i = 1; i < argc; i++)
   {
@@ -4954,7 +5514,6 @@ int main(int argc, char ** argv)
     {
       used_args.insert(i);
       fileList.push_back(string(arg));
-      break;
     }
 
     if (!strncmp(arg, "--stream:", 9))
@@ -4963,11 +5522,69 @@ int main(int argc, char ** argv)
       used_args.insert(i);
     }
 
+    if (!strncmp(arg, "--collect:", 10))
+    {
+      use_colleced_idents = true;
+      nutCollectRoots.push_back(string(arg + 10));
+      used_args.insert(i);
+    }
+
+    if (!strncmp(arg, "--collect-output:", 17))
+    {
+      use_colleced_idents = true;
+      collectOutputs.push_back(string(arg + 17));
+      used_args.insert(i);
+    }
+
     if (!strncmp(arg, "--tokens-output-file:", 21))
+    {
       printTokens = true;
+      used_args.insert(i);
+    }
 
     if (!strncmp(arg, "--ast-output-file:", 18))
+    {
       printAst = true;
+      used_args.insert(i);
+    }
+
+    if (!strncmp(arg, "--csq-exe:", 10))
+    {
+      moduleexports::csq_exe = arg + 10;
+      used_args.insert(i);
+    }
+
+    if (!strncmp(arg, "--csq-arg:", 10))
+    {
+      if (!moduleexports::csq_args.empty())
+        moduleexports::csq_args += " ";
+      moduleexports::csq_args += arg + 10;
+      used_args.insert(i);
+    }
+
+    if (!strcmp(arg, "--just-parse"))
+    {
+      CompilationContext::justParse = true;
+      used_args.insert(i);
+    }
+
+    if (!strcmp(arg, "--include-comments"))
+    {
+      CompilationContext::includeComments = true;
+      used_args.insert(i);
+    }
+
+    if (!strcmp(arg, "--print-file-names"))
+    {
+      printListOfFilesToProcess = true;
+      used_args.insert(i);
+    }
+
+    if (!strcmp(arg, "--time"))
+    {
+      print_execution_time = true;
+      used_args.insert(i);
+    }
 
     bool isFiles = !strncmp(arg, "--files:", 8);
     bool isPredefinitionFiles = !strncmp(arg, "--predefinition-files:", 22);
@@ -5005,9 +5622,42 @@ int main(int argc, char ** argv)
     }
   }
 
+  ExeTime exeTime;
 
   string sourceCode;
   int res = 0;
+
+  if (!nutCollectRoots.empty() || !collectOutputs.empty())
+  {
+    if (!predefinitionFileList.empty() || !fileList.empty())
+    {
+      CompilationContext::globalError(
+        (string("Cannot use --collect with --files or --predefinition-files")).c_str());
+      before_exit();
+      return CompilationContext::getErrorLevel();
+    }
+
+    if (!moduleexports::gather_identifiers_from_root_files(nutCollectRoots, collectOutputs))
+    {
+      CompilationContext::globalError(
+        (string("Failed to collect exports")).c_str());
+      before_exit();
+      return CompilationContext::getErrorLevel();
+    }
+
+    fileList = moduleexports::all_required_files_in_order_of_execution;
+
+    if (fileList.empty())
+    {
+      CompilationContext::globalError((string("No files to process")).c_str());
+      before_exit();
+      return CompilationContext::getErrorLevel();
+    }
+  }
+
+  if (printListOfFilesToProcess)
+    for (size_t i = 0; i < fileList.size(); i++)
+      fprintf(out_stream, "%s\n", fileList[i].c_str());
 
 
   if (printTokens || printAst)
@@ -5023,6 +5673,7 @@ int main(int argc, char ** argv)
     if (res)
       CompilationContext::setErrorLevel(ERRORLEVEL_WARNING);
 
+    before_exit();
     return CompilationContext::getErrorLevel();
   }
 
@@ -5050,7 +5701,14 @@ int main(int argc, char ** argv)
     }
 
     for (string & fileName : fileList)
+    {
+      if (!two_pass_scan)
+      {
+        globalConsts.clear();
+        globalIdentifiers.clear();
+      }
       res |= process_single_source(fileName, sourceCode, string(), true, false);
+    }
   }
 
   if (res)

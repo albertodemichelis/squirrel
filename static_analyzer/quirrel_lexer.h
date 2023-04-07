@@ -1,8 +1,12 @@
 #pragma once
 
-#include "compilation_context.h"
-#include <map>
+#include <unordered_map>
 #include <vector>
+#include <string>
+#include <stdint.h>
+
+class CompilationContext;
+
 
 #define TOKEN_TYPES \
   TOKEN_TYPE(TK_EMPTY, "") \
@@ -144,10 +148,15 @@ struct Token
 };
 
 
+// token index -> comments before this token
+typedef std::unordered_map<int, std::vector<std::string>> FileComments;
+
+
 class Lexer
 {
   const std::string & s; // code
-  std::map<std::string, TokenType> tokenIdentStringToType;
+  std::unordered_map<const char *, TokenType> tokenIdentStringToType;
+  std::vector<std::string> currentComments;
 
   int curLine;
   int curColumn;
@@ -166,10 +175,12 @@ class Lexer
   bool parseStringLiteral(bool raw_string, int open_char);
   void onCompilerDirective(const std::string & directive);
   std::string expandReaderMacro(const char * str, int & out_macro_length);
+  void addCurrentComments();
 
 public:
   CompilationContext & ctx;
   std::vector<Token> tokens;
+  FileComments comments; // used only when --include-comments specified
 
   Lexer(CompilationContext & compiler_context);
   Lexer(CompilationContext & compiler_context, const std::string & code);

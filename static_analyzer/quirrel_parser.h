@@ -1,10 +1,12 @@
 #pragma once
 
 #include "quirrel_lexer.h"
+#include <new>
 
 #define ALLOW_FUNCTION_PARAMS_WITHOUT_COMMA 1
 #define ALLOW_ASSIGNMENT_IN_LAMBDA 1
 
+extern FILE * out_stream;
 
 
 #define NODE_TYPES \
@@ -84,20 +86,16 @@ enum NodeType
 #undef NODE_TYPE
 
 extern const char * node_type_names[];
+extern Token emptyToken;
 
-struct Node : public CompilationContext::Poolable
+struct Node
 {
   Token & tok;
   NodeType nodeType;
   std::vector<Node *> children;
 
-  Node(CompilationContext & ctx_, Token & token) :
-    tok(token),
-    CompilationContext::Poolable(ctx_)
-  {
-    nodeType = PNT_UNKNOWN;
-  }
-
+  Node(Token & token) : tok(token), nodeType(PNT_UNKNOWN) {}
+  Node() : tok(emptyToken), nodeType(PNT_UNKNOWN) {}
 
   void print(int indent = 0)
   {
@@ -116,6 +114,41 @@ struct Node : public CompilationContext::Poolable
         children[i]->print(indent + 2);
       else
         fprintf(out_stream, "%s*empty*\n", std::string(indent + 2, ' ').c_str());
+  }
+};
+
+
+struct NodeList
+{
+  std::vector< std::vector<Node> > nodes;
+  int pos;
+
+  NodeList()
+  {
+    pos = 0;
+    std::vector<Node> v;
+    v.resize(16);
+    nodes.emplace_back(v);
+  }
+
+  Node * newNode(Token & token)
+  {
+    Node * res = &(nodes.back()[pos]);
+    pos++;
+    if (pos >= nodes.back().size())
+    {
+      int newSize = int(nodes.back().size() * 2);
+      if (newSize > 256)
+        newSize = 256;
+
+      std::vector<Node> v;
+      v.resize(newSize);
+      nodes.emplace_back(v);
+      pos = 0;
+    }
+
+    res = new (res) Node(token);
+    return res;
   }
 };
 

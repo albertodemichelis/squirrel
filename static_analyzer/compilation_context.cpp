@@ -1,7 +1,16 @@
 #include "compilation_context.h"
-#include "quirrel_lexer.h"
 #include <string.h>
 #include <algorithm>
+
+#ifdef _WIN32
+#  define NOMINMAX
+#  define WIN32_LEAN_AND_MEAN
+#  include <Windows.h>
+#else
+#  include <unistd.h>
+#  include <linux/limits.h>
+#endif
+
 
 using namespace std;
 
@@ -11,6 +20,9 @@ std::set<std::string> CompilationContext::shownMessages;
 std::vector<CompilerMessage> CompilationContext::compilerMessages;
 const char * CompilationContext::redirectMessagesToJson = nullptr;
 int CompilationContext::errorLevel = 0;
+bool CompilationContext::justParse = false;
+bool CompilationContext::includeComments = false;
+
 
 struct AnalyzerMessage
 {
@@ -387,15 +399,48 @@ AnalyzerMessage analyzer_messages[] =
   },
   {
     288, "param-count",
-    "Function '%s' is called with the wrong number of parameters. Consider the function definition in line %s."
+    "Function '%s' is called with the wrong number of parameters. Consider the function definition in %s %s"
   },
   {
     289, "param-pos",
-    "The function parameter '%s' seems to be in the wrong position. Consider the function definition in the line %s."
+    "The function parameter '%s' seems to be in the wrong position. Consider the function definition in %s %s"
+  },
+  {
+    290, "unused-func-param",
+    "Unused %s '%s'. You can mark unused identifiers with a prefix underscore '_%s'."
+  },
+  {
+    291, "invalid-underscore",
+    "The name of %s '%s' is invalid. The identifier is marked as an unused with a prefix underscore, but it is used."
+  },
+  {
+    292, "modified-container",
+    "The container was modified within the loop."
+  },
+  {
+    293, "duplicate-persist-id",
+    "Duplicate id '%s' passed to 'persist'."
+  },
+  {
+    294, "conditional-const",
+    "A global constant can be defined only in file root scope."
+  },
+  {
+    295, "undefined-global",
+    "Undefined global identifier '%s'."
+  },
+  {
+    296, "access-without-this",
+    "Access to class/table member '%s' without 'this'."
+  },
+  {
+    297, "call-from-root",
+    "Function '%s' must be called from the root scope."
   },
 };
 
 
+unsigned CompilationContext::defaultLangFeatures = LF_NO_FUNC_DECL_SUGAR | LF_NO_CLASS_DECL_SUGAR;
 
 CompilationContext::CompilationContext()
 {
@@ -404,17 +449,34 @@ CompilationContext::CompilationContext()
   outputMode = OM_FULL;
   firstLineAfterImport = 0;
   showUnchangedLocalVar = false;
+  langFeatures = defaultLangFeatures;
 }
 
 
 CompilationContext::~CompilationContext()
 {
-  for (size_t i = 0; i < poolableObjects.size(); i++)
-    delete poolableObjects[i];
 }
+
+
+static string get_absolute_file_name(const string & file_name)
+{
+#ifdef _WIN32
+  char buf[MAX_PATH] = { 0 };
+  if (GetFullPathNameA(file_name.c_str(), MAX_PATH, buf, NULL) == 0)
+    return file_name;
+  return buf;
+#else
+  char buf[PATH_MAX] = { 0 };
+  if (realpath(file_name.c_str(), buf) == NULL)
+    return file_name;
+  return buf;
+#endif
+}
+
 
 void CompilationContext::setFileName(const string & file_name)
 {
+  absoluteFileName = get_absolute_file_name(file_name);
   fileName = file_name;
   fileDir = fileName;
   size_t foundDirDelim = fileDir.find_last_of("/\\");
@@ -675,6 +737,16 @@ void CompilationContext::suppressWaring(int int_id)
 
 void CompilationContext::suppressWaring(const char * text_id)
 {
+  for (int i = 0; i < sizeof(analyzer_messages) / sizeof(analyzer_messages[0]); i++)
+    if (!strcmp(text_id, analyzer_messages[i].textId))
+    {
+      suppressWaring(analyzer_messages[i].intId);
+      return;
+    }
+
+  if (text_id && text_id[0] == 'w')
+    text_id++;  // skip first 'w'
+
   for (int i = 0; i < sizeof(analyzer_messages) / sizeof(analyzer_messages[0]); i++)
     if (!strcmp(text_id, analyzer_messages[i].textId))
     {

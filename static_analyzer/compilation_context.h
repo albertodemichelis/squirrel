@@ -1,11 +1,13 @@
 #pragma once
 
 #include <set>
+#include <unordered_set>
 #include <unordered_map>
 #include <string>
 #include <vector>
 #include <stdio.h>
 #include "helpers/importParser/importParser.h"
+#include "quirrel_parser.h"
 
 bool is_utf8_bom(const char * ptr, int i);
 
@@ -26,6 +28,28 @@ enum ErrorLevels
   ERRORLEVEL_ERROR = 3,
   ERRORLEVEL_FATAL = 4,
 };
+
+enum SQLangFeature
+{
+  LF_STRICT_BOOL = 0x01,
+  LF_EXPLICIT_ROOT_LOOKUP = 0x02,
+  LF_NO_FUNC_DECL_SUGAR = 0x04,
+  LF_NO_CLASS_DECL_SUGAR = 0x08,
+  LF_NO_PLUS_CONCAT = 0x10,
+  LF_EXPLICIT_THIS = 0x20,
+  LF_FORBID_ROOT_TABLE = 0x40,
+  LF_TOOLS_COMPILE_CHECK = 0x1000,
+  LF_DISABLE_OPTIMIZER = 0x2000,
+
+  LF_STRICT = LF_STRICT_BOOL |
+              LF_EXPLICIT_ROOT_LOOKUP |
+              LF_NO_FUNC_DECL_SUGAR |
+              LF_NO_CLASS_DECL_SUGAR |
+              LF_NO_PLUS_CONCAT |
+              LF_EXPLICIT_THIS |
+              LF_FORBID_ROOT_TABLE
+};
+
 
 struct CompilerMessage
 {
@@ -55,20 +79,11 @@ class CompilationContext
 
 public:
 
-  class Poolable
-  {
-    CompilationContext & ctx;
-  public:
-    Poolable(CompilationContext & ctx_) : ctx(ctx_)
-    {
-      ctx.poolableObjects.push_back(this);
-    }
-  };
-
-  std::vector<Poolable *> poolableObjects;
-  std::set<std::string> stringList;
+  NodeList nodeList;
+  std::unordered_set<std::string> stringList;
   std::string fileName;
   std::string fileDir;
+  std::string absoluteFileName;
   std::string code;
   std::vector<int> shownWarningsAndErrors;
   std::vector<sqimportparser::ModuleImport> imports;
@@ -81,6 +96,10 @@ public:
   bool isError;
   bool isWarning;
   bool showUnchangedLocalVar;
+  static bool justParse;
+  static bool includeComments;
+  unsigned langFeatures;
+  static unsigned defaultLangFeatures;
   std::unordered_map<const Token *, bool> unchangedVar;
   OutputMode outputMode;
 

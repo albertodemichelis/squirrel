@@ -51,11 +51,48 @@ void escapeJSON(const char * input, string & output)
 }
 
 static string escapedStr;
+static string comments;
+static int last_token_index = -1;
 static char buf[256 * 1024];
 static char tokstr[64];
 
-static void stringify_token(Token & tok)
+void collect_comments_before_token(int token_index, Lexer & lexer)
 {
+  comments.clear();
+  if (abs(token_index - last_token_index) > 32)
+    last_token_index = token_index - 1;
+
+  if (lexer.ctx.includeComments)
+  {
+    string buf;
+    for (int i = last_token_index + 1; i <= token_index; i++)
+    {
+      auto it = lexer.comments.find(i);
+      if (it != lexer.comments.end())
+      {
+        for (auto & comment : it->second)
+        {
+          if (!buf.empty())
+            buf += ",";
+          escapeJSON(comment.c_str(), escapedStr);
+          buf += "\"";
+          buf += escapedStr;
+          buf += "\"";
+        }
+      }
+    }
+
+    if (token_index > last_token_index)
+      last_token_index = token_index;
+
+    if (!buf.empty())
+      comments = "\"comments_before_token\":[" + buf + "],";
+  }
+}
+
+static void stringify_token(Token & tok, Lexer & lexer)
+{
+  collect_comments_before_token(&tok - &lexer.tokens[0], lexer);
   const char * ptr = tokstr;
   const char * quote = "";
   if (tok.type == TK_INTEGER)
@@ -74,7 +111,8 @@ static void stringify_token(Token & tok)
     quote = "\"";
   }
 
-  snprintf(buf, sizeof(buf) - 1, "\"tt\":\"%s\",\"val\":%s%s%s,\"line\":%d,\"col\":%d",
+  snprintf(buf, sizeof(buf) - 1, "%s\"tt\":\"%s\",\"val\":%s%s%s,\"line\":%d,\"col\":%d",
+    comments.c_str(),
     token_type_names[int(tok.type)], quote, ptr, quote, tok.line, tok.column);
 }
 
@@ -90,7 +128,7 @@ bool get_tokens_as_string(Lexer & lexer, string & s)
     if (!first)
       s += ",";
 
-    stringify_token(tok);
+    stringify_token(tok, lexer);
     s += "\n{";
     s += buf;
     s += "}";
@@ -105,7 +143,7 @@ bool get_tokens_as_string(Lexer & lexer, string & s)
 }
 
 
-string get_node_as_string(Node * node)
+string get_node_as_string(Node * node, Lexer & lexer)
 {
   if (!node)
     return string("null");
@@ -114,7 +152,7 @@ string get_node_as_string(Node * node)
   res.reserve(128);
   snprintf(buf, sizeof(buf) - 1, "\n{\"nt\":\"%s\",", node_type_names[node->nodeType]);
   res += buf;
-  stringify_token(node->tok);
+  stringify_token(node->tok, lexer);
   res += buf;
 
   if (!node->children.empty())
@@ -124,7 +162,7 @@ string get_node_as_string(Node * node)
     {
       if (i > 0)
         res += ",";
-      res += get_node_as_string(node->children[i]);
+      res += get_node_as_string(node->children[i], lexer);
     }
     res += "]";
   }
@@ -147,6 +185,7 @@ static void append_content(const char * file_name, const string & s)
 
 bool tokens_to_json(const char * file_name, Lexer & lexer)
 {
+  last_token_index = -1;
   string s;
   if (!get_tokens_as_string(lexer, s))
     return false;
@@ -156,10 +195,11 @@ bool tokens_to_json(const char * file_name, Lexer & lexer)
 }
 
 
-bool ast_to_json(const char * file_name, Node * node)
+bool ast_to_json(const char * file_name, Node * node, Lexer & lexer)
 {
+  last_token_index = -1;
   string s("\"root\":");
-  s += get_node_as_string(node);
+  s += get_node_as_string(node, lexer);
 
   append_content(file_name, s);
   return true;

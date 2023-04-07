@@ -10,7 +10,8 @@ const char * node_type_names[] =
 };
 #undef NODE_TYPE
 
-static Token emptyToken;
+Token emptyToken;
+
 
 struct Parser
 {
@@ -38,6 +39,11 @@ struct Parser
     expressionContext.push_back(EC_USUAL);
   }
 
+  void rewind()
+  {
+    pos = 0;
+    tok = tokens.empty() ? &emptyToken : &tokens[pos];
+  }
 
 #define EXPRESSION_CONTEXT_SCOPE(ctx) \
     struct ExprContextScope \
@@ -84,9 +90,15 @@ struct Parser
     return tokens[pos > 2 ? pos - 2 : 0];
   }
 
+  Node * newNode(Token & tok)
+  {
+    Node * n = ctx.nodeList.newNode(tok);
+    return n;
+  }
+
   Node * createOperandNode(Token & t)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     switch (t.type)
     {
     case TK_NULL:
@@ -118,42 +130,42 @@ struct Parser
 
   Node * createEmptyStatementNode(Token & t)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_EMPTY_STATEMENT;
     return n;
   }
 
   Node * createIdentifierNode(Token & t)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_IDENTIFIER;
     return n;
   }
 
   Node * createVarParamsNode(Token & t)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_VAR_PARAMS;
     return n;
   }
 
   Node * createRootNode(Token & t)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_ROOT;
     return n;
   }
 
   Node * createThisNode(Token & t)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_THIS;
     return n;
   }
 
   Node * createReturnNode(Token & t, Node * optional_result)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_RETURN;
     if (optional_result)
       n->children.push_back(optional_result);
@@ -162,7 +174,7 @@ struct Parser
 
   Node * createYieldNode(Token & t, Node * optional_result)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_YIELD;
     if (optional_result)
       n->children.push_back(optional_result);
@@ -171,21 +183,21 @@ struct Parser
 
   Node * createBreakNode(Token & t)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_BREAK;
     return n;
   }
 
   Node * createContinueNode(Token & t)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_CONTINUE;
     return n;
   }
 
   Node * createThrowNode(Token & t, Node * expression)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_THROW;
     n->children.push_back(expression);
     return n;
@@ -193,53 +205,59 @@ struct Parser
 
   Node * createTryCatchNode(Token & t, Node * try_body, Node * id, Node * catch_body)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_TRY_CATCH;
-    n->children.push_back(try_body);
-    n->children.push_back(id);
-    n->children.push_back(catch_body);
+    n->children.resize(3);
+    n->children[0] = try_body;
+    n->children[1] = id;
+    n->children[2] = catch_body;
     return n;
   }
 
   Node * createConstDeclarationNode(Token & t, Node * name, Node * value, bool is_global)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = is_global ? PNT_GLOBAL_CONST_DECLARATION : PNT_CONST_DECLARATION;
-    n->children.push_back(name);
-    n->children.push_back(value);
+    n->children.resize(2);
+    n->children[0] = name;
+    n->children[1] = value;
     return n;
   }
 
   Node * createSwitchNode(Token & t, Node * expression, vector<Token *> case_tests_tokens,
     vector<Node *> case_tests, vector<Node *> statements)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_SWITCH_STATEMENT;
-    n->children.push_back(expression);
+    n->children.resize(1 + case_tests_tokens.size());
+    n->children[0] = expression;
     for (size_t i = 0; i < case_tests_tokens.size(); i++)
     {
-      Node * switchCase = new Node(ctx, *case_tests_tokens[i]);
+      Node * switchCase = newNode(*case_tests_tokens[i]);
       switchCase->nodeType = PNT_SWITCH_CASE;
-      switchCase->children.push_back(case_tests[i]);
-      switchCase->children.push_back(statements[i]);
-      n->children.push_back(switchCase);
+      switchCase->children.resize(2);
+      switchCase->children[0] = case_tests[i];
+      switchCase->children[1] = statements[i];
+      n->children[1 + i] = switchCase;
     }
     return n;
   }
 
   Node * createLocalVarDeclarationNode(Token & t, vector<Node *> var_keys, vector<Node *> optional_values)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_LOCAL_VAR_DECLARATION;
+
+    n->children.resize(var_keys.size());
 
     for (size_t i = 0; i < var_keys.size(); i++)
     {
-      Node * declarator = new Node(ctx, var_keys[i]->tok);
+      Node * declarator = newNode(var_keys[i]->tok);
       declarator->nodeType = PNT_VAR_DECLARATOR;
       declarator->children.push_back(var_keys[i]);
       if (optional_values[i])
         declarator->children.push_back(optional_values[i]);
-      n->children.push_back(declarator);
+      n->children[i] = declarator;
     }
 
     return n;
@@ -247,12 +265,12 @@ struct Parser
 
   Node * createImportVarDeclarationNode(vector<Node *> var_keys)
   {
-    Node * n = new Node(ctx, emptyToken);
+    Node * n = newNode(emptyToken);
     n->nodeType = PNT_IMPORT_VAR_DECLARATION;
 
     for (size_t i = 0; i < var_keys.size(); i++)
     {
-      Node * declarator = new Node(ctx, var_keys[i]->tok);
+      Node * declarator = newNode(var_keys[i]->tok);
       declarator->nodeType = PNT_VAR_DECLARATOR;
       declarator->children.push_back(var_keys[i]);
       n->children.push_back(declarator);
@@ -263,10 +281,11 @@ struct Parser
 
   Node * createInexprVarDeclaratorNode(Token & t, Node * key, Node * value)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_INEXPR_VAR_DECLARATOR;
-    n->children.push_back(key);
-    n->children.push_back(value);
+    n->children.resize(2);
+    n->children[0] = key;
+    n->children[1] = value;
     return n;
   }
 
@@ -275,10 +294,11 @@ struct Parser
     if (!container || !key)
       return nullptr;
 
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_ACCESS_MEMBER;
-    n->children.push_back(container);
-    n->children.push_back(key);
+    n->children.resize(2);
+    n->children[0] = container;
+    n->children[1] = key;
     return n;
   }
 
@@ -287,17 +307,19 @@ struct Parser
     if (!container || !key)
       return nullptr;
 
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_ACCESS_MEMBER_IF_NOT_NULL;
-    n->children.push_back(container);
-    n->children.push_back(key);
+    n->children.resize(2);
+    n->children[0] = container;
+    n->children[1] = key;
     return n;
   }
 
   Node * createIfElseNode(Token & t, Node * expression, Node * if_true, Node * optional_if_false)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_IF_ELSE;
+    n->children.reserve(3);
     n->children.push_back(expression);
     n->children.push_back(if_true);
     if (optional_if_false)
@@ -307,42 +329,46 @@ struct Parser
 
   Node * createWhileLoopNode(Token & t, Node * expression, Node * loop_body)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_WHILE_LOOP;
-    n->children.push_back(expression);
-    n->children.push_back(loop_body);
+    n->children.resize(2);
+    n->children[0] = expression;
+    n->children[1] = loop_body;
     return n;
   }
 
   Node * createDoWhileLoopNode(Token & t, Node * expression, Node * loop_body)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_DO_WHILE_LOOP;
-    n->children.push_back(expression);
-    n->children.push_back(loop_body);
+    n->children.resize(2);
+    n->children[0] = expression;
+    n->children[1] = loop_body;
     return n;
   }
 
   Node * createForLoopNode(Token & t, Node * optional_initialization, Node * optional_expression,
     Node * optional_increment, Node * loop_body)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_FOR_LOOP;
-    n->children.push_back(optional_initialization);
-    n->children.push_back(optional_expression);
-    n->children.push_back(optional_increment);
-    n->children.push_back(loop_body);
+    n->children.resize(4);
+    n->children[0] = optional_initialization;
+    n->children[1] = optional_expression;
+    n->children[2] = optional_increment;
+    n->children[3] = loop_body;
     return n;
   }
 
   Node * createForEachLoopNode(Token & t, Node * variable, Node * optional_index, Node * container, Node * loop_body)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_FOR_EACH_LOOP;
-    n->children.push_back(variable);
-    n->children.push_back(optional_index);
-    n->children.push_back(container);
-    n->children.push_back(loop_body);
+    n->children.resize(4);
+    n->children[0] = variable;
+    n->children[1] = optional_index;
+    n->children[2] = container;
+    n->children[3] = loop_body;
     return n;
   }
 
@@ -351,11 +377,12 @@ struct Parser
     if (!function)
       return nullptr;
 
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_FUNCTION_CALL;
-    n->children.push_back(function);
+    n->children.resize(1 + params.size());
+    n->children[0] = function;
     for (size_t i = 0; i < params.size(); i++)
-      n->children.push_back(params[i]);
+      n->children[1 + i] = params[i];
     return n;
   }
 
@@ -364,17 +391,18 @@ struct Parser
     if (!function)
       return nullptr;
 
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_FUNCTION_CALL_IF_NOT_NULL;
-    n->children.push_back(function);
+    n->children.resize(1 + params.size());
+    n->children[0] = function;
     for (size_t i = 0; i < params.size(); i++)
-      n->children.push_back(params[i]);
+      n->children[1 + i] = params[i];
     return n;
   }
 
   Node * createArrayCreationNode(Token & t, vector<Node *> & params)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_ARRAY_CREATION;
     n->children = params;
     return n;
@@ -382,19 +410,21 @@ struct Parser
 
   Node * createTableCreationNode(Token & t, vector<Node *> & keys, vector<Node *> & values, vector<Token *> & assignment_tokens)
   {
-    std::vector<Node *> keyvalues;
+    Node * n = newNode(t);
+    n->nodeType = PNT_TABLE_CREATION;
+
+    std::vector<Node *> & keyvalues = n->children;
+    keyvalues.resize(keys.size());
     for (size_t i = 0; i < keys.size(); i++)
     {
-      Node * keyvalue = new Node(ctx, *assignment_tokens[i]);
+      Node * keyvalue = newNode(*assignment_tokens[i]);
       keyvalue->nodeType = PNT_KEY_VALUE;
-      keyvalue->children.push_back(keys[i]);
-      keyvalue->children.push_back(values[i]);
-      keyvalues.push_back(keyvalue);
+      keyvalue->children.resize(2);
+      keyvalue->children[0] = keys[i];
+      keyvalue->children[1] = values[i];
+      keyvalues[i] = keyvalue;
     }
 
-    Node * n = new Node(ctx, t);
-    n->nodeType = PNT_TABLE_CREATION;
-    n->children = keyvalues;
     return n;
   }
 
@@ -403,7 +433,7 @@ struct Parser
     if (!applied_to)
       return nullptr;
 
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_READER_MACRO;
     n->children.push_back(applied_to);
     return n;
@@ -414,7 +444,7 @@ struct Parser
     if (!applied_to)
       return nullptr;
 
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_UNARY_PRE_OP;
     n->children.push_back(applied_to);
     return n;
@@ -425,7 +455,7 @@ struct Parser
     if (!applied_to)
       return nullptr;
 
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_UNARY_POST_OP;
     n->children.push_back(applied_to);
     return n;
@@ -436,10 +466,11 @@ struct Parser
     if (!left || !right)
       return nullptr;
 
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_BINARY_OP;
-    n->children.push_back(left);
-    n->children.push_back(right);
+    n->children.resize(2);
+    n->children[0] = left;
+    n->children[1] = right;
     return n;
   }
 
@@ -448,23 +479,29 @@ struct Parser
     if (!expr || !if_true || !if_false)
       return nullptr;
 
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_TERNARY_OP;
-    n->children.push_back(expr);
-    n->children.push_back(if_true);
-    n->children.push_back(if_false);
+    n->children.resize(3);
+    n->children[0] = expr;
+    n->children[1] = if_true;
+    n->children[2] = if_false;
     return n;
   }
 
   Node * createFunctionParametersListNode(Token & t, vector<Token *> & params_tokens,
     vector<Node *> & params, vector<Node *> & default_values)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_FUNCTION_PARAMETERS_LIST;
 
     for (size_t i = 0; i < params.size(); i++)
     {
-      Node * param = new Node(ctx, *params_tokens[i]);
+      for (size_t j = 0; j < i; j++)
+        if (params[i] && params[j] && !strcmp(params[i]->tok.u.s, params[j]->tok.u.s))
+          ctx.error(165, (string("duplicate function parameter name '") + params[j]->tok.u.s + "'").c_str(),
+            params[i]->tok.line, params[i]->tok.column);
+
+      Node * param = newNode(*params_tokens[i]);
       param->nodeType = PNT_FUNCTION_PARAMETER;
       param->children.push_back(params[i]);
       if (default_values[i])
@@ -477,51 +514,54 @@ struct Parser
 
   Node * createLocalFunctionNode(Token & t, Node * optional_name, Node * parameters_list, Node * function_body)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_LOCAL_FUNCTION;
-    n->children.push_back(optional_name);
-    n->children.push_back(parameters_list);
-    n->children.push_back(function_body);
+    n->children.resize(3);
+    n->children[0] = optional_name;
+    n->children[1] = parameters_list;
+    n->children[2] = function_body;
     return n;
   }
 
   Node * createClassMethodNode(Token & t, Node * name, Node * parameters_list, Node * function_body)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_CLASS_METHOD;
-    n->children.push_back(name);
-    n->children.push_back(parameters_list);
-    n->children.push_back(function_body);
+    n->children.resize(3);
+    n->children[0] = name;
+    n->children[1] = parameters_list;
+    n->children[2] = function_body;
     return n;
   }
 
   Node * createClassConstructorNode(Token & t, Node * parameters_list, Node * function_body)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_CLASS_CONSTRUCTOR;
-    n->children.push_back(nullptr);
-    n->children.push_back(parameters_list);
-    n->children.push_back(function_body);
+    n->children.resize(3);
+    n->children[0] = nullptr;
+    n->children[1] = parameters_list;
+    n->children[2] = function_body;
     return n;
   }
 
   Node * createAccessConstructorNode(Token & t)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_ACCESS_CONSTRUCTOR;
     return n;
   }
 
   Node * createBaseNode(Token & t)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_BASE;
     return n;
   }
 
   Node * createParenNode(Token & t, Node * expression)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_EXPRESSION_PAREN;
     n->children.push_back(expression);
     return n;
@@ -529,7 +569,7 @@ struct Parser
 
   Node * createMakeKeyNode(Token & t, Node * expression)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_MAKE_KEY;
     n->children.push_back(expression);
     return n;
@@ -537,21 +577,23 @@ struct Parser
 
   Node * createFunctionNode(Token & t, Node * optional_name, Node * parameters_list, Node * function_body)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_FUNCTION;
-    n->children.push_back(optional_name);
-    n->children.push_back(parameters_list);
-    n->children.push_back(function_body);
+    n->children.resize(3);
+    n->children[0] = optional_name;
+    n->children[1] = parameters_list;
+    n->children[2] = function_body;
     return n;
   }
 
   Node * createLambdaNode(Token & t, Node * optional_name, Node * parameters_list, Node * lambda_expression)
   {
-    Node * n = new Node(ctx, t);
+    Node * n = newNode(t);
     n->nodeType = PNT_LAMBDA;
-    n->children.push_back(optional_name);
-    n->children.push_back(parameters_list);
-    n->children.push_back(lambda_expression);
+    n->children.resize(3);
+    n->children[0] = optional_name;
+    n->children[1] = parameters_list;
+    n->children[2] = lambda_expression;
     return n;
   }
 
@@ -562,6 +604,7 @@ struct Parser
 
     Token & opToken = *tok;
     std::vector<Node *> values;
+    values.reserve(8);
     if (accept(TK_RSQUARE))
       return createArrayCreationNode(opToken, values);
 
@@ -603,6 +646,9 @@ struct Parser
     std::vector<Node *> keys;
     std::vector<Node *> values;
     std::vector<Token *> assignmentTokens;
+    keys.reserve(8);
+    values.reserve(8);
+    assignmentTokens.reserve(8);
 
     if (accept(TK_RBRACE))
       return createTableCreationNode(opToken, keys, values, assignmentTokens);
@@ -818,6 +864,8 @@ struct Parser
                 delimiterSpace = delimiterSpace ? delimiterSpace : &tokens[pos - 1];
 
               accept(TK_COMMA);
+              if (forwardToken(0) == TK_RPAREN)
+                break;
             }
             else if (!accept(TK_COMMA))
             {
@@ -899,39 +947,36 @@ struct Parser
 #define DECL_PARSE_BIN_OP_FUNCTION(fn_name, accept_expression, next_function, single_op) \
   Node * fn_name() \
   { \
-    std::vector<Node *> nodes; \
-    std::vector<Token *> opTokens; \
+    Node * leftNode = nullptr; \
+    Node * rightNode = nullptr; \
+    Token * opToken = nullptr; \
     while (Node * n = next_function()) \
+    { \
+      if (!leftNode) \
+        leftNode = n; \
+      else \
+      { \
+        rightNode = n; \
+        if (opToken && rightNode) \
+          leftNode = createBinaryOpNode(*opToken, leftNode, rightNode); \
+      } \
+      \
       if (accept_expression) \
       { \
-        if (single_op && nodes.size() > 0) \
+        if (single_op && leftNode && rightNode) \
         { \
           ctx.error(116, "expected end of expression", tok->line, tok->column); \
-          break; \
+          return leftNode; \
         } \
-        opTokens.push_back(tok); \
-        nodes.push_back(n); \
+        opToken = tok; \
       } \
       else \
       { \
-        nodes.push_back(n); \
-        break; \
+        return leftNode; \
       } \
-   \
-    if (nodes.empty()) \
-      return nullptr; \
-   \
-    if (nodes.size() == 1) \
-      return nodes[0]; \
-   \
-    Node * res = nodes[0]; \
-    for (int i = 1; i < int(nodes.size()); i++) \
-      res = createBinaryOpNode(*opTokens[i - 1], res, nodes[i]); \
-   \
-    return res; \
+    } \
+    return leftNode; \
   }
-
-
 
 
   DECL_PARSE_BIN_OP_FUNCTION(parseFactor, accept(TK_MUL) || accept(TK_DIV) || accept(TK_MODULO), parseUnaryOp, false);
@@ -994,6 +1039,11 @@ struct Parser
     parseTernaryOp, true);
 
 
+  DECL_PARSE_BIN_OP_FUNCTION(parseNewSlotExpression,
+    accept(TK_NEWSLOT),
+    parseTernaryOp, true);
+
+
   DECL_PARSE_BIN_OP_FUNCTION(parseCommaExpression,
     accept(TK_COMMA),
     parseAssignExpression, true);
@@ -1030,7 +1080,7 @@ struct Parser
   {
     while (out_list->children.empty() ? expect(TK_IDENTIFIER) : accept(TK_IDENTIFIER))
     {
-      Node * decl = new Node(ctx, *tok);
+      Node * decl = newNode(*tok);
       decl->nodeType = element_node_type;
       decl->children.push_back(createIdentifierNode(*tok));
       if (accept(TK_ASSIGN))
@@ -1054,23 +1104,27 @@ struct Parser
     Token * tk = tok; // = "local"
     std::vector<Node *> varKeys;
     std::vector<Node *> varValues;
+    bool destructuring = false;
+
     while (!ctx.isError)
     {
       if (accept(TK_LBRACE))
       {
-        Node * list = new Node(ctx, *tok);
+        Node * list = newNode(*tok);
         list->nodeType = PNT_LIST_OF_KEYS_TABLE;
         parseListOfVars(list, PNT_VAR_DECLARATOR);
         varKeys.push_back(list);
         expect(TK_RBRACE);
+        destructuring = true;
       }
       else if (accept(TK_LSQUARE))
       {
-        Node * list = new Node(ctx, *tok);
+        Node * list = newNode(*tok);
         list->nodeType = PNT_LIST_OF_KEYS_ARRAY;
         parseListOfVars(list, PNT_VAR_DECLARATOR);
         varKeys.push_back(list);
         expect(TK_RSQUARE);
+        destructuring = true;
       }
       else if (expect(TK_IDENTIFIER))
       {
@@ -1080,7 +1134,7 @@ struct Parser
       if (ctx.isError)
         break;
 
-      if (accept(TK_ASSIGN))
+      if (destructuring ? expect(TK_ASSIGN) : accept(TK_ASSIGN))
       {
         varValues.push_back(parseTernaryOp());
         if (!isEndOfStatement())
@@ -1168,7 +1222,7 @@ struct Parser
         if (accept(TK_LBRACE))
         {
           paramTok.push_back(tok);
-          Node * list = new Node(ctx, *tok);
+          Node * list = newNode(*tok);
           list->nodeType = PNT_LIST_OF_KEYS_TABLE;
           parseListOfVars(list, PNT_FUNCTION_PARAMETER);
           paramNames.push_back(list);
@@ -1179,7 +1233,7 @@ struct Parser
         else if (accept(TK_LSQUARE))
         {
           paramTok.push_back(tok);
-          Node * list = new Node(ctx, *tok);
+          Node * list = newNode(*tok);
           list->nodeType = PNT_LIST_OF_KEYS_ARRAY;
           parseListOfVars(list, PNT_FUNCTION_PARAMETER);
           paramNames.push_back(list);
@@ -1197,10 +1251,8 @@ struct Parser
             defaultValues.push_back(nullptr);
         }
 
+        accept(TK_COMMA); // optional comma
         if (accept(TK_RPAREN))
-          break;
-
-        if (!expect(TK_COMMA))
           break;
       }
 
@@ -1282,7 +1334,7 @@ struct Parser
         Node * memberValue = parseFunction(FT_CLASS_CONSTRUCTOR);
         Node * memberName = nullptr;
 
-        Node * member = new Node(ctx, *memberTok);
+        Node * member = newNode(*memberTok);
         member->nodeType = PNT_CLASS_MEMBER;
         member->children.push_back(memberName);
         member->children.push_back(memberValue);
@@ -1294,7 +1346,7 @@ struct Parser
         Node * memberValue = parseFunction(FT_CLASS_METHOD);
         Node * memberName = memberValue ? memberValue->children[0] : nullptr;
 
-        Node * member = new Node(ctx, *memberTok);
+        Node * member = newNode(*memberTok);
         member->nodeType = isStatic ? PNT_STATIC_CLASS_MEMBER : PNT_CLASS_MEMBER;
         member->children.push_back(memberName);
         member->children.push_back(memberValue);
@@ -1308,7 +1360,7 @@ struct Parser
         Token * memberTok = tok;
         Node * memberValue = parseTernaryOp();
 
-        Node * member = new Node(ctx, *memberTok);
+        Node * member = newNode(*memberTok);
         member->nodeType = isStatic ? PNT_STATIC_CLASS_MEMBER : PNT_CLASS_MEMBER;
         member->children.push_back(memberName);
         member->children.push_back(memberValue);
@@ -1321,7 +1373,7 @@ struct Parser
         Token * memberTok = tok;
         Node * memberValue = parseTernaryOp();
 
-        Node * member = new Node(ctx, *memberTok);
+        Node * member = newNode(*memberTok);
         member->nodeType = isStatic ? PNT_STATIC_CLASS_MEMBER : PNT_CLASS_MEMBER;
         member->children.push_back(memberName);
         member->children.push_back(memberValue);
@@ -1329,7 +1381,7 @@ struct Parser
       }
     }
 
-    Node * res = new Node(ctx, *class_token);
+    Node * res = newNode(*class_token);
     res->nodeType = is_local ? PNT_LOCAL_CLASS : PNT_CLASS;
     res->children.push_back(className);
     res->children.push_back(extends);
@@ -1364,7 +1416,7 @@ struct Parser
         if (accept(TK_ASSIGN))
           memberValue = parseTernaryOp();
 
-        Node * member = new Node(ctx, *memberTok);
+        Node * member = newNode(*memberTok);
         member->nodeType = PNT_ENUM_MEMBER;
         member->children.push_back(memberName);
         if (memberValue)
@@ -1375,7 +1427,7 @@ struct Parser
       accept(TK_COMMA);
     }
 
-    Node * res = new Node(ctx, *enum_token);
+    Node * res = newNode(*enum_token);
     res->nodeType = is_global ? PNT_GLOBAL_ENUM : PNT_ENUM;
     res->children.push_back(enumName);
     for (size_t i = 0; i < enumMembers.size(); i++)
@@ -1390,6 +1442,8 @@ struct Parser
     Node * name = createIdentifierNode(*tok);
     expect(TK_ASSIGN);
     Node * value = parseTernaryOp();
+    if (!value)
+      return nullptr;
 
 #define ACCEPT_ONLY_SCALAR_CONST 1
 #if (ACCEPT_ONLY_SCALAR_CONST)
@@ -1445,7 +1499,7 @@ struct Parser
       Token * tk = tok;
       Node * functionResult = nullptr;
       if (!isEndOfStatement())
-        functionResult = parseTernaryOp();
+        functionResult = parseNewSlotExpression();
       res = createReturnNode(*tk, functionResult);
     }
     else if (accept(TK_YIELD))
@@ -1753,7 +1807,7 @@ struct Parser
   Node * parseStatementList(Token & statement_list_token, int depth, bool inside_switch, bool single_statement)
   {
     EXPRESSION_CONTEXT_SCOPE(EC_USUAL);
-    Node * statements = new Node(ctx, statement_list_token);
+    Node * statements = newNode(statement_list_token);
     statements->nodeType = PNT_STATEMENT_LIST;
     if (depth > 0 && forwardToken(0) == TK_RBRACE)
       return statements;
@@ -1808,24 +1862,56 @@ static Node * precess_import(Lexer & lex, Parser & parser, int * estimate_tokens
     for (auto && slot : im.slots)
       if (slot.path.size() == 1 && slot.path[0] == "*")
       {
-        if (moduleexports::module_export_collector(lex.ctx, im.line, im.column, im.moduleName.c_str()))
+        if (!CompilationContext::justParse)
         {
-          vector<string> exports;
-          string moduleNameKey = lex.ctx.fileDir + "#" + im.moduleName;
-          if (moduleexports::get_module_export(moduleNameKey.c_str(), exports))
+          extern bool use_colleced_idents;
+          extern unordered_map<string, moduleexports::ExportedIdentifier> idents_visible_after_requires;
+          if (use_colleced_idents)
           {
-            for (const string & e : exports)
+            string absName = moduleexports::get_absolute_name(im.moduleName.c_str());
+            if (absName.empty())
+              lex.ctx.error(87, (string("Cannot find collected identifiers for module '") + im.moduleName + "'").c_str(),
+                im.line, im.column);
+
+            auto it = moduleexports::all_exported_identifiers_by_module.find(absName);
+            if (it != moduleexports::all_exported_identifiers_by_module.end())
             {
-              lex.ctx.stringList.insert(e);
-              auto listIt = lex.ctx.stringList.find(e);
-              Token::U u;
-              u.s = listIt->c_str();
-              if (estimate_tokens_count)
-                (*estimate_tokens_count)++;
-              else
+              for (auto && ident : it->second)
               {
-                lex.tokens.push_back({ (TokenType)TK_IDENTIFIER, TF_DONT_WARN_UNUSED_VAR, (unsigned short)im.column, im.line, u });
-                vars.push_back(parser.createIdentifierNode(lex.tokens.back()));
+                lex.ctx.stringList.insert(ident.name);
+                auto listIt = lex.ctx.stringList.find(ident.name);
+                Token::U u = { 0 };
+                u.s = listIt->c_str();
+                if (estimate_tokens_count)
+                  (*estimate_tokens_count)++;
+                else
+                {
+                  lex.tokens.push_back({ (TokenType)TK_IDENTIFIER, TF_DONT_WARN_UNUSED_VAR, (unsigned short)im.column, im.line, u });
+                  vars.push_back(parser.createIdentifierNode(lex.tokens.back()));
+                  //idents_visible_after_requires[ident.name] = ident;
+                }
+              }
+            }
+          }
+          else if (moduleexports::module_export_collector(lex.ctx, im.line, im.column, im.moduleName.c_str()))
+          {
+            vector<string> exports;
+            string moduleNameKey = lex.ctx.fileDir + "#" + im.moduleName;
+            if (moduleexports::get_module_export(moduleNameKey.c_str(), exports))
+            {
+              for (const string & e : exports)
+              {
+                lex.ctx.stringList.insert(e);
+                auto listIt = lex.ctx.stringList.find(e);
+                Token::U u = { 0 };
+                u.s = listIt->c_str();
+                if (estimate_tokens_count)
+                  (*estimate_tokens_count)++;
+                else
+                {
+                  lex.tokens.push_back({ (TokenType)TK_IDENTIFIER, TF_DONT_WARN_UNUSED_VAR, (unsigned short)im.column, im.line, u });
+                  vars.push_back(parser.createIdentifierNode(lex.tokens.back()));
+                }
               }
             }
           }
@@ -1862,6 +1948,8 @@ Node * sq3_parse(Lexer & lex)
   int estimateImportTokens = 1;
   precess_import(lex, parser, &estimateImportTokens);
   lex.tokens.reserve(lex.tokens.size() + estimateImportTokens);
+
+  parser.rewind();
 
   Node * res = parser.parseStatementList(emptyToken, 0, false, false);
   Node * imports = precess_import(lex, parser, nullptr);

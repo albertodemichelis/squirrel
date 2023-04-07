@@ -1,4 +1,9 @@
-#include "quirrel_lexer.h"
+#ifdef _MSC_VER
+// sscanf is safe enough for this case
+#define _CRT_SECURE_NO_WARNINGS 1
+#endif
+
+#include "compilation_context.h"
 #include <limits.h>
 #include <string.h>
 #include <algorithm>
@@ -35,8 +40,9 @@ void Lexer::initializeTokenMaps()
   for (int i = 0; i < int(TOKEN_TYPE_COUNT); i++)
     if ((token_strings[i][0] >= 'a' && token_strings[i][0] <= 'z') || token_strings[i][0] == '_')
     {
-      tokenIdentStringToType.insert(std::make_pair<std::string, TokenType>(token_strings[i], TokenType(i)));
-      ctx.stringList.insert(token_strings[i]);
+      auto it = ctx.stringList.insert(token_strings[i]);
+      const char * ptrToTokenStr = it.first->c_str();
+      tokenIdentStringToType.insert(std::make_pair(ptrToTokenStr, TokenType(i)));
     }
 }
 
@@ -122,6 +128,14 @@ void Lexer::print()
   }
 }
 
+void Lexer::addCurrentComments()
+{
+  if (!currentComments.empty())
+    comments.emplace(std::make_pair(int(tokens.size() - 1), currentComments));
+  currentComments.clear();
+}
+
+
 std::string Lexer::expandReaderMacro(const char * str, int & out_macro_length)
 {
   const char * start = str;
@@ -148,7 +162,7 @@ std::string Lexer::expandReaderMacro(const char * str, int & out_macro_length)
 
     if (curChar == '\n' || curChar == '\r')
     {
-      ctx.error(162, "new line inside interpolated string", curLine, curColumn + int(str - start));
+      ctx.error(162, "new line inside interpolated string", curLine, curColumn + int(str - start) + 1);
       return std::string();
     }
 
@@ -171,7 +185,7 @@ std::string Lexer::expandReaderMacro(const char * str, int & out_macro_length)
 
             macroParams.push_back('(');
             macroParams += "#apos:";
-            macroParams += std::to_string(int(str - start));
+            macroParams += std::to_string(int(str - start) + 1);
             macroParams += " ";
             depth++;
             continue;
@@ -251,10 +265,10 @@ std::string Lexer::expandReaderMacro(const char * str, int & out_macro_length)
     macroStr.push_back(')');
   }
   macroStr += "#apos:";
-  macroStr += std::to_string(int(str - start));
+  macroStr += std::to_string(curColumn + int(str - start));
   macroStr += " ";
 
-
+  curColumn = curColumn + int(str - start);
   out_macro_length = int(str - start);
 
   return macroStr;
@@ -372,15 +386,16 @@ bool Lexer::parseStringLiteral(bool raw_string, int open_char)
 
     Token::U u;
     u.i = (unsigned char)tok[0];
-    tokens.push_back({ (TokenType)TK_INTEGER, 0, (unsigned short)beginColumn, beginLine, u });
+    tokens.emplace_back(Token{ (TokenType)TK_INTEGER, 0, (unsigned short)beginColumn, beginLine, u });
+    addCurrentComments();
   }
   else
   {
-    ctx.stringList.insert(tok);
-    auto listIt = ctx.stringList.find(tok);
+    auto listIt = ctx.stringList.emplace(tok);
     Token::U u;
-    u.s = listIt->c_str();
-    tokens.push_back({ (TokenType)TK_STRING_LITERAL, 0, (unsigned short)beginColumn, beginLine, u });
+    u.s = listIt.first->c_str();
+    tokens.emplace_back(Token{ (TokenType)TK_STRING_LITERAL, 0, (unsigned short)beginColumn, beginLine, u });
+    addCurrentComments();
   }
 
   return true;
@@ -396,11 +411,64 @@ void Lexer::onCompilerDirective(const std::string & directive)
     sscanf(s, "%d", &curColumn);
     curColumn--;
   }
+
+  unsigned setFlags = 0;
+  unsigned clearFlags = 0;
+  bool applyToDefault = false;
+  s++; // skip '#'
+  if (strncmp(s, "default:", 8) == 0)
+  {
+    applyToDefault = true;
+    s += 8;
+  }
+
+  if (strcmp(s, "strict") == 0)
+    setFlags = LF_STRICT;
+  else if (strcmp(s, "relaxed") == 0)
+    clearFlags = LF_STRICT;
+  else if (strcmp(s, "strict-bool") == 0)
+    setFlags = LF_STRICT_BOOL;
+  else if (strcmp(s, "relaxed-bool") == 0)
+    clearFlags = LF_STRICT_BOOL;
+  else if (strcmp(s, "no-root-fallback") == 0)
+    setFlags = LF_EXPLICIT_ROOT_LOOKUP;
+  else if (strcmp(s, "implicit-root-fallback") == 0)
+    clearFlags = LF_EXPLICIT_ROOT_LOOKUP;
+  else if (strcmp(s, "no-func-decl-sugar") == 0)
+    setFlags = LF_NO_FUNC_DECL_SUGAR;
+  else if (strcmp(s, "allow-func-decl-sugar") == 0)
+    clearFlags = LF_NO_FUNC_DECL_SUGAR;
+  else if (strcmp(s, "no-class-decl-sugar") == 0)
+    setFlags = LF_NO_CLASS_DECL_SUGAR;
+  else if (strcmp(s, "allow-class-decl-sugar") == 0)
+    clearFlags = LF_NO_CLASS_DECL_SUGAR;
+  else if (strcmp(s, "no-plus-concat") == 0)
+    setFlags = LF_NO_PLUS_CONCAT;
+  else if (strcmp(s, "allow-plus-concat") == 0)
+    clearFlags = LF_NO_PLUS_CONCAT;
+  else if (strcmp(s, "explicit-this") == 0)
+    setFlags = LF_EXPLICIT_THIS;
+  else if (strcmp(s, "implicit-this") == 0)
+    clearFlags = LF_EXPLICIT_THIS;
+  else if (strcmp(s, "forbid-root-table") == 0)
+    setFlags = LF_FORBID_ROOT_TABLE;
+  else if (strcmp(s, "allow-root-table") == 0)
+    clearFlags = LF_FORBID_ROOT_TABLE;
+  else if (strcmp(s, "disable-optimizer") == 0)
+    setFlags = LF_DISABLE_OPTIMIZER;
+  else if (strcmp(s, "enable-optimizer") == 0)
+    clearFlags = LF_DISABLE_OPTIMIZER;
+
+  ctx.langFeatures = (ctx.langFeatures | setFlags) & ~clearFlags;
+  if (applyToDefault)
+    CompilationContext::defaultLangFeatures = (CompilationContext::defaultLangFeatures | setFlags) & ~clearFlags;
 }
 
 bool Lexer::process()
 {
   tokens.clear();
+  tokens.reserve(s.length() / 6 + 4);
+  currentComments.clear();
   index = is_utf8_bom(s.c_str(), 0) ? 3 : 0;
 
   curLine = 1;
@@ -412,10 +480,11 @@ bool Lexer::process()
 
   #define PUSH_TOKEN(tk) \
     { \
-      Token::U u; u.s = token_strings[tk]; tokens.push_back( \
+      Token::U u; u.s = token_strings[tk]; tokens.emplace_back( Token \
       { (TokenType)(tk), 0, \
         (unsigned short)curColumn, curLine, u \
       }); \
+      addCurrentComments(); \
     }
 
   for (int ch = nextChar(); ch > 0 && !ctx.isError; ch = nextChar())
@@ -436,26 +505,42 @@ bool Lexer::process()
     case '/':
       if (fetchChar() == '/')
       {
-        for (ch = nextChar(); ch > 0 && ch != '\n'; ch = nextChar())
-          ;
+        if (ctx.includeComments)
+        {
+          std::string comment;
+          nextChar();
+          for (ch = nextChar(); ch > 0 && ch != '\n'; ch = nextChar())
+            comment.push_back(ch);
+          currentComments.emplace_back(comment);
+        }
+        else
+        {
+          for (ch = nextChar(); ch > 0 && ch != '\n'; ch = nextChar())
+            ;
+        }
         if (!tokens.empty())
           tokens.back().flags |= TF_NEXT_EOL;
       }
       else if (fetchChar() == '*')
       {
         nextChar();
-        nextChar();
+        std::string comment;
         insideComment = true;
         bool eol = false;
         for (ch = nextChar(); ch > 0; ch = nextChar())
         {
           if (ch == '\n')
             eol = true;
-          if (ch == '/' && fetchChar(-2) == '*')
+          if (ch == '*' && fetchChar() == '/')
           {
+            if (ctx.includeComments)
+              currentComments.emplace_back(comment);
+            nextChar();
             insideComment = false;
             break;
           }
+          if (ctx.includeComments)
+            comment.push_back(ch);
         }
 
         if (eol)
@@ -507,13 +592,13 @@ bool Lexer::process()
       break;
 
     case '\"':
-      if (tokens.size() > 0 && tokens[tokens.size() - 1].type == TK_READER_MACRO)
+      if (tokens.size() > 0 && tokens.back().type == TK_READER_MACRO)
       {
         int macroLength = 0;
         std::string macro = expandReaderMacro(s.c_str() + index, macroLength);
         index += macroLength;
-        int baseColumn = tokens[tokens.size() - 1].column;
-        int line = tokens[tokens.size() - 1].line;
+        int baseColumn = tokens.back().column;
+        int line = tokens.back().line;
         Lexer * macroLex = new Lexer(ctx, macro);
         macroLex->isReaderMacro = true;
         if (macroLex->process() && !macroLex->tokens.empty())
@@ -526,7 +611,7 @@ bool Lexer::process()
 
           tokens.erase(tokens.end() - 1, tokens.end());
           tokens.insert(tokens.end(), macroLex->tokens.begin(), macroLex->tokens.end() - 1);
-          tokens[tokens.size() - 1].flags &= ~TF_NEXT_EOL;
+          tokens.back().flags &= ~TF_NEXT_EOL;
         }
         delete macroLex;
       }
@@ -809,50 +894,49 @@ bool Lexer::process()
       default:
         if (isBeginOfIdent(ch))
         {
-          std::string tok;
-          tok += char(ch);
           int beginLine = curLine;
           int beginColumn = curColumn;
-          for (ch = fetchChar(); ch > 0; ch = fetchChar())
-          {
-            if (isContinueOfIdent(ch))
-            {
-              tok += char(ch);
-              nextChar();
-            }
-            else
-              break;
-          }
 
-          ctx.stringList.insert(tok);
-          auto listIt = ctx.stringList.find(tok);
+          int from = index - 1;
+          while (isContinueOfIdent(ch = fetchChar()))
+            nextChar();
+          ;
+
+          auto listIt = ctx.stringList.emplace(std::string(s, from, index - from));
           Token::U u;
-          u.s = listIt->c_str();
+          u.s = listIt.first->c_str();
 
-          auto it = tokenIdentStringToType.find(tok);
+          auto it = tokenIdentStringToType.find(u.s);
           if (it != tokenIdentStringToType.end())
           {
             if (it->second == TK_IN && !tokens.empty() && tokens.back().type == TK_NOTTXT)
               tokens.back().type = TK_NOTIN;
             else if (it->second == TK___FILE__)
             {
-              ctx.stringList.insert(ctx.fileName);
-              auto fileIt = ctx.stringList.find(tok);
+              auto fileIt = ctx.stringList.insert(ctx.fileName);
               Token::U ufile;
-              ufile.s = fileIt->c_str();
-              tokens.push_back({ (TokenType)TK_STRING_LITERAL, 0, (unsigned short)beginColumn, beginLine, ufile });
+              ufile.s = fileIt.first->c_str();
+              tokens.emplace_back(Token{ (TokenType)TK_STRING_LITERAL, 0, (unsigned short)beginColumn, beginLine, ufile });
+              addCurrentComments();
             }
             else if (it->second == TK___LINE__)
             {
               Token::U uline;
               uline.i = beginLine;
-              tokens.push_back({ (TokenType)TK_INTEGER, 0, (unsigned short)beginColumn, beginLine, uline });
+              tokens.emplace_back(Token{ (TokenType)TK_INTEGER, 0, (unsigned short)beginColumn, beginLine, uline });
+              addCurrentComments();
             }
             else
-              tokens.push_back({ it->second, 0, (unsigned short)beginColumn, beginLine, u });
+            {
+              tokens.emplace_back(Token{ it->second, 0, (unsigned short)beginColumn, beginLine, u });
+              addCurrentComments();
+            }
           }
           else
-            tokens.push_back({ (TokenType)TK_IDENTIFIER, 0, (unsigned short)beginColumn, beginLine, u });
+          {
+            tokens.emplace_back(Token{ (TokenType)TK_IDENTIFIER, 0, (unsigned short)beginColumn, beginLine, u });
+            addCurrentComments();
+          }
         }
         else if (isdigit(ch))
         {
@@ -946,7 +1030,8 @@ bool Lexer::process()
           if (hasExp || hasPoint)
           {
             u.d = strtod(tok.c_str(), nullptr);
-            tokens.push_back({ TK_FLOAT, 0, (unsigned short)beginColumn, beginLine, u });
+            tokens.emplace_back(Token{ TK_FLOAT, 0, (unsigned short)beginColumn, beginLine, u });
+            addCurrentComments();
           }
           else
           {
@@ -973,7 +1058,8 @@ bool Lexer::process()
                 ctx.error(111, "integer number is too big", curLine, curColumn);
               }
             }
-            tokens.push_back({ (TokenType)TK_INTEGER, 0, (unsigned short)beginColumn, beginLine, u });
+            tokens.emplace_back(Token{ (TokenType)TK_INTEGER, 0, (unsigned short)beginColumn, beginLine, u });
+            addCurrentComments();
           }
         }
         else
