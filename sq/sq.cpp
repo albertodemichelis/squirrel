@@ -169,7 +169,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                 }
             }
             else {
-                SqModules::SqObjPtr exports;
+                Sqrat::Object exports;
                 std::string errMsg;
                 if (!module_mgr->requireModule(filename, true, "__main__", exports, errMsg)) {
                     scprintf(_SC("Error [%s]\n"), errMsg.c_str());

@@ -11,7 +11,6 @@
 #include <sqdirect.h>
 
 #include <string.h>
-#include <assert.h>
 
 #ifdef _WIN32
 #  include <io.h>
@@ -23,11 +22,12 @@
 const char* SqModules::__main__ = "__main__";
 const char* SqModules::__fn__ = nullptr;
 
+
 static SQInteger persist_state(HSQUIRRELVM vm)
 {
   // arguments:
   // 1 - module 'this', 2 - slot id, 3 - intitializer, 4 - state storage
-  assert(sq_gettype(vm, 4) == OT_TABLE);
+  SQRAT_ASSERT(sq_gettype(vm, 4) == OT_TABLE);
 
   const SQChar *slotName;
   sq_getstring(vm, 2, &slotName);
@@ -75,12 +75,13 @@ static SQInteger keepref(HSQUIRRELVM vm)
 {
   // arguments: this, object, ref holder
   sq_push(vm, 2); // push object
-  sq_arrayappend(vm, 3); // append to ref holder
+  SQRAT_VERIFY(SQ_SUCCEEDED(sq_arrayappend(vm, 3))); // append to ref holder
+
   sq_push(vm, 2); // push object again
   return 1;
 }
 
-void SqModules::resolveFileName(const char *requested_fn, std::string &res)
+void SqModules::resolveFileName(const char *requested_fn, string &res)
 {
   res.clear();
 
@@ -89,7 +90,7 @@ void SqModules::resolveFileName(const char *requested_fn, std::string &res)
   // try relative path first
   if (!runningScripts.empty())
   {
-    const std::string &curFile = runningScripts.back();
+    const string &curFile = runningScripts.back();
     scriptPathBuf.resize(curFile.length()+2);
     dd_get_fname_location(&scriptPathBuf[0], curFile.c_str());
     dd_append_slash_c(&scriptPathBuf[0]);
@@ -116,7 +117,7 @@ void SqModules::resolveFileName(const char *requested_fn, std::string &res)
 
 bool SqModules::checkCircularReferences(const char* resolved_fn, const char *)
 {
-  for (const std::string& scriptFn : runningScripts)
+  for (const string& scriptFn : runningScripts)
     if (scriptFn == resolved_fn)
       return false;
   return true;
@@ -125,13 +126,13 @@ bool SqModules::checkCircularReferences(const char* resolved_fn, const char *)
 
 SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn, const char *requested_fn,
                                                         const HSQOBJECT *bindings,
-                                                        SqObjPtr &script_closure, std::string &out_err_msg)
+                                                        Sqrat::Object &script_closure, string &out_err_msg)
 {
   script_closure.release();
   FILE* f = fopen(resolved_fn, "r");
   if (!f)
   {
-    out_err_msg = std::string("Script file not found: ") + requested_fn +" / " + resolved_fn;
+    out_err_msg = string("Script file not found: ") + requested_fn +" / " + resolved_fn;
     return CompileScriptResult::FileNotFound;
   }
 
@@ -145,7 +146,7 @@ SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn,
   if (len < 0)
   {
     fclose(f);
-    out_err_msg = std::string("Cannot read script file: ") + requested_fn +" / " + resolved_fn;
+    out_err_msg = string("Cannot read script file: ") + requested_fn +" / " + resolved_fn;
     return CompileScriptResult::FileNotFound;
   }
 
@@ -159,7 +160,7 @@ SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn,
 
   if (SQ_FAILED(sq_compilebuffer(sqvm, &buf[0], len, resolved_fn, true, bindings)))
   {
-    out_err_msg = std::string("Failed to compile file: ") + requested_fn +" / " + resolved_fn;
+    out_err_msg = string("Failed to compile file: ") + requested_fn +" / " + resolved_fn;
     return CompileScriptResult::CompilationFailed;
   }
 
@@ -170,8 +171,10 @@ SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn,
 }
 
 
-SqModules::SqObjPtr SqModules::setupStateStorage(const char* resolved_fn)
+Sqrat::Object SqModules::setupStateStorage(const char* resolved_fn)
 {
+  SQRAT_ASSERT(sqvm);
+
   for (const Module &prevMod : prevModules)
     if (dd_fname_equal(prevMod.fn.c_str(), resolved_fn))
       return prevMod.stateStorage;
@@ -179,7 +182,7 @@ SqModules::SqObjPtr SqModules::setupStateStorage(const char* resolved_fn)
   HSQOBJECT ho;
   sq_newtable(sqvm);
   sq_getstackobj(sqvm, -1, &ho);
-  SqObjPtr res(sqvm, ho);
+  Sqrat::Object res(sqvm, ho);
   sq_poptop(sqvm);
   return res;
 }
@@ -197,7 +200,7 @@ SqModules::Module * SqModules::findModule(const char * resolved_fn)
 void SqModules::bindBaseLib(HSQOBJECT bindings)
 {
   sq_pushobject(sqvm, bindings);
-  sq_registerbaselib(sqvm);
+  SQRAT_VERIFY(SQ_SUCCEEDED(sq_registerbaselib(sqvm)));
   sq_poptop(sqvm);
 }
 
@@ -223,12 +226,12 @@ void SqModules::bindRequireApi(HSQOBJECT bindings)
 
 
 bool SqModules::requireModule(const char *requested_fn, bool must_exist, const char *__name__,
-                              SqObjPtr &exports, std::string &out_err_msg)
+                              Sqrat::Object &exports, string &out_err_msg)
 {
   out_err_msg.clear();
   exports.release();
 
-  std::string resolvedFn;
+  string resolvedFn;
   resolveFileName(requested_fn, resolvedFn);
 
   if (!checkCircularReferences(resolvedFn.c_str(), requested_fn))
@@ -252,10 +255,10 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
   sq_newtable(vm);
   HSQOBJECT hBindings;
   sq_getstackobj(vm, -1, &hBindings);
-  SqObjPtr bindingsTbl(vm, hBindings); // add ref
-  SqObjPtr stateStorage = setupStateStorage(resolvedFn.c_str());
+  Sqrat::Object bindingsTbl(vm, hBindings); // add ref
+  Sqrat::Object stateStorage = setupStateStorage(resolvedFn.c_str());
 
-  assert(sq_gettop(vm) == prevTop+1); // bindings table
+  SQRAT_ASSERT(sq_gettop(vm) == prevTop+1); // bindings table
 
   sq_pushstring(vm, "persist", 7);
   sq_pushobject(vm, stateStorage.o);
@@ -264,7 +267,7 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
   sq_rawset(vm, -3);
 
   sq_newarray(vm, 0);
-  SqObjPtr refHolder;
+  Sqrat::Object refHolder;
   refHolder.attachToStack(vm, -1);
   sq_poptop(vm);
 
@@ -278,16 +281,16 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
   sq_pushstring(vm, __name__, -1);
   sq_rawset(vm, -3);
 
-  assert(sq_gettop(vm) == prevTop+1); // bindings table
+  SQRAT_ASSERT(sq_gettop(vm) == prevTop+1); // bindings table
 
   bindBaseLib(hBindings);
   bindRequireApi(hBindings);
 
-  assert(sq_gettop(vm) == prevTop+1); // bindings table
+  SQRAT_ASSERT(sq_gettop(vm) == prevTop+1); // bindings table
   sq_poptop(vm); //bindings table
 
 
-  SqObjPtr scriptClosure;
+  Sqrat::Object scriptClosure;
   CompileScriptResult res = compileScript(resolvedFn.c_str(), requested_fn, &hBindings, scriptClosure, out_err_msg);
   if (!must_exist && res == CompileScriptResult::FileNotFound)
   {
@@ -307,31 +310,31 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
   sq_pushobject(vm, scriptClosure.o);
   sq_newtable(vm);
 
-  assert(sq_gettype(vm, -1) == OT_TABLE);
-  SqObjPtr objThis;
+  SQRAT_ASSERT(sq_gettype(vm, -1) == OT_TABLE);
+  Sqrat::Object objThis;
   objThis.attachToStack(vm, -1);
 
 
   SQRESULT callRes = sq_call(vm, 1, true, true);
 
   (void)rsIdx;
-  assert(runningScripts.size() == rsIdx+1);
+  SQRAT_ASSERT(runningScripts.size() == rsIdx+1);
   runningScripts.pop_back();
 
   if (SQ_FAILED(callRes))
   {
-    out_err_msg = std::string("Failed to run script ") + requested_fn + " / " + resolvedFn;
+    out_err_msg = string("Failed to run script ") + requested_fn + " / " + resolvedFn;
     sq_pop(vm, 1); // clojure, no return value on error
     return false;
   }
 
   HSQOBJECT hExports;
   sq_getstackobj(vm, -1, &hExports);
-  exports = SqObjPtr(vm, hExports);
+  exports = Sqrat::Object(vm, hExports);
 
   sq_pop(vm, 2); // retval + closure
 
-  assert(sq_gettop(vm) == prevTop);
+  SQRAT_ASSERT(sq_gettop(vm) == prevTop);
 
   Module module;
   module.exports = exports;
@@ -347,14 +350,14 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
 }
 
 
-bool SqModules::reloadModule(const char *fn, bool must_exist, const char *__name__, SqObjPtr &exports, std::string &out_err_msg)
+bool SqModules::reloadModule(const char *fn, bool must_exist, const char *__name__, Sqrat::Object &exports, string &out_err_msg)
 {
-  assert(prevModules.empty());
+  SQRAT_ASSERT(prevModules.empty());
 
   modules.swap(prevModules);
   modules.clear(); // just in case
 
-  std::string errMsg;
+  string errMsg;
   bool res = requireModule(fn, must_exist, __name__, exports, out_err_msg);
 
   prevModules.clear();
@@ -363,17 +366,17 @@ bool SqModules::reloadModule(const char *fn, bool must_exist, const char *__name
 }
 
 
-bool SqModules::reloadAll(std::string &full_err_msg)
+bool SqModules::reloadAll(string &full_err_msg)
 {
-  assert(prevModules.empty());
+  SQRAT_ASSERT(prevModules.empty());
   full_err_msg.clear();
 
   modules.swap(prevModules);
   modules.clear(); // just in case
 
   bool res = true;
-  SqObjPtr exportsTmp;
-  std::string errMsg;
+  Sqrat::Object exportsTmp;
+  string errMsg;
   for (const Module &prev : prevModules)
   {
     if (!requireModule(prev.fn.c_str(), true, prev.__name__.c_str(), exportsTmp, errMsg))
@@ -389,11 +392,11 @@ bool SqModules::reloadAll(std::string &full_err_msg)
 }
 
 
-bool SqModules::addNativeModule(const char *module_name, const SqObjPtr &exports)
+bool SqModules::addNativeModule(const char *module_name, const Sqrat::Object &exports)
 {
   if (!module_name || !*module_name)
     return false;
-  auto ins = nativeModules.insert({std::string(module_name), exports});
+  auto ins = nativeModules.insert({string(module_name), exports});
   return ins.second; // false if already registered
 }
 
@@ -405,7 +408,7 @@ template<bool must_exist> SQInteger SqModules::sqRequire(HSQUIRRELVM vm)
     return sq_throwerror(vm, "No module manager");
 
   SqModules *self = reinterpret_cast<SqModules *>(selfPtr);
-  assert(self->sqvm == vm);
+  SQRAT_ASSERT(self->sqvm == vm);
 
   const char *fileName = nullptr;
   SQInteger fileNameLen = -1;
@@ -432,8 +435,8 @@ template<bool must_exist> SQInteger SqModules::sqRequire(HSQUIRRELVM vm)
     return 1;
   }
 
-  SqObjPtr exports;
-  std::string errMsg;
+  Sqrat::Object exports;
+  string errMsg;
   if (!self->requireModule(fileName, must_exist, __fn__, exports, errMsg))
     return sq_throwerror(vm, errMsg.c_str());
 
@@ -448,8 +451,8 @@ void SqModules::registerStdLibNativeModule(const char *name, RegFunc reg_func)
   sq_newtable(sqvm);
   sq_getstackobj(sqvm, -1, &hModule);
   reg_func(sqvm);
-  bool regRes = addNativeModule(name, SqObjPtr(sqvm, hModule));
-  assert(regRes);
+  bool regRes = addNativeModule(name, Sqrat::Object(sqvm, hModule));
+  SQRAT_ASSERT(regRes);
   sq_pop(sqvm, 1);
 }
 
@@ -479,11 +482,12 @@ void SqModules::registerIoStreamLib()
   HSQOBJECT hModule;
   sq_resetobject(&hModule);
   sq_newtable(sqvm);
-  sq_getstackobj(sqvm, -1, &hModule);
-  sqstd_init_streamclass(sqvm);
-  sqstd_register_bloblib(sqvm);
-  bool regRes = addNativeModule("iostream", SqObjPtr(sqvm, hModule));
-  assert(regRes);
+  SQRAT_VERIFY(SQ_SUCCEEDED(sq_getstackobj(sqvm, -1, &hModule)));
+  SQRAT_VERIFY(SQ_SUCCEEDED(sqstd_init_streamclass(sqvm)));
+  SQRAT_VERIFY(SQ_SUCCEEDED(sqstd_register_bloblib(sqvm)));
+  bool regRes = addNativeModule("iostream", Sqrat::Object(sqvm, hModule));
+  (void)(regRes);
+  SQRAT_ASSERTF(regRes, "Failed to init 'iostream' library with module manager");
   sq_pop(sqvm, 1);
 }
 
