@@ -1389,7 +1389,7 @@ exception_restore:
             case _OP_POSTFOREACH:
                 assert(sq_type(STK(arg0)) == OT_GENERATOR);
                 if(_generator(STK(arg0))->_state == SQGenerator::eDead)
-                    ci->_ip += (sarg1 - 1);
+                    ci->_ip += (sarg1 - 1); // NOTE: worth to use the same way to encode displacements, fix some day
                 continue;
             case _OP_CLONE: _GUARD(Clone(STK(arg1), TARGET)); continue;
             case _OP_TYPEOF: _GUARD(TypeOf(STK(arg1), TARGET)) continue;

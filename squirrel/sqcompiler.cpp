@@ -889,7 +889,7 @@ public:
                 SQObjectPtr constant = Expect(TK_IDENTIFIER);
                 if (CanBeDefaultDelegate(constant))
                     flags |= OP_GET_FLAG_ALLOW_DEF_DELEGATE;
-                _es.literal_field = canBeLiteral & !(flags & (OP_GET_FLAG_NO_ERROR|OP_GET_FLAG_ALLOW_DEF_DELEGATE));//todo: we can support def delegate and nullable also.
+                _es.literal_field = canBeLiteral && !(flags & (OP_GET_FLAG_NO_ERROR|OP_GET_FLAG_ALLOW_DEF_DELEGATE));//todo: we can support def delegate and nullable also.
 
                 SQInteger constantI = _fs->GetConstant(constant);
                 _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), constantI);
@@ -1185,7 +1185,7 @@ public:
             }
             break;
         case _SC('{'):
-            _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(),0,NOT_TABLE);
+            _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(),0,0,NOT_TABLE);
             Lex();ParseTableOrClass(_SC(','),_SC('}'));
             break;
         case TK_FUNCTION: FunctionExp(_token);break;
