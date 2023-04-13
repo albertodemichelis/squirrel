@@ -715,7 +715,13 @@ bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQ
             ci->_root = SQTrue;
                       }
             break;
-        case ET_RESUME_GENERATOR: _generator(closure)->Resume(this, outres); ci->_root = SQTrue; traps += ci->_etraps; break;
+        case ET_RESUME_GENERATOR: 
+            if(!_generator(closure)->Resume(this, outres)) {
+                return false;
+            }
+            ci->_root = SQTrue;
+            traps += ci->_etraps;
+            break;
         case ET_RESUME_VM:
         case ET_RESUME_THROW_VM:
             traps = _suspended_traps;
