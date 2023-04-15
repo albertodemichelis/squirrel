@@ -780,7 +780,7 @@ bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQ
 {
     ValidateThreadAccess();
 
-#if SQ_CHECK_THREAD == 1
+    #if SQ_CHECK_THREAD >= SQ_CHECK_THREAD_LEVEL_FAST
     if (_get_current_thread_id_func)
     {
         if (!_nnativecalls)
@@ -788,7 +788,7 @@ bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQ
         else
             assert(_current_thread == _get_current_thread_id_func());
     }
-#endif
+    #endif
 
     if ((_nnativecalls + 1) > MAX_NATIVE_CALLS) { Raise_Error(_SC("Native stack overflow")); return false; }
     _nnativecalls++;
