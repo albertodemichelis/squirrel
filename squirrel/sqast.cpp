@@ -96,7 +96,7 @@ void Node::visitChildren(Visitor *visitor) {
     case TO_DECL_GROUP:
         static_cast<DeclGroup *>(this)->visitChildren(visitor); return;
     case TO_DESTRUCT:
-        static_cast<DesctructionDecl *>(this)->visitChildren(visitor); return;
+        static_cast<DestructuringDecl *>(this)->visitChildren(visitor); return;
     case TO_FUNCTION:
         static_cast<FunctionDecl *>(this)->visitChildren(visitor); return;
     case TO_CONSTRUCTOR:
@@ -212,7 +212,7 @@ void DeclGroup::visitChildren(Visitor *visitor) {
         decl->visit(visitor);
 }
 
-void DesctructionDecl::visitChildren(Visitor *visitor) {
+void DestructuringDecl::visitChildren(Visitor *visitor) {
     DeclGroup::visitChildren(visitor);
     _expr->visit(visitor);
 }

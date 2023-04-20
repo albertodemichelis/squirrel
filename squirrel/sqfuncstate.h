@@ -20,6 +20,7 @@ struct SQFuncState
     void SetInstructionParam(SQInteger pos,SQInteger arg,SQInteger val);
     SQInstruction &GetInstruction(SQInteger pos){return _instructions[pos];}
     void PopInstructions(SQInteger size){for(SQInteger i=0;i<size;i++)_instructions.pop_back();}
+    SQInstruction &LastInstruction() { return _instructions.back(); }
     void SetStackSize(SQInteger n);
     SQInteger CountOuters(SQInteger stacksize);
     void SnoozeOpt(){_optimization=false;}

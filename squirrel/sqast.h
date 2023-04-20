@@ -263,7 +263,7 @@ public:
         case TO_DECL_GROUP:
             visitor->visitDeclGroup(static_cast<DeclGroup *>(this)); return;
         case TO_DESTRUCT:
-            visitor->visitDesctructionDecl(static_cast<DesctructionDecl *>(this)); return;
+            visitor->visitDesctructingDecl(static_cast<DestructuringDecl  *>(this)); return;
         case TO_FUNCTION:
             visitor->visitFunctionDecl(static_cast<FunctionDecl *>(this)); return;
         case TO_CONSTRUCTOR:
@@ -303,17 +303,21 @@ class AccessExpr;
 
 class Expr : public Node {
 protected:
-    Expr(enum TreeOp op) : Node(op) {}
+    Expr(enum TreeOp op) : Node(op), _isConst(false) {}
 
 public:
     bool isAccessExpr() const { return TO_GETFIELD <= op() && op() <= TO_SETTABLE; }
     AccessExpr *asAccessExpr() const { assert(isAccessExpr()); return (AccessExpr*)this; }
+
+    void setConst() { _isConst = true; }
+    bool isConst() const { return _isConst; }
+private:
+    bool _isConst;
 };
 
 enum IdType : SQInteger {
     ID_LOCAL = -1,
-    ID_CONST = -2,
-    ID_FIELD = -3
+    ID_FIELD = -2
 };
 
 class Id : public Expr {
@@ -330,13 +334,11 @@ public:
     bool isField() const { return _outpos == ID_FIELD; }
     void setField() { _outpos = ID_FIELD; }
     bool isLocal() const { return _outpos == ID_LOCAL; }
-    bool isConst() const { return _outpos == ID_CONST; }
-    void setConst() { _outpos = ID_CONST; }
 
     SQInteger outerPos() const { return _outpos; }
     void setAssiagnable(bool v) { _assignable = v; }
     bool isAssignable() const { return _assignable; }
-    bool isBinding() const { return (isOuter() || isLocal()) && isAssignable(); }
+    bool isBinding() const { return (isOuter() || isLocal()) && !isAssignable(); }
 
 
 private:
@@ -817,9 +819,9 @@ enum DestructuringType {
     DT_ARRAY
 };
 
-class DesctructionDecl : public DeclGroup {
+class DestructuringDecl : public DeclGroup {
 public:
-    DesctructionDecl(Arena *arena, enum DestructuringType dt) : DeclGroup(arena, TO_DESTRUCT), _dt_type(dt) {}
+    DestructuringDecl(Arena *arena, enum DestructuringType dt) : DeclGroup(arena, TO_DESTRUCT), _dt_type(dt) {}
 
     void visitChildren(Visitor *visitor);
 
@@ -1135,7 +1137,7 @@ public:
     virtual void visitConstDecl(ConstDecl *cnst) { visitDecl(cnst); }
     virtual void visitEnumDecl(EnumDecl *enm) { visitDecl(enm); }
     virtual void visitDeclGroup(DeclGroup *grp) { visitDecl(grp); }
-    virtual void visitDesctructionDecl(DesctructionDecl *destruct) { visitDecl(destruct); }
+    virtual void visitDesctructingDecl(DestructuringDecl  *destruct) { visitDecl(destruct); }
 };
 
 #endif // _SQAST_H_
