@@ -55,6 +55,7 @@ enum SQExpressionContext
   SQE_RVALUE,
 };
 
+
 #define BEGIN_SCOPE() SQScope __oldscope__ = _scope; \
                      _scope.outers = _fs->_outers; \
                      _scope.stacksize = _fs->GetStackSize(); \
