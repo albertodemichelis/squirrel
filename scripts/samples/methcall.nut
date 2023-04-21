@@ -7,15 +7,15 @@ let class Toggle {
     bool=null
 
     function constructor(startstate) {
-        bool = startstate
+        this.bool = startstate
     }
 
     function value() {
-        return bool
+        return this.bool
     }
 
     function activate() {
-        bool = !bool
+        this.bool = !this.bool
         return this
     }
 }
@@ -27,14 +27,14 @@ let class NthToggle extends Toggle {
 
     function constructor(start_state, max_counter) {
         base.constructor(start_state)
-        count_max = max_counter
+        this.count_max = max_counter
     }
 
     function activate() {
-        ++count
-        if (count >= count_max) {
+        ++this.count
+        if (this.count >= this.count_max) {
           base.activate()
-          count = 0
+          this.count = 0
         }
         return this
     }
