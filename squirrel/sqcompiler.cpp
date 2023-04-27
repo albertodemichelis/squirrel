@@ -4184,7 +4184,7 @@ private:
 };
 
 
-bool CompileOld(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
+static bool CompileOnePass(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
     SQCompiler p(vm, rg, up, bindings, sourcename, raiseerror, lineinfo);
 
     if (vm->_on_compile_file)
@@ -4193,7 +4193,7 @@ bool CompileOld(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *b
     return p.Compile(out);
 }
 
-bool CompileNew(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
+static bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
 {
     Arena astArena(_ss(vm)->_alloc_ctx, "AST");
     SQParser p(vm, rg, up, sourcename, &astArena, raiseerror, lineinfo);
@@ -4217,15 +4217,15 @@ bool CompileNew(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bi
     return codegen.generate(r, out);
 }
 
-bool Compile(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo, bool useNew) {
+bool Compile(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo, bool use_ast) {
 #ifdef FORCE_NEW_COMPILER
-    useNew = true;
+    use_ast = true;
 #endif // FORCE_NEW_COMPILER
 
 
-    return useNew
-        ? CompileNew(vm, rg, up, bindings, sourcename, out, raiseerror, lineinfo)
-        : CompileOld(vm, rg, up, bindings, sourcename, out, raiseerror, lineinfo);
+    return use_ast
+        ? CompileWithAst(vm, rg, up, bindings, sourcename, out, raiseerror, lineinfo)
+        : CompileOnePass(vm, rg, up, bindings, sourcename, out, raiseerror, lineinfo);
 }
 
 CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm, const SQChar *sourceName, SQInteger lang_fuatures, bool lineinfo, bool raiseerror)
