@@ -145,6 +145,14 @@ public:
     inline T& operator[](SQUnsignedInteger pos) const{ return _vals[pos]; }
     T* _vals;
     SQAllocContext _alloc_ctx;
+
+    typedef T* iterator;
+    typedef const T* const_iterator;
+
+    iterator begin() { return &_vals[0]; }
+    const_iterator begin() const { return &_vals[0]; }
+    iterator end() { return &_vals[_size]; }
+    const_iterator end() const { return &_vals[_size]; }
 private:
     void _realloc(SQUnsignedInteger newsize)
     {
@@ -163,6 +171,5 @@ private:
     SQUnsignedInteger _size;
     SQUnsignedInteger _allocated;
 };
-
 
 #endif //_SQUTILS_H_
