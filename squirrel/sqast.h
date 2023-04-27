@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "squirrel.h"
 #include "squtils.h"
+#include "arena.h"
 #include "sqobject.h"
 
 #define TREE_OPS \
@@ -101,62 +102,6 @@ class Id;
 class GetFieldExpr;
 class GetTableExpr;
 
-template<typename T>
-class ArenaVector {
-public:
-    ArenaVector(Arena *arena) :
-    _arena(arena),
-    _vals(NULL),
-    _size(0),
-    _allocated(0) {
-
-    }
-
-    inline T &push_back(const T& val = T())
-    {
-        if (_allocated <= _size)
-            _realloc(_size * 2);
-        return *(new ((void *)&_vals[_size++]) T(val));
-    }
-    inline void pop_back()
-    {
-        _size--; _vals[_size].~T();
-    }
-
-    T& top() const { return _vals[_size - 1]; }
-    inline SQUnsignedInteger size() const { return _size; }
-    bool empty() const { return (_size <= 0); }
-
-    inline T &back() const { return _vals[_size - 1]; }
-    inline T& operator[](SQUnsignedInteger pos) const { return _vals[pos]; }
-
-
-    typedef T* iterator;
-    typedef const T* const_iterator;
-
-    iterator begin() { return &_vals[0]; }
-    const_iterator begin() const { return &_vals[0]; }
-    iterator end() { return &_vals[_size]; }
-    const_iterator end() const { return &_vals[_size]; }
-
-private:
-
-    void _realloc(SQUnsignedInteger newsize)
-    {
-        newsize = (newsize > 0) ? newsize : 4;
-        T *newPtr = (T *)_arena->allocate(newsize * sizeof(T));
-        memcpy(newPtr, _vals, _size * sizeof(T));
-        _vals = newPtr;
-        _allocated = newsize;
-    }
-
-    Arena *_arena;
-
-    T *_vals;
-
-    size_t _size;
-    size_t _allocated;
-};
 
 class Node : public ArenaObj {
 protected:
