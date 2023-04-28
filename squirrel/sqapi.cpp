@@ -59,12 +59,10 @@ HSQUIRRELVM sq_open(SQInteger initialstacksize)
     sq_vm_assign_to_alloc_context(allocctx, v);
     if(v->Init(NULL, initialstacksize)) {
         return v;
-    } else {
-        sq_delete(allocctx, v, SQVM);
-        sq_vm_destroy_alloc_context(&allocctx);
-        return NULL;
     }
-    return v;
+    sq_delete(allocctx, v, SQVM);
+    sq_vm_destroy_alloc_context(&allocctx);
+    return NULL;
 }
 
 HSQUIRRELVM sq_newthread(HSQUIRRELVM friendvm, SQInteger initialstacksize)

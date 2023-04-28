@@ -489,7 +489,6 @@ static SQInteger default_delegate_tofloat(HSQUIRRELVM v)
             break;
         }}
         return sq_throwerror(v, _SC("cannot convert the string"));
-        break;
     case OT_INTEGER:case OT_FLOAT:
         v->Push(SQObjectPtr(tofloat(o)));
         break;

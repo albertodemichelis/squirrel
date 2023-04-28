@@ -27,7 +27,7 @@ static const SQChar *g_nnames[] =
 #define OP_CCLASS       (MAX_CHAR+7)
 #define OP_NCLASS       (MAX_CHAR+8) //negates class the [^
 #define OP_RANGE        (MAX_CHAR+9)
-#define OP_CHAR         (MAX_CHAR+10)
+//#define OP_CHAR       (MAX_CHAR+10)
 #define OP_EOL          (MAX_CHAR+11)
 #define OP_BOL          (MAX_CHAR+12)
 #define OP_WB           (MAX_CHAR+13)
@@ -457,7 +457,6 @@ static const SQChar *sqstd_rex_matchnode(SQRex* exp,SQRexNode *node,const SQChar
                     return asd;
             }
             return NULL;
-            break;
     }
     case OP_EXPR:
     case OP_NOCAPEXPR:{

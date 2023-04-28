@@ -15,7 +15,7 @@
 #include "sqclass.h"
 #include "vartrace.h"
 
-#define TOP() (_stack._vals[_top-1])
+//#define TOP() (_stack._vals[_top-1])
 #define TARGET _stack._vals[_stackbase+arg0]
 #define STK(a) _stack._vals[_stackbase+(a)]
 
@@ -538,10 +538,8 @@ bool SQVM::DerefInc(SQInteger op,SQObjectPtr &target, SQObjectPtr &self, SQObjec
     SQObjectPtr *__restrict instanceValue = nullptr;
     if (sq_type(tself) == OT_INSTANCE)
     {
-        uint32_t memberIdx;
         SQInstance*__restrict instance = _instance(tself);
         const SQClass *__restrict classType = instance->_class;
-        const SQTable * __restrict members = classType->_members;
         const SQTable::_HashNode *n = classType->_members->_Get(tkey);
         if (n && _isfield(n->val))
             instanceValue = instance->_values + _member_idx(n->val);
@@ -575,7 +573,7 @@ bool SQVM::DerefInc(SQInteger op,SQObjectPtr &target, SQObjectPtr &self, SQObjec
 }
 
 #define arg0 (_i_._arg0)
-#define sarg0 ((SQInteger)*((const signed char *)&_i_._arg0))
+//#define sarg0 ((SQInteger)*((const signed char *)&_i_._arg0))
 #define arg1 (_i_._arg1)
 #define sarg1 (*((const SQInt32 *)&_i_._arg1))
 #define arg2 (_i_._arg2)
@@ -637,8 +635,6 @@ bool SQVM::FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr
             _instance(o1)->Get(o2, o3);
             o4 = (SQInteger)nrefidx;
             _FINISH(1);
-
-            return false;
         }
         break;
     case OT_GENERATOR:

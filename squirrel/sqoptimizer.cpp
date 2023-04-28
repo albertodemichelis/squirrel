@@ -93,7 +93,6 @@ void SQOptimizer::optimizeConstFolding()
 {
     SQInstructionVec & instr = fs->_instructions;
     bool changed = false;
-    bool res = false;
     for (int i = 0; i + 3 < instr.size(); i++) {
         do {
             changed = false;
