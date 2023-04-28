@@ -3086,7 +3086,7 @@ public:
             case TK_CONSTRUCTOR: id = _fs->CreateString(_SC("constructor"), 11); break;
             }
 
-            if (_stringval(id) == _stringval(_fs->_name)) {
+            if (_string(id) == _string(_fs->_name)) {
                 Error(_SC("Variable name %s conflicts with function name"), _stringval(id));
             }
 
@@ -3431,7 +3431,7 @@ public:
         bool assignable = false;
         if (_fs->GetLocalVariable(name, assignable) >= 0)
             Error(_SC("%s name '%s' conflicts with existing local variable"), desc, _string(name)->_val);
-        if (_stringval(name) == _stringval(_fs->_name))
+        if (_string(name) == _string(_fs->_name))
             Error(_SC("%s name '%s' conflicts with function name"), desc, _stringval(name));
 
         SQObject constant;
@@ -3700,7 +3700,7 @@ public:
             idxname = valname;
             Lex(); valname = Expect(TK_IDENTIFIER);
             CheckDuplicateLocalIdentifier(valname, _SC("Iterator"), false);
-            if (_stringval(idxname) == _stringval(valname))
+            if (_string(idxname) == _string(valname))
                 Error(_SC("foreach() key and value names are the same: %s"), _stringval(valname));
         }
         else {
@@ -4310,7 +4310,7 @@ void CodegenVisitor::CheckDuplicateLocalIdentifier(SQObject name, const SQChar *
     bool assignable = false;
     if (_fs->GetLocalVariable(name, assignable) >= 0)
         error(_SC("%s name '%s' conflicts with existing local variable"), desc, _string(name)->_val);
-    if (_stringval(name) == _stringval(_fs->_name))
+    if (_string(name) == _string(_fs->_name))
         error(_SC("%s name '%s' conflicts with function name"), desc, _stringval(name));
 
     SQObject constant;
@@ -5730,7 +5730,7 @@ void CodegenVisitor::visitId(Id *id) {
         return;
     }
 
-    if (_stringval(idObj) == _stringval(_fs->_name)) {
+    if (_string(idObj) == _string(_fs->_name)) {
         error(_SC("Variable name %s conflicts with function name"), idObj);
     }
 
