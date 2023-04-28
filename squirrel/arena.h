@@ -2,7 +2,9 @@
 
 #include "squtils.h"
 
-#define ARENA_USE_SYSTEM_ALLOC 1
+#include <cstring>
+
+#define ARENA_USE_SYSTEM_ALLOC 0
 
 #if ARENA_USE_SYSTEM_ALLOC
 
@@ -25,7 +27,7 @@
 #endif
 
 
-#endif ARENA_USE_SYSTEM_ALLOC
+#endif // ARENA_USE_SYSTEM_ALLOC
 
 
 #define PAGE_SIZE 4096

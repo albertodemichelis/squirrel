@@ -112,117 +112,7 @@ public:
     enum TreeOp op() const { return _op; }
 
     template<typename V>
-    void visit(V *visitor) {
-        switch (op())
-        {
-        case TO_BLOCK:      visitor->visitBlock(static_cast<Block *>(this)); return;
-        case TO_IF:         visitor->visitIfStatement(static_cast<IfStatement *>(this)); return;
-        case TO_WHILE:      visitor->visitWhileStatement(static_cast<WhileStatement *>(this)); return;
-        case TO_DOWHILE:    visitor->visitDoWhileStatement(static_cast<DoWhileStatement *>(this)); return;
-        case TO_FOR:        visitor->visitForStatement(static_cast<ForStatement *>(this)); return;
-        case TO_FOREACH:    visitor->visitForeachStatement(static_cast<ForeachStatement *>(this)); return;
-        case TO_SWITCH:     visitor->visitSwitchStatement(static_cast<SwitchStatement *>(this)); return;
-        case TO_RETURN:     visitor->visitReturnStatement(static_cast<ReturnStatement *>(this)); return;
-        case TO_YIELD:      visitor->visitYieldStatement(static_cast<YieldStatement *>(this)); return;
-        case TO_THROW:      visitor->visitThrowStatement(static_cast<ThrowStatement *>(this)); return;
-        case TO_TRY:        visitor->visitTryStatement(static_cast<TryStatement *>(this)); return;
-        case TO_BREAK:      visitor->visitBreakStatement(static_cast<BreakStatement *>(this)); return;
-        case TO_CONTINUE:   visitor->visitContinueStatement(static_cast<ContinueStatement *>(this)); return;
-        case TO_EXPR_STMT:  visitor->visitExprStatement(static_cast<ExprStatement *>(this)); return;
-        case TO_EMPTY:      visitor->visitEmptyStatement(static_cast<EmptyStatement *>(this)); return;
-            //case TO_STATEMENT_MARK:
-        case TO_ID:         visitor->visitId(static_cast<Id *>(this)); return;
-        case TO_COMMA:      visitor->visitCommaExpr(static_cast<CommaExpr *>(this)); return;
-        case TO_NULLC:
-        case TO_ASSIGN:
-        case TO_OROR:
-        case TO_ANDAND:
-        case TO_OR:
-        case TO_XOR:
-        case TO_AND:
-        case TO_NE:
-        case TO_EQ:
-        case TO_3CMP:
-        case TO_GE:
-        case TO_GT:
-        case TO_LE:
-        case TO_LT:
-        case TO_IN:
-        case TO_INSTANCEOF:
-        case TO_USHR:
-        case TO_SHR:
-        case TO_SHL:
-        case TO_MUL:
-        case TO_DIV:
-        case TO_MOD:
-        case TO_ADD:
-        case TO_SUB:
-        case TO_NEWSLOT:
-        case TO_INEXPR_ASSIGN:
-        case TO_PLUSEQ:
-        case TO_MINUSEQ:
-        case TO_MULEQ:
-        case TO_DIVEQ:
-        case TO_MODEQ:
-            visitor->visitBinExpr(static_cast<BinExpr *>(this)); return;
-        case TO_NOT:
-        case TO_BNOT:
-        case TO_NEG:
-        case TO_TYPEOF:
-        case TO_RESUME:
-        case TO_CLONE:
-        case TO_PAREN:
-        case TO_DELETE:
-            visitor->visitUnExpr(static_cast<UnExpr *>(this)); return;
-        case TO_LITERAL:
-            visitor->visitLiteralExpr(static_cast<LiteralExpr *>(this)); return;
-        case TO_BASE:
-            visitor->visitBaseExpr(static_cast<BaseExpr *>(this)); return;
-        case TO_ROOT:
-            visitor->visitRootExpr(static_cast<RootExpr *>(this)); return;
-        case TO_INC:
-            visitor->visitIncExpr(static_cast<IncExpr *>(this)); return;
-        case TO_DECL_EXPR:
-            visitor->visitDeclExpr(static_cast<DeclExpr *>(this)); return;
-        case TO_ARRAYEXPR:
-            visitor->visitArrayExpr(static_cast<ArrayExpr *>(this)); return;
-        case TO_GETFIELD:
-            visitor->visitGetFieldExpr(static_cast<GetFieldExpr *>(this)); return;
-        case TO_SETFIELD:
-            visitor->visitSetFieldExpr(static_cast<SetFieldExpr *>(this)); return;
-        case TO_GETTABLE:
-            visitor->visitGetTableExpr(static_cast<GetTableExpr *>(this)); return;
-        case TO_SETTABLE:
-            visitor->visitSetTableExpr(static_cast<SetTableExpr *>(this)); return;
-        case TO_CALL:
-            visitor->visitCallExpr(static_cast<CallExpr *>(this)); return;
-        case TO_TERNARY:
-            visitor->visitTerExpr(static_cast<TerExpr *>(this)); return;
-            //case TO_EXPR_MARK:
-        case TO_VAR:
-            visitor->visitVarDecl(static_cast<VarDecl *>(this)); return;
-        case TO_PARAM:
-            visitor->visitParamDecl(static_cast<ParamDecl *>(this)); return;
-        case TO_CONST:
-            visitor->visitConstDecl(static_cast<ConstDecl *>(this)); return;
-        case TO_DECL_GROUP:
-            visitor->visitDeclGroup(static_cast<DeclGroup *>(this)); return;
-        case TO_DESTRUCT:
-            visitor->visitDesctructingDecl(static_cast<DestructuringDecl  *>(this)); return;
-        case TO_FUNCTION:
-            visitor->visitFunctionDecl(static_cast<FunctionDecl *>(this)); return;
-        case TO_CONSTRUCTOR:
-            visitor->visitConstructorDecl(static_cast<ConstructorDecl *>(this)); return;
-        case TO_CLASS:
-            visitor->visitClassDecl(static_cast<ClassDecl *>(this)); return;
-        case TO_ENUM:
-            visitor->visitEnumDecl(static_cast<EnumDecl *>(this)); return;
-        case TO_TABLE:
-            visitor->visitTableDecl(static_cast<TableDecl *>(this)); return;
-        default:
-            break;
-        }
-    }
+    void visit(V *visitor);
 
     void visitChildren(Visitor *visitor);
 
@@ -1084,5 +974,120 @@ public:
     virtual void visitDeclGroup(DeclGroup *grp) { visitDecl(grp); }
     virtual void visitDesctructingDecl(DestructuringDecl  *destruct) { visitDecl(destruct); }
 };
+
+
+template<typename V>
+void Node::visit(V *visitor) {
+    switch (op())
+    {
+    case TO_BLOCK:      visitor->visitBlock(static_cast<Block *>(this)); return;
+    case TO_IF:         visitor->visitIfStatement(static_cast<IfStatement *>(this)); return;
+    case TO_WHILE:      visitor->visitWhileStatement(static_cast<WhileStatement *>(this)); return;
+    case TO_DOWHILE:    visitor->visitDoWhileStatement(static_cast<DoWhileStatement *>(this)); return;
+    case TO_FOR:        visitor->visitForStatement(static_cast<ForStatement *>(this)); return;
+    case TO_FOREACH:    visitor->visitForeachStatement(static_cast<ForeachStatement *>(this)); return;
+    case TO_SWITCH:     visitor->visitSwitchStatement(static_cast<SwitchStatement *>(this)); return;
+    case TO_RETURN:     visitor->visitReturnStatement(static_cast<ReturnStatement *>(this)); return;
+    case TO_YIELD:      visitor->visitYieldStatement(static_cast<YieldStatement *>(this)); return;
+    case TO_THROW:      visitor->visitThrowStatement(static_cast<ThrowStatement *>(this)); return;
+    case TO_TRY:        visitor->visitTryStatement(static_cast<TryStatement *>(this)); return;
+    case TO_BREAK:      visitor->visitBreakStatement(static_cast<BreakStatement *>(this)); return;
+    case TO_CONTINUE:   visitor->visitContinueStatement(static_cast<ContinueStatement *>(this)); return;
+    case TO_EXPR_STMT:  visitor->visitExprStatement(static_cast<ExprStatement *>(this)); return;
+    case TO_EMPTY:      visitor->visitEmptyStatement(static_cast<EmptyStatement *>(this)); return;
+        //case TO_STATEMENT_MARK:
+    case TO_ID:         visitor->visitId(static_cast<Id *>(this)); return;
+    case TO_COMMA:      visitor->visitCommaExpr(static_cast<CommaExpr *>(this)); return;
+    case TO_NULLC:
+    case TO_ASSIGN:
+    case TO_OROR:
+    case TO_ANDAND:
+    case TO_OR:
+    case TO_XOR:
+    case TO_AND:
+    case TO_NE:
+    case TO_EQ:
+    case TO_3CMP:
+    case TO_GE:
+    case TO_GT:
+    case TO_LE:
+    case TO_LT:
+    case TO_IN:
+    case TO_INSTANCEOF:
+    case TO_USHR:
+    case TO_SHR:
+    case TO_SHL:
+    case TO_MUL:
+    case TO_DIV:
+    case TO_MOD:
+    case TO_ADD:
+    case TO_SUB:
+    case TO_NEWSLOT:
+    case TO_INEXPR_ASSIGN:
+    case TO_PLUSEQ:
+    case TO_MINUSEQ:
+    case TO_MULEQ:
+    case TO_DIVEQ:
+    case TO_MODEQ:
+        visitor->visitBinExpr(static_cast<BinExpr *>(this)); return;
+    case TO_NOT:
+    case TO_BNOT:
+    case TO_NEG:
+    case TO_TYPEOF:
+    case TO_RESUME:
+    case TO_CLONE:
+    case TO_PAREN:
+    case TO_DELETE:
+        visitor->visitUnExpr(static_cast<UnExpr *>(this)); return;
+    case TO_LITERAL:
+        visitor->visitLiteralExpr(static_cast<LiteralExpr *>(this)); return;
+    case TO_BASE:
+        visitor->visitBaseExpr(static_cast<BaseExpr *>(this)); return;
+    case TO_ROOT:
+        visitor->visitRootExpr(static_cast<RootExpr *>(this)); return;
+    case TO_INC:
+        visitor->visitIncExpr(static_cast<IncExpr *>(this)); return;
+    case TO_DECL_EXPR:
+        visitor->visitDeclExpr(static_cast<DeclExpr *>(this)); return;
+    case TO_ARRAYEXPR:
+        visitor->visitArrayExpr(static_cast<ArrayExpr *>(this)); return;
+    case TO_GETFIELD:
+        visitor->visitGetFieldExpr(static_cast<GetFieldExpr *>(this)); return;
+    case TO_SETFIELD:
+        visitor->visitSetFieldExpr(static_cast<SetFieldExpr *>(this)); return;
+    case TO_GETTABLE:
+        visitor->visitGetTableExpr(static_cast<GetTableExpr *>(this)); return;
+    case TO_SETTABLE:
+        visitor->visitSetTableExpr(static_cast<SetTableExpr *>(this)); return;
+    case TO_CALL:
+        visitor->visitCallExpr(static_cast<CallExpr *>(this)); return;
+    case TO_TERNARY:
+        visitor->visitTerExpr(static_cast<TerExpr *>(this)); return;
+        //case TO_EXPR_MARK:
+    case TO_VAR:
+        visitor->visitVarDecl(static_cast<VarDecl *>(this)); return;
+    case TO_PARAM:
+        visitor->visitParamDecl(static_cast<ParamDecl *>(this)); return;
+    case TO_CONST:
+        visitor->visitConstDecl(static_cast<ConstDecl *>(this)); return;
+    case TO_DECL_GROUP:
+        visitor->visitDeclGroup(static_cast<DeclGroup *>(this)); return;
+    case TO_DESTRUCT:
+        visitor->visitDesctructingDecl(static_cast<DestructuringDecl  *>(this)); return;
+    case TO_FUNCTION:
+        visitor->visitFunctionDecl(static_cast<FunctionDecl *>(this)); return;
+    case TO_CONSTRUCTOR:
+        visitor->visitConstructorDecl(static_cast<ConstructorDecl *>(this)); return;
+    case TO_CLASS:
+        visitor->visitClassDecl(static_cast<ClassDecl *>(this)); return;
+    case TO_ENUM:
+        visitor->visitEnumDecl(static_cast<EnumDecl *>(this)); return;
+    case TO_TABLE:
+        visitor->visitTableDecl(static_cast<TableDecl *>(this)); return;
+    default:
+        break;
+    }
+}
+
 
 #endif // _SQAST_H_
