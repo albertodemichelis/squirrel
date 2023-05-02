@@ -308,7 +308,7 @@ private:
 
 class BaseExpr : public Expr {
 public:
-    BaseExpr() : Expr(TO_BASE) {}
+    BaseExpr() : Expr(TO_BASE), _pos(-1) {}
     
     void visitChildren(Visitor *visitor) {}
 
@@ -337,7 +337,7 @@ enum LiteralKind {
 class LiteralExpr : public Expr {
 public:
 
-    LiteralExpr() : Expr(TO_LITERAL), _kind(LK_NULL) {}
+    LiteralExpr() : Expr(TO_LITERAL), _kind(LK_NULL) { _v.raw = 0; }
     LiteralExpr(const SQChar *s) : Expr(TO_LITERAL), _kind(LK_STRING) { _v.s = s; }
     LiteralExpr(SQFloat f) : Expr(TO_LITERAL), _kind(LK_FLOAT) { _v.f = f; }
     LiteralExpr(SQInteger i) : Expr(TO_LITERAL), _kind(LK_INT) { _v.i = i; }
@@ -454,6 +454,7 @@ protected:
 };
 
 enum DeclarationContext {
+    DC_UNKNOWN,
     DC_LOCAL,
     DC_SLOT,
     DC_EXPR
@@ -461,7 +462,7 @@ enum DeclarationContext {
 
 class Decl : public Statement {
 protected:
-    Decl(enum TreeOp op) : Statement(op) {}
+    Decl(enum TreeOp op) : Statement(op), _context(DC_UNKNOWN) {}
 public:
 
     void setContext(enum DeclarationContext ctx) { _context = ctx; }
@@ -548,9 +549,9 @@ class Block;
 
 class FunctionDecl : public Decl {
 protected:
-    FunctionDecl(enum TreeOp op, Arena *arena, Id *name) : Decl(op), _arena(arena), _parameters(arena), _name(name), _vararg(false) {}
+    FunctionDecl(enum TreeOp op, Arena *arena, Id *name) : Decl(op), _arena(arena), _parameters(arena), _name(name), _vararg(false), _body(NULL), _lambda(false), _sourcename(NULL) {}
 public:
-    FunctionDecl(Arena *arena, Id *name) : Decl(TO_FUNCTION), _arena(arena), _parameters(arena), _name(name), _vararg(false) {}
+    FunctionDecl(Arena *arena, Id *name) : Decl(TO_FUNCTION), _arena(arena), _parameters(arena), _name(name), _vararg(false), _body(NULL), _lambda(false), _sourcename(NULL) {}
 
     void addParameter(Id *name, Expr *defaultVal = NULL) { _parameters.push_back(new (_arena) ParamDecl(name, defaultVal)); }
     
@@ -656,7 +657,7 @@ enum DestructuringType {
 
 class DestructuringDecl : public DeclGroup {
 public:
-    DestructuringDecl(Arena *arena, enum DestructuringType dt) : DeclGroup(arena, TO_DESTRUCT), _dt_type(dt) {}
+    DestructuringDecl(Arena *arena, enum DestructuringType dt) : DeclGroup(arena, TO_DESTRUCT), _dt_type(dt), _expr(NULL) {}
 
     void visitChildren(Visitor *visitor);
 
@@ -672,7 +673,7 @@ private:
 
 class Block : public Statement {
 public:
-    Block(Arena *arena, bool is_root = false) : Statement(TO_BLOCK), _statements(arena), _is_root(is_root), _endLine(-1) {}
+    Block(Arena *arena, bool is_root = false) : Statement(TO_BLOCK), _statements(arena), _is_root(is_root), _endLine(-1), _is_body(false) {}
 
     void addStatement(Statement *stmt) { assert(stmt); _statements.push_back(stmt); }
 
@@ -798,7 +799,7 @@ struct SwitchCase {
 
 class SwitchStatement : public Statement {
 public:
-    SwitchStatement(Arena *arena, Expr *expr) : Statement(TO_SWITCH), _expr(expr), _cases(arena) {}
+    SwitchStatement(Arena *arena, Expr *expr) : Statement(TO_SWITCH), _expr(expr), _cases(arena), _defaultCase() {}
 
     void addCases(Expr *val, Statement *stmt) { _cases.push_back({ val, stmt }); }
 

@@ -1309,6 +1309,7 @@ public:
                 Lex();
 
                 Id *id = (Id *)Expect(TK_IDENTIFIER);
+                assert(id);
                 e = newNode<GetFieldExpr>(e, id->id(), nextIsNullable);
                 break;
             }
@@ -1531,6 +1532,7 @@ public:
                 SQInteger tk = _token;
                 Lex();
                 Id *funcName = tk == TK_FUNCTION ? (Id *)Expect(TK_IDENTIFIER) : newNode<Id>(_SC("constructor"));
+                assert(funcName);
                 LiteralExpr *key = newNode<LiteralExpr>(funcName->id());
                 key->setLinePos(line);
                 Expect(_SC('('));
@@ -1553,6 +1555,7 @@ public:
             case TK_STRING_LITERAL: //JSON
                 if (otype == NOT_TABLE) { //only works for tables
                     LiteralExpr *key = (LiteralExpr *)Expect(TK_STRING_LITERAL);
+                    assert(key);
                     key->setLinePos(line);
                     Expect(_SC(':'));
                     Expr *expr = Expression(SQE_RVALUE);
@@ -1561,6 +1564,7 @@ public:
                 }  //-V796
             default: {
                 Id *id = (Id *)Expect(TK_IDENTIFIER);
+                assert(id);
                 LiteralExpr *key = newNode<LiteralExpr>(id->id());
                 key->setLinePos(line);
                 if ((otype == NOT_TABLE) &&
@@ -1616,6 +1620,7 @@ public:
 
         do {
             Id *varname = (Id *)Expect(TK_IDENTIFIER);
+            assert(varname);
             VarDecl *cur = NULL;
             if(_token == _SC('=')) {
                 Lex(); 
@@ -1661,6 +1666,7 @@ public:
         if (destructurer) {
             Expect(destructurer==_SC('[') ? _SC(']') : _SC('}'));
             Expect(_SC('='));
+            assert(dd);
             dd->setExpression(Expression(SQE_RVALUE));
             return dd;
         } else {
@@ -1789,6 +1795,7 @@ public:
             idxname = valname;
             Lex();
             valname = (Id *)Expect(TK_IDENTIFIER);
+            assert(valname);
 
             if (strcmp(idxname->id(), valname->id()) == 0)
                 Error(_SC("foreach() key and value names are the same: %s"), valname->id());
@@ -4239,8 +4246,11 @@ CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm
     _lineinfo(lineinfo),
     _raiseerror(raiseerror),
     _lang_features(lang_fuatures),
-    _arena(arena) {
+    _arena(arena),
+    _scope(),
+    _errorjmp() {
 
+    _num_initial_bindings = 0;
     _compilererror[0] = _SC('\0');
 
     if (bindings) {
@@ -4831,12 +4841,13 @@ void CodegenVisitor::checkClassKey(Expr *key) {
     case TO_GETTABLE:
     case TO_ROOT:
         return;
+    case TO_BASE:
+        error(_SC("cannot create a class in a local with the syntax(class <local>)"));
+        break;
     case TO_ID:
         if (key->asId()->isField()) {
             return;
         }
-    case TO_BASE:
-        error(_SC("cannot create a class in a local with the syntax(class <local>)"));
     default:
         error(_SC("invalid class name"));
         break;
@@ -5731,7 +5742,7 @@ void CodegenVisitor::visitId(Id *id) {
     }
 
     if (_string(idObj) == _string(_fs->_name)) {
-        error(_SC("Variable name %s conflicts with function name"), idObj);
+        error(_SC("Variable name %s conflicts with function name"), _stringval(idObj));
     }
 
     if ((pos = _fs->GetLocalVariable(idObj, assignable)) != -1) {
