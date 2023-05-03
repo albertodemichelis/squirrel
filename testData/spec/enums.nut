@@ -4,4 +4,6 @@ enum Foo {
   z = 3
 }
 
+println(Foo.x)
 println(Foo.y)
+println(Foo.z)

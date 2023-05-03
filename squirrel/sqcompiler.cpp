@@ -1933,11 +1933,13 @@ public:
             Id *key = (Id *)Expect(TK_IDENTIFIER);
             LiteralExpr *valExpr = NULL;
             if(_token == _SC('=')) {
+                // TODO1: should it behave like C does?
+                // TODO2: should float and string literal be allowed here?
                 Lex();
                 valExpr = ExpectScalar();
             }
             else {
-                valExpr = newNode<LiteralExpr>(nval);
+                valExpr = newNode<LiteralExpr>(nval++);
             }
 
             decl->addConst(key, valExpr);
