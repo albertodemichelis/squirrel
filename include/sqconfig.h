@@ -72,6 +72,7 @@ typedef wchar_t SQChar;
 #define scvsprintf  vswprintf
 #define scstrstr    wcsstr
 #define scprintf    wprintf
+#define scfprintf   fwprintf
 #define scstrrchr   wcsrchr
 
 #ifdef _WIN32
@@ -132,6 +133,7 @@ typedef char SQChar;
 #define scisalpha   isalpha
 #define scisalnum   isalnum
 #define scprintf    printf
+#define scfprintf   fprintf
 #define MAX_CHAR 0xFF
 
 #define sq_rsl(l) (l)
