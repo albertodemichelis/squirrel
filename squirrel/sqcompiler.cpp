@@ -550,6 +550,7 @@ class CodegenVisitor : public Visitor {
     Arena *_arena;
 
     SQChar _compilererror[MAX_COMPILER_ERROR_LEN];
+    Node *_errorNode;
 
     SQInteger _last_pop = -1;
 
@@ -562,13 +563,14 @@ public:
 
     static void ThrowError(void *ud, const SQChar *s) {
         CodegenVisitor *c = (CodegenVisitor *)ud;
-        c->error(s);
+        c->error(NULL, s);
     }
 
 private:
-    void error(const SQChar *s, ...);
 
-    void CheckDuplicateLocalIdentifier(SQObject name, const SQChar *desc, bool ignore_global_consts);
+    void error(Node *n, const SQChar *s, ...);
+
+    void CheckDuplicateLocalIdentifier(Node *n, SQObject name, const SQChar *desc, bool ignore_global_consts);
     bool CheckMemberUniqueness(ArenaVector<Expr *> &vec, Expr *obj);
 
     void Emit2ArgsOP(SQOpcode op, SQInteger p3 = 0);
@@ -588,9 +590,9 @@ private:
 
     SQTable* GetScopedConstsTable();
 
-    void emitUnaryOp(SQOpcode op, Expr *arg);
+    void emitUnaryOp(SQOpcode op, UnExpr *u);
 
-    void emitDelete(Expr *argument);
+    void emitDelete(UnExpr *ud);
 
     void emitSimpleBin(SQOpcode op, Expr *lhs, Expr *rhs, SQInteger op3 = 0);
 
@@ -726,11 +728,17 @@ class SQParser
     }
 
     Id *newId(const SQChar *name) {
-        return newNode<Id>(copyString(name));
+        Id *r = newNode<Id>(copyString(name));
+        r->setLinePos(_lex._currentline);
+        r->setColumnPos(_lex._currentcolumn);
+        return r;
     }
 
     LiteralExpr *newStringLiteral(const SQChar *s) {
-        return newNode<LiteralExpr>(copyString(s));
+        LiteralExpr *r = newNode<LiteralExpr>(copyString(s));
+        r->setLinePos(_lex._currentline);
+        r->setColumnPos(_lex._currentcolumn);
+        return r;
     }
 
     Arena *arena() { return _astArena; }
@@ -895,9 +903,11 @@ public:
             break;
         case TK_INTEGER:
             ret = newNode<LiteralExpr>(_lex._nvalue);
+            ret->setLinePos(_lex._currentline); ret->setColumnPos(_lex._currentcolumn);
             break;
         case TK_FLOAT:
             ret = newNode<LiteralExpr>(_lex._fvalue);
+            ret->setLinePos(_lex._currentline); ret->setColumnPos(_lex._currentcolumn);
             break;
         }
         Lex();
@@ -950,10 +960,10 @@ public:
     Statement *parseStatement(bool closeframe = true)
     {
         Statement *result = NULL;
-        SQInteger line = _lex._currentline;
+        SQInteger l = _lex._currentline, c = _lex._currentcolumn;
         
         switch(_token) {
-        case _SC(';'):  Lex(); result = newNode<EmptyStatement>();         break;
+        case _SC(';'):  result = newNode<EmptyStatement>(); Lex(); break;
         case TK_IF:     result = parseIfStatement();          break;
         case TK_WHILE:      result = parseWhileStatement();       break;
         case TK_DO:     result = parseDoWhileStatement();     break;
@@ -985,12 +995,12 @@ public:
             break;
         }
         case TK_BREAK:
-            Lex();
             result = newNode<BreakStatement>(nullptr);
+            Lex();
             break;
         case TK_CONTINUE:
-            Lex();
             result = newNode<ContinueStatement>(nullptr);
+            Lex();
             break;
         case TK_FUNCTION:
             if (!(_lang_features & LF_NO_FUNC_DECL_SUGAR))
@@ -1035,17 +1045,22 @@ public:
             result = newNode<ExprStatement>(Expression(SQE_REGULAR));
             break;
         }
+        result->setColumnPos(c);
+        result->setLinePos(l);
         assert(result);
-        result->setLinePos(line);
         return result;
     }
 
     Expr *parseCommaExpr(SQExpressionContext expression_context)
     {
+        SQInteger l = _lex._currentline;
+        SQInteger c = _lex._currentcolumn;
         Expr *expr = Expression(expression_context);
 
         if (_token == ',') {
             CommaExpr *cm = newNode<CommaExpr>(arena());
+            cm->setColumnPos(c);
+            cm->setLinePos(l);
             cm->addExpression(expr);
             expr = cm;
             while (_token == ',') {
@@ -1062,6 +1077,7 @@ public:
         _expression_context = expression_context;
 
         SQInteger line = _lex._prevtoken == _SC('\n') ? _lex._lasttokenline : _lex._currentline;
+        SQInteger c = _lex._currentcolumn;
 
         Expr *expr = LogicalNullCoalesceExp();
 
@@ -1132,6 +1148,7 @@ public:
 
         _expression_context = saved_expression_context;
         expr->setLinePos(line);
+        expr->setColumnPos(c);
         return expr;
     }
 
@@ -1144,6 +1161,7 @@ public:
         Expr *rhs = (this->*f)();
         
         return newNode<BinExpr>(top, lhs, rhs);
+
     }
     Expr *LogicalNullCoalesceExp()
     {
@@ -1241,10 +1259,13 @@ public:
             case TK_IN: lhs = BIN_EXP(&SQParser::ShiftExp, TO_IN, lhs); break;
             case TK_INSTANCEOF: lhs = BIN_EXP(&SQParser::ShiftExp, TO_INSTANCEOF, lhs); break;
             case TK_NOT: {
+                SQInteger l = _lex._currentline, c = _lex._currentcolumn;
                 Lex();
                 if (_token == TK_IN) {
                     lhs = BIN_EXP(&SQParser::ShiftExp, TO_IN, lhs);
                     lhs = newNode<UnExpr>(TO_NOT, lhs);
+                    lhs->setColumnPos(c);
+                    lhs->setLinePos(l);
                 }
                 else
                     Error(_SC("'in' expected "));
@@ -1379,6 +1400,8 @@ public:
         //}
 
         Expr *r = NULL;
+
+        SQInteger l = _lex._currentline, c = _lex._currentcolumn;
         
         switch(_token)
         {
@@ -1502,6 +1525,8 @@ public:
             break;
         default: Error(_SC("expression expected"));
         }
+        r->setColumnPos(c);
+        r->setLinePos(l);
         return r;
     }
 
@@ -1517,6 +1542,7 @@ public:
         
         while(_token != terminator) {
             SQInteger line = _lex._currentline;
+            SQInteger c = _lex._currentcolumn;
             bool isstatic = false;
             //check if is an static
             if(otype == NOT_CLASS) {
@@ -1535,6 +1561,7 @@ public:
                 assert(funcName);
                 LiteralExpr *key = newNode<LiteralExpr>(funcName->id());
                 key->setLinePos(line);
+                key->setColumnPos(c);
                 Expect(_SC('('));
                 FunctionDecl *f = CreateFunction(funcName, false, tk == TK_CONSTRUCTOR);
                 decl->addMember(key, f, isstatic);
@@ -1545,7 +1572,7 @@ public:
 
                 Expr *key = Expression(SQE_RVALUE);
                 key->setLinePos(line);
-
+                key->setColumnPos(c);
                 Expect(_SC(']'));
                 Expect(_SC('='));
                 Expr *value = Expression(SQE_RVALUE);
@@ -1557,6 +1584,7 @@ public:
                     LiteralExpr *key = (LiteralExpr *)Expect(TK_STRING_LITERAL);
                     assert(key);
                     key->setLinePos(line);
+                    key->setColumnPos(c);
                     Expect(_SC(':'));
                     Expr *expr = Expression(SQE_RVALUE);
                     decl->addMember(key, expr, isstatic);
@@ -1567,6 +1595,7 @@ public:
                 assert(id);
                 LiteralExpr *key = newNode<LiteralExpr>(id->id());
                 key->setLinePos(line);
+                key->setColumnPos(c);
                 if ((otype == NOT_TABLE) &&
                     (_token == TK_IDENTIFIER || _token == separator || _token == terminator || _token == _SC('[')
                         || _token == TK_FUNCTION)) {
@@ -1592,19 +1621,24 @@ public:
     Decl *parseLocalDeclStatement(bool assignable)
     {
         Lex();
+        SQInteger l = _lex._currentline, c = _lex._currentcolumn;
         if( _token == TK_FUNCTION) {
             Lex();
             Id *varname = (Id *)Expect(TK_IDENTIFIER);
             Expect(_SC('('));
             FunctionDecl *f = CreateFunction(varname, false);
             f->setContext(DC_LOCAL);
-            return newNode<VarDecl>(varname, newNode<DeclExpr>(f), assignable);
+            VarDecl *d = newNode<VarDecl>(varname, newNode<DeclExpr>(f), assignable);
+            d->setColumnPos(c); d->setLinePos(l);
+            return d;
         } else if (_token == TK_CLASS) {
             Lex();
             Id *varname = (Id *)Expect(TK_IDENTIFIER);
-            ClassDecl *c = ClassExp(NULL);
-            c->setContext(DC_LOCAL);
-            return newNode<VarDecl>(varname, newNode<DeclExpr>(c), assignable);
+            ClassDecl *cls = ClassExp(NULL);
+            cls->setContext(DC_LOCAL);
+            VarDecl *d = newNode<VarDecl>(varname, newNode<DeclExpr>(cls), assignable);
+            d->setColumnPos(c); d->setLinePos(l);
+            return d;
         }
 
         DeclGroup *decls = NULL;
@@ -1614,11 +1648,14 @@ public:
 
         if (_token == _SC('{') || _token == _SC('[')) {
             destructurer = _token;
+            c = _lex._currentcolumn, l = _lex._currentline;
             Lex();
             decls = dd = newNode<DestructuringDecl>(arena(), destructurer == _SC('{') ? DT_TABLE : DT_ARRAY);
+            dd->setColumnPos(c); dd->setLinePos(l);
         }
 
         do {
+            l = _lex._currentline; c = _lex._currentcolumn;
             Id *varname = (Id *)Expect(TK_IDENTIFIER);
             assert(varname);
             VarDecl *cur = NULL;
@@ -1632,6 +1669,8 @@ public:
                     Error(_SC("Binding '%s' must be initialized"), varname->id());
                 cur = newNode<VarDecl>(varname, nullptr, assignable);
             }
+
+            cur->setColumnPos(c); cur->setLinePos(l);
 
             if (decls) {
                 decls->addDeclaration(cur);
@@ -1850,20 +1889,26 @@ public:
 
     FunctionDecl *parseFunctionStatement()
     {
+        SQInteger l = _lex._currentline, c = _lex._currentcolumn;
         Consume(TK_FUNCTION); 
         Id *funcName = (Id *)Expect(TK_IDENTIFIER);
         Expect(_SC('('));
-        return CreateFunction(funcName);
+        FunctionDecl *d = CreateFunction(funcName);
+        d->setLinePos(l); d->setColumnPos(c);
+        return d;
     }
 
     ClassDecl *parseClassStatement()
     {
+        SQInteger l = _lex._currentline, c = _lex._currentcolumn;
         Consume(TK_CLASS);
 
         Expr *key = PrefixedExpr();
         
         ClassDecl *klass = ClassExp(key);
         klass->setContext(DC_SLOT);
+        klass->setLinePos(l);
+        klass->setColumnPos(c);
 
         return klass;
     }
@@ -1871,6 +1916,7 @@ public:
     LiteralExpr *ExpectScalar()
     {
         LiteralExpr *ret = NULL;
+        SQInteger l = _lex._currentline, c = _lex._currentcolumn;
 
         switch(_token) {
             case TK_INTEGER:
@@ -1904,11 +1950,14 @@ public:
                 Error(_SC("scalar expected : integer, float, or string"));
         }
         Lex();
+        ret->setLinePos(l);
+        ret->setColumnPos(c);
         return ret;
     }
 
     ConstDecl *parseConstStatement(bool global)
     {
+        SQInteger l = _lex._currentline, c = _lex._currentcolumn;
         Lex();
         Id *id = (Id *)Expect(TK_IDENTIFIER);
 
@@ -1916,11 +1965,15 @@ public:
         LiteralExpr *valExpr = ExpectScalar();
         OptionalSemicolon();
 
-        return newNode<ConstDecl>(id, valExpr, global);
+        ConstDecl *d = newNode<ConstDecl>(id, valExpr, global);
+        d->setColumnPos(c);
+        d->setLinePos(l);
+        return d;
     }
 
     EnumDecl *parseEnumStatement(bool global)
     {
+        SQInteger l = _lex._currentline, c = _lex._currentcolumn;
         Lex();
         Id *id = (Id *)Expect(TK_IDENTIFIER);
 
@@ -1948,6 +2001,9 @@ public:
         }
 
         Lex();
+
+        decl->setLinePos(l);
+        decl->setColumnPos(c);
 
         return decl;
     }
@@ -1982,11 +2038,14 @@ public:
 
     DeclExpr *FunctionExp(SQInteger ftype,bool lambda = false)
     {
+        SQInteger l = _lex._currentline, c = _lex._currentcolumn;
         Lex();
         Id *funcName = (_token == TK_IDENTIFIER) ? (Id *)Expect(TK_IDENTIFIER) : generateSurrogateFunctionName();
         Expect(_SC('('));
 
-        return newNode<DeclExpr>(CreateFunction(funcName, lambda));
+        Decl *f = CreateFunction(funcName, lambda);
+        f->setLinePos(l); f->setColumnPos(c);
+        return  newNode<DeclExpr>(f);
     }
     ClassDecl *ClassExp(Expr *key)
     {
@@ -2019,6 +2078,7 @@ public:
     FunctionDecl *CreateFunction(Id *name,bool lambda = false, bool ctor = false)
     {
         FunctionDecl *f = ctor ? newNode<ConstructorDecl>(arena(), name) : newNode<FunctionDecl>(arena(), name);
+        f->setLinePos(_lex._currentline); f->setColumnPos(_lex._currentcolumn);
         
         f->addParameter(newNode<Id>(_SC("this")));
 
@@ -4254,6 +4314,7 @@ CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm
 
     _num_initial_bindings = 0;
     _compilererror[0] = _SC('\0');
+    _errorNode = NULL;
 
     if (bindings) {
         assert(sq_type(*bindings) == OT_TABLE || sq_type(*bindings) == OT_NULL);
@@ -4264,11 +4325,12 @@ CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm
     }
 }
 
-void CodegenVisitor::error(const SQChar *s, ...) {
+void CodegenVisitor::error(Node *n, const SQChar *s, ...) {
     va_list vl;
     va_start(vl, s);
     scvsprintf(_compilererror, MAX_COMPILER_ERROR_LEN, s, vl);
     va_end(vl);
+    _errorNode = n;
     longjmp(_errorjmp, 1);
 }
 
@@ -4310,24 +4372,28 @@ bool CodegenVisitor::generate(RootBlock *root, SQObjectPtr &out) {
         return true;
     } else {
         if (_raiseerror && _ss(_vm)->_compilererrorhandler) {
-            _ss(_vm)->_compilererrorhandler(_vm, _compilererror, _sourceName ? _sourceName : _SC("unknown"),
-                -1, -1); // TODO: fix coordinates
+            SQInteger l = -1, c = -1;
+            if (_errorNode) {
+                l = _errorNode->linePos();
+                c = _errorNode->columnPos();
+            }
+            _ss(_vm)->_compilererrorhandler(_vm, _compilererror, _sourceName ? _sourceName : _SC("unknown"), l, c);
         }
         _vm->_lasterror = SQString::Create(_ss(_vm), _compilererror, -1);
         return false;
     }
 }
 
-void CodegenVisitor::CheckDuplicateLocalIdentifier(SQObject name, const SQChar *desc, bool ignore_global_consts) {
+void CodegenVisitor::CheckDuplicateLocalIdentifier(Node *n, SQObject name, const SQChar *desc, bool ignore_global_consts) {
     bool assignable = false;
     if (_fs->GetLocalVariable(name, assignable) >= 0)
-        error(_SC("%s name '%s' conflicts with existing local variable"), desc, _string(name)->_val);
+        error(n, _SC("%s name '%s' conflicts with existing local variable"), desc, _string(name)->_val);
     if (_string(name) == _string(_fs->_name))
-        error(_SC("%s name '%s' conflicts with function name"), desc, _stringval(name));
+        error(n, _SC("%s name '%s' conflicts with function name"), desc, _stringval(name));
 
     SQObject constant;
     if (ignore_global_consts ? IsLocalConstant(name, constant) : IsConstant(name, constant))
-        error(_SC("%s name '%s' conflicts with existing constant/enum/import"), desc, _stringval(name));
+        error(n, _SC("%s name '%s' conflicts with existing constant/enum/import"), desc, _stringval(name));
 }
 
 bool CodegenVisitor::CheckMemberUniqueness(ArenaVector<Expr *> &vec, Expr *obj) {
@@ -4338,7 +4404,7 @@ bool CodegenVisitor::CheckMemberUniqueness(ArenaVector<Expr *> &vec, Expr *obj) 
         Expr *vecobj = vec[i];
         if (vecobj->op() == TO_ID && obj->op() == TO_ID) {
             if (strcmp(vecobj->asId()->id(), obj->asId()->id()) == 0) {
-                error(_SC("duplicate key '%s'"), obj->asId()->id());
+                error(obj, _SC("duplicate key '%s'"), obj->asId()->id());
                 return false;
             }
             continue;
@@ -4347,7 +4413,7 @@ bool CodegenVisitor::CheckMemberUniqueness(ArenaVector<Expr *> &vec, Expr *obj) 
             LiteralExpr *a = (LiteralExpr*)vecobj;
             LiteralExpr *b = (LiteralExpr*)obj;
             if (a->kind() == b->kind() && a->raw() == b->raw()) {
-                error(_SC("duplicate key"));
+                error(obj, _SC("duplicate key"));
                 return false;
             }
             continue;
@@ -4588,7 +4654,7 @@ void CodegenVisitor::visitForeachStatement(ForeachStatement *foreachLoop) {
     SQObject idxName;
     if (foreachLoop->idx()) {
         idxName = _fs->CreateString(foreachLoop->idx()->id());
-        CheckDuplicateLocalIdentifier(idxName, _SC("Iterator"), false);
+        CheckDuplicateLocalIdentifier(foreachLoop->idx(), idxName, _SC("Iterator"), false);
     }
     else {
         idxName = _fs->CreateString(_SC("@INDEX@"));
@@ -4599,7 +4665,7 @@ void CodegenVisitor::visitForeachStatement(ForeachStatement *foreachLoop) {
     _fs->AddInstruction(_OP_LOADNULLS, indexpos, 1);
 
     SQObject valName = _fs->CreateString(foreachLoop->val()->id());
-    CheckDuplicateLocalIdentifier(valName, _SC("Iterator"), false);
+    CheckDuplicateLocalIdentifier(foreachLoop->val(), valName, _SC("Iterator"), false);
 
     SQInteger valuepos = _fs->PushLocalVariable(valName, false);
     _fs->AddInstruction(_OP_LOADNULLS, valuepos, 1);
@@ -4727,7 +4793,7 @@ void CodegenVisitor::visitTryStatement(TryStatement *tryStmt) {
 
 void CodegenVisitor::visitBreakStatement(BreakStatement *breakStmt) {
     addLineNumber(breakStmt);
-    if (_fs->_breaktargets.size() <= 0) error(_SC("'break' has to be in a loop block"));
+    if (_fs->_breaktargets.size() <= 0) error(breakStmt, _SC("'break' has to be in a loop block"));
     if (_fs->_breaktargets.top() > 0) {
         _fs->AddInstruction(_OP_POPTRAP, _fs->_breaktargets.top(), 0);
     }
@@ -4738,7 +4804,7 @@ void CodegenVisitor::visitBreakStatement(BreakStatement *breakStmt) {
 
 void CodegenVisitor::visitContinueStatement(ContinueStatement *continueStmt) {
     addLineNumber(continueStmt);
-    if (_fs->_continuetargets.size() <= 0) error(_SC("'continue' has to be in a loop block"));
+    if (_fs->_continuetargets.size() <= 0) error(continueStmt, _SC("'continue' has to be in a loop block"));
     if (_fs->_continuetargets.top() > 0) {
         _fs->AddInstruction(_OP_POPTRAP, _fs->_continuetargets.top(), 0);
     }
@@ -4844,14 +4910,14 @@ void CodegenVisitor::checkClassKey(Expr *key) {
     case TO_ROOT:
         return;
     case TO_BASE:
-        error(_SC("cannot create a class in a local with the syntax(class <local>)"));
+        error(key, _SC("cannot create a class in a local with the syntax(class <local>)"));
         break;
     case TO_ID:
         if (key->asId()->isField()) {
             return;
         }
     default:
-        error(_SC("invalid class name"));
+        error(key, _SC("invalid class name"));
         break;
     }
 }
@@ -4923,7 +4989,7 @@ void CodegenVisitor::visitVarDecl(VarDecl *var) {
 
     SQObject varName = _fs->CreateString(name->id());
 
-    CheckDuplicateLocalIdentifier(varName, varDescriptor(var), false);
+    CheckDuplicateLocalIdentifier(name, varName, varDescriptor(var), false);
 
     if (var->initializer()) {
         visitForceGet(var->initializer());
@@ -5068,7 +5134,7 @@ void CodegenVisitor::visitConstDecl(ConstDecl *decl) {
     SQObject id = _fs->CreateString(decl->name()->id());
     SQObject value = selectLiteral(decl->value());
 
-    CheckDuplicateLocalIdentifier(id, _SC("Constant"), decl->isGlobal() && !(_fs->lang_features & LF_FORBID_GLOBAL_CONST_REWRITE));
+    CheckDuplicateLocalIdentifier(decl->name(), id, _SC("Constant"), decl->isGlobal() && !(_fs->lang_features & LF_FORBID_GLOBAL_CONST_REWRITE));
 
     SQTable *enums = decl->isGlobal() ? _table(_ss(_vm)->_consts) : GetScopedConstsTable();
     enums->NewSlot(SQObjectPtr(id), SQObjectPtr(value));
@@ -5082,7 +5148,7 @@ void CodegenVisitor::visitEnumDecl(EnumDecl *enums) {
 
     SQObject id = _fs->CreateString(enums->name()->id());
 
-    CheckDuplicateLocalIdentifier(id, _SC("Enum"), enums->isGlobal() && !(_fs->lang_features & LF_FORBID_GLOBAL_CONST_REWRITE));
+    CheckDuplicateLocalIdentifier(enums->name(), id, _SC("Enum"), enums->isGlobal() && !(_fs->lang_features & LF_FORBID_GLOBAL_CONST_REWRITE));
 
     for (auto &c : enums->consts()) {
         SQObject key = _fs->CreateString(c.id->id());
@@ -5225,18 +5291,19 @@ void CodegenVisitor::visitArrayExpr(ArrayExpr *expr) {
     }
 }
 
-void CodegenVisitor::emitUnaryOp(SQOpcode op, Expr *arg) {
+void CodegenVisitor::emitUnaryOp(SQOpcode op, UnExpr *u) {
+    Expr *arg = u->argument();
     visitForceGet(arg);
 
     if (_fs->_targetstack.size() == 0)
-        error(_SC("cannot evaluate unary-op"));
+        error(u, _SC("cannot evaluate unary-op"));
 
     SQInteger src = _fs->PopTarget();
     _fs->AddInstruction(op, _fs->PushTarget(), src);
 }
 
-void CodegenVisitor::emitDelete(Expr *argument) {
-
+void CodegenVisitor::emitDelete(UnExpr *ud) {
+    Expr *argument = ud->argument();
     visitNoGet(argument);
 
     switch (argument->op())
@@ -5244,13 +5311,13 @@ void CodegenVisitor::emitDelete(Expr *argument) {
     case TO_GETFIELD:
     case TO_GETTABLE: break;
     case TO_BASE:
-        error(_SC("can't delete 'base'"));
+        error(ud, _SC("can't delete 'base'"));
         break;
     case TO_ID:
-        error(_SC("cannot delete an (outer) local"));
+        error(ud, _SC("cannot delete an (outer) local"));
         break;
     default:
-        error(_SC("can't delete an expression"));
+        error(ud, _SC("can't delete an expression"));
         break;
     }
 
@@ -5264,14 +5331,14 @@ void CodegenVisitor::visitUnExpr(UnExpr *unary) {
 
     switch (unary->op())
     {
-    case TO_NEG: emitUnaryOp(_OP_NEG, unary->argument()); break;
-    case TO_NOT: emitUnaryOp(_OP_NOT, unary->argument()); break;
-    case TO_BNOT:emitUnaryOp(_OP_BWNOT, unary->argument()); break;
-    case TO_TYPEOF: emitUnaryOp(_OP_TYPEOF, unary->argument()); break;
-    case TO_RESUME: emitUnaryOp(_OP_RESUME, unary->argument()); break;
-    case TO_CLONE: emitUnaryOp(_OP_CLONE, unary->argument()); break;
+    case TO_NEG: emitUnaryOp(_OP_NEG, unary); break;
+    case TO_NOT: emitUnaryOp(_OP_NOT, unary); break;
+    case TO_BNOT:emitUnaryOp(_OP_BWNOT, unary); break;
+    case TO_TYPEOF: emitUnaryOp(_OP_TYPEOF, unary); break;
+    case TO_RESUME: emitUnaryOp(_OP_RESUME, unary); break;
+    case TO_CLONE: emitUnaryOp(_OP_CLONE, unary); break;
     case TO_PAREN: unary->argument()->visit(this); break;
-    case TO_DELETE: emitDelete(unary->argument());
+    case TO_DELETE: emitDelete(unary);
         break;
     default:
         break;
@@ -5335,7 +5402,7 @@ void CodegenVisitor::emitCompoundArith(SQOpcode op, SQInteger opcode, Expr *lval
             _fs->AddInstruction(_OP_COMPARITH, _fs->PushTarget(), (src << 16) | val, key, opcode);
         }
         else {
-            error(_SC("can't assign to expression"));
+            error(lvalue, _SC("can't assign to expression"));
         }
     }
     else if (lvalue->isAccessExpr()) {
@@ -5346,7 +5413,7 @@ void CodegenVisitor::emitCompoundArith(SQOpcode op, SQInteger opcode, Expr *lval
         _fs->AddInstruction(_OP_COMPARITH, _fs->PushTarget(), (src << 16) | val, key, opcode);
     }
     else {
-        error(_SC("can't assign to expression"));
+        error(lvalue, _SC("can't assign to expression"));
     }
 }
 
@@ -5375,7 +5442,7 @@ void CodegenVisitor::emitNewSlot(Expr *lvalue, Expr *rvalue) {
         _fs->AddInstruction(_OP_NEWSLOT, _fs->PushTarget(), src, key, val);
     }
     else {
-        error(_SC("can't 'create' a local slot"));
+        error(lvalue, _SC("can't 'create' a local slot"));
     }
 }
 
@@ -5412,14 +5479,14 @@ void CodegenVisitor::emitAssign(Expr *lvalue, Expr * rvalue, bool inExpr) {
             emitFieldAssign(false);
         }
         else {
-            error(_SC("can't assign to expression"));
+            error(lvalue, _SC("can't assign to expression"));
         }
     }
     else if (lvalue->isAccessExpr()) {
         emitFieldAssign(canBeLiteral(lvalue->asAccessExpr()));
     }
     else {
-        error(_SC("can't assign to expression"));
+        error(lvalue, _SC("can't assign to expression"));
     }
 }
 
@@ -5529,7 +5596,7 @@ void CodegenVisitor::visitGetFieldExpr(GetFieldExpr *expr) {
             }
             else {
                 _constVal.Null();
-                error(_SC("invalid enum [no '%s' field]"), expr->fieldName());
+                error(expr, _SC("invalid enum [no '%s' field]"), expr->fieldName());
             }
         }
     }
@@ -5652,7 +5719,7 @@ void CodegenVisitor::visitIncExpr(IncExpr *expr) {
     visitNoGet(arg);
 
     if (!isLValue(arg)) {
-        error(_SC("argument of inc/dec operation is not assiangable"));
+        error(arg, _SC("argument of inc/dec operation is not assiangable"));
     }
 
     bool isPostfix = expr->form() == IF_POSTFIX;
@@ -5681,11 +5748,11 @@ void CodegenVisitor::visitIncExpr(IncExpr *expr) {
             Emit2ArgsOP(isPostfix ? _OP_PINC : _OP_INC, expr->diff());
         }
         else {
-            error(_SC("argument of inc/dec operation is not assiangable"));
+            error(arg, _SC("argument of inc/dec operation is not assiangable"));
         }
     }
     else {
-        error(_SC("argument of inc/dec operation is not assiangable"));
+        error(arg, _SC("argument of inc/dec operation is not assiangable"));
     }
 }
 
@@ -5744,7 +5811,7 @@ void CodegenVisitor::visitId(Id *id) {
     }
 
     if (_string(idObj) == _string(_fs->_name)) {
-        error(_SC("Variable name %s conflicts with function name"), _stringval(idObj));
+        error(id, _SC("Variable name %s conflicts with function name"), _stringval(idObj));
     }
 
     if ((pos = _fs->GetLocalVariable(idObj, assignable)) != -1) {
@@ -5797,7 +5864,7 @@ void CodegenVisitor::visitId(Id *id) {
         // TODO: probably we need a special handling for some corner cases
         if ((_fs->lang_features & LF_EXPLICIT_THIS)
             && !(_fs->lang_features & LF_TOOLS_COMPILE_CHECK))
-            error(_SC("Unknown variable [%s]"), _stringval(idObj));
+            error(id, _SC("Unknown variable [%s]"), _stringval(idObj));
 
         _fs->PushTarget(0);
         _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(idObj));

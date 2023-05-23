@@ -105,7 +105,7 @@ class GetTableExpr;
 
 class Node : public ArenaObj {
 protected:
-    Node(enum TreeOp op): _op(op), _linepos(-1) {}
+    Node(enum TreeOp op): _op(op), _line(-1), _column(-1) {}
 public:
     virtual ~Node() {}
 
@@ -124,12 +124,16 @@ public:
     GetFieldExpr *asGetField() { assert(_op == TO_GETFIELD); return (GetFieldExpr*)this; }
     GetTableExpr *asGetTable() { assert(_op == TO_GETTABLE); return (GetTableExpr*)this; }
 
-    SQInteger linePos() const { return _linepos; }
-    void setLinePos(SQInteger pos) { _linepos = pos; }
+    SQInteger linePos() const { return _line; }
+    void setLinePos(SQInteger pos) { _line = pos; }
+
+    SQInteger columnPos() const { return _column; }
+    void setColumnPos(SQInteger pos) { _column = pos; }
 
 private:
 
-    SQInteger _linepos;
+    SQInteger _line;
+    SQInteger _column;
 
     enum TreeOp _op;
 };
@@ -196,7 +200,10 @@ private:
 
 class BinExpr : public Expr {
 public:
-    BinExpr(enum TreeOp op, Expr *lhs, Expr *rhs) : Expr(op), _lhs(lhs), _rhs(rhs) {}
+    BinExpr(enum TreeOp op, Expr *lhs, Expr *rhs) : Expr(op), _lhs(lhs), _rhs(rhs) {
+        setColumnPos(lhs->columnPos());
+        setLinePos(lhs->linePos());
+    }
 
     void visitChildren(Visitor *visitor);
 
@@ -209,7 +216,10 @@ public:
 
 class TerExpr : public Expr {
 public:
-    TerExpr(Expr *a, Expr *b, Expr *c) : Expr(TO_TERNARY), _a(a), _b(b), _c(c) {}
+    TerExpr(Expr *a, Expr *b, Expr *c) : Expr(TO_TERNARY), _a(a), _b(b), _c(c) {
+        setColumnPos(a->columnPos());
+        setLinePos(a->linePos());
+    }
 
     void visitChildren(Visitor *visitor);
 
@@ -259,7 +269,10 @@ private:
 
 class GetFieldExpr : public FieldAccessExpr {
 public:
-    GetFieldExpr(Expr *receiver, const SQChar *field, bool nullable): FieldAccessExpr(TO_GETFIELD, receiver, field, nullable) { }
+    GetFieldExpr(Expr *receiver, const SQChar *field, bool nullable): FieldAccessExpr(TO_GETFIELD, receiver, field, nullable) {
+        setColumnPos(receiver->columnPos());
+        setLinePos(receiver->linePos());
+    }
 
     void visitChildren(Visitor *visitor);
 };
@@ -267,7 +280,10 @@ public:
 
 class SetFieldExpr : public FieldAccessExpr {
 public:
-    SetFieldExpr(Expr *receiver, const SQChar *field, Expr *value, bool nullable): FieldAccessExpr(TO_SETFIELD, receiver, field, nullable), _value(value) { }
+    SetFieldExpr(Expr *receiver, const SQChar *field, Expr *value, bool nullable): FieldAccessExpr(TO_SETFIELD, receiver, field, nullable), _value(value) {
+        setColumnPos(receiver->columnPos());
+        setLinePos(receiver->linePos());
+    }
 
     void visitChildren(Visitor *visitor);
 
@@ -280,7 +296,10 @@ private:
 
 class TableAccessExpr : public AccessExpr {
 protected:
-    TableAccessExpr(enum TreeOp op, Expr *receiver, Expr *key, bool nullable) : AccessExpr(op, receiver, nullable), _key(key) {}
+    TableAccessExpr(enum TreeOp op, Expr *receiver, Expr *key, bool nullable) : AccessExpr(op, receiver, nullable), _key(key) {
+        setColumnPos(receiver->columnPos());
+        setLinePos(receiver->linePos());
+    }
 public:
 
     Expr *key() const { return _key; }
@@ -290,14 +309,20 @@ private:
 
 class GetTableExpr : public TableAccessExpr {
 public:
-    GetTableExpr(Expr *receiver, Expr *key, bool nullable): TableAccessExpr(TO_GETTABLE, receiver, key, nullable) { }
+    GetTableExpr(Expr *receiver, Expr *key, bool nullable): TableAccessExpr(TO_GETTABLE, receiver, key, nullable) {
+        setColumnPos(receiver->columnPos());
+        setLinePos(receiver->linePos());
+    }
 
     void visitChildren(Visitor *visitor);
 };
 
 class SetTableExpr : public TableAccessExpr {
 public:
-    SetTableExpr(Expr *receiver, Expr *key, Expr *val, bool nullable): TableAccessExpr(TO_SETTABLE, receiver, key, nullable), _val(val) { }
+    SetTableExpr(Expr *receiver, Expr *key, Expr *val, bool nullable): TableAccessExpr(TO_SETTABLE, receiver, key, nullable), _val(val) {
+        setColumnPos(receiver->columnPos());
+        setLinePos(receiver->linePos());
+    }
 
     void visitChildren(Visitor *visitor);
 
@@ -373,7 +398,10 @@ enum IncForm {
 
 class IncExpr : public Expr {
 public:
-    IncExpr(Expr *arg, SQInteger diff, enum IncForm form) : Expr(TO_INC), _arg(arg), _diff(diff), _form(form) {}
+    IncExpr(Expr *arg, SQInteger diff, enum IncForm form) : Expr(TO_INC), _arg(arg), _diff(diff), _form(form) {
+        setColumnPos(arg->columnPos());
+        setLinePos(arg->linePos());
+    }
 
     void visitChildren(Visitor *visitor);
 
