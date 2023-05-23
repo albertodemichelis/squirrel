@@ -121,6 +121,7 @@ public:
     bool isExpression() const { return TO_STATEMENT_MARK < _op && _op < TO_EXPR_MARK; }
 
     Id *asId() { assert(_op == TO_ID); return (Id*)this; }
+    const Id *asId() const { assert(_op == TO_ID); return (const Id*)this; }
     GetFieldExpr *asGetField() { assert(_op == TO_GETFIELD); return (GetFieldExpr*)this; }
     GetTableExpr *asGetTable() { assert(_op == TO_GETTABLE); return (GetTableExpr*)this; }
 
