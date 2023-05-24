@@ -1,15 +1,13 @@
-#relaxed
-
-class Foo {
+let class Foo {
     function DoSomething() {
         println("I'm the base")
     }
     function DoIt() {
-        DoSomething()
+        this.DoSomething()
     }
-};
+}
 
-class SuperFoo extends Foo {
+let class SuperFoo extends Foo {
     //overridden method
     function DoSomething() {
         println("I'm the derived")

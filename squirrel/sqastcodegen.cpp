@@ -644,15 +644,11 @@ void CodegenVisitor::checkClassKey(Expr *key) {
     case TO_ROOT:
         return;
     case TO_BASE:
-        error(key, _SC("cannot create a class in a local with the syntax(class <local>)"));
-        break;
     case TO_ID:
-        if (key->asId()->isField()) {
-            return;
-        }
-        // fall through
+        error(key, _SC("cannot create a local class with the syntax (class <local>)"));
+        break;
     default:
-        error(key, _SC("invalid class name"));
+        error(key, _SC("invalid class name or context"));
         break;
     }
 }
@@ -661,10 +657,8 @@ void CodegenVisitor::visitClassDecl(ClassDecl *klass) {
     addLineNumber(klass);
     if (klass->context() == DC_SLOT) {
         assert(klass->classKey());
-
-        visitNoGet(klass);
-
         checkClassKey(klass->classKey());
+        visitNoGet(klass->classKey());
     }
 
     Expr *baseExpr = klass->classBase();
