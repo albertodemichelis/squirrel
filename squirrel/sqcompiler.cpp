@@ -963,7 +963,7 @@ public:
                 }
                 _es.etype = EXPR;
                 Lex();
-                FunctionCallArgs(false, nullcall);
+                FunctionCallArgs(nullcall);
                 break;
             }
             default: return;
@@ -1159,7 +1159,6 @@ public:
         case TK_TYPEOF: Lex(); UnaryOP(_OP_TYPEOF); break;
         case TK_RESUME: Lex(); UnaryOP(_OP_RESUME); break;
         case TK_CLONE: Lex(); UnaryOP(_OP_CLONE); break;
-        case TK_RAWCALL: Lex(); Expect('('); FunctionCallArgs(true, false); break;
         case TK_MINUSMINUS:
         case TK_PLUSPLUS:
             PrefixIncDec(_token);
@@ -1224,7 +1223,7 @@ public:
         }
         return !_es.donot_get || _token == _SC('.') || _token == _SC('[');
     }
-    void FunctionCallArgs(bool rawcall, bool nullcall)
+    void FunctionCallArgs(bool nullcall)
     {
         SQInteger nargs = 1;//this
         while (_token != _SC(')')) {
@@ -1236,10 +1235,6 @@ public:
             }
         }
         Lex();
-        if (rawcall) {
-            if (nargs < 3) Error(_SC("rawcall requires at least 2 parameters (callee and this)"));
-            nargs -= 2; //removes callee and this from count
-        }
         for (SQInteger i = 0; i < (nargs - 1); i++) _fs->PopTarget();
         SQInteger stackbase = _fs->PopTarget();
         SQInteger closure = _fs->PopTarget();

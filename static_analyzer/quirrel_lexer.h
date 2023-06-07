@@ -103,7 +103,6 @@ class CompilationContext;
   TOKEN_TYPE(TK_STATIC, "static") \
   TOKEN_TYPE(TK_ENUM, "enum") \
   TOKEN_TYPE(TK_CONST, "const") \
-  TOKEN_TYPE(TK_RAWCALL, "rawcall") \
   TOKEN_TYPE(TK_GLOBAL, "global") \
   TOKEN_TYPE(TK_READER_MACRO, "[READER MACRO]") \
   TOKEN_TYPE(TK_NOTTXT, "not") \

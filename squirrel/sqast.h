@@ -87,7 +87,8 @@
     DEF_TREE_OP(CONSTRUCTOR), \
     DEF_TREE_OP(CLASS), \
     DEF_TREE_OP(ENUM), \
-    DEF_TREE_OP(TABLE)
+    DEF_TREE_OP(TABLE), \
+    DEF_TREE_OP(DIRECTIVE), \
 
 enum TreeOp {
 #define DEF_TREE_OP(arg) TO_##arg

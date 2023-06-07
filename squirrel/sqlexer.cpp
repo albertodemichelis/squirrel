@@ -72,7 +72,6 @@ void SQLexer::Init(SQSharedState *ss, SQLEXREADFUNC rg, SQUserPointer up,Compile
     ADD_KEYWORD(const,TK_CONST);
     ADD_KEYWORD(__LINE__,TK___LINE__);
     ADD_KEYWORD(__FILE__,TK___FILE__);
-    ADD_KEYWORD(rawcall, TK_RAWCALL);
     ADD_KEYWORD(global, TK_GLOBAL);
     ADD_KEYWORD(not, TK_NOT);
     ADD_KEYWORD(let, TK_LET);
