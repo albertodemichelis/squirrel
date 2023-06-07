@@ -308,7 +308,7 @@ static bool WriteObject(HSQUIRRELVM v,SQUserPointer up,SQWRITEFUNC write,SQObjec
     switch(sq_type(o)){
     case OT_STRING:
         _CHECK_IO(SafeWrite(v,write,up,&_string(o)->_len,sizeof(SQInteger)));
-        _CHECK_IO(SafeWrite(v,write,up,_stringval(o),sq_rsl(_string(o)->_len)));
+        _CHECK_IO(SafeWrite(v,write,up,_stringval(o),_string(o)->_len));
         break;
     case OT_BOOL:
     case OT_INTEGER:
@@ -333,7 +333,7 @@ static bool ReadObject(HSQUIRRELVM v,SQUserPointer up,SQREADFUNC read,SQObjectPt
     case OT_STRING:{
         SQInteger len;
         _CHECK_IO(SafeRead(v,read,up,&len,sizeof(SQInteger)));
-        _CHECK_IO(SafeRead(v,read,up,_ss(v)->GetScratchPad(sq_rsl(len)),sq_rsl(len)));
+        _CHECK_IO(SafeRead(v,read,up,_ss(v)->GetScratchPad(len),len));
         o=SQString::Create(_ss(v),_ss(v)->GetScratchPad(-1),len);
                    }
         break;

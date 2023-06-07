@@ -24,11 +24,11 @@ SQInstructionDesc g_InstrDesc[]={
 void DumpLiteral(FILE *stream, SQObjectPtr &o)
 {
     switch (sq_type(o)) {
-        case OT_STRING: scfprintf(stream, _SC("\"%s\""), _stringval(o)); break;
-        case OT_FLOAT: scfprintf(stream, _SC("{%f}"), _float(o)); break;
-        case OT_INTEGER: scfprintf(stream, _SC("{") _PRINT_INT_FMT _SC("}"), _integer(o)); break;
-        case OT_BOOL: scfprintf(stream, _SC("%s"), _integer(o) ? _SC("true") : _SC("false")); break;
-        default: scfprintf(stream, _SC("(%s %p)"), GetTypeName(o), (void*)_rawval(o)); break; //shut up compiler
+        case OT_STRING: fprintf(stream, _SC("\"%s\""), _stringval(o)); break;
+        case OT_FLOAT: fprintf(stream, _SC("{%f}"), _float(o)); break;
+        case OT_INTEGER: fprintf(stream, _SC("{") _PRINT_INT_FMT _SC("}"), _integer(o)); break;
+        case OT_BOOL: fprintf(stream, _SC("%s"), _integer(o) ? _SC("true") : _SC("false")); break;
+        default: fprintf(stream, _SC("(%s %p)"), GetTypeName(o), (void*)_rawval(o)); break; //shut up compiler
     }
 }
 
@@ -84,11 +84,11 @@ void SQFuncState::Dump(FILE *stream, SQFunctionProto *func)
     //if (!dump_enable) return ;
     SQUnsignedInteger n = 0, i;
     SQInteger si;
-    scfprintf(stream, _SC("SQInstruction sizeof %d\n"), (SQInt32)sizeof(SQInstruction));
-    scfprintf(stream, _SC("SQObject sizeof %d\n"), (SQInt32)sizeof(SQObject));
-    scfprintf(stream, _SC("--------------------------------------------------------------------\n"));
-    scfprintf(stream, _SC("*****FUNCTION [%s]\n"), sq_type(func->_name) == OT_STRING ? _stringval(func->_name) : _SC("unknown"));
-    scfprintf(stream, _SC("-----LITERALS\n"));
+    fprintf(stream, _SC("SQInstruction sizeof %d\n"), (SQInt32)sizeof(SQInstruction));
+    fprintf(stream, _SC("SQObject sizeof %d\n"), (SQInt32)sizeof(SQObject));
+    fprintf(stream, _SC("--------------------------------------------------------------------\n"));
+    fprintf(stream, _SC("*****FUNCTION [%s]\n"), sq_type(func->_name) == OT_STRING ? _stringval(func->_name) : _SC("unknown"));
+    fprintf(stream, _SC("-----LITERALS\n"));
     SQObjectPtr refidx, key, val;
     SQInteger idx;
     SQObjectPtrVec templiterals(_ss->_alloc_ctx);
@@ -98,43 +98,43 @@ void SQFuncState::Dump(FILE *stream, SQFunctionProto *func)
         templiterals[_integer(val)] = key;
     }
     for (i = 0; i < templiterals.size(); i++) {
-        scfprintf(stream, _SC("[%d] "), (SQInt32)n);
+        fprintf(stream, _SC("[%d] "), (SQInt32)n);
         DumpLiteral(stream, templiterals[i]);
-        scfprintf(stream, _SC("\n"));
+        fprintf(stream, _SC("\n"));
         n++;
     }
-    scfprintf(stream, _SC("-----PARAMS\n"));
+    fprintf(stream, _SC("-----PARAMS\n"));
     if (_varparams)
-        scfprintf(stream, _SC("<<VARPARAMS>>\n"));
+        fprintf(stream, _SC("<<VARPARAMS>>\n"));
     n = 0;
     for (i = 0; i < _parameters.size(); i++) {
-        scfprintf(stream, _SC("[%d] "), (SQInt32)n);
+        fprintf(stream, _SC("[%d] "), (SQInt32)n);
         DumpLiteral(stream, _parameters[i]);
-        scfprintf(stream, _SC("\n"));
+        fprintf(stream, _SC("\n"));
         n++;
     }
-    scfprintf(stream, _SC("-----LOCALS\n"));
+    fprintf(stream, _SC("-----LOCALS\n"));
     for (si = 0; si < func->_nlocalvarinfos; si++) {
         SQLocalVarInfo lvi = func->_localvarinfos[si];
-        scfprintf(stream, _SC("[%d] %s \t%d %d\n"), (SQInt32)lvi._pos, _stringval(lvi._name), (SQInt32)lvi._start_op, (SQInt32)lvi._end_op);
+        fprintf(stream, _SC("[%d] %s \t%d %d\n"), (SQInt32)lvi._pos, _stringval(lvi._name), (SQInt32)lvi._start_op, (SQInt32)lvi._end_op);
         n++;
     }
-    scfprintf(stream, _SC("-----LINE INFO\n"));
+    fprintf(stream, _SC("-----LINE INFO\n"));
     for (i = 0; i < _lineinfos.size(); i++) {
         SQLineInfo li = _lineinfos[i];
-        scfprintf(stream, _SC("op [%d] line [%d] \n"), (SQInt32)li._op, (SQInt32)li._line);
+        fprintf(stream, _SC("op [%d] line [%d] \n"), (SQInt32)li._op, (SQInt32)li._line);
         n++;
     }
-    scfprintf(stream, _SC("-----dump\n"));
+    fprintf(stream, _SC("-----dump\n"));
     n = 0;
     for (i = 0; i < _instructions.size(); i++) {
         SQInstruction &inst = _instructions[i];
         if (inst.op == _OP_LOAD || inst.op == _OP_DLOAD || inst.op == _OP_PREPCALLK || inst.op == _OP_GETK) {
 
             SQInteger lidx = inst._arg1;
-            scfprintf(stream, _SC("[%03d] %15s %d "), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0);
+            fprintf(stream, _SC("[%03d] %15s %d "), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0);
             if (lidx >= 0xFFFFFFFF)
-                scfprintf(stream, _SC("null"));
+                fprintf(stream, _SC("null"));
             else {
                 SQInteger refidx;
                 SQObjectPtr val, key, refo;
@@ -144,13 +144,13 @@ void SQFuncState::Dump(FILE *stream, SQFunctionProto *func)
                 DumpLiteral(stream, key);
             }
             if (inst.op != _OP_DLOAD) {
-                scfprintf(stream, _SC(" %d %d \n"), inst._arg2, inst._arg3);
+                fprintf(stream, _SC(" %d %d \n"), inst._arg2, inst._arg3);
             }
             else {
-                scfprintf(stream, _SC(" %d "), inst._arg2);
+                fprintf(stream, _SC(" %d "), inst._arg2);
                 lidx = inst._arg3;
                 if (lidx >= 0xFFFFFFFF)
-                    scfprintf(stream, _SC("null"));
+                    fprintf(stream, _SC("null"));
                 else {
                     SQInteger refidx;
                     SQObjectPtr val, key, refo;
@@ -158,35 +158,35 @@ void SQFuncState::Dump(FILE *stream, SQFunctionProto *func)
                         refo = refidx;
                     }
                     DumpLiteral(stream, key);
-                    scfprintf(stream, _SC("\n"));
+                    fprintf(stream, _SC("\n"));
                 }
             }
         }
         else if (inst.op == _OP_LOADFLOAT) {
-            scfprintf(stream, _SC("[%03d] %15s %d %f %d %d\n"), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0, *((SQFloat*)&inst._arg1), inst._arg2, inst._arg3);
+            fprintf(stream, _SC("[%03d] %15s %d %f %d %d\n"), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0, *((SQFloat*)&inst._arg1), inst._arg2, inst._arg3);
         }
         /*  else if(inst.op==_OP_ARITH){
-                scprintf(_SC("[%03d] %15s %d %d %d %c\n"),n,g_InstrDesc[inst.op].name,inst._arg0,inst._arg1,inst._arg2,inst._arg3);
+                printf(_SC("[%03d] %15s %d %d %d %c\n"),n,g_InstrDesc[inst.op].name,inst._arg0,inst._arg1,inst._arg2,inst._arg3);
             }*/
         else {
-            scfprintf(stream, _SC("[%03d] %15s %d %d %d %d"), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0, inst._arg1, inst._arg2, inst._arg3);
+            fprintf(stream, _SC("[%03d] %15s %d %d %d %d"), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0, inst._arg1, inst._arg2, inst._arg3);
             switch (inst.op) {
             case _OP_JMP: case _OP_JCMP: case _OP_JZ: case _OP_AND: case _OP_OR: case _OP_PUSHTRAP: case _OP_FOREACH:
-                scfprintf(stream, _SC("  jump to %d"), i + inst._arg1 + 1);
+                fprintf(stream, _SC("  jump to %d"), i + inst._arg1 + 1);
                 break;
             case _OP_NULLCOALESCE: case _OP_POSTFOREACH:
-                scfprintf(stream, _SC("  jump to %d"), i + inst._arg1);
+                fprintf(stream, _SC("  jump to %d"), i + inst._arg1);
                 break;
             default:
                 break;
             }
-            scfprintf(stream, _SC("\n"));
+            fprintf(stream, _SC("\n"));
         }
         n++;
     }
-    scfprintf(stream, _SC("-----\n"));
-    scfprintf(stream, _SC("stack size[%d]\n"), (SQInt32)func->_stacksize);
-    scfprintf(stream, _SC("--------------------------------------------------------------------\n\n"));
+    fprintf(stream, _SC("-----\n"));
+    fprintf(stream, _SC("stack size[%d]\n"), (SQInt32)func->_stacksize);
+    fprintf(stream, _SC("--------------------------------------------------------------------\n\n"));
 }
 #endif
 

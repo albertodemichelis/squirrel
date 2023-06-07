@@ -5,13 +5,6 @@
 #include <stdio.h>
 #include <sqstddatetime.h>
 
-#ifdef SQUNICODE
-#include <wchar.h>
-#define scasctime _wasctime
-#else
-#define scasctime asctime
-#endif
-
 
 static SQInteger _datetime_clock(HSQUIRRELVM v)
 {

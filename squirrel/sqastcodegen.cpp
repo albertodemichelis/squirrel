@@ -56,7 +56,7 @@ CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm
 void CodegenVisitor::error(Node *n, const SQChar *s, ...) {
     va_list vl;
     va_start(vl, s);
-    scvsprintf(_compilererror, MAX_COMPILER_ERROR_LEN, s, vl);
+    vsnprintf(_compilererror, MAX_COMPILER_ERROR_LEN, s, vl);
     va_end(vl);
     _errorNode = n;
     longjmp(_errorjmp, 1);
@@ -132,7 +132,7 @@ bool CodegenVisitor::CheckMemberUniqueness(ArenaVector<Expr *> &vec, Expr *obj) 
     for (SQUnsignedInteger i = 0, n = vec.size(); i < n; ++i) {
         Expr *vecobj = vec[i];
         if (vecobj->op() == TO_ID && obj->op() == TO_ID) {
-            if (scstrcmp(vecobj->asId()->id(), obj->asId()->id()) == 0) {
+            if (strcmp(vecobj->asId()->id(), obj->asId()->id()) == 0) {
                 error(obj, _SC("duplicate key '%s'"), obj->asId()->id());
                 return false;
             }
@@ -1241,7 +1241,7 @@ bool CodegenVisitor::CanBeDefaultDelegate(const SQChar *key)
     };
     SQObjectPtr tmp;
     for (SQInteger i = 0; i < sizeof(delegTbls) / sizeof(delegTbls[0]); ++i) {
-        if (delegTbls[i]->GetStr(key, scstrlen(key), tmp))
+        if (delegTbls[i]->GetStr(key, strlen(key), tmp))
             return true;
     }
     return false;
@@ -1271,7 +1271,7 @@ void CodegenVisitor::visitGetFieldExpr(GetFieldExpr *expr) {
         if (IsConstant(id, constant)) {
             if (sq_type(constant) == OT_TABLE && (sq_objflags(constant) & SQOBJ_FLAG_IMMUTABLE)) {
                 SQObjectPtr next;
-                if (_table(constant)->GetStr(expr->fieldName(), scstrlen(expr->fieldName()), next)) {
+                if (_table(constant)->GetStr(expr->fieldName(), strlen(expr->fieldName()), next)) {
                     selectConstant(_fs->PushTarget(), next);
                     expr->setConst();
                     //receiver->setConst();
@@ -1293,7 +1293,7 @@ void CodegenVisitor::visitGetFieldExpr(GetFieldExpr *expr) {
         SQObjectPtr constant = _constVal;
         if (sq_type(constant) == OT_TABLE && (sq_objflags(constant) & SQOBJ_FLAG_IMMUTABLE)) {
             SQObjectPtr next;
-            if (_table(constant)->GetStr(expr->fieldName(), scstrlen(expr->fieldName()), next)) {
+            if (_table(constant)->GetStr(expr->fieldName(), strlen(expr->fieldName()), next)) {
                 SQInstruction &last = _fs->LastInstruction();
 
                 SQInteger target = -1;
@@ -1528,7 +1528,7 @@ void CodegenVisitor::visitId(Id *id) {
     bool assignable = false;
 
     if (sq_isstring(_fs->_name)
-        && scstrcmp(_stringval(_fs->_name), id->id()) == 0
+        && strcmp(_stringval(_fs->_name), id->id()) == 0
         && _fs->GetLocalVariable(_fs->_name, assignable) == -1) {
         _fs->AddInstruction(_OP_LOADCALLEE, _fs->PushTarget());
         return;

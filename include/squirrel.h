@@ -60,10 +60,6 @@ struct SQInstance;
 struct SQDelegable;
 struct SQOuter;
 
-#ifdef _UNICODE
-#define SQUNICODE
-#endif
-
 #include "sqconfig.h"
 
 #define SQUIRREL_VERSION_NUMBER_MAJOR 4

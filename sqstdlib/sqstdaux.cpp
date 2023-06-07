@@ -47,7 +47,7 @@ static void collect_stack_sting(HSQUIRRELVM v, PrintFunc pf)
         {
             seq++;
 #ifdef SQ_STACK_DUMP_SECRET_PREFIX
-            bool should_keep_secret = (scstrncmp(name, SECRET_PREFIX, sizeof(SECRET_PREFIX)/sizeof(SQChar) - 1) == 0);
+            bool should_keep_secret = (strncmp(name, SECRET_PREFIX, sizeof(SECRET_PREFIX)/sizeof(SQChar) - 1) == 0);
             if (should_keep_secret) {
                 sq_pop(v, 1);
                 continue;
@@ -142,7 +142,7 @@ SQRESULT sqstd_formatcallstackstring(HSQUIRRELVM v)
         va_list args;
 
         va_start(args, fmt);
-        int nappend = scvsprintf(0, 0, fmt, args);
+        int nappend = vsnprintf(0, 0, fmt, args);
         va_end(args);
 
         int poffset = int(dst - mem);
@@ -159,7 +159,7 @@ SQRESULT sqstd_formatcallstackstring(HSQUIRRELVM v)
         }
 
         va_start(args, fmt);
-        dst += scvsprintf(dst, memlen - poffset, fmt, args);
+        dst += vsnprintf(dst, memlen - poffset, fmt, args);
         va_end(args);
     });
 
@@ -209,7 +209,7 @@ SQRESULT sqstd_throwerrorf(HSQUIRRELVM v,const SQChar *err,...)
 begin:
     va_start(args,err);
     SQChar *b=sq_getscratchpad(v,n);
-    SQInteger r=scvsprintf(b,n,err,args);
+    SQInteger r=vsnprintf(b,n,err,args);
     va_end(args);
     if (r>=n) {
         n=r+1;//required+null

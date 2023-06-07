@@ -31,7 +31,7 @@ static SQInteger validate_format(HSQUIRRELVM v, SQChar *fmt, const SQChar *src, 
     SQInteger start = n;
     fmt[0] = '%';
     while (isfmtchr(src[n])) n++;
-    while (scisdigit(src[n])) {
+    while (isdigit(src[n])) {
         swidth[wc] = src[n];
         n++;
         wc++;
@@ -48,7 +48,7 @@ static SQInteger validate_format(HSQUIRRELVM v, SQChar *fmt, const SQChar *src, 
         n++;
 
         wc = 0;
-        while (scisdigit(src[n])) {
+        while (isdigit(src[n])) {
             swidth[wc] = src[n];
             n++;
             wc++;
@@ -114,7 +114,7 @@ SQRESULT sqstd_format(HSQUIRRELVM v,SQInteger nformatstringidx,SQInteger *outlen
             case 'i': case 'd': case 'o': case 'u':  case 'x':  case 'X':
 #ifdef _SQ64
                 {
-                size_t flen = scstrlen(fmt);
+                size_t flen = strlen(fmt);
                 SQInteger fpos = flen - 1;
                 SQChar f = fmt[fpos];
                 const SQChar *prec = (const SQChar *)_PRINT_INT_PREC;
@@ -164,7 +164,7 @@ void sqstd_pushstringf(HSQUIRRELVM v,const SQChar *s,...)
 begin:
     va_start(args,s);
     SQChar *b=sq_getscratchpad(v,n);
-    SQInteger r=scvsprintf(b,n,s,args);
+    SQInteger r=vsnprintf(b,n,s,args);
     va_end(args);
     if (r>=n) {
         n=r+1;//required+null

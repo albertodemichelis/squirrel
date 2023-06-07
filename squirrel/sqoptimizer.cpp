@@ -14,11 +14,11 @@ SQOptimizer::SQOptimizer(SQFuncState & func_state) : fs(&func_state), jumps(func
  {
     for (int i = 0; i < fs->_lineinfos.size(); i++)
         if (fs->_lineinfos[i]._op >= instructionIndex) {
-            scprintf(_SC("OPTIMIZER: %s  %s:%d\n"), message, _stringval(fs->_sourcename), fs->_lineinfos[i]._line);
+            printf(_SC("OPTIMIZER: %s  %s:%d\n"), message, _stringval(fs->_sourcename), fs->_lineinfos[i]._line);
             return;
         }
     if (fs->_lineinfos.size() > 0)
-        scprintf(_SC("OPTIMIZER: %s  %s:%d\n"), message, _stringval(fs->_sourcename), fs->_lineinfos.top()._line);
+        printf(_SC("OPTIMIZER: %s  %s:%d\n"), message, _stringval(fs->_sourcename), fs->_lineinfos.top()._line);
  }
 #endif
 
@@ -274,7 +274,7 @@ void SQOptimizer::optimize()
 
 #ifdef _DEBUG_DUMP
     for (int i = 0; i < jumps.size(); i++)
-        scprintf(_SC("JUMPS:  instruction: %d  to: %d\n"), jumps[i].instructionIndex, jumps[i].jumpTo);
+        printf(_SC("JUMPS:  instruction: %d  to: %d\n"), jumps[i].instructionIndex, jumps[i].jumpTo);
 #endif
 
 }

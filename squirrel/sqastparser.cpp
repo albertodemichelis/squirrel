@@ -27,7 +27,7 @@ void SQParser::Error(const SQChar *s, ...)
 {
     va_list vl;
     va_start(vl, s);
-    scvsprintf(_compilererror, MAX_COMPILER_ERROR_LEN, s, vl);
+    vsnprintf(_compilererror, MAX_COMPILER_ERROR_LEN, s, vl);
     va_end(vl);
     longjmp(_errorjmp,1);
 }
@@ -37,16 +37,16 @@ void SQParser::ProcessDirective()
 {
     const SQChar *sval = _lex._svalue;
 
-    if (scstrncmp(sval, _SC("pos:"), 4) == 0) {
+    if (strncmp(sval, _SC("pos:"), 4) == 0) {
         sval += 4;
-        if (!scisdigit(*sval))
+    if (!isdigit(*sval))
             Error(_SC("expected line number after #pos:"));
         SQChar * next = NULL;
         _lex._currentline = scstrtol(sval, &next, 10);
         if (!next || *next != ':')
             Error(_SC("expected ':'"));
         next++;
-        if (!scisdigit(*next))
+    if (!isdigit(*next))
             Error(_SC("expected column number after #pos:<line>:"));
         _lex._currentcolumn = scstrtol(next, NULL, 10);
 
@@ -55,46 +55,46 @@ void SQParser::ProcessDirective()
 
     SQInteger setFlags = 0, clearFlags = 0;
     bool applyToDefault = false;
-    if (scstrncmp(sval, _SC("default:"), 8) == 0) {
+    if (strncmp(sval, _SC("default:"), 8) == 0) {
         applyToDefault = true;
         sval += 8;
     }
 
-    if (scstrcmp(sval, _SC("strict")) == 0)
+    if (strcmp(sval, _SC("strict")) == 0)
         setFlags = LF_STRICT;
-    else if (scstrcmp(sval, _SC("relaxed")) == 0)
+    else if (strcmp(sval, _SC("relaxed")) == 0)
         clearFlags = LF_STRICT;
-    else if (scstrcmp(sval, _SC("strict-bool")) == 0)
+    else if (strcmp(sval, _SC("strict-bool")) == 0)
         setFlags = LF_STRICT_BOOL;
-    else if (scstrcmp(sval, _SC("relaxed-bool")) == 0)
+    else if (strcmp(sval, _SC("relaxed-bool")) == 0)
         clearFlags = LF_STRICT_BOOL;
-    else if (scstrcmp(sval, _SC("no-root-fallback")) == 0)
+    else if (strcmp(sval, _SC("no-root-fallback")) == 0)
         setFlags = LF_EXPLICIT_ROOT_LOOKUP;
-    else if (scstrcmp(sval, _SC("implicit-root-fallback")) == 0)
+    else if (strcmp(sval, _SC("implicit-root-fallback")) == 0)
         clearFlags = LF_EXPLICIT_ROOT_LOOKUP;
-    else if (scstrcmp(sval, _SC("no-func-decl-sugar")) == 0)
+    else if (strcmp(sval, _SC("no-func-decl-sugar")) == 0)
         setFlags = LF_NO_FUNC_DECL_SUGAR;
-    else if (scstrcmp(sval, _SC("allow-func-decl-sugar")) == 0)
+    else if (strcmp(sval, _SC("allow-func-decl-sugar")) == 0)
         clearFlags = LF_NO_FUNC_DECL_SUGAR;
-    else if (scstrcmp(sval, _SC("no-class-decl-sugar")) == 0)
+    else if (strcmp(sval, _SC("no-class-decl-sugar")) == 0)
         setFlags = LF_NO_CLASS_DECL_SUGAR;
-    else if (scstrcmp(sval, _SC("allow-class-decl-sugar")) == 0)
+    else if (strcmp(sval, _SC("allow-class-decl-sugar")) == 0)
         clearFlags = LF_NO_CLASS_DECL_SUGAR;
-    else if (scstrcmp(sval, _SC("no-plus-concat")) == 0)
+    else if (strcmp(sval, _SC("no-plus-concat")) == 0)
         setFlags = LF_NO_PLUS_CONCAT;
-    else if (scstrcmp(sval, _SC("allow-plus-concat")) == 0)
+    else if (strcmp(sval, _SC("allow-plus-concat")) == 0)
         clearFlags = LF_NO_PLUS_CONCAT;
-    else if (scstrcmp(sval, _SC("explicit-this")) == 0)
+    else if (strcmp(sval, _SC("explicit-this")) == 0)
         setFlags = LF_EXPLICIT_THIS;
-    else if (scstrcmp(sval, _SC("implicit-this")) == 0)
+    else if (strcmp(sval, _SC("implicit-this")) == 0)
         clearFlags = LF_EXPLICIT_THIS;
-    else if (scstrcmp(sval, _SC("forbid-root-table")) == 0)
+    else if (strcmp(sval, _SC("forbid-root-table")) == 0)
         setFlags = LF_FORBID_ROOT_TABLE;
-    else if (scstrcmp(sval, _SC("allow-root-table")) == 0)
+    else if (strcmp(sval, _SC("allow-root-table")) == 0)
         clearFlags = LF_FORBID_ROOT_TABLE;
-    else if (scstrcmp(sval, _SC("disable-optimizer")) == 0)
+    else if (strcmp(sval, _SC("disable-optimizer")) == 0)
         setFlags = LF_DISABLE_OPTIMIZER;
-    else if (scstrcmp(sval, _SC("enable-optimizer")) == 0)
+    else if (strcmp(sval, _SC("enable-optimizer")) == 0)
         clearFlags = LF_DISABLE_OPTIMIZER;
     else
         Error(_SC("unsupported directive"));
@@ -1080,7 +1080,7 @@ ForeachStatement* SQParser::parseForEachStatement()
         valname = (Id *)Expect(TK_IDENTIFIER);
         assert(valname);
 
-        if (scstrcmp(idxname->id(), valname->id()) == 0) //-V522
+        if (strcmp(idxname->id(), valname->id()) == 0) //-V522
             Error(_SC("foreach() key and value names are the same: %s"), valname->id());
     }
     else {
@@ -1278,7 +1278,7 @@ Id* SQParser::generateSurrogateFunctionName()
     const SQChar * fileName = _sourcename ? _sourcename : _SC("unknown");
     int lineNum = int(_lex._currentline);
 
-    const SQChar * rightSlash = std::max(scstrrchr(fileName, _SC('/')), scstrrchr(fileName, _SC('\\')));
+    const SQChar * rightSlash = std::max(strrchr(fileName, _SC('/')), strrchr(fileName, _SC('\\')));
 
     SQChar buf[MAX_FUNCTION_NAME_LEN];
     scsprintf(buf, MAX_FUNCTION_NAME_LEN, _SC("(%s:%d)"), rightSlash ? (rightSlash + 1) : fileName, lineNum);

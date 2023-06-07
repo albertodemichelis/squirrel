@@ -19,13 +19,7 @@
 #include <sqstdaux.h>
 #include <sqmodules.h>
 
-#ifdef SQUNICODE
-#define scfprintf fwprintf
-#define scvprintf vfwprintf
-#else
-#define scfprintf fprintf
 #define scvprintf vfprintf
-#endif
 
 
 static SqModules *module_mgr = nullptr;
@@ -69,12 +63,12 @@ void errorfunc(HSQUIRRELVM SQ_UNUSED_ARG(v),const SQChar *s,...)
 
 void PrintVersionInfos()
 {
-    scfprintf(stdout,_SC("%s %s (%d bits)\n"),SQUIRREL_VERSION,SQUIRREL_COPYRIGHT,((int)(sizeof(SQInteger)*8)));
+    fprintf(stdout,_SC("%s %s (%d bits)\n"),SQUIRREL_VERSION,SQUIRREL_COPYRIGHT,((int)(sizeof(SQInteger)*8)));
 }
 
 void PrintUsage()
 {
-    scfprintf(stderr,_SC("usage: sq <options> <scriptpath [args]>.\n")
+    fprintf(stderr,_SC("usage: sq <options> <scriptpath [args]>.\n")
         _SC("Available options are:\n")
         _SC("   -c              compiles the file to bytecode(default output 'out.cnut')\n")
         _SC("   -o              specifies output file for the -c option\n")
@@ -130,7 +124,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                     return _DONE;
                 default:
                     PrintVersionInfos();
-                    scprintf(_SC("unknown prameter '-%c'\n"),argv[arg][1]);
+                    printf(_SC("unknown prameter '-%c'\n"),argv[arg][1]);
                     PrintUsage();
                     *retval = -1;
                     return _ERROR;
@@ -143,12 +137,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
 
         if(arg<argc) {
             const SQChar *filename=NULL;
-#ifdef SQUNICODE
-            mbstowcs(temp,argv[arg],strlen(argv[arg]));
-            filename=temp;
-#else
             filename=argv[arg];
-#endif
 
             arg++;
 
@@ -156,13 +145,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                 if(SQ_SUCCEEDED(sqstd_loadfile(v,filename,SQTrue))){
                     const SQChar *outfile = _SC("out.cnut");
                     if(output) {
-#ifdef SQUNICODE
-                        int len = (int)(strlen(output)+1);
-                        mbstowcs(sq_getscratchpad(v,len*sizeof(SQChar)),output,len);
-                        outfile = sq_getscratchpad(v,-1);
-#else
                         outfile = output;
-#endif
                     }
                     if(SQ_SUCCEEDED(sqstd_writeclosuretofile(v,outfile)))
                         return _DONE;
@@ -172,7 +155,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                 Sqrat::Object exports;
                 std::string errMsg;
                 if (!module_mgr->requireModule(filename, true, "__main__", exports, errMsg)) {
-                    scprintf(_SC("Error [%s]\n"), errMsg.c_str());
+                    printf(_SC("Error [%s]\n"), errMsg.c_str());
                     return _ERROR;
                 }
                 return _DONE;
@@ -183,7 +166,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                 const SQChar *err;
                 sq_getlasterror(v);
                 if(SQ_SUCCEEDED(sq_getstring(v,-1,&err))) {
-                    scprintf(_SC("Error [%s]\n"),err);
+                    printf(_SC("Error [%s]\n"),err);
                     *retval = -2;
                     return _ERROR;
                 }
@@ -217,7 +200,7 @@ void Interactive(HSQUIRRELVM v)
     while (!done)
     {
         SQInteger i = 0;
-        scprintf(_SC("\nsq>"));
+        printf(_SC("\nsq>"));
         for(;;) {
             int c;
             if(done)return;
@@ -240,7 +223,7 @@ void Interactive(HSQUIRRELVM v)
                     buffer[i++] = (SQChar)c;
             }
             else if (i >= MAXINPUT-1) {
-                scfprintf(stderr, _SC("sq : input line too long\n"));
+                fprintf(stderr, _SC("sq : input line too long\n"));
                 break;
             }
             else{
@@ -251,16 +234,16 @@ void Interactive(HSQUIRRELVM v)
 
         if(buffer[0]==_SC('=')){
             scsprintf(sq_getscratchpad(v,MAXINPUT),(size_t)MAXINPUT,_SC("return (%s)"),&buffer[1]);
-            memcpy(buffer,sq_getscratchpad(v,-1),(scstrlen(sq_getscratchpad(v,-1))+1)*sizeof(SQChar));
+            memcpy(buffer,sq_getscratchpad(v,-1),(strlen(sq_getscratchpad(v,-1))+1)*sizeof(SQChar));
             retval=1;
         }
-        i=scstrlen(buffer);
+        i=strlen(buffer);
         if(i>0){
             SQInteger oldtop=sq_gettop(v);
             if(SQ_SUCCEEDED(sq_compilebuffer(v,buffer,i,_SC("interactive console"),SQTrue))){
                 sq_pushroottable(v);
                 if(SQ_SUCCEEDED(sq_call(v,1,retval,SQTrue)) &&  retval){
-                    scprintf(_SC("\n"));
+                    printf(_SC("\n"));
                     sq_pushroottable(v);
                     sq_pushstring(v,_SC("print"),-1);
                     sq_get(v,-2);
@@ -268,7 +251,7 @@ void Interactive(HSQUIRRELVM v)
                     sq_push(v,-4);
                     sq_call(v,2,SQFalse,SQTrue);
                     retval=0;
-                    scprintf(_SC("\n"));
+                    printf(_SC("\n"));
                 }
             }
 

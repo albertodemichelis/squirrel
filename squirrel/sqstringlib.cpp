@@ -8,7 +8,7 @@
 static void __strip_l(const SQChar *str,const SQChar **start)
 {
     const SQChar *t = str;
-    while(((*t) != '\0') && scisspace(*t)){ t++; }
+    while(((*t) != '\0') && isspace(*t)){ t++; }
     *start = t;
 }
 
@@ -19,7 +19,7 @@ static void __strip_r(const SQChar *str,SQInteger len,const SQChar **end)
         return;
     }
     const SQChar *t = &str[len-1];
-    while(t >= str && scisspace(*t)) { t--; }
+    while(t >= str && isspace(*t)) { t--; }
     *end = t + 1;
 }
 
@@ -102,18 +102,10 @@ SQInteger _sq_string_escape_impl(HSQUIRRELVM v, SQInteger arg_stack_start)
         sq_push(v,arg_stack_start);
         return 1;
     }
-#ifdef SQUNICODE
-#if WCHAR_SIZE == 2
-    const SQChar *escpat = _SC("\\x%04x");
-    const SQInteger maxescsize = 6;
-#else //WCHAR_SIZE == 4
-    const SQChar *escpat = _SC("\\x%08x");
-    const SQInteger maxescsize = 10;
-#endif
-#else
+
     const SQChar *escpat = _SC("\\x%02x");
     const SQInteger maxescsize = 4;
-#endif
+
     SQInteger destcharsize = (size * maxescsize); //assumes every char could be escaped
     resstr = dest = (SQChar *)sq_getscratchpad(v,destcharsize * sizeof(SQChar));
     SQChar c;
@@ -122,7 +114,7 @@ SQInteger _sq_string_escape_impl(HSQUIRRELVM v, SQInteger arg_stack_start)
     for(int n = 0; n < size; n++){
         c = *str++;
         escch = 0;
-        if(scisprint(c) || c == 0) {
+        if(isprint(c) || c == 0) {
             switch(c) {
             case '\a': escch = 'a'; break;
             case '\b': escch = 'b'; break;
@@ -169,7 +161,7 @@ SQInteger _sq_string_startswith_impl(HSQUIRRELVM v, SQInteger arg_stack_start)
     sq_getstringandsize(v,arg_stack_start+1,&cmp,&cmplen);
     SQBool ret = SQFalse;
     if(cmplen <= len) {
-        ret = memcmp(str,cmp,sq_rsl(cmplen)) == 0 ? SQTrue : SQFalse;
+        ret = memcmp(str,cmp,cmplen) == 0 ? SQTrue : SQFalse;
     }
     sq_pushbool(v,ret);
     return 1;
@@ -183,7 +175,7 @@ SQInteger _sq_string_endswith_impl(HSQUIRRELVM v, SQInteger arg_stack_start)
     sq_getstringandsize(v,arg_stack_start+1,&cmp,&cmplen);
     SQBool ret = SQFalse;
     if(cmplen <= len) {
-        ret = memcmp(&str[len - cmplen],cmp,sq_rsl(cmplen)) == 0 ? SQTrue : SQFalse;
+        ret = memcmp(&str[len - cmplen],cmp,cmplen) == 0 ? SQTrue : SQFalse;
     }
     sq_pushbool(v,ret);
     return 1;

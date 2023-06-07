@@ -101,7 +101,7 @@ public:
         _HashNode *res = NULL;
         do{
             if (sq_type(n->key) == OT_STRING &&
-               (keylen == _string(n->key)->_len && scstrncmp(_stringval(n->key), key, keylen) == 0))
+               (keylen == _string(n->key)->_len && strncmp(_stringval(n->key), key, keylen) == 0))
             {
                 res = n;
                 break;

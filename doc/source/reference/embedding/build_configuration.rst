@@ -4,17 +4,6 @@
 Build Configuration
 ========================
 
-.. _unicode:
-
-----------
-Unicode
-----------
-
-.. index:: single: Unicode
-
-By default Quirrel strings are plain 8-bits ASCII characters; however if the symbol
-'SQUNICODE' is defined the VM, compiler and API will use 16-bit characters (UCS2).
-
 .. _squirrel_64bits:
 
 --------------------------------

@@ -48,7 +48,7 @@ static bool str2num(const SQChar *s,SQObjectPtr &res,SQInteger base)
         e++;
     }
     if(isfloat){
-        SQFloat r = SQFloat(scstrtod(s,&end));
+        SQFloat r = SQFloat(strtod(s,&end));
         if(s == end) return false;
         res = r;
     }
@@ -1477,7 +1477,7 @@ static SQInteger _string_scan_for_substring(HSQUIRRELVM v, SQInteger (*push_resu
             return sq_throwerror(v, _SC("empty substring"));
         if(top>2)sq_getinteger(v,3,&start_idx);
         if((sq_getsize(v,1)>start_idx) && (start_idx>=0)){
-            ret=scstrstr(&str[start_idx],substr);
+            ret=strstr(&str[start_idx],substr);
             if(ret)
                 return push_result(v, ret-str);
         }
@@ -1762,7 +1762,7 @@ static SQInteger string_split(HSQUIRRELVM v)
     if (sq_gettop(v) == 1) {
         SQInteger start = 0;
         for (SQInteger pos=0; pos<=len; ++pos) {
-            if (pos==len || scisspace(str[pos])) {
+            if (pos==len || isspace(str[pos])) {
                 if (pos > start)
                     res->Append(SQObjectPtr(SQString::Create(_ss(v), str+start, pos-start)));
                 start = pos+1;
@@ -1780,7 +1780,7 @@ static SQInteger string_split(HSQUIRRELVM v)
                 res->Append(SQObjectPtr(SQString::Create(_ss(v), str+start, len-start)));
                 break;
             }
-            else if (scstrncmp(str+pos, sep, sep_len)==0) {
+            else if (strncmp(str+pos, sep, sep_len)==0) {
                 res->Append(SQObjectPtr(SQString::Create(_ss(v), str+start, pos-start)));
                 pos += sep_len;
                 start = pos;
@@ -1806,8 +1806,8 @@ static SQInteger string_split(HSQUIRRELVM v)
     if(eidx > slen || sidx < 0) return sq_throwerror(v,_SC("slice out of range")); \
     SQInteger len=_string(str)->_len; \
     const SQChar *sthis=_stringval(str); \
-    SQChar *snew=(_ss(v)->GetScratchPad(sq_rsl(len))); \
-    memcpy(snew,sthis,sq_rsl(len));\
+    SQChar *snew=(_ss(v)->GetScratchPad(len)); \
+    memcpy(snew,sthis,len);\
     for(SQInteger i=sidx;i<eidx;i++) snew[i] = (SQChar)func(sthis[i]); \
     v->Push(SQString::Create(_ss(v),snew,len)); \
     return 1; \

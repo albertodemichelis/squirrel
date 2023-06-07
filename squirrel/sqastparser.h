@@ -21,7 +21,7 @@ class SQParser
     }
 
     SQChar *copyString(const SQChar *s) {
-        size_t len = scstrlen(s);
+        size_t len = strlen(s);
         size_t memLen = (len + 1) * sizeof(SQChar);
         SQChar *buf = (SQChar *)arena()->allocate(memLen);
         memcpy(buf, s, memLen);

@@ -5,18 +5,10 @@
 #include <stdio.h>
 #include <sqstdsystem.h>
 
-#ifdef SQUNICODE
-#include <wchar.h>
-#define scgetenv _wgetenv
-#define scsystem _wsystem
-#define scremove _wremove
-#define screname _wrename
-#else
 #define scgetenv getenv
 #define scsystem system
 #define scremove remove
 #define screname rename
-#endif
 
 static SQInteger _system_getenv(HSQUIRRELVM v)
 {
