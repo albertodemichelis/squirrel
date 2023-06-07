@@ -1,5 +1,13 @@
 #include "sqast.h"
 
+#define DEF_TREE_OP(arg) #arg
+
+const char* sq_tree_op_names[] = {
+    TREE_OPS
+};
+#undef DEF_TREE_OP
+
+
 void Node::visitChildren(Visitor *visitor) {
     switch (op())
     {

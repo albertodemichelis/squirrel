@@ -96,6 +96,8 @@ enum TreeOp {
 
 };
 
+extern const char* sq_tree_op_names[];
+
 class Visitor;
 class Transformer;
 
