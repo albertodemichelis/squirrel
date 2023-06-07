@@ -884,7 +884,7 @@ Decl* SQParser::parseLocalDeclStatement(bool assignable)
         Expect(_SC('('));
         FunctionDecl *f = CreateFunction(varname, false);
         f->setContext(DC_LOCAL);
-        VarDecl *d = newNode<VarDecl>(varname, newNode<DeclExpr>(f), assignable);
+        VarDecl *d = newNode<VarDecl>(varname->id(), newNode<DeclExpr>(f), assignable);
         d->setColumnPos(c); d->setLinePos(l);
         return d;
     } else if (_token == TK_CLASS) {
@@ -892,7 +892,7 @@ Decl* SQParser::parseLocalDeclStatement(bool assignable)
         Id *varname = (Id *)Expect(TK_IDENTIFIER);
         ClassDecl *cls = ClassExp(NULL);
         cls->setContext(DC_LOCAL);
-        VarDecl *d = newNode<VarDecl>(varname, newNode<DeclExpr>(cls), assignable);
+        VarDecl *d = newNode<VarDecl>(varname->id(), newNode<DeclExpr>(cls), assignable);
         d->setColumnPos(c); d->setLinePos(l);
         return d;
     }
@@ -918,12 +918,12 @@ Decl* SQParser::parseLocalDeclStatement(bool assignable)
         if(_token == _SC('=')) {
             Lex();
             Expr *expr = Expression(SQE_REGULAR);
-            cur = newNode<VarDecl>(varname, expr, assignable);
+            cur = newNode<VarDecl>(varname->id(), expr, assignable);
         }
         else {
             if (!assignable && !destructurer)
                 Error(_SC("Binding '%s' must be initialized"), varname->id()); //-V522
-            cur = newNode<VarDecl>(varname, nullptr, assignable);
+            cur = newNode<VarDecl>(varname->id(), nullptr, assignable);
         }
 
         cur->setColumnPos(c); cur->setLinePos(l);
@@ -1210,7 +1210,7 @@ ConstDecl* SQParser::parseConstStatement(bool global)
     LiteralExpr *valExpr = ExpectScalar();
     OptionalSemicolon();
 
-    ConstDecl *d = newNode<ConstDecl>(id, valExpr, global);
+    ConstDecl *d = newNode<ConstDecl>(id->id(), valExpr, global);
     d->setColumnPos(c);
     d->setLinePos(l);
     return d;
@@ -1223,7 +1223,7 @@ EnumDecl* SQParser::parseEnumStatement(bool global)
     Lex();
     Id *id = (Id *)Expect(TK_IDENTIFIER);
 
-    EnumDecl *decl = newNode<EnumDecl>(arena(), id, global);
+    EnumDecl *decl = newNode<EnumDecl>(arena(), id->id(), global);
 
     Expect(_SC('{'));
 
@@ -1241,7 +1241,7 @@ EnumDecl* SQParser::parseEnumStatement(bool global)
             valExpr = newNode<LiteralExpr>(nval++);
         }
 
-        decl->addConst(key, valExpr);
+        decl->addConst(key->id(), valExpr);
 
         if(_token == ',') Lex();
     }
@@ -1332,17 +1332,17 @@ Expr* SQParser::PrefixIncDec(SQInteger token)
 
 FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
 {
-    FunctionDecl *f = ctor ? newNode<ConstructorDecl>(arena(), name) : newNode<FunctionDecl>(arena(), name);
+    FunctionDecl *f = ctor ? newNode<ConstructorDecl>(arena(), name->id()) : newNode<FunctionDecl>(arena(), name->id());
     f->setLinePos(_lex._currentline); f->setColumnPos(_lex._currentcolumn);
 
-    f->addParameter(newNode<Id>(_SC("this")));
+    f->addParameter(_SC("this"));
 
     SQInteger defparams = 0;
 
     while (_token!=_SC(')')) {
         if (_token == TK_VARPARAMS) {
             if(defparams > 0) Error(_SC("function with default parameters cannot have variable number of parameters"));
-            f->addParameter(newNode<Id>(_SC("vargv")));
+            f->addParameter(_SC("vargv"));
             f->setVararg();
             Lex();
             if(_token != _SC(')')) Error(_SC("expected ')'"));
@@ -1360,7 +1360,7 @@ FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
                 if (defparams > 0) Error(_SC("expected '='"));
             }
 
-            f->addParameter(paramname, defVal);
+            f->addParameter(paramname->id(), defVal);
 
             if(_token == _SC(',')) Lex();
             else if(_token != _SC(')')) Error(_SC("expected ')' or ','"));

@@ -340,7 +340,7 @@ public:
         if (decl->op() == TO_VAR) {
             _out << (((VarDecl *)decl)->isAssignable() ? "local " : "let ");
         }
-        visitId(decl->name());
+        _out << decl->name();
         if (decl->expression()) {
             _out << " = ";
             decl->expression()->visit(this);
@@ -379,7 +379,7 @@ public:
             _out << " @ ";
         } else if (f->name()) {
             _out << " ";
-            visitId(f->name());
+            _out << f->name();
         }
 
         _out << '(';
@@ -398,19 +398,19 @@ public:
     virtual void visitConstructorDecl(ConstructorDecl *ctr) { visitFunctionDecl(ctr); }
     virtual void visitConstDecl(ConstDecl *cnst) {
         if (cnst->isGlobal()) _out << "G ";
-        visitId(cnst->name());
+        _out << cnst->name();
         _out << " = ";
         cnst->value()->visit(this);
     }
     virtual void visitEnumDecl(EnumDecl *enm) {
         _out << "ENUM ";
-        visitId(enm->name());
+        _out << enm->name();
         _out << std::endl;
         _indent += 2;
 
         for (auto &c : enm->consts()) {
             indent(_indent);
-            visitId(c.id);
+            _out << c.id;
             _out << " = ";
             c.val->visit(this);
             _out << std::endl;

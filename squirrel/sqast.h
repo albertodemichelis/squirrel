@@ -503,22 +503,22 @@ private:
 
 class ValueDecl : public Decl {
 protected:
-    ValueDecl(enum TreeOp op, Id *name, Expr *expr) : Decl(op), _name(name), _expr(expr) {}
+    ValueDecl(enum TreeOp op, const SQChar *name, Expr *expr) : Decl(op), _name(name), _expr(expr) {}
 public:
     void visitChildren(Visitor *visitor);
 
     Expr *expression() const { return _expr; }
-    Id *name() const { return _name; }
+    const SQChar *name() const { return _name; }
 
 private:
 
-    Id *_name;
+    const SQChar *_name;
     Expr *_expr;
 };
 
 class ParamDecl : public ValueDecl {
 public:
-    ParamDecl(Id *name, Expr *defaltVal) : ValueDecl(TO_PARAM, name, defaltVal) {}
+    ParamDecl(const SQChar *name, Expr *defaltVal) : ValueDecl(TO_PARAM, name, defaltVal) {}
 
     bool hasDefaultValue() const { return expression() != NULL; }
     Expr *defaultValue() const { return expression(); }
@@ -526,7 +526,7 @@ public:
 
 class VarDecl : public ValueDecl {
 public:
-    VarDecl(Id *name, Expr *init, bool assignable) : ValueDecl(TO_VAR, name, init), _assignable(assignable) {}
+    VarDecl(const SQChar *name, Expr *init, bool assignable) : ValueDecl(TO_VAR, name, init), _assignable(assignable) {}
 
     Expr *initializer() const { return expression(); }
 
@@ -578,11 +578,11 @@ class Block;
 
 class FunctionDecl : public Decl {
 protected:
-    FunctionDecl(enum TreeOp op, Arena *arena, Id *name) : Decl(op), _arena(arena), _parameters(arena), _name(name), _vararg(false), _body(NULL), _lambda(false), _sourcename(NULL) {}
+    FunctionDecl(enum TreeOp op, Arena *arena, const SQChar *name) : Decl(op), _arena(arena), _parameters(arena), _name(name), _vararg(false), _body(NULL), _lambda(false), _sourcename(NULL) {}
 public:
-    FunctionDecl(Arena *arena, Id *name) : Decl(TO_FUNCTION), _arena(arena), _parameters(arena), _name(name), _vararg(false), _body(NULL), _lambda(false), _sourcename(NULL) {}
+    FunctionDecl(Arena *arena, const SQChar *name) : Decl(TO_FUNCTION), _arena(arena), _parameters(arena), _name(name), _vararg(false), _body(NULL), _lambda(false), _sourcename(NULL) {}
 
-    void addParameter(Id *name, Expr *defaultVal = NULL) { _parameters.push_back(new (_arena) ParamDecl(name, defaultVal)); }
+    void addParameter(const SQChar *name, Expr *defaultVal = NULL) { _parameters.push_back(new (_arena) ParamDecl(name, defaultVal)); }
     
     ArenaVector<ParamDecl *> &parameters() { return _parameters; }
     const ArenaVector<ParamDecl *> &parameters() const { return _parameters; }
@@ -592,7 +592,7 @@ public:
 
     void visitChildren(Visitor *visitor);
 
-    Id *name() const { return _name; }
+    const SQChar *name() const { return _name; }
     bool isVararg() const { return _vararg; }
     Block *body() const { return _body; }
 
@@ -605,7 +605,7 @@ public:
 
 private:
     Arena *_arena;
-    Id *_name;
+    const SQChar *_name;
     ArenaVector<ParamDecl *> _parameters;
     Block * _body;
     bool _vararg;
@@ -617,47 +617,47 @@ private:
 
 class ConstructorDecl : public FunctionDecl {
 public:
-    ConstructorDecl(Arena *arena, Id *name) : FunctionDecl(TO_CONSTRUCTOR, arena, name) {}
+    ConstructorDecl(Arena *arena, const SQChar *name) : FunctionDecl(TO_CONSTRUCTOR, arena, name) {}
 
 };
 
 struct EnumConst {
-    Id *id;
+    const SQChar *id;
     LiteralExpr *val;
 };
 
 class EnumDecl : public Decl {
 public:
-    EnumDecl(Arena *arena, Id *id, bool global) : Decl(TO_ENUM), _id(id), _consts(arena), _global(global) {}
+    EnumDecl(Arena *arena, const SQChar *id, bool global) : Decl(TO_ENUM), _id(id), _consts(arena), _global(global) {}
 
-    void addConst(Id *id, LiteralExpr *val) { _consts.push_back({ id, val }); }
+    void addConst(const SQChar *id, LiteralExpr *val) { _consts.push_back({ id, val }); }
 
     ArenaVector<EnumConst> &consts() { return _consts; }
     const ArenaVector<EnumConst> &consts() const { return _consts; }
 
     void visitChildren(Visitor *visitor);
 
-    Id *name() const { return _id; }
+    const SQChar *name() const { return _id; }
     bool isGlobal() const { return _global; }
 
 private:
     ArenaVector<EnumConst> _consts;
-    Id *_id;
+    const SQChar *_id;
     bool _global;
 };
 
 class ConstDecl : public Decl {
 public:
-    ConstDecl(Id *id, LiteralExpr *value, bool global) : Decl(TO_CONST), _id(id), _value(value), _global(global) {}
+    ConstDecl(const SQChar *id, LiteralExpr *value, bool global) : Decl(TO_CONST), _id(id), _value(value), _global(global) {}
 
     void visitChildren(Visitor *visitor);
 
-    Id *name() const { return _id; }
+    const SQChar *name() const { return _id; }
     LiteralExpr *value() const { return _value; }
     bool isGlobal() const { return _global; }
 
 private:
-    Id *_id;
+    const SQChar *_id;
     LiteralExpr *_value;
     bool _global;
 };

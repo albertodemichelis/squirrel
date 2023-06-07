@@ -166,7 +166,6 @@ void CommaExpr::visitChildren(Visitor *visitor) {
 }
 
 void ValueDecl::visitChildren(Visitor *visitor) {
-    visitor->visitId(_name);
     if (_expr) _expr->visit(visitor);
 }
 
@@ -184,8 +183,6 @@ void ClassDecl::visitChildren(Visitor *visitor)  {
 }
 
 void FunctionDecl::visitChildren(Visitor *visitor) {
-    if (_name) visitor->visitId(_name);
-
     for (auto param : parameters())
         param->visit(visitor);
 
@@ -195,15 +192,9 @@ void FunctionDecl::visitChildren(Visitor *visitor) {
 void FunctionDecl::setBody(Block *body) { _body = body; body->setIsBody(); }
 
 void EnumDecl::visitChildren(Visitor *visitor) {
-    visitor->visitId(_id);
-
-    for (auto &c : consts())
-        c.id->visit(visitor);
-
 }
 
 void ConstDecl::visitChildren(Visitor *visitor) {
-    visitor->visitId(_id);
 }
 
 void DeclGroup::visitChildren(Visitor *visitor) {

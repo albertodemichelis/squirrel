@@ -707,11 +707,11 @@ static const SQChar *varDescriptor(VarDecl *var) {
 
 void CodegenVisitor::visitVarDecl(VarDecl *var) {
     addLineNumber(var);
-    Id *name = var->name();
+    const SQChar *name = var->name();
 
-    SQObject varName = _fs->CreateString(name->id());
+    SQObject varName = _fs->CreateString(name);
 
-    CheckDuplicateLocalIdentifier(name, varName, varDescriptor(var), false);
+    CheckDuplicateLocalIdentifier(var, varName, varDescriptor(var), false);
 
     if (var->initializer()) {
         visitForceGet(var->initializer());
@@ -762,7 +762,7 @@ void CodegenVisitor::visitDesctructingDecl(DestructuringDecl *destruct) {
             _fs->AddInstruction(_OP_GET, targets[i], src, key_pos, flags);
         }
         else {
-            _fs->AddInstruction(_OP_LOAD, key_pos, _fs->GetConstant(_fs->CreateString(d->name()->id())));
+            _fs->AddInstruction(_OP_LOAD, key_pos, _fs->GetConstant(_fs->CreateString(d->name())));
             _fs->AddInstruction(_OP_GET, targets[i], src, key_pos, flags);
         }
     }
@@ -772,7 +772,7 @@ void CodegenVisitor::visitDesctructingDecl(DestructuringDecl *destruct) {
 }
 
 void CodegenVisitor::visitParamDecl(ParamDecl *param) {
-    _childFs->AddParameter(_fs->CreateString(param->name()->id()));
+    _childFs->AddParameter(_fs->CreateString(param->name()));
     if (param->hasDefaultValue()) {
         visitForceGet(param->defaultValue());
     }
@@ -784,7 +784,7 @@ void CodegenVisitor::visitFunctionDecl(FunctionDecl *funcDecl) {
     SQFuncState *savedChildFsAtRoot = _childFs; // may be non-null when processing default argument that is declared as function/lambda
     _childFs = _fs->PushChildState(_ss(_vm));
 
-    _childFs->_name = _fs->CreateString(funcDecl->name()->id());
+    _childFs->_name = _fs->CreateString(funcDecl->name());
     _childFs->_sourcename = _fs->_sourcename = SQString::Create(_ss(_vm), funcDecl->sourceName());
     _childFs->_varparams = funcDecl->isVararg();
 
@@ -867,10 +867,10 @@ SQObject CodegenVisitor::selectLiteral(LiteralExpr *lit) {
 void CodegenVisitor::visitConstDecl(ConstDecl *decl) {
     addLineNumber(decl);
 
-    SQObject id = _fs->CreateString(decl->name()->id());
+    SQObject id = _fs->CreateString(decl->name());
     SQObject value = selectLiteral(decl->value());
 
-    CheckDuplicateLocalIdentifier(decl->name(), id, _SC("Constant"), decl->isGlobal() && !(_fs->lang_features & LF_FORBID_GLOBAL_CONST_REWRITE));
+    CheckDuplicateLocalIdentifier(decl, id, _SC("Constant"), decl->isGlobal() && !(_fs->lang_features & LF_FORBID_GLOBAL_CONST_REWRITE));
 
     SQTable *enums = decl->isGlobal() ? _table(_ss(_vm)->_consts) : GetScopedConstsTable();
     enums->NewSlot(SQObjectPtr(id), SQObjectPtr(value));
@@ -882,12 +882,12 @@ void CodegenVisitor::visitEnumDecl(EnumDecl *enums) {
     table._flags = SQOBJ_FLAG_IMMUTABLE;
     SQInteger nval = 0;
 
-    SQObject id = _fs->CreateString(enums->name()->id());
+    SQObject id = _fs->CreateString(enums->name());
 
-    CheckDuplicateLocalIdentifier(enums->name(), id, _SC("Enum"), enums->isGlobal() && !(_fs->lang_features & LF_FORBID_GLOBAL_CONST_REWRITE));
+    CheckDuplicateLocalIdentifier(enums, id, _SC("Enum"), enums->isGlobal() && !(_fs->lang_features & LF_FORBID_GLOBAL_CONST_REWRITE));
 
     for (auto &c : enums->consts()) {
-        SQObject key = _fs->CreateString(c.id->id());
+        SQObject key = _fs->CreateString(c.id);
         _table(table)->NewSlot(SQObjectPtr(key), SQObjectPtr(selectLiteral(c.val)));
     }
 
