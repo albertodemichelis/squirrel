@@ -3,6 +3,7 @@
 #include "squtils.h"
 
 #include <cstring>
+#include <memory>
 
 #define ARENA_USE_SYSTEM_ALLOC 0
 
@@ -285,4 +286,26 @@ private:
 
     size_t _size;
     size_t _allocated;
+};
+
+template <typename T>
+class StdArenaAllocator : public std::allocator<T> {
+
+  Arena *_arena;
+
+public:
+  typedef size_t size_type;
+  typedef T* pointer;
+  typedef const T* const_pointer;
+
+  pointer allocate(size_type n, const void *hint = 0)
+  {
+    return (pointer)_arena->allocate(n);
+  }
+
+  void deallocate(pointer p, size_type n) {}
+
+  StdArenaAllocator(const StdArenaAllocator<T> &a) : StdArenaAllocator(a._arena) {}
+  StdArenaAllocator(Arena *arena) : std::allocator<T>(), _arena(arena) { assert(arena); }
+  ~StdArenaAllocator() {}
 };
