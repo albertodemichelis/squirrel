@@ -97,6 +97,11 @@ enum TreeOp {
 };
 
 class Visitor;
+class Transformer;
+
+class Expr;
+class Statement;
+class Decl;
 
 class Id;
 class GetFieldExpr;
@@ -114,11 +119,19 @@ public:
     template<typename V>
     void visit(V *visitor);
 
+    template<typename T>
+    Node *transform(T *transformer);
+
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     bool isDeclaration() const { return _op > TO_EXPR_MARK; }
     bool isStatement() const { return _op < TO_STATEMENT_MARK; }
     bool isExpression() const { return TO_STATEMENT_MARK < _op && _op < TO_EXPR_MARK; }
+
+    inline Expr *asExpression() { assert(isExpression()); return (Expr *)(this); }
+    inline Statement *asStatement() { assert(isStatement() || isDeclaration()); return (Statement *)(this); }
+    inline Decl *asDeclaration() { assert(isDeclaration()); return (Decl *)(this); }
 
     Id *asId() { assert(_op == TO_ID); return (Id*)this; }
     const Id *asId() const { assert(_op == TO_ID); return (const Id*)this; }
@@ -140,6 +153,7 @@ private:
 };
 
 class AccessExpr;
+class LiteralExpr;
 
 class Expr : public Node {
 protected:
@@ -148,6 +162,7 @@ protected:
 public:
     bool isAccessExpr() const { return TO_GETFIELD <= op() && op() <= TO_SETTABLE; }
     AccessExpr *asAccessExpr() const { assert(isAccessExpr()); return (AccessExpr*)this; }
+    LiteralExpr *asLiteral() const { assert(op() == TO_LITERAL); return (LiteralExpr *)this; }
 
     void setConst() { _isConst = true; }
     bool isConst() const { return _isConst; }
@@ -165,6 +180,7 @@ public:
     Id(const SQChar *id) : Expr(TO_ID), _id(id), _outpos(ID_LOCAL), _assignable(false) {}
 
     void visitChildren(Visitor *visitor) {}
+    void transformChildren(Transformer *transformer) {}
 
     const SQChar *id() { return _id; }
 
@@ -192,6 +208,7 @@ public:
     UnExpr(enum TreeOp op, Expr *arg): Expr(op), _arg(arg) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *argument() const { return _arg; }
 
@@ -207,6 +224,7 @@ public:
     }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *lhs() const { return _lhs; }
     Expr *rhs() const { return _rhs; }
@@ -223,6 +241,7 @@ public:
     }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *a() const { return _a; }
     Expr *b() const { return _b; }
@@ -248,7 +267,7 @@ public:
     bool isNullable() const { return _nullable; }
     Expr *receiver() const { return _receiver; }
 
-private:
+protected:
     Expr *_receiver;
     bool _nullable;
 };
@@ -276,6 +295,7 @@ public:
     }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 };
 
 
@@ -287,6 +307,7 @@ public:
     }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *value() const { return _value; }
 
@@ -304,7 +325,7 @@ protected:
 public:
 
     Expr *key() const { return _key; }
-private:
+protected:
     Expr *_key;
 };
 
@@ -316,6 +337,7 @@ public:
     }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 };
 
 class SetTableExpr : public TableAccessExpr {
@@ -326,6 +348,7 @@ public:
     }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *value() const { return _val; }
 private:
@@ -337,6 +360,7 @@ public:
     BaseExpr() : Expr(TO_BASE), _pos(-1) {}
     
     void visitChildren(Visitor *visitor) {}
+    void transformChildren(Transformer *transformer) {}
 
     void setPos(SQInteger pos) { _pos = pos; }
     SQInteger getPos() const { return _pos; }
@@ -350,6 +374,7 @@ public:
     RootExpr() : Expr(TO_ROOT) {}
 
     void visitChildren(Visitor *visitor) {}
+    void transformChildren(Transformer *transformer) {}
 };
 
 enum LiteralKind {
@@ -370,6 +395,7 @@ public:
     LiteralExpr(bool i) : Expr(TO_LITERAL), _kind(LK_BOOL) { _v.i = i; }
 
     void visitChildren(Visitor *visitor) {}
+    void transformChildren(Transformer *transformer) {}
 
     enum LiteralKind kind() const { return _kind;  }
 
@@ -405,6 +431,7 @@ public:
     }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     enum IncForm form() const { return _form; }
     SQInteger diff() const { return _diff; }
@@ -423,6 +450,7 @@ public:
     DeclExpr(Decl *decl) : Expr(TO_DECL_EXPR), _decl(decl) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Decl *declaration() const { return _decl; }
 
@@ -437,6 +465,7 @@ public:
     void addArgument(Expr *arg) { _args.push_back(arg); }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     bool isNullable() const { return _nullable; }
     Expr *callee() const { return _callee; }
@@ -456,8 +485,10 @@ public:
     void addValue(Expr *v) { _inits.push_back(v); }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     const ArenaVector<Expr *> &initialziers() const { return _inits; }
+    ArenaVector<Expr *> &initialziers() { return _inits; }
 
 private:
     ArenaVector<Expr *> _inits;
@@ -470,16 +501,23 @@ public:
     void addExpression(Expr *expr) { _exprs.push_back(expr); }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     const ArenaVector<Expr *> &expressions() const { return _exprs; }
+    ArenaVector<Expr *> &expressions() { return _exprs; }
 
 private:
     ArenaVector<Expr *> _exprs;
 };
 
+class Block;
+
 class Statement : public Node {
 protected:
     Statement(enum TreeOp op) : Node(op) {}
+
+public:
+    inline Block *asBlock() { assert(op() == TO_BLOCK); return (Block *)(this); }
 };
 
 enum DeclarationContext {
@@ -489,6 +527,9 @@ enum DeclarationContext {
     DC_EXPR
 };
 
+class ParamDecl;
+class VarDecl;
+
 class Decl : public Statement {
 protected:
     Decl(enum TreeOp op) : Statement(op), _context(DC_UNKNOWN) {}
@@ -496,6 +537,9 @@ public:
 
     void setContext(enum DeclarationContext ctx) { _context = ctx; }
     enum DeclarationContext context() const { return _context; }
+
+    ParamDecl *asParam() { assert(op() == TO_PARAM); return (ParamDecl *)(this); }
+    VarDecl *asVarDecl() { assert(op() == TO_VAR); return (VarDecl *)(this); }
 
 private:
     enum DeclarationContext _context;
@@ -506,6 +550,7 @@ protected:
     ValueDecl(enum TreeOp op, const SQChar *name, Expr *expr) : Decl(op), _name(name), _expr(expr) {}
 public:
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *expression() const { return _expr; }
     const SQChar *name() const { return _name; }
@@ -549,6 +594,7 @@ public:
     void addMember(Expr *key, Node *value, bool isStatic = false) { _members.push_back({ key, value, isStatic }); }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     ArenaVector<TableMember> &members() { return _members; }
     const ArenaVector<TableMember> &members() const { return _members; }
@@ -564,6 +610,7 @@ public:
     ClassDecl(Arena *arena, Expr *key, Expr *base) : TableDecl(arena, TO_CLASS), _key(key), _base(base) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *classBase() const { return _base; }
     Expr* classKey() const { return _key; }
@@ -591,6 +638,7 @@ public:
     void setBody(Block *body);
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     const SQChar *name() const { return _name; }
     bool isVararg() const { return _vararg; }
@@ -635,7 +683,8 @@ public:
     ArenaVector<EnumConst> &consts() { return _consts; }
     const ArenaVector<EnumConst> &consts() const { return _consts; }
 
-    void visitChildren(Visitor *visitor);
+    void visitChildren(Visitor *visitor) {}
+    void transformChildren(Transformer *transformer) {}
 
     const SQChar *name() const { return _id; }
     bool isGlobal() const { return _global; }
@@ -651,6 +700,7 @@ public:
     ConstDecl(const SQChar *id, LiteralExpr *value, bool global) : Decl(TO_CONST), _id(id), _value(value), _global(global) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     const SQChar *name() const { return _id; }
     LiteralExpr *value() const { return _value; }
@@ -671,6 +721,7 @@ public:
     void addDeclaration(VarDecl *d) { _decls.push_back(d); }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     ArenaVector<VarDecl *> &declarations() { return _decls; }
     const ArenaVector<VarDecl *> &declarations() const { return _decls; }
@@ -689,6 +740,7 @@ public:
     DestructuringDecl(Arena *arena, enum DestructuringType dt) : DeclGroup(arena, TO_DESTRUCT), _dt_type(dt), _expr(NULL) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     void setExpression(Expr *expr) { _expr = expr; }
     Expr *initiExpression() const { return _expr; }
@@ -710,6 +762,7 @@ public:
     const ArenaVector<Statement *> &statements() const { return _statements; }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     bool isRoot() const { return _is_root; }
 
@@ -741,6 +794,7 @@ public:
     IfStatement(Expr *cond, Statement *thenB, Statement *elseB) : Statement(TO_IF), _cond(cond), _thenB(thenB), _elseB(elseB) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *condition() const { return _cond; }
     Statement *thenBranch() const { return _thenB; }
@@ -757,6 +811,7 @@ protected:
     LoopStatement(enum TreeOp op, Statement *body) : Statement(op), _body(body) {}
 public:
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Statement *body() const { return _body; }
 
@@ -769,6 +824,7 @@ public:
     WhileStatement(Expr *cond, Statement *body) : LoopStatement(TO_WHILE, body), _cond(cond) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *condition() const { return _cond;  }
 
@@ -781,6 +837,7 @@ public:
     DoWhileStatement(Statement *body, Expr *cond) : LoopStatement(TO_DOWHILE, body), _cond(cond) {}
     
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *condition() const { return _cond; }
 
@@ -793,6 +850,7 @@ public:
     ForStatement(Node *init, Expr *cond, Expr *mod, Statement *body) : LoopStatement(TO_FOR, body), _init(init), _cond(cond), _mod(mod) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Node *initializer() const { return _init; }
     Expr *condition() const { return _cond; }
@@ -810,6 +868,7 @@ public:
     ForeachStatement(Id *idx, Id *val, Expr *container, Statement *body) : LoopStatement(TO_FOREACH, body), _idx(idx), _val(val), _container(container) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *container() const { return _container; }
     Id *idx() const { return _idx; }
@@ -844,6 +903,7 @@ public:
     const SwitchCase &defaultCase() const { return _defaultCase; }
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
 private:
     Expr *_expr;
@@ -856,6 +916,7 @@ public:
     TryStatement(Statement *t, Id *exc, Statement *c) : Statement(TO_TRY), _tryStmt(t), _exception(exc), _catchStmt(c) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Statement *tryStatement() const { return _tryStmt; }
     Id *exceptionId() const { return _exception; }
@@ -872,6 +933,7 @@ protected:
     TerminateStatement(enum TreeOp op, Expr *arg) : Statement(op), _arg(arg) {}
 public:
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *argument() const { return _arg; }
 
@@ -908,6 +970,7 @@ protected:
     JumpStatement(enum TreeOp op) : Statement(op) {}
 public:
     void visitChildren(Visitor *visitor) {}
+    void transformChildren(Transformer *transformer) {}
 };
 
 class BreakStatement : public JumpStatement {
@@ -931,6 +994,7 @@ public:
     ExprStatement(Expr *expr) : Statement(TO_EXPR_STMT), _expr(expr) {}
 
     void visitChildren(Visitor *visitor);
+    void transformChildren(Transformer *transformer);
 
     Expr *expression() const { return _expr; }
 
@@ -943,6 +1007,7 @@ public:
     EmptyStatement() : Statement(TO_EMPTY) {}
 
     void visitChildren(Visitor *visitor) {}
+    void transformChildren(Transformer *transformer) {}
 };
 
 class Visitor {
@@ -1005,6 +1070,65 @@ public:
     virtual void visitDesctructingDecl(DestructuringDecl  *destruct) { visitDecl(destruct); }
 };
 
+class Transformer {
+protected:
+  Transformer() {}
+public:
+  virtual ~Transformer() {}
+
+  virtual Node* transformNode(Node *node) { node->transformChildren(this); return node; }
+
+  virtual Node *transformExpr(Expr *expr) { return transformNode(expr); }
+  virtual Node *transformUnExpr(UnExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformBinExpr(BinExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformTerExpr(TerExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformCallExpr(CallExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformId(Id *id) { return transformExpr(id); }
+  virtual Node *transformGetFieldExpr(GetFieldExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformSetFieldExpr(SetFieldExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformGetTableExpr(GetTableExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformSetTableExpr(SetTableExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformBaseExpr(BaseExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformRootExpr(RootExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformLiteralExpr(LiteralExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformIncExpr(IncExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformDeclExpr(DeclExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformArrayExpr(ArrayExpr *expr) { return transformExpr(expr); }
+  virtual Node *transformCommaExpr(CommaExpr *expr) { return transformExpr(expr); }
+
+  virtual Node *transformStmt(Statement *stmt) { return transformNode(stmt); }
+  virtual Node *transformBlock(Block *block) { return transformStmt(block); }
+  virtual Node *transformIfStatement(IfStatement *ifstmt) { return transformStmt(ifstmt); }
+  virtual Node *transformLoopStatement(LoopStatement *loop) { return transformStmt(loop); }
+  virtual Node *transformWhileStatement(WhileStatement *loop) { return transformLoopStatement(loop); }
+  virtual Node *transformDoWhileStatement(DoWhileStatement *loop) { return transformLoopStatement(loop); }
+  virtual Node *transformForStatement(ForStatement *loop) { return transformLoopStatement(loop); }
+  virtual Node *transformForeachStatement(ForeachStatement *loop) { return transformLoopStatement(loop); }
+  virtual Node *transformSwitchStatement(SwitchStatement *swtch) { return transformStmt(swtch); }
+  virtual Node *transformTryStatement(TryStatement *tr) { return transformStmt(tr); }
+  virtual Node *transformTerminateStatement(TerminateStatement *term) { return transformStmt(term); }
+  virtual Node *transformReturnStatement(ReturnStatement *ret) { return transformTerminateStatement(ret); }
+  virtual Node *transformYieldStatement(YieldStatement *yld) { return transformTerminateStatement(yld); }
+  virtual Node *transformThrowStatement(ThrowStatement *thr) { return transformTerminateStatement(thr); }
+  virtual Node *transformJumpStatement(JumpStatement *jmp) { return transformStmt(jmp); }
+  virtual Node *transformBreakStatement(BreakStatement *jmp) { return transformJumpStatement(jmp); }
+  virtual Node *transformContinueStatement(ContinueStatement *jmp) { return transformJumpStatement(jmp); }
+  virtual Node *transformExprStatement(ExprStatement *estmt) { return transformStmt(estmt); }
+  virtual Node *transformEmptyStatement(EmptyStatement *empty) { return transformStmt(empty); }
+
+  virtual Node *transformDecl(Decl *decl) { return transformStmt(decl); }
+  virtual Node *transformValueDecl(ValueDecl *decl) { return transformDecl(decl); }
+  virtual Node *transformVarDecl(VarDecl *decl) { return transformValueDecl(decl); }
+  virtual Node *transformParamDecl(ParamDecl *decl) { return transformValueDecl(decl); }
+  virtual Node *transformTableDecl(TableDecl *tbl) { return transformDecl(tbl); }
+  virtual Node *transformClassDecl(ClassDecl *cls) { return transformTableDecl(cls); }
+  virtual Node *transformFunctionDecl(FunctionDecl *f) { return transformDecl(f); }
+  virtual Node *transformConstructorDecl(ConstructorDecl *ctr) { return transformFunctionDecl(ctr); }
+  virtual Node *transformConstDecl(ConstDecl *cnst) { return transformDecl(cnst); }
+  virtual Node *transformEnumDecl(EnumDecl *enm) { return transformDecl(enm); }
+  virtual Node *transformDeclGroup(DeclGroup *grp) { return transformDecl(grp); }
+  virtual Node *transformDesctructingDecl(DestructuringDecl  *destruct) { return transformDecl(destruct); }
+};
 
 template<typename V>
 void Node::visit(V *visitor) {
@@ -1117,6 +1241,120 @@ void Node::visit(V *visitor) {
     default:
         break;
     }
+}
+
+template<typename T>
+Node *Node::transform(T *transformer) {
+  switch (op())
+  {
+  case TO_BLOCK:      return transformer->transformBlock(static_cast<Block *>(this));
+  case TO_IF:         return transformer->transformIfStatement(static_cast<IfStatement *>(this));
+  case TO_WHILE:      return transformer->transformWhileStatement(static_cast<WhileStatement *>(this));
+  case TO_DOWHILE:    return transformer->transformDoWhileStatement(static_cast<DoWhileStatement *>(this));
+  case TO_FOR:        return transformer->transformForStatement(static_cast<ForStatement *>(this));
+  case TO_FOREACH:    return transformer->transformForeachStatement(static_cast<ForeachStatement *>(this));
+  case TO_SWITCH:     return transformer->transformSwitchStatement(static_cast<SwitchStatement *>(this));
+  case TO_RETURN:     return transformer->transformReturnStatement(static_cast<ReturnStatement *>(this));
+  case TO_YIELD:      return transformer->transformYieldStatement(static_cast<YieldStatement *>(this));
+  case TO_THROW:      return transformer->transformThrowStatement(static_cast<ThrowStatement *>(this));
+  case TO_TRY:        return transformer->transformTryStatement(static_cast<TryStatement *>(this));
+  case TO_BREAK:      return transformer->transformBreakStatement(static_cast<BreakStatement *>(this));
+  case TO_CONTINUE:   return transformer->transformContinueStatement(static_cast<ContinueStatement *>(this));
+  case TO_EXPR_STMT:  return transformer->transformExprStatement(static_cast<ExprStatement *>(this));
+  case TO_EMPTY:      return transformer->transformEmptyStatement(static_cast<EmptyStatement *>(this));
+    //case TO_STATEMENT_MARK:
+  case TO_ID:         return transformer->transformId(static_cast<Id *>(this));
+  case TO_COMMA:      return transformer->transformCommaExpr(static_cast<CommaExpr *>(this));
+  case TO_NULLC:
+  case TO_ASSIGN:
+  case TO_OROR:
+  case TO_ANDAND:
+  case TO_OR:
+  case TO_XOR:
+  case TO_AND:
+  case TO_NE:
+  case TO_EQ:
+  case TO_3CMP:
+  case TO_GE:
+  case TO_GT:
+  case TO_LE:
+  case TO_LT:
+  case TO_IN:
+  case TO_INSTANCEOF:
+  case TO_USHR:
+  case TO_SHR:
+  case TO_SHL:
+  case TO_MUL:
+  case TO_DIV:
+  case TO_MOD:
+  case TO_ADD:
+  case TO_SUB:
+  case TO_NEWSLOT:
+  case TO_INEXPR_ASSIGN:
+  case TO_PLUSEQ:
+  case TO_MINUSEQ:
+  case TO_MULEQ:
+  case TO_DIVEQ:
+  case TO_MODEQ:
+    return transformer->transformBinExpr(static_cast<BinExpr *>(this));
+  case TO_NOT:
+  case TO_BNOT:
+  case TO_NEG:
+  case TO_TYPEOF:
+  case TO_RESUME:
+  case TO_CLONE:
+  case TO_PAREN:
+  case TO_DELETE:
+    return transformer->transformUnExpr(static_cast<UnExpr *>(this));
+  case TO_LITERAL:
+    return transformer->transformLiteralExpr(static_cast<LiteralExpr *>(this));
+  case TO_BASE:
+    return transformer->transformBaseExpr(static_cast<BaseExpr *>(this));
+  case TO_ROOT:
+    return transformer->transformRootExpr(static_cast<RootExpr *>(this));
+  case TO_INC:
+    return transformer->transformIncExpr(static_cast<IncExpr *>(this));
+  case TO_DECL_EXPR:
+    return transformer->transformDeclExpr(static_cast<DeclExpr *>(this));
+  case TO_ARRAYEXPR:
+    return transformer->transformArrayExpr(static_cast<ArrayExpr *>(this));
+  case TO_GETFIELD:
+    return transformer->transformGetFieldExpr(static_cast<GetFieldExpr *>(this));
+  case TO_SETFIELD:
+    return transformer->transformSetFieldExpr(static_cast<SetFieldExpr *>(this));
+  case TO_GETTABLE:
+    return transformer->transformGetTableExpr(static_cast<GetTableExpr *>(this));
+  case TO_SETTABLE:
+    return transformer->transformSetTableExpr(static_cast<SetTableExpr *>(this));
+  case TO_CALL:
+    return transformer->transformCallExpr(static_cast<CallExpr *>(this));
+  case TO_TERNARY:
+    return transformer->transformTerExpr(static_cast<TerExpr *>(this));
+    //case TO_EXPR_MARK:
+  case TO_VAR:
+    return transformer->transformVarDecl(static_cast<VarDecl *>(this));
+  case TO_PARAM:
+    return transformer->transformParamDecl(static_cast<ParamDecl *>(this));
+  case TO_CONST:
+    return transformer->transformConstDecl(static_cast<ConstDecl *>(this));
+  case TO_DECL_GROUP:
+    return transformer->transformDeclGroup(static_cast<DeclGroup *>(this));
+  case TO_DESTRUCT:
+    return transformer->transformDesctructingDecl(static_cast<DestructuringDecl  *>(this));
+  case TO_FUNCTION:
+    return transformer->transformFunctionDecl(static_cast<FunctionDecl *>(this));
+  case TO_CONSTRUCTOR:
+    return transformer->transformConstructorDecl(static_cast<ConstructorDecl *>(this));
+  case TO_CLASS:
+    return transformer->transformClassDecl(static_cast<ClassDecl *>(this));
+  case TO_ENUM:
+    return transformer->transformEnumDecl(static_cast<EnumDecl *>(this));
+  case TO_TABLE:
+    return transformer->transformTableDecl(static_cast<TableDecl *>(this));
+  default:
+    assert(0 && "Unknown tree type");
+    return this;
+  }
 }
 
 
