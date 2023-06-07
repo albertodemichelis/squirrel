@@ -246,6 +246,14 @@ public:
     inline T &back() const { return _vals[_size - 1]; }
     inline T& operator[](SQUnsignedInteger pos) const { return _vals[pos]; }
 
+    void insert(SQUnsignedInteger pos, T v) {
+      assert(pos <= _size);
+      if (_size + 1 > _allocated) resize(_size + 1);
+      memmove(&_vals[pos + 1], &_vals[pos], (_size - pos) * sizeof(T));
+      _vals[pos] = v;
+      _size += 1;
+    }
+
 
     typedef T* iterator;
     typedef const T* const_iterator;
@@ -254,6 +262,11 @@ public:
     const_iterator begin() const { return &_vals[0]; }
     iterator end() { return &_vals[_size]; }
     const_iterator end() const { return &_vals[_size]; }
+
+    void resize(size_t newSize) {
+      if (newSize < _allocated) return;
+      _realloc(newSize);
+    }
 
 private:
 
