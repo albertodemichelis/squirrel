@@ -15,7 +15,7 @@
 SQSharedState::SQSharedState(SQAllocContext allocctx) :
     _alloc_ctx(allocctx),
     _refs_table(allocctx),
-    defaultLangFeatures(LF_NO_FUNC_DECL_SUGAR | LF_NO_CLASS_DECL_SUGAR | LF_EXPLICIT_ROOT_LOOKUP | LF_EXPLICIT_THIS)
+    defaultLangFeatures(LF_EXPLICIT_ROOT_LOOKUP | LF_EXPLICIT_THIS)
 {
     _compilererrorhandler = NULL;
     _printfunc = NULL;

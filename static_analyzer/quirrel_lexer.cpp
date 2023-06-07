@@ -434,14 +434,6 @@ void Lexer::onCompilerDirective(const std::string & directive)
     setFlags = LF_EXPLICIT_ROOT_LOOKUP;
   else if (strcmp(s, "implicit-root-fallback") == 0)
     clearFlags = LF_EXPLICIT_ROOT_LOOKUP;
-  else if (strcmp(s, "no-func-decl-sugar") == 0)
-    setFlags = LF_NO_FUNC_DECL_SUGAR;
-  else if (strcmp(s, "allow-func-decl-sugar") == 0)
-    clearFlags = LF_NO_FUNC_DECL_SUGAR;
-  else if (strcmp(s, "no-class-decl-sugar") == 0)
-    setFlags = LF_NO_CLASS_DECL_SUGAR;
-  else if (strcmp(s, "allow-class-decl-sugar") == 0)
-    clearFlags = LF_NO_CLASS_DECL_SUGAR;
   else if (strcmp(s, "no-plus-concat") == 0)
     setFlags = LF_NO_PLUS_CONCAT;
   else if (strcmp(s, "allow-plus-concat") == 0)

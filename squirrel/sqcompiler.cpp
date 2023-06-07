@@ -153,14 +153,6 @@ public:
             setFlags = LF_EXPLICIT_ROOT_LOOKUP;
         else if (strcmp(sval, _SC("implicit-root-fallback")) == 0)
             clearFlags = LF_EXPLICIT_ROOT_LOOKUP;
-        else if (strcmp(sval, _SC("no-func-decl-sugar")) == 0)
-            setFlags = LF_NO_FUNC_DECL_SUGAR;
-        else if (strcmp(sval, _SC("allow-func-decl-sugar")) == 0)
-            clearFlags = LF_NO_FUNC_DECL_SUGAR;
-        else if (strcmp(sval, _SC("no-class-decl-sugar")) == 0)
-            setFlags = LF_NO_CLASS_DECL_SUGAR;
-        else if (strcmp(sval, _SC("allow-class-decl-sugar")) == 0)
-            clearFlags = LF_NO_CLASS_DECL_SUGAR;
         else if (strcmp(sval, _SC("no-plus-concat")) == 0)
             setFlags = LF_NO_PLUS_CONCAT;
         else if (strcmp(sval, _SC("allow-plus-concat")) == 0)
@@ -383,18 +375,6 @@ public:
             _fs->AddInstruction(_OP_JMP, 0, -1234);
             _fs->_unresolvedcontinues.push_back(_fs->GetCurrentPos());
             Lex();
-            break;
-        case TK_FUNCTION:
-            if (!(_fs->lang_features & LF_NO_FUNC_DECL_SUGAR))
-                FunctionStatement();
-            else
-                Error(_SC("Syntactic sugar for declaring functions as fields is disabled"));
-            break;
-        case TK_CLASS:
-            if (!(_fs->lang_features & LF_NO_CLASS_DECL_SUGAR))
-                ClassStatement();
-            else
-                Error(_SC("Syntactic sugar for declaring classes as fields is disabled"));
             break;
         case TK_ENUM:
             EnumStatement(false);
@@ -1713,38 +1693,6 @@ public:
         _fs->_breaktargets.pop_back();
         _fs->_blockstacksizes.pop_back();
         END_SCOPE();
-    }
-    void FunctionStatement()
-    {
-        SQObject id;
-        Lex(); id = Expect(TK_IDENTIFIER);
-        _fs->PushTarget(0);
-        _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
-        Expect(_SC('('));
-        CreateFunction(id);
-        _fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1, 0);
-        EmitDerefOp(_OP_NEWSLOT);
-        _fs->PopTarget();
-    }
-    void ClassStatement()
-    {
-        SQExpState es;
-        Lex();
-        es = _es;
-        _es.donot_get = true;
-        PrefixedExpr();
-        if (_es.etype == EXPR) {
-            Error(_SC("invalid class name"));
-        }
-        else if (_es.etype == OBJECT || _es.etype == BASE) {
-            ClassExp();
-            EmitDerefOp(_OP_NEWSLOT);
-            _fs->PopTarget();
-        }
-        else {
-            Error(_SC("cannot create a class in a local with the syntax(class <local>)"));
-        }
-        _es = es;
     }
     SQObject ExpectScalar()
     {

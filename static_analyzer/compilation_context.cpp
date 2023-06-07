@@ -440,7 +440,7 @@ AnalyzerMessage analyzer_messages[] =
 };
 
 
-unsigned CompilationContext::defaultLangFeatures = LF_NO_FUNC_DECL_SUGAR | LF_NO_CLASS_DECL_SUGAR;
+unsigned CompilationContext::defaultLangFeatures = 0;
 
 CompilationContext::CompilationContext()
 {

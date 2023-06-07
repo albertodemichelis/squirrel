@@ -72,14 +72,6 @@ void SQParser::ProcessDirective()
         setFlags = LF_EXPLICIT_ROOT_LOOKUP;
     else if (strcmp(sval, _SC("implicit-root-fallback")) == 0)
         clearFlags = LF_EXPLICIT_ROOT_LOOKUP;
-    else if (strcmp(sval, _SC("no-func-decl-sugar")) == 0)
-        setFlags = LF_NO_FUNC_DECL_SUGAR;
-    else if (strcmp(sval, _SC("allow-func-decl-sugar")) == 0)
-        clearFlags = LF_NO_FUNC_DECL_SUGAR;
-    else if (strcmp(sval, _SC("no-class-decl-sugar")) == 0)
-        setFlags = LF_NO_CLASS_DECL_SUGAR;
-    else if (strcmp(sval, _SC("allow-class-decl-sugar")) == 0)
-        clearFlags = LF_NO_CLASS_DECL_SUGAR;
     else if (strcmp(sval, _SC("no-plus-concat")) == 0)
         setFlags = LF_NO_PLUS_CONCAT;
     else if (strcmp(sval, _SC("allow-plus-concat")) == 0)
@@ -263,18 +255,6 @@ Statement* SQParser::parseStatement(bool closeframe)
     case TK_CONTINUE:
         result = newNode<ContinueStatement>(nullptr);
         Lex();
-        break;
-    case TK_FUNCTION:
-        if (!(_lang_features & LF_NO_FUNC_DECL_SUGAR))
-            result = parseFunctionStatement();
-        else
-            Error(_SC("Syntactic sugar for declaring functions as fields is disabled"));
-        break;
-    case TK_CLASS:
-        if (!(_lang_features & LF_NO_CLASS_DECL_SUGAR))
-            result = parseClassStatement();
-        else
-            Error(_SC("Syntactic sugar for declaring classes as fields is disabled"));
         break;
     case TK_ENUM:
         result = parseEnumStatement(false);
@@ -1131,31 +1111,6 @@ SwitchStatement* SQParser::parseSwitchStatement()
     return switchStmt;
 }
 
-FunctionDecl* SQParser::parseFunctionStatement()
-{
-    SQInteger l = _lex._currentline, c = _lex._currentcolumn;
-    Consume(TK_FUNCTION);
-    Id *funcName = (Id *)Expect(TK_IDENTIFIER);
-    Expect(_SC('('));
-    FunctionDecl *d = CreateFunction(funcName);
-    d->setLinePos(l); d->setColumnPos(c);
-    return d;
-}
-
-ClassDecl* SQParser::parseClassStatement()
-{
-    SQInteger l = _lex._currentline, c = _lex._currentcolumn;
-    Consume(TK_CLASS);
-
-    Expr *key = PrefixedExpr();
-
-    ClassDecl *klass = ClassExp(key);
-    klass->setContext(DC_SLOT);
-    klass->setLinePos(l);
-    klass->setColumnPos(c);
-
-    return klass;
-}
 
 LiteralExpr* SQParser::ExpectScalar()
 {

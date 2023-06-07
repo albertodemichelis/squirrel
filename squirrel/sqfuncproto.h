@@ -12,8 +12,6 @@ enum SQOuterType {
 enum SQLangFeature {
     LF_STRICT_BOOL = 0x01,
     LF_EXPLICIT_ROOT_LOOKUP = 0x02,
-    LF_NO_FUNC_DECL_SUGAR = 0x04,
-    LF_NO_CLASS_DECL_SUGAR = 0x08,
     LF_NO_PLUS_CONCAT = 0x10,
     LF_EXPLICIT_THIS = 0x20,
     LF_FORBID_ROOT_TABLE = 0x40,
@@ -23,8 +21,6 @@ enum SQLangFeature {
 
     LF_STRICT = LF_STRICT_BOOL |
                 LF_EXPLICIT_ROOT_LOOKUP |
-                LF_NO_FUNC_DECL_SUGAR |
-                LF_NO_CLASS_DECL_SUGAR |
                 LF_NO_PLUS_CONCAT |
                 LF_EXPLICIT_THIS |
                 LF_FORBID_ROOT_TABLE
