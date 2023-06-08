@@ -430,18 +430,10 @@ void Lexer::onCompilerDirective(const std::string & directive)
     setFlags = LF_STRICT_BOOL;
   else if (strcmp(s, "relaxed-bool") == 0)
     clearFlags = LF_STRICT_BOOL;
-  else if (strcmp(s, "no-root-fallback") == 0)
-    setFlags = LF_EXPLICIT_ROOT_LOOKUP;
-  else if (strcmp(s, "implicit-root-fallback") == 0)
-    clearFlags = LF_EXPLICIT_ROOT_LOOKUP;
   else if (strcmp(s, "no-plus-concat") == 0)
     setFlags = LF_NO_PLUS_CONCAT;
   else if (strcmp(s, "allow-plus-concat") == 0)
     clearFlags = LF_NO_PLUS_CONCAT;
-  else if (strcmp(s, "explicit-this") == 0)
-    setFlags = LF_EXPLICIT_THIS;
-  else if (strcmp(s, "implicit-this") == 0)
-    clearFlags = LF_EXPLICIT_THIS;
   else if (strcmp(s, "forbid-root-table") == 0)
     setFlags = LF_FORBID_ROOT_TABLE;
   else if (strcmp(s, "allow-root-table") == 0)

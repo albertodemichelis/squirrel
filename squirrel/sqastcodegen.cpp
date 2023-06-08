@@ -1586,8 +1586,7 @@ void CodegenVisitor::visitId(Id *id) {
 
         */
         // TODO: probably we need a special handling for some corner cases
-        if ((_fs->lang_features & LF_EXPLICIT_THIS)
-            && !(_fs->lang_features & LF_TOOLS_COMPILE_CHECK))
+        if (!(_fs->lang_features & LF_TOOLS_COMPILE_CHECK))
             error(id, _SC("Unknown variable [%s]"), _stringval(idObj));
 
         _fs->PushTarget(0);

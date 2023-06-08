@@ -1778,19 +1778,6 @@ SQInteger SQVM::GetImpl(const SQObjectPtr &self, const SQObjectPtr &key, SQObjec
             return SLOT_RESOLVE_STATUS_OK;
         }
     }
-//#ifdef ROOT_FALLBACK
-    if(selfidx == 0 && sq_isclosure(ci->_closure) && !(_closure(ci->_closure)->_function->lang_features & LF_EXPLICIT_ROOT_LOOKUP)) {
-        SQWeakRef *w = _closure(ci->_closure)->_root;
-        if(sq_type(w->_obj) != OT_NULL)
-        {
-            if(Get(*((const SQObjectPtr *)&w->_obj),key,dest,0,DONT_FALL_BACK)) {
-                propagate_immutable(self, dest);
-                return SLOT_RESOLVE_STATUS_OK;
-            }
-        }
-
-    }
-//#endif
     if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key);
     return SLOT_RESOLVE_STATUS_NO_MATCH;
 }

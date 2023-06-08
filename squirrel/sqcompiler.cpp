@@ -149,18 +149,10 @@ public:
             setFlags = LF_STRICT_BOOL;
         else if (strcmp(sval, _SC("relaxed-bool")) == 0)
             clearFlags = LF_STRICT_BOOL;
-        else if (strcmp(sval, _SC("no-root-fallback")) == 0)
-            setFlags = LF_EXPLICIT_ROOT_LOOKUP;
-        else if (strcmp(sval, _SC("implicit-root-fallback")) == 0)
-            clearFlags = LF_EXPLICIT_ROOT_LOOKUP;
         else if (strcmp(sval, _SC("no-plus-concat")) == 0)
             setFlags = LF_NO_PLUS_CONCAT;
         else if (strcmp(sval, _SC("allow-plus-concat")) == 0)
             clearFlags = LF_NO_PLUS_CONCAT;
-        else if (strcmp(sval, _SC("explicit-this")) == 0)
-            setFlags = LF_EXPLICIT_THIS;
-        else if (strcmp(sval, _SC("implicit-this")) == 0)
-            clearFlags = LF_EXPLICIT_THIS;
         else if (strcmp(sval, _SC("forbid-root-table")) == 0)
             setFlags = LF_FORBID_ROOT_TABLE;
         else if (strcmp(sval, _SC("allow-root-table")) == 0)
@@ -1062,8 +1054,7 @@ public:
                 * for the latter. If we are not using the variable as a dref expr, generate
                 * the _OP_GET instruction.
                 */
-                if ((_fs->lang_features & LF_EXPLICIT_THIS)
-                    && !(_fs->lang_features & LF_TOOLS_COMPILE_CHECK))
+                if (!(_fs->lang_features & LF_TOOLS_COMPILE_CHECK))
                     Error(_SC("Unknown variable [%s]"), _stringval(id));
 
                 _fs->PushTarget(0);

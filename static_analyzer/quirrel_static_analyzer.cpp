@@ -606,7 +606,7 @@ bool find_ident_in_collected(CompilationContext & ctx,
   {
     order[0] = &const_visible_after_requires;
     order[1] = &local_visible_after_requires;
-    order[2] = (ctx.langFeatures & LF_EXPLICIT_ROOT_LOOKUP) ? &root_visible_after_requires : nullptr;
+    order[2] = nullptr;
   }
   else
     return false;
@@ -4101,6 +4101,11 @@ public:
           ignore = true;
         }
 
+        if ((it->second.declContext == DC_CLASS_MEMBER || it->second.declContext == DC_CLASS_METHOD))
+        {
+          ignore = true;
+        }
+
         if (!ignore)
         {
           ctx.warning("ident-hides-ident", var->tok, declContextToString(decl_context), name,
@@ -4190,8 +4195,7 @@ public:
       if (it != localIdentifiers[i].end())
       {
         if (it->second.declContext == DC_TABLE_MEMBER || it->second.declContext == DC_CLASS_MEMBER)
-          if (i == from_scope || (ctx.langFeatures & LF_EXPLICIT_THIS))
-            continue;
+          continue;
 
         return it->second.declContext;
       }
@@ -4245,20 +4249,11 @@ public:
         break;
       }
 
-    auto it = globalTables.find(currentClass);
-    if (it != globalTables.end())
-      if (!(ctx.langFeatures & LF_EXPLICIT_THIS) && it->second.find(parent) != it->second.end())
-        return DC_CLASS_MEMBER;
-
     if (globalIdentifiers.find(parent) != globalIdentifiers.end())
       return DC_GLOBAL_VARIABLE;
 
     if (globalConsts.find(parent) != globalConsts.end())
       return DC_GLOBAL_CONSTANT;
-
-    if (!(ctx.langFeatures & LF_EXPLICIT_THIS))
-      if (is_ident_visible(parent, nodePath))
-        return DC_IDENTIFIER;
 
     for (size_t i = nodePath.size() - 1; nodePath[i] != nullptr; i--)
       if (nodePath[i]->nodeType == PNT_FUNCTION || nodePath[i]->nodeType == PNT_CLASS_MEMBER)

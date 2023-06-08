@@ -10,19 +10,20 @@ enum SQOuterType {
 };
 
 enum SQLangFeature {
-    LF_STRICT_BOOL = 0x01,
-    LF_EXPLICIT_ROOT_LOOKUP = 0x02,
-    LF_NO_PLUS_CONCAT = 0x10,
-    LF_EXPLICIT_THIS = 0x20,
-    LF_FORBID_ROOT_TABLE = 0x40,
-    LF_TOOLS_COMPILE_CHECK = 0x1000,
-    LF_DISABLE_OPTIMIZER = 0x2000,
-    LF_FORBID_GLOBAL_CONST_REWRITE = 0x4000,
+    // parsing stage
+    LF_FORBID_ROOT_TABLE = 0x1,
+
+    // code generation stage
+    LF_TOOLS_COMPILE_CHECK = 0x10,
+    LF_DISABLE_OPTIMIZER = 0x20,
+    LF_FORBID_GLOBAL_CONST_REWRITE = 0x40,
+
+    // runtime stage
+    LF_STRICT_BOOL = 0x80,
+    LF_NO_PLUS_CONCAT = 0x100,
 
     LF_STRICT = LF_STRICT_BOOL |
-                LF_EXPLICIT_ROOT_LOOKUP |
                 LF_NO_PLUS_CONCAT |
-                LF_EXPLICIT_THIS |
                 LF_FORBID_ROOT_TABLE
 };
 
