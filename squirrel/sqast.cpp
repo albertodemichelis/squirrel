@@ -365,7 +365,7 @@ void TableDecl::visitChildren(Visitor *visitor) {
 void TableDecl::transformChildren(Transformer *transformer) {
   for (auto &member : members()) {
     member.key = member.key->transform(transformer)->asExpression();
-    member.value = member.value->transform(transformer)->asExpression();
+    member.value = member.value->transform(transformer);
   }
 }
 
