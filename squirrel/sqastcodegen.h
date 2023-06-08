@@ -19,7 +19,6 @@ class CodegenVisitor : public Visitor {
     bool _donot_get;
 
     SQInteger _num_initial_bindings;
-    SQInteger _lang_features;
 
     bool _lineinfo;
     bool _raiseerror;
@@ -37,7 +36,7 @@ class CodegenVisitor : public Visitor {
     SQObjectPtr _constVal;
 
 public:
-    CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm, const SQChar *sourceName, SQInteger lang_fuatures, bool lineinfo, bool raiseerror);
+    CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm, const SQChar *sourceName, bool lineinfo, bool raiseerror);
 
     bool generate(RootBlock *root, SQObjectPtr &out);
 
@@ -186,4 +185,5 @@ public:
 
     void visitCommaExpr(CommaExpr *expr) override;
 
+    void visitDirectiveStatement(DirectiveStmt *dir) override;
 };

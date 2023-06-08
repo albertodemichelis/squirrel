@@ -55,7 +55,7 @@ public:
     void Error(const SQChar *s, ...);
 
 
-    void ProcessDirective();
+    bool ProcessPosDirective();
     void Lex();
 
     void Consume(SQInteger tok) {
@@ -65,7 +65,8 @@ public:
 
     Expr*   Expect(SQInteger tok);
     bool    IsEndOfStatement() {
-        return ((_lex._prevtoken == _SC('\n')) || (_token == SQUIRREL_EOB) || (_token == _SC('}')) || (_token == _SC(';')));
+        return ((_lex._prevtoken == _SC('\n')) || (_token == SQUIRREL_EOB) || (_token == _SC('}')) || (_token == _SC(';')))
+            || (_token == TK_DIRECTIVE);
     }
     void    OptionalSemicolon();
 
@@ -114,9 +115,7 @@ public:
     Expr* DeleteExpr();
     Expr* PrefixIncDec(SQInteger token);
     FunctionDecl* CreateFunction(Id *name, bool lambda = false, bool ctor = false);
-
-public:
-    SQUnsignedInteger _lang_features;
+    Statement* parseDirectiveStatement();
 
 private:
     SQInteger _token;
@@ -124,6 +123,7 @@ private:
     SQLexer _lex;
     bool _raiseerror;
     SQExpressionContext _expression_context;
+    SQUnsignedInteger _lang_features;
     SQChar _compilererror[MAX_COMPILER_ERROR_LEN];
     jmp_buf _errorjmp;
     SQVM *_vm;

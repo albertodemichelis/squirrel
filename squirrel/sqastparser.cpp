@@ -33,11 +33,12 @@ void SQParser::Error(const SQChar *s, ...)
 }
 
 
-void SQParser::ProcessDirective()
+bool SQParser::ProcessPosDirective()
 {
     const SQChar *sval = _lex._svalue;
+    if (strncmp(sval, _SC("pos:"), 4) != 0)
+        return false;
 
-    if (strncmp(sval, _SC("pos:"), 4) == 0) {
         sval += 4;
     if (!isdigit(*sval))
             Error(_SC("expected line number after #pos:"));
@@ -49,9 +50,13 @@ void SQParser::ProcessDirective()
     if (!isdigit(*next))
             Error(_SC("expected column number after #pos:<line>:"));
         _lex._currentcolumn = scstrtol(next, NULL, 10);
-
-        return;
+    return true;
     }
+
+
+Statement* SQParser::parseDirectiveStatement()
+{
+    const SQChar *sval = _lex._svalue;
 
     SQInteger setFlags = 0, clearFlags = 0;
     bool applyToDefault = false;
@@ -83,24 +88,37 @@ void SQParser::ProcessDirective()
     else
         Error(_SC("unsupported directive"));
 
+    DirectiveStmt *d = newNode<DirectiveStmt>();
+    d->setLinePos(_lex._currentline);
+    d->setColumnPos(_lex._currentcolumn);
+
+    d->applyToDefault = applyToDefault;
+    d->setFlags = setFlags;
+    d->clearFlags = clearFlags;
+
     _lang_features = (_lang_features | setFlags) & ~clearFlags;
     if (applyToDefault)
         _ss(_vm)->defaultLangFeatures = (_ss(_vm)->defaultLangFeatures | setFlags) & ~clearFlags;
+
+    Lex();
+    return d;
 }
 
 
 void SQParser::Lex()
 {
     _token = _lex.Lex();
+
     while (_token == TK_DIRECTIVE)
     {
         bool endOfLine = (_lex._prevtoken == _SC('\n'));
-        ProcessDirective();
+        if (ProcessPosDirective()) {
         _token = _lex.Lex();
         if (endOfLine)
             _lex._prevtoken = _SC('\n');
-    }
-}
+        } else
+            break;
+    }}
 
 
 Expr* SQParser::Expect(SQInteger tok)
@@ -211,6 +229,7 @@ Statement* SQParser::parseStatement(bool closeframe)
 
     switch(_token) {
         case _SC(';'):  result = newNode<EmptyStatement>(); Lex(); break;
+    case TK_DIRECTIVE:  result = parseDirectiveStatement();    break;
     case TK_IF:     result = parseIfStatement();          break;
     case TK_WHILE:  result = parseWhileStatement();       break;
     case TK_DO:     result = parseDoWhileStatement();     break;
@@ -252,10 +271,14 @@ Statement* SQParser::parseStatement(bool closeframe)
         result = parseEnumStatement(false);
         break;
     case _SC('{'):
+    {
+        SQUnsignedInteger savedLangFeatures = _lang_features;
         Lex();
         result = parseStatements();
         Expect(_SC('}'));
+        _lang_features = savedLangFeatures;
         break;
+    }
     case TK_TRY:
         result = parseTryCatchStatement();
         break;
@@ -1319,6 +1342,8 @@ FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
     Block *body = NULL;
     SQInteger startLine = _lex._currentline;
 
+    SQUnsignedInteger savedLangFeatures = _lang_features;
+
     if (lambda) {
         SQInteger line = _lex._prevtoken == _SC('\n') ? _lex._lasttokenline : _lex._currentline;
         Expr *expr = Expression(SQE_REGULAR);
@@ -1341,6 +1366,8 @@ FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
 
     f->setSourceName(_sourcename);
     f->setLambda(lambda);
+
+    _lang_features = savedLangFeatures;
 
     return f;
 }

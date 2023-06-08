@@ -523,6 +523,13 @@ public:
     inline Block *asBlock() { assert(op() == TO_BLOCK); return (Block *)(this); }
 };
 
+class DirectiveStmt : public Statement {
+public:
+    DirectiveStmt() : Statement(TO_DIRECTIVE) {}
+    SQInteger setFlags = 0, clearFlags = 0;
+    bool applyToDefault = false;
+};
+
 enum DeclarationContext {
     DC_UNKNOWN,
     DC_LOCAL,
@@ -1071,6 +1078,7 @@ public:
     virtual void visitEnumDecl(EnumDecl *enm) { visitDecl(enm); }
     virtual void visitDeclGroup(DeclGroup *grp) { visitDecl(grp); }
     virtual void visitDesctructingDecl(DestructuringDecl  *destruct) { visitDecl(destruct); }
+    virtual void visitDirectiveStatement(DirectiveStmt *dir) { visitStmt(dir); }
 };
 
 class Transformer {
@@ -1241,6 +1249,8 @@ void Node::visit(V *visitor) {
         visitor->visitEnumDecl(static_cast<EnumDecl *>(this)); return;
     case TO_TABLE:
         visitor->visitTableDecl(static_cast<TableDecl *>(this)); return;
+    case TO_DIRECTIVE:
+        visitor->visitDirectiveStatement(static_cast<DirectiveStmt *>(this)); return;
     default:
         break;
     }

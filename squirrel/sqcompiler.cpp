@@ -2070,7 +2070,7 @@ static bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HS
 
 
     Arena cgArena(_ss(vm)->_alloc_ctx, "Codegen");
-    CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, p._lang_features, lineinfo, raiseerror);
+    CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, lineinfo, raiseerror);
 
     return codegen.generate(r, out);
 }

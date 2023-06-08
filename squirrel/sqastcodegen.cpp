@@ -25,7 +25,7 @@ static bool isOuter(const Expr *expr) {
 }
 
 
-CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm, const SQChar *sourceName, SQInteger lang_fuatures, bool lineinfo, bool raiseerror)
+CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm, const SQChar *sourceName, bool lineinfo, bool raiseerror)
     : Visitor(),
     _fs(NULL),
     _childFs(NULL),
@@ -35,7 +35,6 @@ CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm
     _donot_get(false),
     _lineinfo(lineinfo),
     _raiseerror(raiseerror),
-    _lang_features(lang_fuatures),
     _arena(arena),
     _scope(),
     _errorjmp() {
@@ -74,7 +73,6 @@ bool CodegenVisitor::generate(RootBlock *root, SQObjectPtr &out) {
         _fs->AddParameter(_fs->CreateString(_SC("vargv")));
         _fs->_varparams = true;
         _fs->_sourcename = SQString::Create(_ss(_vm), _sourceName);
-        _fs->lang_features = _lang_features;
 
         SQInteger stacksize = _fs->GetStackSize();
 
@@ -1479,6 +1477,14 @@ void CodegenVisitor::visitIncExpr(IncExpr *expr) {
         error(arg, _SC("argument of inc/dec operation is not assiangable"));
     }
 }
+
+void CodegenVisitor::visitDirectiveStatement(DirectiveStmt *directive)
+{
+    _fs->lang_features = (_fs->lang_features | directive->setFlags) & ~directive->clearFlags;
+    if (directive->applyToDefault)
+        _ss(_vm)->defaultLangFeatures = (_ss(_vm)->defaultLangFeatures | directive->setFlags) & ~directive->clearFlags;
+}
+
 
 bool CodegenVisitor::IsConstant(const SQObject &name, SQObject &e)
 {
