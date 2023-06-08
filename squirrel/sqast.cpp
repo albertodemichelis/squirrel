@@ -313,7 +313,7 @@ void DeclExpr::transformChildren(Transformer *transformer) {
 }
 
 void CallExpr::visitChildren(Visitor *visitor) {
-    visitor->visitExpr(_callee);
+    _callee->visit(visitor);
     for (auto arg : arguments())
         arg->visit(visitor);
 }
