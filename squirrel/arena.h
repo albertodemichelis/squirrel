@@ -5,6 +5,9 @@
 #include <cstring>
 #include <memory>
 
+#include <map>
+#include <set>
+
 #define ARENA_USE_SYSTEM_ALLOC 0
 
 #if ARENA_USE_SYSTEM_ALLOC
@@ -308,4 +311,20 @@ public:
   StdArenaAllocator(const StdArenaAllocator<T> &a) : StdArenaAllocator(a._arena) {}
   StdArenaAllocator(Arena *arena) : std::allocator<T>(), _arena(arena) { assert(arena); }
   ~StdArenaAllocator() {}
+};
+
+template<typename K, typename V, typename Cmp = std::less<K>>
+struct ArenaMap : public std::map<K, V, Cmp, StdArenaAllocator<std::pair<K, V>>> {
+
+  typedef StdArenaAllocator<std::pair<K, V>> Allocator;
+
+  ArenaMap(Allocator &allocator) : std::map<K, V, Cmp, Allocator>(allocator) {}
+};
+
+template<typename V, typename Cmp = std::less<V>>
+struct ArenaSet : public std::set<V, Cmp, StdArenaAllocator<V>> {
+
+  typedef StdArenaAllocator<V> Allocator;
+
+  ArenaSet(Allocator &allocator) : std::set<V, Cmp, Allocator>(allocator) {}
 };
