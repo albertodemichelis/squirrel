@@ -72,6 +72,7 @@ void PrintUsage()
         _SC("Available options are:\n")
         _SC("   -c              compiles the file to bytecode(default output 'out.cnut')\n")
         _SC("   -o              specifies output file for the -c option\n")
+        _SC("   -ast            use AST compiler\n")
         _SC("   -c              compiles only\n")
         _SC("   -d              generates debug infos\n")
         _SC("   -v              displays version infos\n")
@@ -101,6 +102,14 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
             {
                 switch(argv[arg][1])
                 {
+                case 'a':
+                    if (strcmp("-ast", argv[arg]) == 0) {
+                        sq_setcompilationoption(v, CompilationOptions::CO_USE_AST_COMPILER, true);
+                        break;
+                    }
+                    else {
+                        goto unknown_opt;
+                    }
                 case 'd': //DEBUG(debug infos)
                     sq_enabledebuginfo(v,1);
                     sq_lineinfo_in_expressions(v, 1);
@@ -123,6 +132,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                     PrintUsage();
                     return _DONE;
                 default:
+                unknown_opt:
                     PrintVersionInfos();
                     printf(_SC("unknown prameter '-%c'\n"),argv[arg][1]);
                     PrintUsage();

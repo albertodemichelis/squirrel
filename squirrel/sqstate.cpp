@@ -26,6 +26,7 @@ SQSharedState::SQSharedState(SQAllocContext allocctx) :
     _notifyallexceptions = false;
     _foreignptr = NULL;
     _releasehook = NULL;
+    compilationOptions = 0;
 }
 
 #define newsysstring(s) {   \

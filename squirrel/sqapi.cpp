@@ -162,7 +162,8 @@ SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,const SQCha
 {
     SQObjectPtr o;
 #ifndef NO_COMPILER
-    if(Compile(v, read, p, bindings, sourcename, o, raiseerror?true:false, _ss(v)->_debuginfo, false)) {
+    bool useAst = _ss(v)->checkCompilationOption(CompilationOptions::CO_USE_AST_COMPILER);
+    if(Compile(v, read, p, bindings, sourcename, o, raiseerror?true:false, _ss(v)->_debuginfo, useAst)) {
         v->Push(SQClosure::Create(_ss(v), _funcproto(o),
                 _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
         return SQ_OK;
@@ -192,6 +193,12 @@ SQBool sq_isvartracesupported()
 #endif
 }
 
+void sq_setcompilationoption(HSQUIRRELVM v, enum CompilationOptions co, bool value) {
+  if (value)
+    _ss(v)->enableCompilationOption(co);
+  else
+    _ss(v)->disableCompilationOption(co);
+}
 
 void sq_enabledebuginfo(HSQUIRRELVM v, SQBool enable)
 {

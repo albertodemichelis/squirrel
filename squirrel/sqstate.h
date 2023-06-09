@@ -63,6 +63,17 @@ struct SQSharedState
     ~SQSharedState();
     void Init();
 public:
+    bool checkCompilationOption(SQUnsignedInteger co) const {
+        return (compilationOptions & co) != 0;
+    }
+
+    void enableCompilationOption(SQUnsignedInteger co) {
+        compilationOptions |= co;
+    }
+
+    void disableCompilationOption(SQUnsignedInteger co) {
+        compilationOptions &= ~co;
+    }
     SQChar* GetScratchPad(SQInteger size);
     SQInteger GetMetaMethodIdxByName(const SQObjectPtr &name);
 #ifndef NO_GARBAGE_COLLECTOR
@@ -115,6 +126,7 @@ public:
     bool _notifyallexceptions;
     bool _lineInfoInExpressions;
     bool _varTraceEnabled;
+    SQUnsignedInteger compilationOptions;
     SQUnsignedInteger defaultLangFeatures;
     SQUserPointer _foreignptr;
     SQRELEASEHOOK _releasehook;

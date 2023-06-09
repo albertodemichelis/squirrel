@@ -203,6 +203,13 @@ typedef struct tagSQFunctionInfo {
     SQInteger line;
 }SQFunctionInfo;
 
+#define BIT(n) (1ULL << (n))
+
+enum CompilationOptions : SQUnsignedInteger {
+  CO_USE_AST_COMPILER = BIT(0),
+  CO_CLOSURE_HOISTING_OPT = BIT(1)
+};
+
 /*vm*/
 SQUIRREL_API HSQUIRRELVM sq_open(SQInteger initialstacksize);
 SQUIRREL_API HSQUIRRELVM sq_newthread(HSQUIRRELVM friendvm, SQInteger initialstacksize);
@@ -228,6 +235,7 @@ SQUIRREL_API SQRESULT sq_registerbaselib(HSQUIRRELVM v);
 /*compiler*/
 SQUIRREL_API SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,const SQChar *sourcename,SQBool raiseerror,const HSQOBJECT *bindings=nullptr);
 SQUIRREL_API SQRESULT sq_compilebuffer(HSQUIRRELVM v,const SQChar *s,SQInteger size,const SQChar *sourcename,SQBool raiseerror,const HSQOBJECT *bindings=nullptr);
+SQUIRREL_API void sq_setcompilationoption(HSQUIRRELVM v, enum CompilationOptions co, bool value);
 SQUIRREL_API void sq_enabledebuginfo(HSQUIRRELVM v, SQBool enable);
 SQUIRREL_API void sq_enablevartrace(HSQUIRRELVM v, SQBool enable);
 SQUIRREL_API SQBool sq_isvartracesupported();
