@@ -4101,11 +4101,6 @@ public:
           ignore = true;
         }
 
-        if ((it->second.declContext == DC_CLASS_MEMBER || it->second.declContext == DC_CLASS_METHOD))
-        {
-          ignore = true;
-        }
-
         if (!ignore)
         {
           ctx.warning("ident-hides-ident", var->tok, declContextToString(decl_context), name,
@@ -4195,6 +4190,7 @@ public:
       if (it != localIdentifiers[i].end())
       {
         if (it->second.declContext == DC_TABLE_MEMBER || it->second.declContext == DC_CLASS_MEMBER)
+          if (i == from_scope)
           continue;
 
         return it->second.declContext;
@@ -4254,6 +4250,9 @@ public:
 
     if (globalConsts.find(parent) != globalConsts.end())
       return DC_GLOBAL_CONSTANT;
+
+    if (is_ident_visible(parent, nodePath))
+      return DC_IDENTIFIER;
 
     for (size_t i = nodePath.size() - 1; nodePath[i] != nullptr; i--)
       if (nodePath[i]->nodeType == PNT_FUNCTION || nodePath[i]->nodeType == PNT_CLASS_MEMBER)
