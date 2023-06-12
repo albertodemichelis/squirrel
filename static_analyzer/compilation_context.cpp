@@ -437,6 +437,10 @@ AnalyzerMessage analyzer_messages[] =
     297, "call-from-root",
     "Function '%s' must be called from the root scope."
   },
+  {
+    298, "lambda-param-hides-ident",
+    "Parameter of lambda hides identifier"
+  },
 };
 
 

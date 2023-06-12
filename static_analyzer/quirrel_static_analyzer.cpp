@@ -4081,6 +4081,10 @@ public:
         if (decl_context == DC_FUNCTION_PARAM &&
           nodePath[nodePath.size() - 3] && nodePath[nodePath.size() - 3]->nodeType == PNT_LAMBDA)
         {
+          if (ctx.isWarningSuppressed("lambda-param-hides-ident"))
+            ignore = true;
+
+          if (name && name[0] == '_')
           ignore = true;
         }
 
