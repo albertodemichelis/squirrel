@@ -1289,7 +1289,7 @@ void CodegenVisitor::visitGetFieldExpr(GetFieldExpr *expr) {
 
     if (receiver->isConst()) {
         SQObjectPtr constant = _constVal;
-        if (sq_type(constant) == OT_TABLE && (sq_objflags(constant) & SQOBJ_FLAG_IMMUTABLE)) {
+        if (sq_type(constant) == OT_TABLE && (sq_objflags(constant) & SQOBJ_FLAG_IMMUTABLE) && !expr->isNullable()) {
             SQObjectPtr next;
             if (_table(constant)->GetStr(expr->fieldName(), strlen(expr->fieldName()), next)) {
                 SQInstruction &last = _fs->LastInstruction();
