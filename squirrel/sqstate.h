@@ -91,7 +91,7 @@ public:
     RefTable _refs_table;
     SQObjectPtr _registry;
     SQObjectPtr _consts;
-    SQObjectPtr _constructoridx;
+    SQObjectPtr _constructorstr;
 #ifndef NO_GARBAGE_COLLECTOR
     SQCollectable *_gc_chain;
 #endif

@@ -80,7 +80,7 @@ bool SQClass::NewSlot(SQSharedState *ss,const SQObjectPtr &key,const SQObjectPtr
             }
             if(sq_type(temp) == OT_NULL) {
                 bool isconstructor;
-                SQVM::IsEqual(ss->_constructoridx, key, isconstructor);
+                SQVM::IsEqual(ss->_constructorstr, key, isconstructor);
                 if(isconstructor) {
                     _constructoridx = (SQInteger)_methods.size();
                 }

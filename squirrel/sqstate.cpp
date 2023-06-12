@@ -146,7 +146,7 @@ void SQSharedState::Init()
     newmetamethod(MM_NEWMEMBER);
     newmetamethod(MM_INHERITED);
 
-    _constructoridx = SQString::Create(this,_SC("constructor"));
+    _constructorstr = SQString::Create(this,_SC("constructor"));
     _registry = SQTable::Create(this,0);
     _consts = SQTable::Create(this,0);
     _table_default_delegate = CreateDefaultDelegate(this,_table_default_delegate_funcz);
@@ -166,7 +166,7 @@ void SQSharedState::Init()
 SQSharedState::~SQSharedState()
 {
     if(_releasehook) { _releasehook(_foreignptr,0); _releasehook = NULL; }
-    _constructoridx.Null();
+    _constructorstr.Null();
     _table(_registry)->Finalize();
     _table(_consts)->Finalize();
     _table(_metamethodsmap)->Finalize();
