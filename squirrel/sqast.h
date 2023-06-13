@@ -593,7 +593,7 @@ private:
 
 struct TableMember {
     Expr *key;
-    Node *value;
+    Expr *value;
     bool isStatic;
 };
 
@@ -601,7 +601,7 @@ class TableDecl : public Decl {
 public:
     TableDecl(Arena *arena) : Decl(TO_TABLE), _members(arena) {}
 
-    void addMember(Expr *key, Node *value, bool isStatic = false) { _members.push_back({ key, value, isStatic }); }
+    void addMember(Expr *key, Expr *value, bool isStatic = false) { _members.push_back({ key, value, isStatic }); }
 
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
@@ -875,18 +875,18 @@ private:
 
 class ForeachStatement : public LoopStatement {
 public:
-    ForeachStatement(Id *idx, Id *val, Expr *container, Statement *body) : LoopStatement(TO_FOREACH, body), _idx(idx), _val(val), _container(container) {}
+    ForeachStatement(VarDecl *idx, VarDecl *val, Expr *container, Statement *body) : LoopStatement(TO_FOREACH, body), _idx(idx), _val(val), _container(container) {}
 
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
 
     Expr *container() const { return _container; }
-    Id *idx() const { return _idx; }
-    Id *val() const { return _val; }
+    VarDecl *idx() const { return _idx; }
+    VarDecl *val() const { return _val; }
 
 private:
-    Id *_idx;
-    Id *_val;
+    VarDecl *_idx;
+    VarDecl *_val;
     Expr *_container;
 };
 

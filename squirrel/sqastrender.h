@@ -261,11 +261,11 @@ public:
         _out << "FOR_EACH ( {";
 
         if (loop->idx()) {
-            visitId(loop->idx());
+            loop->idx()->visit(this);
             _out << ", ";
         }
 
-        visitId(loop->val());
+        loop->val()->visit(this);
         _out << "} in ";
 
         loop->container()->visit(this);

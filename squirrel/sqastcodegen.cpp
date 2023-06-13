@@ -384,22 +384,19 @@ void CodegenVisitor::visitForeachStatement(ForeachStatement *foreachLoop) {
     SQInteger container = _fs->TopTarget();
 
     SQObject idxName;
+    SQInteger indexpos = -1;
     if (foreachLoop->idx()) {
-        idxName = _fs->CreateString(foreachLoop->idx()->id());
-        CheckDuplicateLocalIdentifier(foreachLoop->idx(), idxName, _SC("Iterator"), false);
+        foreachLoop->idx()->visit(this);
+        indexpos = _fs->_vlocals.back()._pos;
     }
     else {
         idxName = _fs->CreateString(_SC("@INDEX@"));
+        indexpos = _fs->PushLocalVariable(idxName, false);
     }
-
-    SQInteger indexpos = _fs->PushLocalVariable(idxName, false);
-
     _fs->AddInstruction(_OP_LOADNULLS, indexpos, 1);
 
-    SQObject valName = _fs->CreateString(foreachLoop->val()->id());
-    CheckDuplicateLocalIdentifier(foreachLoop->val(), valName, _SC("Iterator"), false);
-
-    SQInteger valuepos = _fs->PushLocalVariable(valName, false);
+    foreachLoop->val()->visit(this);
+    SQInteger valuepos = _fs->_vlocals.back()._pos;
     _fs->AddInstruction(_OP_LOADNULLS, valuepos, 1);
 
     //push reference index

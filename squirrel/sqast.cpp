@@ -365,7 +365,7 @@ void TableDecl::visitChildren(Visitor *visitor) {
 void TableDecl::transformChildren(Transformer *transformer) {
   for (auto &member : members()) {
     member.key = member.key->transform(transformer)->asExpression();
-    member.value = member.value->transform(transformer);
+    member.value = member.value->transform(transformer)->asExpression();
   }
 }
 
@@ -497,16 +497,16 @@ void ForStatement::transformChildren(Transformer *transformer) {
 }
 
 void ForeachStatement::visitChildren(Visitor *visitor) {
-    if (_idx) visitor->visitNode(_idx);
-    if (_val) visitor->visitExpr(_val);
+    if (_idx) _idx->visit(visitor);
+    if (_val) _val->visit(visitor);
     if (_container) _container->visit(visitor);
 
     LoopStatement::visitChildren(visitor);
 }
 
 void ForeachStatement::transformChildren(Transformer *transformer) {
-  if (_idx) _idx = _idx->transform(transformer)->asId();
-  if (_val) _val = _val->transform(transformer)->asId();
+  if (_idx) _idx = _idx->transform(transformer)->asDeclaration()->asVarDecl();
+  if (_val) _val = _val->transform(transformer)->asDeclaration()->asVarDecl();
   if (_container) _container = _container->transform(transformer)->asExpression();
 
   LoopStatement::transformChildren(transformer);

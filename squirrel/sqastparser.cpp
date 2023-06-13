@@ -817,7 +817,8 @@ void SQParser::ParseTableOrClass(TableDecl *decl, SQInteger separator, SQInteger
             key->setColumnPos(c);
             Expect(_SC('('));
             FunctionDecl *f = CreateFunction(funcName, false, tk == TK_CONSTRUCTOR);
-            decl->addMember(key, f, isstatic);
+            DeclExpr *e = newNode<DeclExpr>(f);
+            decl->addMember(key, e, isstatic);
         }
         break;
         case _SC('['): {
@@ -1089,8 +1090,12 @@ ForeachStatement* SQParser::parseForEachStatement()
 
     Statement *body = parseStatement();
 
-    return newNode<ForeachStatement>(idxname, valname, contnr, body);
+    VarDecl *idxDecl = idxname ? newNode<VarDecl>(idxname->id(), nullptr, false) : NULL;
+    VarDecl *valDecl = valname ? newNode<VarDecl>(valname->id(), nullptr, false) : NULL;
+
+    return newNode<ForeachStatement>(idxDecl, valDecl, contnr, body);
 }
+
 
 SwitchStatement* SQParser::parseSwitchStatement()
 {
