@@ -314,11 +314,11 @@ public:
 };
 
 template<typename K, typename V, typename Cmp = std::less<K>>
-struct ArenaMap : public std::map<K, V, Cmp, StdArenaAllocator<std::pair<K, V>>> {
+struct ArenaMap : public std::map<K, V, Cmp, StdArenaAllocator<std::pair<const K, V>>> {
 
-  typedef StdArenaAllocator<std::pair<K, V>> Allocator;
+  typedef StdArenaAllocator<std::pair<const K, V>> Allocator;
 
-  ArenaMap(Allocator &allocator) : std::map<K, V, Cmp, Allocator>(allocator) {}
+  ArenaMap(const Allocator &allocator) : std::map<K, V, Cmp, Allocator>(allocator) {}
 };
 
 template<typename V, typename Cmp = std::less<V>>
@@ -326,5 +326,5 @@ struct ArenaSet : public std::set<V, Cmp, StdArenaAllocator<V>> {
 
   typedef StdArenaAllocator<V> Allocator;
 
-  ArenaSet(Allocator &allocator) : std::set<V, Cmp, Allocator>(allocator) {}
+  ArenaSet(const Allocator &allocator) : std::set<V, Cmp, Allocator>(allocator) {}
 };
