@@ -15,7 +15,8 @@ set(SQUIRREL_SRC sqapi.cpp
                  sqobject.cpp
                  sqstate.cpp
                  sqtable.cpp
-                 sqvm.cpp)
+                 sqvm.cpp
+                 optimizations/closureHoisting.cpp)
 
 if (ENABLE_VAR_TRACE)
   list(APPEND SQUIRREL_SRC vartrace.cpp)

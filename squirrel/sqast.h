@@ -635,9 +635,9 @@ class Block;
 
 class FunctionDecl : public Decl {
 protected:
-    FunctionDecl(enum TreeOp op, Arena *arena, const SQChar *name) : Decl(op), _arena(arena), _parameters(arena), _name(name), _vararg(false), _body(NULL), _lambda(false), _sourcename(NULL) {}
+    FunctionDecl(enum TreeOp op, Arena *arena, const SQChar *name) : Decl(op), _arena(arena), _parameters(arena), _name(name), _vararg(false), _body(NULL), _lambda(false), _sourcename(NULL), _hoistingLevel(0) {}
 public:
-    FunctionDecl(Arena *arena, const SQChar *name) : Decl(TO_FUNCTION), _arena(arena), _parameters(arena), _name(name), _vararg(false), _body(NULL), _lambda(false), _sourcename(NULL) {}
+    FunctionDecl(Arena *arena, const SQChar *name) : Decl(TO_FUNCTION), _arena(arena), _parameters(arena), _name(name), _vararg(false), _body(NULL), _lambda(false), _sourcename(NULL), _hoistingLevel(0) {}
 
     void addParameter(const SQChar *name, Expr *defaultVal = NULL) { _parameters.push_back(new (_arena) ParamDecl(name, defaultVal)); }
     
@@ -660,6 +660,8 @@ public:
     bool isLambda() const { return _lambda; }
     void setLambda(bool v) { _lambda = v; }
 
+    int hoistingLevel() const { return _hoistingLevel; }
+    void hoistBy(int level) { _hoistingLevel += level; }
 
 private:
     Arena *_arena;
@@ -670,6 +672,7 @@ private:
     bool _lambda;
     
     const SQChar *_sourcename;
+    int _hoistingLevel;
 
 };
 

@@ -82,6 +82,7 @@ struct SQFuncState
     SQInteger _lastline;
     SQInteger _traps; //contains number of nested exception traps
     SQInteger _outers;
+    SQInteger _hoistLevel;
     bool _optimization;
     SQSharedState *_sharedstate;
     sqvector<SQFuncState*> _childstates;

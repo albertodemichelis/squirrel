@@ -824,6 +824,8 @@ void CodegenVisitor::visitFunctionDecl(FunctionDecl *funcDecl) {
     }
 
     _childFs->SetStackSize(0);
+    _childFs->_hoistLevel = funcDecl->hoistingLevel();
+
     SQFunctionProto *funcProto = _childFs->BuildProto();
 
     _fs->_functions.push_back(funcProto);

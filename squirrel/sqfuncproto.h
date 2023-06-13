@@ -153,6 +153,7 @@ public:
     SQObjectPtr _name;
     SQUnsignedInteger   lang_features;
     SQInteger _stacksize;
+    SQInteger _hoistingLevel;
     bool _bgenerator;
     SQInteger _varparams;
 

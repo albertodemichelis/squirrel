@@ -65,6 +65,7 @@ SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc
         _errtarget = ed;
         _bgenerator = false;
         _outers = 0;
+        _hoistLevel = 0;
         _ss = ss;
         lang_features = parent ? parent->lang_features : ss->defaultLangFeatures;
 }
@@ -575,6 +576,7 @@ SQFunctionProto *SQFuncState::BuildProto()
     f->_sourcename = _sourcename;
     f->_bgenerator = _bgenerator;
     f->_name = _name;
+    f->_hoistingLevel = _hoistLevel;
 
     while((idx=_table(_literals)->Next(false,refidx,key,val))!=-1) {
         f->_literals[_integer(val)]=key;

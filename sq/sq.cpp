@@ -74,6 +74,7 @@ void PrintUsage()
         _SC("   -o              specifies output file for the -c option\n")
         _SC("   -ast            use AST compiler\n")
         _SC("   -c              compiles only\n")
+        _SC("   -optCH          enable Closure Hoisting Optimization\n")
         _SC("   -d              generates debug infos\n")
         _SC("   -v              displays version infos\n")
         _SC("   -h              prints help\n"));
@@ -118,7 +119,10 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                     compiles_only = 1;
                     break;
                 case 'o':
-                    if(arg < argc) {
+                    if (strcmp("-optCH", argv[arg]) == 0) {
+                        sq_setcompilationoption(v, CompilationOptions::CO_CLOSURE_HOISTING_OPT, true);
+                        break;
+                    } else if(arg < argc) {
                         arg++;
                         output = argv[arg];
                     }

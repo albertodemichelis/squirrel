@@ -20,6 +20,7 @@
 #include "sqastparser.h"
 #include "sqastrender.h"
 #include "sqastcodegen.h"
+#include "optimizations/closureHoisting.h"
 
 
 
@@ -2062,6 +2063,9 @@ static bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HS
     RootBlock *r = p.parse();
 
     if (!r) return false;
+
+    ClosureHoistingOpt opt(_ss(vm), &astArena);
+    opt.run(r);
 
 #ifdef _DEBUG_DUMP
     RenderVisitor v(std::cout);
