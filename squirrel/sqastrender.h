@@ -311,7 +311,7 @@ public:
         _out << std::endl;
         indent(_indent);
         _out << "CATCH (";
-        visitId(tr->exceptionId());
+        tr->exceptionId()->visit(this);
         _out << ") ";
         tr->catchStatement()->visit(this);
         _out << std::endl;

@@ -512,7 +512,8 @@ void CodegenVisitor::visitTryStatement(TryStatement *tryStmt) {
 
     {
         BEGIN_SCOPE();
-        SQInteger ex_target = _fs->PushLocalVariable(_fs->CreateString(tryStmt->exceptionId()->id()), false);
+        tryStmt->exceptionId()->visit(this);
+        SQInteger ex_target = _fs->_vlocals.back()._pos;
         _fs->SetInstructionParam(trappos, 0, ex_target);
         tryStmt->catchStatement()->visit(this);
         _fs->SetInstructionParams(jmppos, 0, (_fs->GetCurrentPos() - jmppos), 0);

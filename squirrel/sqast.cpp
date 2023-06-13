@@ -540,13 +540,13 @@ void SwitchStatement::transformChildren(Transformer *transformer) {
 
 void TryStatement::visitChildren(Visitor *visitor) {
     _tryStmt->visit(visitor);
-    visitor->visitId(_exception);
+    _exception->visit(visitor);
     _catchStmt->visit(visitor);
 }
 
 void TryStatement::transformChildren(Transformer *transformer) {
   _tryStmt = _tryStmt->transform(transformer)->asStatement();
-  _exception = _exception->transform(transformer)->asId();
+  _exception = _exception->transform(transformer)->asDeclaration()->asVarDecl();
   _catchStmt = _catchStmt->transform(transformer)->asStatement();
 }
 

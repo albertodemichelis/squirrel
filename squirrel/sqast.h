@@ -923,18 +923,18 @@ private:
 
 class TryStatement : public Statement {
 public:
-    TryStatement(Statement *t, Id *exc, Statement *c) : Statement(TO_TRY), _tryStmt(t), _exception(exc), _catchStmt(c) {}
+    TryStatement(Statement *t, VarDecl *exc, Statement *c) : Statement(TO_TRY), _tryStmt(t), _exception(exc), _catchStmt(c) {}
 
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
 
     Statement *tryStatement() const { return _tryStmt; }
-    Id *exceptionId() const { return _exception; }
+    VarDecl *exceptionId() const { return _exception; }
     Statement *catchStatement() const { return _catchStmt; }
 
 private:
     Statement *_tryStmt;
-    Id *_exception;
+    VarDecl *_exception;
     Statement *_catchStmt;
 };
 
