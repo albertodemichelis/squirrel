@@ -1243,9 +1243,8 @@ TryStatement* SQParser::parseTryCatchStatement()
     Expect(_SC(')'));
 
     Statement *c = parseStatement();
-    VarDecl *exVar = newNode<VarDecl>(exid->id(), nullptr, false);
 
-    return newNode<TryStatement>(t, exVar, c);
+    return newNode<TryStatement>(t, exid, c);
 }
 
 
