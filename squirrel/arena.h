@@ -292,24 +292,29 @@ private:
 };
 
 template <typename T>
-class StdArenaAllocator : public std::allocator<T> {
-
-  Arena *_arena;
-
+class StdArenaAllocator {
 public:
+  Arena *_arena;
   typedef size_t size_type;
   typedef T* pointer;
   typedef const T* const_pointer;
+  typedef T value_type;
 
-  pointer allocate(size_type n, const void *hint = 0)
+  pointer allocate(const size_type n)
   {
-    return (pointer)_arena->allocate(n);
+    return (pointer)_arena->allocate(n * sizeof(T));
   }
 
-  void deallocate(pointer p, size_type n) {}
+  pointer allocate(const size_type n, const void *hint)
+  {
+    return allocate(n);
+  }
 
-  StdArenaAllocator(const StdArenaAllocator<T> &a) : StdArenaAllocator(a._arena) {}
-  StdArenaAllocator(Arena *arena) : std::allocator<T>(), _arena(arena) { assert(arena); }
+  void deallocate(const_pointer p, const size_type n) {}
+
+  template<typename O>
+  StdArenaAllocator(const StdArenaAllocator<O> &a) : StdArenaAllocator(a._arena) {}
+  StdArenaAllocator(Arena *arena) : _arena(arena) { assert(arena); }
   ~StdArenaAllocator() {}
 };
 
