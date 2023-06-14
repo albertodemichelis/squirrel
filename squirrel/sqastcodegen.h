@@ -109,6 +109,8 @@ private:
 
     void selectConstant(SQInteger target, const SQObject &constant);
 
+    Expr *deparen(Expr *e) const;
+
 public:
 
     void visitBlock(Block *block) override;

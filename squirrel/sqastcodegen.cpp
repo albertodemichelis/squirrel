@@ -913,11 +913,18 @@ void CodegenVisitor::addLineNumber(Statement *stmt) {
     }
 }
 
+Expr *CodegenVisitor::deparen(Expr *e) const {
+  if (e->op() == TO_PAREN) {
+    return deparen(((UnExpr *)e)->argument());
+  }
+  return e;
+}
+
 void CodegenVisitor::visitCallExpr(CallExpr *call) {
 
     maybeAddInExprLine(call);
 
-    Expr *callee = call->callee();
+    Expr *callee = deparen(call->callee());
     bool isNullCall = call->isNullable();
 
     visitNoGet(callee);
