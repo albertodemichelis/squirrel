@@ -123,6 +123,15 @@ void CodegenVisitor::CheckDuplicateLocalIdentifier(Node *n, SQObject name, const
         error(n, _SC("%s name '%s' conflicts with existing constant/enum/import"), desc, _stringval(name));
 }
 
+static bool compareLiterals(LiteralExpr *a, LiteralExpr *b) {
+  if (a->kind() != b->kind()) return false;
+  if (a->kind() == LK_STRING) {
+    return strcmp(a->s(), b->s()) == 0;
+  }
+
+  return a->raw() == b->raw();
+}
+
 bool CodegenVisitor::CheckMemberUniqueness(ArenaVector<Expr *> &vec, Expr *obj) {
 
     if (obj->op() != TO_LITERAL && obj->op() != TO_ID) return true;
@@ -139,8 +148,13 @@ bool CodegenVisitor::CheckMemberUniqueness(ArenaVector<Expr *> &vec, Expr *obj) 
         if (vecobj->op() == TO_LITERAL && obj->op() == TO_LITERAL) {
             LiteralExpr *a = (LiteralExpr*)vecobj;
             LiteralExpr *b = (LiteralExpr*)obj;
-            if (a->kind() == b->kind() && a->raw() == b->raw()) {
-                error(obj, _SC("duplicate key"));
+            if (compareLiterals(a, b)) {
+                if (a->kind() == LK_STRING) {
+                  error(obj, _SC("duplicate key '%s'"), a->s());
+                }
+                else {
+                  error(obj, _SC("duplicate key '%llu'"), a->raw());
+                }
                 return false;
             }
             continue;
