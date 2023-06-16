@@ -1119,6 +1119,11 @@ void CodegenVisitor::emitCompoundArith(SQOpcode op, SQInteger opcode, Expr *lval
 
     if (lvalue->op() == TO_ID) {
         Id *id = lvalue->asId();
+
+        if (!id->isAssignable()) {
+          error(lvalue, _SC("can't assign to binding '%s' (probably declaring using 'local' was intended, but 'let' was used)"), id->id());
+        }
+
         if (id->isOuter()) {
             SQInteger val = _fs->TopTarget();
             SQInteger tmp = _fs->PushTarget();
@@ -1207,6 +1212,11 @@ void CodegenVisitor::emitAssign(Expr *lvalue, Expr * rvalue, bool inExpr) {
 
     if (lvalue->op() == TO_ID) {
         Id *id = lvalue->asId();
+
+        if (!id->isAssignable()) {
+          error(lvalue, _SC("can't assign to binding '%s' (probably declaring using 'local' was intended, but 'let' was used)"), id->id());
+        }
+
         if (id->isOuter()) {
             SQInteger src = _fs->PopTarget();
             SQInteger dst = _fs->PushTarget();
