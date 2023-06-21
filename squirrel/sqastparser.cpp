@@ -9,7 +9,7 @@
 #include <stdarg.h>
 
 
-SQParser::SQParser(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, Arena *astArena, bool raiseerror, bool lineinfo)
+SQParser::SQParser(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, Arena *astArena, bool raiseerror)
     : _lex(_ss(v))
     , _astArena(astArena)
 {

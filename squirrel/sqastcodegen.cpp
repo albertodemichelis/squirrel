@@ -971,7 +971,7 @@ void CodegenVisitor::visitCallExpr(CallExpr *call) {
         _fs->AddInstruction(_OP_MOVE, _fs->PushTarget(), 0);
     }
 
-    const auto args = call->arguments();
+    const auto &args = call->arguments();
 
     for (auto arg : args) {
         arg->visit(this);

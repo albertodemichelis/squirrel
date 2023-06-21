@@ -2055,7 +2055,7 @@ static bool CompileOnePass(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const H
 static bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
 {
     Arena astArena(_ss(vm)->_alloc_ctx, "AST");
-    SQParser p(vm, rg, up, sourcename, &astArena, raiseerror, lineinfo);
+    SQParser p(vm, rg, up, sourcename, &astArena, raiseerror);
 
     if (vm->_on_compile_file)
       vm->_on_compile_file(vm, sourcename);
