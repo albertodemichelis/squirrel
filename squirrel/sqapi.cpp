@@ -200,6 +200,10 @@ void sq_setcompilationoption(HSQUIRRELVM v, enum CompilationOptions co, bool val
     _ss(v)->disableCompilationOption(co);
 }
 
+bool sq_checkcompilationoption(HSQUIRRELVM v, enum CompilationOptions co) {
+  return _ss(v)->checkCompilationOption(co);
+}
+
 void sq_enabledebuginfo(HSQUIRRELVM v, SQBool enable)
 {
     _ss(v)->_debuginfo = enable?true:false;
