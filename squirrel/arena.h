@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <unordered_map>
 
 #define ARENA_USE_SYSTEM_ALLOC 0
 
@@ -332,4 +333,12 @@ struct ArenaSet : public std::set<V, Cmp, StdArenaAllocator<V>> {
   typedef StdArenaAllocator<V> Allocator;
 
   ArenaSet(const Allocator &allocator) : std::set<V, Cmp, Allocator>(allocator) {}
+};
+
+template<typename K, typename V, typename Hasher = std::hash<K>, typename KeyEq = std::equal_to<K>>
+struct ArenaUnorederMap : public std::unordered_map<K, V, Hasher, KeyEq, StdArenaAllocator<std::pair<const K, V>>> {
+
+  typedef StdArenaAllocator<std::pair<const K, V>> Allocator;
+
+  ArenaUnorederMap(const Allocator &allocator) : std::unordered_map<K, V, Hasher, KeyEq, Allocator>(allocator) {}
 };
