@@ -1318,7 +1318,7 @@ FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
         if (_token == TK_VARPARAMS) {
             if(defparams > 0) Error(_SC("function with default parameters cannot have variable number of parameters"));
             f->addParameter(_SC("vargv"));
-            f->setVararg();
+            f->setVararg(true);
             Lex();
             if(_token != _SC(')')) Error(_SC("expected ')'"));
             break;

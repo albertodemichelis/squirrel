@@ -625,6 +625,9 @@ public:
     Expr *classBase() const { return _base; }
     Expr* classKey() const { return _key; }
 
+    void setClassBase(Expr *b) { _base = b; }
+    void setClassKey(Expr *k) { _key = k; }
+
 private:
     Expr *_key;
     Expr *_base;
@@ -644,7 +647,7 @@ public:
     ArenaVector<ParamDecl *> &parameters() { return _parameters; }
     const ArenaVector<ParamDecl *> &parameters() const { return _parameters; }
 
-    void setVararg() { _vararg = true; }
+    void setVararg(bool v) { _vararg = v; }
     void setBody(Block *body);
 
     void visitChildren(Visitor *visitor);
@@ -758,6 +761,7 @@ public:
     void setExpression(Expr *expr) { _expr = expr; }
     Expr *initiExpression() const { return _expr; }
 
+    void setType(enum DestructuringType t) { _dt_type = t; }
     enum DestructuringType type() const { return _dt_type; }
 
 private:
