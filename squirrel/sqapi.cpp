@@ -1717,6 +1717,24 @@ SQRESULT sq_compilebuffer(HSQUIRRELVM v,const SQChar *s,SQInteger size,const SQC
     return sq_compile(v, buf_lexfeed, &buf, sourcename, raiseerror, bindings);
 }
 
+SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQBool raiseerror) {
+  SQObjectPtr o;
+  if (TranslateASTToBytecode(v, buffer, size, bindings, o, raiseerror, _ss(v)->_debuginfo)) {
+    v->Push(SQClosure::Create(_ss(v), _funcproto(o),
+      _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
+    return SQ_OK;
+  }
+  return SQ_ERROR;
+}
+
+SQRESULT sq_parsetobinaryast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, OutputStream *ostream, SQBool raiseerror) {
+  BufState buf;
+  buf.buf = s;
+  buf.size = size;
+  buf.ptr = 0;
+  return ParseAndSaveBinaryAST(v, buf_lexfeed, &buf, sourcename, ostream, raiseerror) ? SQ_OK : SQ_ERROR;
+}
+
 void sq_move(HSQUIRRELVM dest,HSQUIRRELVM src,SQInteger idx)
 {
     dest->Push(stack_get(src,idx));

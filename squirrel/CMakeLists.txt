@@ -1,6 +1,7 @@
 set(SQUIRREL_SRC sqapi.cpp
                  sqbaselib.cpp
                  sqast.cpp
+                 sqbinaryast.cpp
                  sqastparser.cpp
                  sqastcodegen.cpp
                  sqclass.cpp

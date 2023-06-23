@@ -21,6 +21,7 @@
 #include "sqastrender.h"
 #include "sqastcodegen.h"
 #include "optimizations/closureHoisting.h"
+#include "sqbinaryast.h"
 
 
 
@@ -2052,20 +2053,28 @@ static bool CompileOnePass(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const H
     return p.Compile(out);
 }
 
+static RootBlock *ParseToAST(Arena *astArena, SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, bool raiseerror) {
+  SQParser p(vm, rg, up, sourcename, astArena, raiseerror);
+
+  RootBlock *r = p.parse();
+
+  if (r) {
+      ClosureHoistingOpt opt(_ss(vm), astArena);
+      opt.run(r);
+  }
+
+  return r;
+}
+
 static bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
 {
-    Arena astArena(_ss(vm)->_alloc_ctx, "AST");
-    SQParser p(vm, rg, up, sourcename, &astArena, raiseerror);
-
     if (vm->_on_compile_file)
       vm->_on_compile_file(vm, sourcename);
 
-    RootBlock *r = p.parse();
+    Arena astArena(_ss(vm)->_alloc_ctx, "AST");
+    RootBlock * r = ParseToAST(&astArena, vm, rg, up, sourcename, raiseerror);
 
     if (!r) return false;
-
-    ClosureHoistingOpt opt(_ss(vm), &astArena);
-    opt.run(r);
 
 #ifdef _DEBUG_DUMP
     RenderVisitor v(std::cout);
@@ -2090,5 +2099,40 @@ bool Compile(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bind
         : CompileOnePass(vm, rg, up, bindings, sourcename, out, raiseerror, lineinfo);
 }
 
+bool TranslateASTToBytecode(SQVM *vm, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
+    assert(_ss(vm)->checkCompilationOption(CompilationOptions::CO_USE_AST_COMPILER));
+    Arena astArena(_ss(vm)->_alloc_ctx, "AST");
+
+    MemoryInputStream mis(buffer, size);
+    SQASTReader reader(_ss(vm)->_alloc_ctx, vm, &astArena, &mis, raiseerror);
+    const SQChar *sourcename = NULL;
+    RootBlock *r = reader.readAst(sourcename);
+
+    if (!r) {
+      return false;
+    }
+
+    Arena cgArena(_ss(vm)->_alloc_ctx, "Codegen");
+    CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, lineinfo, raiseerror);
+
+    return codegen.generate(r, out);
+}
+
+bool ParseAndSaveBinaryAST(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, OutputStream *ostream, bool raiseerror) {
+    assert(_ss(vm)->checkCompilationOption(CompilationOptions::CO_USE_AST_COMPILER));
+
+    Arena astArena(_ss(vm)->_alloc_ctx, "AST");
+
+    RootBlock *r = ParseToAST(&astArena, vm, rg, up, sourcename, raiseerror);
+
+    if (!r) {
+        return false;
+    }
+
+    SQASTWriter writer(_ss(vm)->_alloc_ctx, ostream);
+    writer.writeAST(r, sourcename);
+
+    return true;
+}
 
 #endif
