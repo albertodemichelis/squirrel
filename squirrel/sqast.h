@@ -23,6 +23,7 @@
     DEF_TREE_OP(CONTINUE), \
     DEF_TREE_OP(EXPR_STMT), \
     DEF_TREE_OP(EMPTY), \
+    DEF_TREE_OP(DIRECTIVE), \
     DEF_TREE_OP(STATEMENT_MARK), \
     DEF_TREE_OP(ID), \
     DEF_TREE_OP(COMMA), \
@@ -88,7 +89,7 @@
     DEF_TREE_OP(CLASS), \
     DEF_TREE_OP(ENUM), \
     DEF_TREE_OP(TABLE), \
-    DEF_TREE_OP(DIRECTIVE), \
+    DEF_TREE_OP(DECLARATION_MARK), \
 
 enum TreeOp {
 #define DEF_TREE_OP(arg) TO_##arg
@@ -128,12 +129,13 @@ public:
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
 
-    bool isDeclaration() const { return _op > TO_EXPR_MARK; }
+    bool isDeclaration() const { return TO_EXPR_MARK < op()  && op() < TO_DECLARATION_MARK; }
     bool isStatement() const { return _op < TO_STATEMENT_MARK; }
     bool isExpression() const { return TO_STATEMENT_MARK < _op && _op < TO_EXPR_MARK; }
+    bool isStatementOrDeclaration() const { return isStatement() || isDeclaration(); }
 
     inline Expr *asExpression() { assert(isExpression()); return (Expr *)(this); }
-    inline Statement *asStatement() { assert(isStatement() || isDeclaration()); return (Statement *)(this); }
+    inline Statement *asStatement() { assert(isStatementOrDeclaration()); return (Statement *)(this); }
     inline Decl *asDeclaration() { assert(isDeclaration()); return (Decl *)(this); }
 
     Id *asId() { assert(_op == TO_ID); return (Id*)this; }
