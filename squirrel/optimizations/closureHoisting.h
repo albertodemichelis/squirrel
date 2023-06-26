@@ -71,6 +71,7 @@ class ClosureHoistingOpt {
 
     void visitValueDecl(ValueDecl *v);
     void visitTryStatement(TryStatement *stmt);
+    void visitConstDecl(ConstDecl *c);
 
     void visitFunctionDecl(FunctionDecl *decl);
     void visitClassDecl(ClassDecl *klass);
