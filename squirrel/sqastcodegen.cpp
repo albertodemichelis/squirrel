@@ -62,9 +62,10 @@ void CodegenVisitor::error(Node *n, const SQChar *s, ...) {
 }
 
 bool CodegenVisitor::generate(RootBlock *root, SQObjectPtr &out) {
+    SQFuncState funcstate(_ss(_vm), NULL, CodegenVisitor::ThrowError, this);
+
     if (setjmp(_errorjmp) == 0) {
 
-        SQFuncState funcstate(_ss(_vm), NULL, CodegenVisitor::ThrowError, this);
         _fs = &funcstate;
         _childFs = NULL;
 
