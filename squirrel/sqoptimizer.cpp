@@ -119,13 +119,13 @@ void SQOptimizer::optimizeConstFolding()
                                 case _OP_SUB: res = lv - rv; break;
                                 case _OP_MUL: res = lv * rv; break;
                                 case _OP_DIV:
-                                    if (rv != 0)
+                                    if (rv < -1 || rv > 0)
                                         res = lv / rv;
                                     else
                                         applyOpt = false;
                                     break;
                                 case _OP_MOD:
-                                    if (rv != 0)
+                                    if (rv < -1 || rv > 0)
                                         res = lv % rv;
                                     else
                                         applyOpt = false;

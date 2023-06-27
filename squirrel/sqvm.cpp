@@ -62,13 +62,16 @@ bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,con
     } \
 }
 
-#define _ARITH_NOZERO(op,trg,o1,o2,err) \
+#define _ARITH_NOZERO(op,trg,o1,o2) \
 { \
     SQInteger tmask = sq_type(o1)|sq_type(o2); \
     switch(tmask) { \
-        case OT_INTEGER: { SQInteger i2 = _integer(o2); if(i2 == 0) { Raise_Error(err); SQ_THROW(); } trg = _integer(o1) op i2; } break;\
+        case OT_INTEGER: { SQInteger i2 = _integer(o2); \
+            if (i2 == 0) { Raise_Error(_SC("division by zero")); SQ_THROW(); } \
+            else if (i2 == -1 && _integer(o1) == MIN_SQ_INTEGER) { Raise_Error(_SC("integer overflow")); SQ_THROW(); } \
+            trg = _integer(o1) op i2; } break; \
         case (OT_FLOAT|OT_INTEGER): \
-        case (OT_FLOAT): { SQFloat f2 = tofloat(o2); if(f2 == (SQFloat)0.f) { Raise_Error(err); SQ_THROW(); } trg = tofloat(o1) op f2; } break;\
+        case (OT_FLOAT): { SQFloat f2 = tofloat(o2); if(f2 == (SQFloat)0.f) { Raise_Error("float division by zero"); SQ_THROW(); } trg = tofloat(o1) op f2; } break;\
         default: _GUARD(ARITH_OP((#op)[0],trg,o1,o2)); break;\
     } \
 }
@@ -84,12 +87,12 @@ bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,
             case '+': res = i1 + i2; break;
             case '-': res = i1 - i2; break;
             case '/': if (i2 == 0) { Raise_Error(_SC("integer division by zero")); return false; }
-                    else if (i2 == -1 && i1 == INT_MIN) { Raise_Error(_SC("integer overflow")); return false; }
+                    else if (i2 == -1 && i1 == MIN_SQ_INTEGER) { Raise_Error(_SC("integer overflow")); return false; }
                     res = i1 / i2;
                     break;
             case '*': res = i1 * i2; break;
             case '%': if (i2 == 0) { Raise_Error(_SC("integer modulo by zero")); return false; }
-                    else if (i2 == -1 && i1 == INT_MIN) { res = 0; break; }
+                    else if (i2 == -1) { res = 0; break; }
                     res = i1 % i2;
                     break;
             default: res = 0xDEADBEEF;
@@ -1176,7 +1179,7 @@ exception_restore:
               continue;
             case _OP_SUB: _ARITH_(-,TARGET,STK(arg2),STK(arg1)); continue;
             case _OP_MUL: _ARITH_(*,TARGET,STK(arg2),STK(arg1)); continue;
-            case _OP_DIV: _ARITH_NOZERO(/,TARGET,STK(arg2),STK(arg1),_SC("division by zero")); continue;
+            case _OP_DIV: _ARITH_NOZERO(/,TARGET,STK(arg2),STK(arg1)); continue;
             case _OP_MOD: _GUARD(ARITH_OP('%',TARGET,STK(arg2),STK(arg1))); continue;
             case _OP_BITW:  _GUARD(BW_OP( arg3,TARGET,STK(arg2),STK(arg1))); continue;
             case _OP_RETURN:

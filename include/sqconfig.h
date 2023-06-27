@@ -79,3 +79,5 @@ typedef char SQChar;
 #ifndef SQ_CHECK_THREAD
 #define SQ_CHECK_THREAD SQ_CHECK_THREAD_LEVEL_NONE
 #endif
+
+#define MIN_SQ_INTEGER SQInteger(1ULL << (sizeof(SQInteger) * 8 - 1))
