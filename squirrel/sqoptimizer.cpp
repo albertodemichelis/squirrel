@@ -110,14 +110,14 @@ void SQOptimizer::optimizeConstFolding()
                     if (!isUnsafeRange(i, 3)) {
 
                         if (loadA.op == _OP_LOADINT && loadB.op == _OP_LOADINT) {
-                            SQInt32 res = 0;
+                            SQInteger res = 0;
                             SQInt32 lv = loadA._arg1;
                             SQInt32 rv = loadB._arg1;
                             bool applyOpt = true;
                             switch (s) {
-                                case _OP_ADD: res = lv + rv; break;
-                                case _OP_SUB: res = lv - rv; break;
-                                case _OP_MUL: res = lv * rv; break;
+                                case _OP_ADD: res = SQInteger(lv) + SQInteger(rv); break;
+                                case _OP_SUB: res = SQInteger(lv) - SQInteger(rv); break;
+                                case _OP_MUL: res = SQInteger(lv) * SQInteger(rv); break;
                                 case _OP_DIV:
                                     if (rv < -1 || rv > 0)
                                         res = lv / rv;
@@ -135,7 +135,7 @@ void SQOptimizer::optimizeConstFolding()
                                         case BW_AND: res = lv & rv; break;
                                         case BW_OR: res = lv | rv; break;
                                         case BW_XOR: res = lv ^ rv; break;
-                                        case BW_SHIFTL: res = lv << rv; break;
+                                        case BW_SHIFTL: res = SQInteger(lv) << rv; break;
                                         default: applyOpt = false; break;
                                     }
                                     break;
@@ -143,8 +143,8 @@ void SQOptimizer::optimizeConstFolding()
                                 default: applyOpt = false; break;
                             }
 
-                            if (applyOpt) {
-                                instr[i]._arg1 = res;
+                            if (applyOpt && res >= SQInteger(INT_MIN) && res <= SQInteger(INT_MAX)) {
+                                instr[i]._arg1 = (SQInt32)res;
                                 instr[i]._arg0 = operation._arg0;
                                 cutRange(i, 3, 1);
                                 changed = true;
