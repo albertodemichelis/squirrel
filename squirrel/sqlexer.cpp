@@ -4,6 +4,7 @@
 #include "sqpcheader.h"
 #include <ctype.h>
 #include <stdlib.h>
+#include <float.h>
 #include "sqtable.h"
 #include "sqstring.h"
 #include "sqcompiler.h"
@@ -643,25 +644,17 @@ void LexHexadecimal(const SQChar *s,SQUnsignedInteger *res)
     }
 }
 
-void LexInteger(const SQChar *s,SQUnsignedInteger *res)
+bool LexInteger(const SQChar *s, SQUnsignedInteger *res)
 {
-    *res = 0;
+    SQUnsignedInteger x = 0;
     while(*s != 0)
     {
-        *res = (*res)*10+((*s++)-'0');
+        SQUnsignedInteger prev = x;
+        x = x * 10 + ((*s++) - '0');
+        if(prev > x) return false; //overflow
     }
-}
-
-SQInteger scisodigit(SQInteger c) { return c >= _SC('0') && c <= _SC('7'); }
-
-void LexOctal(const SQChar *s,SQUnsignedInteger *res)
-{
-    *res = 0;
-    while(*s != 0)
-    {
-        if(scisodigit(*s)) *res = (*res)*8+((*s++)-'0');
-        else { assert(0); }
-    }
+    *res = x;
+    return x <= (~SQUnsignedInteger(0) >> 1);
 }
 
 SQInteger isexponent(SQInteger c) { return c == 'e' || c=='E'; }
@@ -675,36 +668,36 @@ SQInteger SQLexer::ReadNumber()
 #define TFLOAT 2
 #define THEX 3
 #define TSCIENTIFIC 4
-#define TOCTAL 5
+
     SQInteger type = TINT, firstchar = CUR_CHAR;
     SQChar *sTemp;
     INIT_TEMP_STRING();
     NUM_NEXT();
-    if(firstchar == _SC('0') && (toupper(CUR_CHAR) == _SC('X') || scisodigit(CUR_CHAR)) ) {
-        if(scisodigit(CUR_CHAR)) {
-            type = TOCTAL;
-            while(scisodigit(CUR_CHAR)) {
-                APPEND_CHAR(CUR_CHAR);
-                NUM_NEXT();
-            }
-            if(isdigit(CUR_CHAR)) Error(_SC("invalid octal number"));
-        }
-        else {
+    if(firstchar == _SC('0') && isdigit(CUR_CHAR))
+        Error(_SC("leading 0 is not allowed, octal numbers are not supported"));
+    if(firstchar == _SC('0') && (toupper(CUR_CHAR) == _SC('X')) ) {
+        NUM_NEXT();
+        type = THEX;
+        while(isxdigit(CUR_CHAR)) {
+            APPEND_CHAR(CUR_CHAR);
             NUM_NEXT();
-            type = THEX;
-            while(isxdigit(CUR_CHAR)) {
-                APPEND_CHAR(CUR_CHAR);
-                NUM_NEXT();
-            }
-            if(_longstr.size() > MAX_HEX_DIGITS) Error(_SC("too many digits for an Hex number"));
         }
+        if(_longstr.size() > MAX_HEX_DIGITS) Error(_SC("too many digits for an Hex number"));
+        if(_longstr.size() == 0) Error(_SC("expected hex digits after '0x'"));
     }
     else {
         APPEND_CHAR((SQChar)firstchar);
-        while (CUR_CHAR == _SC('.') || isdigit(CUR_CHAR) || isexponent(CUR_CHAR)) {
-            if(CUR_CHAR == _SC('.') || isexponent(CUR_CHAR)) type = TFLOAT;
-            if(isexponent(CUR_CHAR)) {
-                if(type != TFLOAT) Error(_SC("invalid numeric format"));
+        bool hasExp = false;
+        bool hasDot = false;
+        while (CUR_CHAR == _SC('.') || isalnum(CUR_CHAR)) {
+            if(CUR_CHAR == _SC('.')) {
+                if(hasDot || hasExp) Error(_SC("malformed number"));
+                hasDot = true;
+                type = TFLOAT;
+            }
+            else if(isexponent(CUR_CHAR)) {
+                if(hasExp) Error(_SC("malformed number"));
+                hasExp = true;
                 type = TSCIENTIFIC;
                 APPEND_CHAR(CUR_CHAR);
                 NEXT();
@@ -714,6 +707,8 @@ SQInteger SQLexer::ReadNumber()
                 }
                 if(!isdigit(CUR_CHAR)) Error(_SC("exponent expected"));
             }
+            if(!isdigit(CUR_CHAR) && !isexponent(CUR_CHAR) && CUR_CHAR != '.')
+                Error(_SC("malformed number"));
 
             APPEND_CHAR(CUR_CHAR);
             NUM_NEXT();
@@ -724,15 +719,35 @@ SQInteger SQLexer::ReadNumber()
     case TSCIENTIFIC:
     case TFLOAT:
         _fvalue = (SQFloat)strtod(&_longstr[0],&sTemp);
+        if(_fvalue == 0)
+        {
+            for(int i = 0; i < _longstr.size(); i++)
+            {
+                SQChar c = _longstr[i];
+                if (!c || c == 'e' || c == 'E')
+                    break;
+                if (c != '.' && c != '0')
+                    Error(_SC("float constant underflow"));
+            }
+        }
+
+        if(sizeof(_fvalue) == sizeof(float))
+        {
+            if (_fvalue >= FLT_MAX)
+                Error(_SC("float constant overflow"));
+        }
+        else if(sizeof(_fvalue) == sizeof(double))
+        {
+            if (_fvalue >= DBL_MAX)
+                Error(_SC("float constant overflow"));
+        }
         return TK_FLOAT;
     case TINT:
-        LexInteger(&_longstr[0],(SQUnsignedInteger *)&_nvalue);
+        if(!LexInteger(&_longstr[0],(SQUnsignedInteger *)&_nvalue))
+            Error(_SC("integer constant overflow"));
         return TK_INTEGER;
     case THEX:
         LexHexadecimal(&_longstr[0],(SQUnsignedInteger *)&_nvalue);
-        return TK_INTEGER;
-    case TOCTAL:
-        LexOctal(&_longstr[0],(SQUnsignedInteger *)&_nvalue);
         return TK_INTEGER;
     }
     return 0;
