@@ -14,6 +14,8 @@
 #if ARENA_USE_SYSTEM_ALLOC
 
 #if defined(_WIN32)  || defined(_WIN64)
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 //#include <memoryapi.h>
 #else // __unix__
