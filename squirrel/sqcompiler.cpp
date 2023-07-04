@@ -2077,7 +2077,8 @@ static bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HS
     if (!r) return false;
 
 #ifdef _DEBUG_DUMP
-    RenderVisitor v(std::cout);
+    FileOutputStream fos(stdout);
+    RenderVisitor v(&fos);
     v.render(r);
 #endif // _DEBUG_DUMP
 
