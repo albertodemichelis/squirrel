@@ -123,20 +123,19 @@ bool SqModules::checkCircularReferences(const char* resolved_fn, const char *)
   return true;
 }
 
+enum FileAccessError {
+  FAE_OK,
+  FAE_NOT_FOUND,
+  FAE_NO_READ
+};
 
-SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn, const char *requested_fn,
-                                                        const HSQOBJECT *bindings,
-                                                        Sqrat::Object &script_closure, string &out_err_msg)
+static enum FileAccessError readFileContent(const char *resolved_fn, std::vector<char> &buf)
 {
-  script_closure.release();
-  FILE* f = fopen(resolved_fn, "r");
+  FILE* f = fopen(resolved_fn, "rb");
   if (!f)
   {
-    out_err_msg = string("Script file not found: ") + requested_fn +" / " + resolved_fn;
-    return CompileScriptResult::FileNotFound;
+    return FAE_NOT_FOUND;
   }
-
-  std::vector<char> buf;
 
 #ifdef _WIN32
   long len = _filelength(_fileno(f));
@@ -146,19 +145,88 @@ SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn,
   if (len < 0)
   {
     fclose(f);
-    out_err_msg = string("Cannot read script file: ") + requested_fn +" / " + resolved_fn;
-    return CompileScriptResult::FileNotFound;
+    return FAE_NO_READ;
   }
 
   fseek(f, 0, SEEK_SET);
 #endif
 
-  buf.resize(len+1);
+  buf.resize(len + 1);
   fread(&buf[0], 1, len, f);
   buf[len] = 0;
   fclose(f);
 
-  if (SQ_FAILED(sq_compilebuffer(sqvm, &buf[0], len, resolved_fn, true, bindings)))
+  return FAE_OK;
+}
+
+struct ArenaGuard
+{
+  Arena *arena;
+  HSQUIRRELVM vm;
+
+  ArenaGuard(HSQUIRRELVM vm_, const char *n) : vm(vm_)
+  {
+    arena = sq_createarena(vm, n);
+  }
+
+  ~ArenaGuard()
+  {
+    sq_destroyarena(vm, arena);
+  }
+};
+
+bool SqModules::compileScriptImpl(const std::vector<char> &buf, const char *sourcename, const HSQOBJECT *bindings)
+{
+  if (compilationOptions.useAST)
+  {
+    ArenaGuard ag(sqvm, "AST");
+    Node *ast = sq_parsetoast(sqvm, &buf[0], buf.size() - 1, sourcename, compilationOptions.raiseError, ag.arena);
+    if (!ast)
+    {
+      return true;
+    }
+    else
+    {
+      if (onAST_cb)
+        onAST_cb(sqvm, ast, up_data);
+    }
+
+    if (SQ_FAILED(sq_translateasttobytecode(sqvm, ast, bindings, sourcename, compilationOptions.raiseError, compilationOptions.debugInfo)))
+    {
+      return true;
+    }
+  }
+  else
+  {
+    if (SQ_FAILED(sq_compileonepass(sqvm, &buf[0], buf.size() - 1, sourcename, compilationOptions.raiseError, compilationOptions.debugInfo, bindings)))
+    {
+      return true;
+    }
+  }
+
+  if (onBytecode_cb) {
+    HSQOBJECT func;
+    sq_getstackobj(sqvm, -1, &func);
+    onBytecode_cb(sqvm, func, up_data);
+  }
+
+  return false;
+}
+
+SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn, const char *requested_fn,
+                                                        const HSQOBJECT *bindings,
+                                                        Sqrat::Object &script_closure, string &out_err_msg)
+{
+  script_closure.release();
+  std::vector<char> buf;
+
+  auto r = readFileContent(resolved_fn, buf);
+  if (r != FAE_OK) {
+    out_err_msg = string(r == FAE_NOT_FOUND ? "Script file not found: " : "Cannot read script file: ") + requested_fn + " / " + resolved_fn;
+    return CompileScriptResult::FileNotFound;
+  }
+
+  if (compileScriptImpl(buf, resolved_fn, bindings))
   {
     out_err_msg = string("Failed to compile file: ") + requested_fn +" / " + resolved_fn;
     return CompileScriptResult::CompilationFailed;

@@ -30,8 +30,12 @@ public:
 
 public:
   SqModules(HSQUIRRELVM vm)
-    : sqvm(vm)
-  {}
+    : sqvm(vm), onAST_cb(nullptr), onBytecode_cb(nullptr), up_data(nullptr)
+  {
+    compilationOptions.useAST = false;
+    compilationOptions.raiseError = true;
+    compilationOptions.debugInfo = false;
+  }
 
   HSQUIRRELVM getVM() { return sqvm; }
 
@@ -76,6 +80,8 @@ private:
   };
   CompileScriptResult compileScript(const char *resolved_fn, const char *orig_fn, const HSQOBJECT *bindings,
                                     Sqrat::Object &script_closure, string &out_err_msg);
+  bool compileScriptImpl(const std::vector<char> &buf, const char *sourcename, const HSQOBJECT *bindings);
+
   Sqrat::Object  setupStateStorage(const char *resolved_fn);
   Module * findModule(const char * resolved_fn);
 
@@ -85,6 +91,16 @@ private:
 
 public:
   static const char *__main__, *__fn__;
+
+  struct {
+    bool useAST;
+    bool raiseError;
+    bool debugInfo;
+  } compilationOptions;
+
+  void *up_data;
+  void (*onAST_cb)(HSQUIRRELVM, Node *, void *);
+  void (*onBytecode_cb)(HSQUIRRELVM, HSQOBJECT, void *);
 
 private:
   std::vector<Module>  modules;
