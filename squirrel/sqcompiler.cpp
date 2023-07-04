@@ -2039,7 +2039,7 @@ private:
 };
 
 
-static bool CompileOnePass(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
+bool CompileOnePass(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
     SQCompiler p(vm, rg, up, bindings, sourcename, raiseerror, lineinfo);
 
     if (vm->_on_compile_file)
@@ -2048,7 +2048,7 @@ static bool CompileOnePass(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const H
     return p.Compile(out);
 }
 
-static RootBlock *ParseToAST(Arena *astArena, SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, bool raiseerror) {
+RootBlock *ParseToAST(Arena *astArena, SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, bool raiseerror) {
   SQParser p(vm, rg, up, sourcename, astArena, raiseerror);
 
   RootBlock *r = p.parse();
@@ -2061,7 +2061,7 @@ static RootBlock *ParseToAST(Arena *astArena, SQVM *vm, SQLEXREADFUNC rg, SQUser
   return r;
 }
 
-static bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
+bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
 {
     if (vm->_on_compile_file)
       vm->_on_compile_file(vm, sourcename);
@@ -2088,7 +2088,17 @@ bool Compile(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bind
         : CompileOnePass(vm, rg, up, bindings, sourcename, out, raiseerror, lineinfo);
 }
 
-bool TranslateASTToBytecode(SQVM *vm, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
+bool TranslateASTToBytecode(SQVM *vm, Node *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
+{
+    Arena cgArena(_ss(vm)->_alloc_ctx, "Codegen");
+    CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, lineinfo, raiseerror);
+
+    assert(ast->op() == TO_BLOCK && ast->asStatement()->asBlock()->isRoot());
+
+    return codegen.generate((RootBlock *)ast, out);
+}
+
+bool TranslateBinaryASTToBytecode(SQVM *vm, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
     assert(_ss(vm)->checkCompilationOption(CompilationOptions::CO_USE_AST_COMPILER));
     Arena astArena(_ss(vm)->_alloc_ctx, "AST");
 
@@ -2101,10 +2111,7 @@ bool TranslateASTToBytecode(SQVM *vm, const uint8_t *buffer, size_t size, const 
       return false;
     }
 
-    Arena cgArena(_ss(vm)->_alloc_ctx, "Codegen");
-    CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, lineinfo, raiseerror);
-
-    return codegen.generate(r, out);
+    return TranslateASTToBytecode(vm, r, bindings, sourcename, out, raiseerror, lineinfo);
 }
 
 bool ParseAndSaveBinaryAST(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, OutputStream *ostream, bool raiseerror) {
