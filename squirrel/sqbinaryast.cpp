@@ -1405,6 +1405,16 @@ void OutputStream::writeUIntptr(uintptr_t v) {
   writeUInt64(v);
 }
 
+void OutputStream::writeString(const char *s) {
+  while (*s) {
+    writeByte(*s++);
+  }
+}
+
+void OutputStream::writeChar(char c) {
+  writeInt8(c);
+}
+
 void OutputStream::writeRawUInt64(uint64_t v) {
   U64Conv conv;
 

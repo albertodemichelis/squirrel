@@ -153,6 +153,9 @@ public:
 #endif // SQUSEDOUBLE
   }
 
+  void writeString(const char *s);
+  void writeChar(char c);
+
   void writeRawUInt64(uint64_t v);
 };
 
