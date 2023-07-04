@@ -8,6 +8,7 @@
 #include "sqoptimizer.h"
 
 SQOptimizer::SQOptimizer(SQFuncState & func_state) : fs(&func_state), jumps(func_state._lineinfos._alloc_ctx), codeChanged(false) {}
+#undef _DEBUG_DUMP
 
 #ifdef _DEBUG_DUMP
  void SQOptimizer::debugPrintInstructionPos(const SQChar * message, int instructionIndex)

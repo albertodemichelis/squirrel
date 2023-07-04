@@ -286,9 +286,6 @@ public:
 
             _fs->SetStackSize(0);
             o = _fs->BuildProto();
-#ifdef _DEBUG_DUMP
-            _fs->Dump(_funcproto(o));
-#endif
         }
         else {
             if (_raiseerror && _ss(_vm)->_compilererrorhandler) {
@@ -1970,9 +1967,7 @@ public:
         funcstate->SetStackSize(0);
 
         SQFunctionProto *func = funcstate->BuildProto();
-#ifdef _DEBUG_DUMP
-        funcstate->Dump(func);
-#endif
+
         _fs = currchunk;
         _fs->_functions.push_back(func);
         _fs->PopChildState();
@@ -2075,13 +2070,6 @@ static bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HS
     RootBlock * r = ParseToAST(&astArena, vm, rg, up, sourcename, raiseerror);
 
     if (!r) return false;
-
-#ifdef _DEBUG_DUMP
-    FileOutputStream fos(stdout);
-    RenderVisitor v(&fos);
-    v.render(r);
-#endif // _DEBUG_DUMP
-
 
     Arena cgArena(_ss(vm)->_alloc_ctx, "Codegen");
     CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, lineinfo, raiseerror);

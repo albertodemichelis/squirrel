@@ -184,4 +184,7 @@ public:
     SQInstruction _instructions[1];
 };
 
+void Dump(SQFunctionProto *func);
+void Dump(OutputStream *stream, SQFunctionProto *func, bool deep = false);
+
 #endif //_SQFUNCTION_H_

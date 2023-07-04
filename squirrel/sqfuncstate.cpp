@@ -13,8 +13,6 @@
 
 #include <stdarg.h>
 
-#ifdef _DEBUG_DUMP
-
 #define SQ_OPCODE(id) {_SC(#id)},
 
 SQInstructionDesc g_InstrDesc[]={
@@ -22,8 +20,6 @@ SQInstructionDesc g_InstrDesc[]={
 };
 
 #undef SQ_OPCODE
-
-#endif
 
 static void streamprintf(OutputStream *stream, const char *fmt, ...) {
   static char buffer[4096] = { 0 };
@@ -88,13 +84,12 @@ void SQFuncState::Error(const SQChar *err)
     _errfunc(_errtarget,err);
 }
 
-#ifdef _DEBUG_DUMP
-void SQFuncState::Dump(SQFunctionProto *func) {
+void Dump(SQFunctionProto *func) {
     FileOutputStream fos(stdout);
     Dump(&fos, func, false);
 }
 
-void SQFuncState::Dump(OutputStream *stream, SQFunctionProto *func, bool deep)
+void Dump(OutputStream *stream, SQFunctionProto *func, bool deep)
 {
 
     //if (!dump_enable) return ;
@@ -197,7 +192,6 @@ void SQFuncState::Dump(OutputStream *stream, SQFunctionProto *func, bool deep)
     streamprintf(stream, _SC("stack size[%d]\n"), (SQInt32)func->_stacksize);
     streamprintf(stream, _SC("--------------------------------------------------------------------\n\n"));
 }
-#endif
 
 SQInteger SQFuncState::GetNumericConstant(const SQInteger cons)
 {

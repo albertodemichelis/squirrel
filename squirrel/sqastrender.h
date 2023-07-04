@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef _DEBUG_DUMP
-
 #include "sqastio.h"
 
 class RenderVisitor : public Visitor {
@@ -458,5 +456,3 @@ public:
         destruct->initiExpression()->visit(this);
     }
 };
-
-#endif // _DEBUG_DUMP

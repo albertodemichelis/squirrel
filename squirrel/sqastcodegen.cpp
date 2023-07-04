@@ -92,10 +92,6 @@ bool CodegenVisitor::generate(RootBlock *root, SQObjectPtr &out) {
 
         out = _fs->BuildProto();
 
-#ifdef _DEBUG_DUMP
-        _fs->Dump(_funcproto(out));
-#endif // _DEBUG_DUMP
-
         _fs = NULL;
         return true;
     } else {
@@ -844,10 +840,6 @@ void CodegenVisitor::visitFunctionDecl(FunctionDecl *funcDecl) {
     SQFunctionProto *funcProto = _childFs->BuildProto();
 
     _fs->_functions.push_back(funcProto);
-
-#ifdef _DEBUG_DUMP
-    _childFs->Dump(funcProto);
-#endif // _DEBUG_DUMP
 
     _fs->PopChildState();
     _childFs = savedChildFsAtRoot;

@@ -8,10 +8,7 @@ struct SQFuncState
 {
     SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc efunc,void *ed);
     ~SQFuncState();
-#ifdef _DEBUG_DUMP
-    void Dump(SQFunctionProto *func);
-    void Dump(OutputStream *stream, SQFunctionProto *func, bool deep = false);
-#endif
+
     void Error(const SQChar *err);
     SQFuncState *PushChildState(SQSharedState *ss);
     void PopChildState();
