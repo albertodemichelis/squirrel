@@ -172,8 +172,10 @@ public:
 
 class FileOutputStream : public OutputStream {
   FILE *file;
+  bool close;
 public:
 
+  FileOutputStream(FILE *f) : file(f), close(false) {}
   FileOutputStream(const char *filename);
   ~FileOutputStream();
 

@@ -1493,10 +1493,13 @@ void StdOutputStream::seek(size_t p) {
 
 FileOutputStream::FileOutputStream(const char *fileName) {
   file = fopen(fileName, "wb");
+  close = true;
 }
 
 FileOutputStream::~FileOutputStream() {
-  fclose(file);
+  if (close) {
+    fclose(file);
+  }
 }
 
 void FileOutputStream::writeByte(uint8_t v) {
