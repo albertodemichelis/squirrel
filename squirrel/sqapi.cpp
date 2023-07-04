@@ -12,6 +12,9 @@
 #include "sqcompiler.h"
 #include "sqfuncstate.h"
 #include "sqclass.h"
+#include "arena.h"
+#include "sqast.h"
+#include "sqastrender.h"
 
 SQUIRREL_API SQBool sq_tracevar(HSQUIRRELVM v, const HSQOBJECT *container, const HSQOBJECT * key, SQChar * buf, int buf_size)
 {
@@ -1717,22 +1720,103 @@ SQRESULT sq_compilebuffer(HSQUIRRELVM v,const SQChar *s,SQInteger size,const SQC
     return sq_compile(v, buf_lexfeed, &buf, sourcename, raiseerror, bindings);
 }
 
-SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQBool raiseerror) {
-  SQObjectPtr o;
-  if (TranslateASTToBytecode(v, buffer, size, bindings, o, raiseerror, _ss(v)->_debuginfo)) {
-    v->Push(SQClosure::Create(_ss(v), _funcproto(o),
-      _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
-    return SQ_OK;
-  }
-  return SQ_ERROR;
+SQRESULT sq_compilewithast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo, const HSQOBJECT *bindings) {
+    Arena astArena(_ss(v)->_alloc_ctx, "AST Arena");
+
+    Node *ast = sq_parsetoast(v, s, size, sourcename, raiseerror, &astArena);
+
+    if (!ast)
+        return SQ_ERROR;
+
+    return sq_translateasttobytecode(v, ast, bindings, sourcename, raiseerror, debugInfo);
+}
+
+SQRESULT sq_compileonepass(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo, const HSQOBJECT *bindings)
+{
+    BufState buf;
+    buf.buf = s;
+    buf.size = size;
+    buf.ptr = 0;
+
+    SQObjectPtr o;
+    if (CompileOnePass(v, buf_lexfeed, &buf, bindings, sourcename, o, raiseerror, debugInfo)) {
+        v->Push(SQClosure::Create(_ss(v), _funcproto(o),
+            _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
+        return SQ_OK;
+    }
+
+    return SQ_ERROR;
+}
+
+SQRESULT sq_translatebinaryasttobytecode(HSQUIRRELVM v, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQBool raiseerror) {
+    SQObjectPtr o;
+    if (TranslateBinaryASTToBytecode(v, buffer, size, bindings, o, raiseerror, _ss(v)->_debuginfo)) {
+        v->Push(SQClosure::Create(_ss(v), _funcproto(o),
+          _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
+        return SQ_OK;
+    }
+    return SQ_ERROR;
 }
 
 SQRESULT sq_parsetobinaryast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, OutputStream *ostream, SQBool raiseerror) {
-  BufState buf;
-  buf.buf = s;
-  buf.size = size;
-  buf.ptr = 0;
-  return ParseAndSaveBinaryAST(v, buf_lexfeed, &buf, sourcename, ostream, raiseerror) ? SQ_OK : SQ_ERROR;
+    BufState buf;
+    buf.buf = s;
+    buf.size = size;
+    buf.ptr = 0;
+    return ParseAndSaveBinaryAST(v, buf_lexfeed, &buf, sourcename, ostream, raiseerror) ? SQ_OK : SQ_ERROR;
+}
+
+Node *sq_parsetoast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, Arena *arena)
+{
+    BufState buf;
+    buf.buf = s;
+    buf.size = size;
+    buf.ptr = 0;
+    return (Node *)ParseToAST(arena, v, buf_lexfeed, &buf, sourcename, raiseerror);
+}
+
+void sq_dumpast(HSQUIRRELVM v, Node *ast, OutputStream *s)
+{
+    RenderVisitor rv(s);
+    rv.render(ast);
+}
+
+void sq_dumpbytecode(HSQUIRRELVM v, HSQOBJECT obj, OutputStream *s)
+{
+    if (sq_isfunction(obj)) {
+        Dump(s, _funcproto(obj), true);
+    }
+    else if (sq_isclosure(obj)) {
+        SQFunctionProto *proto = _closure(obj)->_function;
+        Dump(s, proto, true);
+    }
+    else {
+        s->writeString("Object is not a FunctionProto");
+    }
+}
+
+SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, Node *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo)
+{
+    SQObjectPtr o;
+    if (TranslateASTToBytecode(v, ast, bindings, sourcename, o, raiseerror, debugInfo))
+    {
+        v->Push(SQClosure::Create(_ss(v), _funcproto(o),
+            _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
+        return SQ_OK;
+    }
+    return SQ_ERROR;
+}
+
+Arena *sq_createarena(HSQUIRRELVM v, const SQChar *name)
+{
+    void *ptr = sq_malloc(_ss(v)->_alloc_ctx, sizeof(Arena));
+    return new(ptr) Arena(_ss(v)->_alloc_ctx, name);
+}
+
+void sq_destroyarena(HSQUIRRELVM v, Arena *arena)
+{
+    arena->~Arena();
+    sq_free(_ss(v)->_alloc_ctx, arena, sizeof(Arena));
 }
 
 void sq_move(HSQUIRRELVM dest,HSQUIRRELVM src,SQInteger idx)
