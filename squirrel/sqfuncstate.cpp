@@ -9,6 +9,9 @@
 #include "sqtable.h"
 #include "sqopcodes.h"
 #include "sqfuncstate.h"
+#include "sqastio.h"
+
+#include <stdarg.h>
 
 #ifdef _DEBUG_DUMP
 
@@ -21,14 +24,24 @@ SQInstructionDesc g_InstrDesc[]={
 #undef SQ_OPCODE
 
 #endif
-void DumpLiteral(FILE *stream, SQObjectPtr &o)
+
+static void streamprintf(OutputStream *stream, const char *fmt, ...) {
+  static char buffer[4096] = { 0 };
+  va_list vl;
+  va_start(vl, fmt);
+  vsnprintf(buffer, 4096, fmt, vl);
+  va_end(vl);
+  stream->writeString(buffer);
+}
+
+void DumpLiteral(OutputStream *stream, SQObjectPtr &o)
 {
     switch (sq_type(o)) {
-        case OT_STRING: fprintf(stream, _SC("\"%s\""), _stringval(o)); break;
-        case OT_FLOAT: fprintf(stream, _SC("{%f}"), _float(o)); break;
-        case OT_INTEGER: fprintf(stream, _SC("{") _PRINT_INT_FMT _SC("}"), _integer(o)); break;
-        case OT_BOOL: fprintf(stream, _SC("%s"), _integer(o) ? _SC("true") : _SC("false")); break;
-        default: fprintf(stream, _SC("(%s %p)"), GetTypeName(o), (void*)_rawval(o)); break; //shut up compiler
+        case OT_STRING: streamprintf(stream, _SC("\"%s\""), _stringval(o)); break;
+        case OT_FLOAT: streamprintf(stream, _SC("{%f}"), _float(o)); break;
+        case OT_INTEGER: streamprintf(stream, _SC("{") _PRINT_INT_FMT _SC("}"), _integer(o)); break;
+        case OT_BOOL: streamprintf(stream, _SC("%s"), _integer(o) ? _SC("true") : _SC("false")); break;
+        default: streamprintf(stream, _SC("(%s %p)"), GetTypeName(o), (void*)_rawval(o)); break; //shut up compiler
     }
 }
 
@@ -77,117 +90,112 @@ void SQFuncState::Error(const SQChar *err)
 
 #ifdef _DEBUG_DUMP
 void SQFuncState::Dump(SQFunctionProto *func) {
-    Dump(stdout, func);
+    FileOutputStream fos(stdout);
+    Dump(&fos, func, false);
 }
 
-void SQFuncState::Dump(FILE *stream, SQFunctionProto *func)
+void SQFuncState::Dump(OutputStream *stream, SQFunctionProto *func, bool deep)
 {
+
     //if (!dump_enable) return ;
     SQUnsignedInteger n = 0, i;
     SQInteger si;
-    fprintf(stream, _SC("SQInstruction sizeof %d\n"), (SQInt32)sizeof(SQInstruction));
-    fprintf(stream, _SC("SQObject sizeof %d\n"), (SQInt32)sizeof(SQObject));
-    fprintf(stream, _SC("--------------------------------------------------------------------\n"));
-    fprintf(stream, _SC("*****FUNCTION [%s]\n"), sq_type(func->_name) == OT_STRING ? _stringval(func->_name) : _SC("unknown"));
-    fprintf(stream, _SC("-----LITERALS\n"));
-    SQObjectPtr refidx, key, val;
-    SQInteger idx;
-    SQObjectPtrVec templiterals(_ss->_alloc_ctx);
-    templiterals.resize(_nliterals);
-    while ((idx = _table(_literals)->Next(false, refidx, key, val)) != -1) {
-        refidx = idx;
-        templiterals[_integer(val)] = key;
+    if (deep) {
+        for (i = 0; i < func->_nfunctions; ++i) {
+            SQObjectPtr &f = func->_functions[i];
+            assert(sq_isfunction(f));
+            Dump(stream, _funcproto(f), deep);
+        }
     }
-    for (i = 0; i < templiterals.size(); i++) {
-        fprintf(stream, _SC("[%d] "), (SQInt32)n);
-        DumpLiteral(stream, templiterals[i]);
-        fprintf(stream, _SC("\n"));
-        n++;
+    streamprintf(stream, _SC("SQInstruction sizeof %d\n"), (SQInt32)sizeof(SQInstruction));
+    streamprintf(stream, _SC("SQObject sizeof %d\n"), (SQInt32)sizeof(SQObject));
+    streamprintf(stream, _SC("--------------------------------------------------------------------\n"));
+    streamprintf(stream, _SC("*****FUNCTION [%s]\n"), sq_type(func->_name) == OT_STRING ? _stringval(func->_name) : _SC("unknown"));
+    streamprintf(stream, _SC("-----LITERALS\n"));
+
+    for (i = 0; i < func->_nliterals; ++i) {
+        streamprintf(stream, _SC("[%d] "), (SQInt32)i);
+        DumpLiteral(stream, func->_literals[i]);
+        streamprintf(stream, _SC("\n"));
     }
-    fprintf(stream, _SC("-----PARAMS\n"));
-    if (_varparams)
-        fprintf(stream, _SC("<<VARPARAMS>>\n"));
+    streamprintf(stream, _SC("-----PARAMS\n"));
+    if (func->_varparams)
+        streamprintf(stream, _SC("<<VARPARAMS>>\n"));
     n = 0;
-    for (i = 0; i < _parameters.size(); i++) {
-        fprintf(stream, _SC("[%d] "), (SQInt32)n);
-        DumpLiteral(stream, _parameters[i]);
-        fprintf(stream, _SC("\n"));
+    for (i = 0; i < func->_nparameters; i++) {
+        streamprintf(stream, _SC("[%d] "), (SQInt32)n);
+        DumpLiteral(stream, func->_parameters[i]);
+        streamprintf(stream, _SC("\n"));
         n++;
     }
-    fprintf(stream, _SC("-----LOCALS\n"));
+    streamprintf(stream, _SC("-----LOCALS\n"));
     for (si = 0; si < func->_nlocalvarinfos; si++) {
         SQLocalVarInfo lvi = func->_localvarinfos[si];
-        fprintf(stream, _SC("[%d] %s \t%d %d\n"), (SQInt32)lvi._pos, _stringval(lvi._name), (SQInt32)lvi._start_op, (SQInt32)lvi._end_op);
+        streamprintf(stream, _SC("[%d] %s \t%d %d\n"), (SQInt32)lvi._pos, _stringval(lvi._name), (SQInt32)lvi._start_op, (SQInt32)lvi._end_op);
         n++;
     }
-    fprintf(stream, _SC("-----LINE INFO\n"));
-    for (i = 0; i < _lineinfos.size(); i++) {
-        SQLineInfo li = _lineinfos[i];
-        fprintf(stream, _SC("op [%d] line [%d] \n"), (SQInt32)li._op, (SQInt32)li._line);
+    streamprintf(stream, _SC("-----LINE INFO\n"));
+    for (i = 0; i < func->_nlineinfos; i++) {
+        SQLineInfo li = func->_lineinfos[i];
+        streamprintf(stream, _SC("op [%d] line [%d] \n"), (SQInt32)li._op, (SQInt32)li._line);
         n++;
     }
-    fprintf(stream, _SC("-----dump\n"));
+    streamprintf(stream, _SC("-----dump\n"));
     n = 0;
-    for (i = 0; i < _instructions.size(); i++) {
-        SQInstruction &inst = _instructions[i];
+    for (i = 0; i < func->_ninstructions; i++) {
+        SQInstruction &inst = func->_instructions[i];
         if (inst.op == _OP_LOAD || inst.op == _OP_DLOAD || inst.op == _OP_PREPCALLK || inst.op == _OP_GETK) {
 
             SQInteger lidx = inst._arg1;
-            fprintf(stream, _SC("[%03d] %15s %d "), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0);
+            streamprintf(stream, _SC("[%03d] %15s %d "), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0);
             if (lidx >= 0xFFFFFFFF)
-                fprintf(stream, _SC("null"));
+                streamprintf(stream, _SC("null"));
             else {
-                SQInteger refidx;
-                SQObjectPtr val, key, refo;
-                while (((refidx = _table(_literals)->Next(false, refo, key, val)) != -1) && (_integer(val) != lidx)) {
-                    refo = refidx;
-                }
+                assert(lidx < func->_nliterals);
+                SQObjectPtr key = func->_literals[lidx];
                 DumpLiteral(stream, key);
             }
             if (inst.op != _OP_DLOAD) {
-                fprintf(stream, _SC(" %d %d \n"), inst._arg2, inst._arg3);
+                streamprintf(stream, _SC(" %d %d \n"), inst._arg2, inst._arg3);
             }
             else {
-                fprintf(stream, _SC(" %d "), inst._arg2);
+                streamprintf(stream, _SC(" %d "), inst._arg2);
                 lidx = inst._arg3;
                 if (lidx >= 0xFFFFFFFF)
-                    fprintf(stream, _SC("null"));
+                    streamprintf(stream, _SC("null"));
                 else {
-                    SQInteger refidx;
-                    SQObjectPtr val, key, refo;
-                    while (((refidx = _table(_literals)->Next(false, refo, key, val)) != -1) && (_integer(val) != lidx)) {
-                        refo = refidx;
-                    }
+                    assert(lidx < func->_nliterals);
+                    SQObjectPtr key = func->_literals[lidx];
                     DumpLiteral(stream, key);
-                    fprintf(stream, _SC("\n"));
+                    streamprintf(stream, _SC("\n"));
                 }
             }
         }
         else if (inst.op == _OP_LOADFLOAT) {
-            fprintf(stream, _SC("[%03d] %15s %d %f %d %d\n"), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0, *((SQFloat*)&inst._arg1), inst._arg2, inst._arg3);
+            streamprintf(stream, _SC("[%03d] %15s %d %f %d %d\n"), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0, *((SQFloat*)&inst._arg1), inst._arg2, inst._arg3);
         }
         /*  else if(inst.op==_OP_ARITH){
                 printf(_SC("[%03d] %15s %d %d %d %c\n"),n,g_InstrDesc[inst.op].name,inst._arg0,inst._arg1,inst._arg2,inst._arg3);
             }*/
         else {
-            fprintf(stream, _SC("[%03d] %15s %d %d %d %d"), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0, inst._arg1, inst._arg2, inst._arg3);
+            streamprintf(stream, _SC("[%03d] %15s %d %d %d %d"), (SQInt32)n, g_InstrDesc[inst.op].name, inst._arg0, inst._arg1, inst._arg2, inst._arg3);
             switch (inst.op) {
             case _OP_JMP: case _OP_JCMP: case _OP_JZ: case _OP_AND: case _OP_OR: case _OP_PUSHTRAP: case _OP_FOREACH:
-                fprintf(stream, _SC("  jump to %d"), i + inst._arg1 + 1);
+                streamprintf(stream, _SC("  jump to %d"), i + inst._arg1 + 1);
                 break;
             case _OP_NULLCOALESCE: case _OP_POSTFOREACH:
-                fprintf(stream, _SC("  jump to %d"), i + inst._arg1);
+                streamprintf(stream, _SC("  jump to %d"), i + inst._arg1);
                 break;
             default:
                 break;
             }
-            fprintf(stream, _SC("\n"));
+            streamprintf(stream, _SC("\n"));
         }
         n++;
     }
-    fprintf(stream, _SC("-----\n"));
-    fprintf(stream, _SC("stack size[%d]\n"), (SQInt32)func->_stacksize);
-    fprintf(stream, _SC("--------------------------------------------------------------------\n\n"));
+    streamprintf(stream, _SC("-----\n"));
+    streamprintf(stream, _SC("stack size[%d]\n"), (SQInt32)func->_stacksize);
+    streamprintf(stream, _SC("--------------------------------------------------------------------\n\n"));
 }
 #endif
 

@@ -10,7 +10,7 @@ struct SQFuncState
     ~SQFuncState();
 #ifdef _DEBUG_DUMP
     void Dump(SQFunctionProto *func);
-    void Dump(FILE *stream, SQFunctionProto *func);
+    void Dump(OutputStream *stream, SQFunctionProto *func, bool deep = false);
 #endif
     void Error(const SQChar *err);
     SQFuncState *PushChildState(SQSharedState *ss);
