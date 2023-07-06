@@ -4,7 +4,15 @@
 
 struct SQVM;
 class OutputStream;
-class RootBlock;
+namespace sqast
+{
+  class RootBlock;
+  class Node;
+}
+
+using SqAstNode = sqast::Node;
+
+class Arena;
 
 #define TK_IDENTIFIER   258
 #define TK_STRING_LITERAL   259
@@ -154,8 +162,8 @@ typedef void(*CompilerErrorFunc)(void *ud, const SQChar *s);
 bool Compile(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo, bool use_ast);
 bool CompileWithAst(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo);
 bool CompileOnePass(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo);
-RootBlock *ParseToAST(Arena *astArena, SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, bool raiseerror);
+sqast::RootBlock *ParseToAST(Arena *astArena, SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, bool raiseerror);
 bool ParseAndSaveBinaryAST(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, OutputStream *ostream, bool raiseerror);
-bool TranslateASTToBytecode(SQVM *vm, Node *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo);
+bool TranslateASTToBytecode(SQVM *vm, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo);
 bool TranslateBinaryASTToBytecode(SQVM *vm, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQObjectPtr &out, bool raiseerror, bool lineinfo);
 #endif //_SQCOMPILER_H_

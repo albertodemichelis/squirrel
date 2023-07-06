@@ -2088,7 +2088,7 @@ bool Compile(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bind
         : CompileOnePass(vm, rg, up, bindings, sourcename, out, raiseerror, lineinfo);
 }
 
-bool TranslateASTToBytecode(SQVM *vm, Node *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
+bool TranslateASTToBytecode(SQVM *vm, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
 {
     Arena cgArena(_ss(vm)->_alloc_ctx, "Codegen");
     CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, lineinfo, raiseerror);

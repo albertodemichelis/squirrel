@@ -94,7 +94,7 @@ struct DumpOptions {
   const char *bytecodeDumpFileName;
 };
 
-static void dumpAst_callback(HSQUIRRELVM vm, Node *ast, void *opts)
+static void dumpAst_callback(HSQUIRRELVM vm, SqAstNode *ast, void *opts)
 {
     if (opts == NULL)
       return;

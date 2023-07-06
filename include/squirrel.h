@@ -62,7 +62,12 @@ struct SQOuter;
 
 class OutputStream;
 class Arena;
-class Node;
+namespace sqast
+{
+  class Node;
+}
+
+using SqAstNode = sqast::Node;
 
 #include "sqconfig.h"
 
@@ -245,10 +250,10 @@ SQUIRREL_API SQRESULT sq_compilebuffer(HSQUIRRELVM v,const SQChar *s,SQInteger s
 SQUIRREL_API SQRESULT sq_parsetobinaryast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, OutputStream *ostream, SQBool raiseerror);
 SQUIRREL_API SQRESULT sq_translatebinaryasttobytecode(HSQUIRRELVM v, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQBool raiseerror);
 
-SQUIRREL_API Node *sq_parsetoast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, Arena *arena);
-SQUIRREL_API SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, Node *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo);
+SQUIRREL_API SqAstNode *sq_parsetoast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, Arena *arena);
+SQUIRREL_API SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo);
 
-SQUIRREL_API void sq_dumpast(HSQUIRRELVM v, Node *ast, OutputStream *s);
+SQUIRREL_API void sq_dumpast(HSQUIRRELVM v, SqAstNode *ast, OutputStream *s);
 SQUIRREL_API void sq_dumpbytecode(HSQUIRRELVM v, HSQOBJECT obj, OutputStream *s);
 
 SQUIRREL_API Arena *sq_createarena(HSQUIRRELVM v, const SQChar *name);

@@ -23,7 +23,7 @@ class RenderVisitor : public Visitor {
         case TO_LE: return " <= ";
         case TO_LT: return " < ";
         case TO_IN: return " IN ";
-        case TO_INSTANCEOF: " INSTANCEOF ";
+        case TO_INSTANCEOF: return " INSTANCEOF ";
         case TO_USHR: return " >>> ";
         case TO_SHR: return " >> ";
         case TO_SHL: return " << ";

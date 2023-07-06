@@ -180,7 +180,7 @@ bool SqModules::compileScriptImpl(const std::vector<char> &buf, const char *sour
   if (compilationOptions.useAST)
   {
     ArenaGuard ag(sqvm, "AST");
-    Node *ast = sq_parsetoast(sqvm, &buf[0], buf.size() - 1, sourcename, compilationOptions.raiseError, ag.arena);
+    auto *ast = sq_parsetoast(sqvm, &buf[0], buf.size() - 1, sourcename, compilationOptions.raiseError, ag.arena);
     if (!ast)
     {
       return true;

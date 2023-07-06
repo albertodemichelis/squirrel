@@ -7,6 +7,7 @@ const char* sq_tree_op_names[] = {
 };
 #undef DEF_TREE_OP
 
+using namespace sqast;
 
 void Node::visitChildren(Visitor *visitor) {
     switch (op())

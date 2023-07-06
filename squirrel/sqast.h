@@ -98,7 +98,10 @@ enum TreeOp {
 
 };
 
+namespace sqast {
+
 extern const char* sq_tree_op_names[];
+
 
 class Visitor;
 class Transformer;
@@ -1379,5 +1382,8 @@ Node *Node::transform(T *transformer) {
   }
 }
 
+} // namespace sqast
+
+using namespace sqast;
 
 #endif // _SQAST_H_

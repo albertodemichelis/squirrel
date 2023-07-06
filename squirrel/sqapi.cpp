@@ -1766,7 +1766,7 @@ SQRESULT sq_parsetobinaryast(HSQUIRRELVM v, const SQChar *s, SQInteger size, con
     return ParseAndSaveBinaryAST(v, buf_lexfeed, &buf, sourcename, ostream, raiseerror) ? SQ_OK : SQ_ERROR;
 }
 
-Node *sq_parsetoast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, Arena *arena)
+SqAstNode *sq_parsetoast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, Arena *arena)
 {
     BufState buf;
     buf.buf = s;
@@ -1775,7 +1775,7 @@ Node *sq_parsetoast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar
     return (Node *)ParseToAST(arena, v, buf_lexfeed, &buf, sourcename, raiseerror);
 }
 
-void sq_dumpast(HSQUIRRELVM v, Node *ast, OutputStream *s)
+void sq_dumpast(HSQUIRRELVM v, SqAstNode *ast, OutputStream *s)
 {
     RenderVisitor rv(s);
     rv.render(ast);
@@ -1795,7 +1795,7 @@ void sq_dumpbytecode(HSQUIRRELVM v, HSQOBJECT obj, OutputStream *s)
     }
 }
 
-SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, Node *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo)
+SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo)
 {
     SQObjectPtr o;
     if (TranslateASTToBytecode(v, ast, bindings, sourcename, o, raiseerror, debugInfo))
