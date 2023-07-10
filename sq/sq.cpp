@@ -101,14 +101,22 @@ static void dumpAst_callback(HSQUIRRELVM vm, SqAstNode *ast, void *opts)
     DumpOptions *dumpOpt = (DumpOptions *)opts;
     if (dumpOpt->astDump)
     {
-        FileOutputStream fos = dumpOpt->astDumpFileName ? FileOutputStream(dumpOpt->astDumpFileName) : FileOutputStream(stdout);
-        if (fos.valid())
+        if (dumpOpt->astDumpFileName)
         {
-            sq_dumpast(vm, ast, &fos);
+            FileOutputStream fos(dumpOpt->astDumpFileName);
+            if (fos.valid())
+            {
+                sq_dumpast(vm, ast, &fos);
+            }
+            else
+            {
+                printf(_SC("Error: cannot open AST dump file '%s'\n"), dumpOpt->astDumpFileName);
+            }
         }
         else
         {
-            printf(_SC("Error: cannot open AST dump file '%s'\n"), dumpOpt->astDumpFileName);
+            FileOutputStream fos(stdout);
+            sq_dumpast(vm, ast, &fos);
         }
     }
 }
@@ -120,14 +128,22 @@ static void dumpBytecodeAst_callback(HSQUIRRELVM vm, HSQOBJECT obj, void *opts)
     DumpOptions *dumpOpt = (DumpOptions *)opts;
     if (dumpOpt->bytecodeDump)
     {
-        FileOutputStream fos = dumpOpt->bytecodeDumpFileName ? FileOutputStream(dumpOpt->bytecodeDumpFileName) : FileOutputStream(stdout);
-        if (fos.valid())
+        if (dumpOpt->bytecodeDumpFileName)
         {
-            sq_dumpbytecode(vm, obj, &fos);
+            FileOutputStream fos(dumpOpt->bytecodeDumpFileName);
+            if (fos.valid())
+            {
+                sq_dumpbytecode(vm, obj, &fos);
+            }
+            else
+            {
+                printf(_SC("Error: cannot open Bytecode dump file '%s'\n"), dumpOpt->bytecodeDumpFileName);
+            }
         }
         else
         {
-            printf(_SC("Error: cannot open Bytecode dump file '%s'\n"), dumpOpt->bytecodeDumpFileName);
+            FileOutputStream fos(stdout);
+            sq_dumpbytecode(vm, obj, &fos);
         }
     }
 }
