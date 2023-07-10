@@ -202,7 +202,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                         if (((arg + 1) < argc) && argv[arg + 1][0] != '-')
                         {
                             const char *fileName = argv[++arg];
-                            diagFile = fopen(fileName, "w");
+                            diagFile = fopen(fileName, "wb");
                             if (diagFile == NULL)
                             {
                                 printf(_SC("Cannot open diagnostic output file '%s'\n"), fileName);
