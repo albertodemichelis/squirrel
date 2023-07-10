@@ -1,0 +1,1 @@
+testData/diagnostics/50k_lambdas.nut line = (1) column = (94) : error AST too big. Consider simplifing it
