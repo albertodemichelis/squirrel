@@ -281,7 +281,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                 Sqrat::Object exports;
                 std::string errMsg;
                 if (!module_mgr->requireModule(filename, true, "__main__", exports, errMsg)) {
-                    printf(_SC("Error [%s]\n"), errMsg.c_str());
+                    fprintf(stderr, _SC("Error [%s]\n"), errMsg.c_str());
                     return _ERROR;
                 }
                 return _DONE;
