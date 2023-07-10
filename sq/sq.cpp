@@ -462,7 +462,6 @@ int main(int argc, char* argv[])
     sq_close(v);
 
 #if defined(_MSC_VER) && defined(_DEBUG)
-    _getch();
     _CrtMemDumpAllObjectsSince( NULL );
 #endif
     return int(retval);
