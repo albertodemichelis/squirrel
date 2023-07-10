@@ -1,0 +1,1 @@
+testData/diagnostics/50k_nested_tables.nut line = (1) column = (102) : error AST too big. Consider simplifing it

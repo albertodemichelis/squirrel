@@ -1,0 +1,1 @@
+testData/diagnostics/need_space_after_int.nut line = (2) column = (11) : error malformed number

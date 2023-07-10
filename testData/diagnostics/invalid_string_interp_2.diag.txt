@@ -1,0 +1,1 @@
+testData/diagnostics/invalid_string_interp_2.nut line = (1) column = (11) : error recursion in reader macro

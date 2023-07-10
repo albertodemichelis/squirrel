@@ -1,0 +1,1 @@
+testData/diagnostics/delete_base.nut line = (1) column = (6) : error can't delete 'base'

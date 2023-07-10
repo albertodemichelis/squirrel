@@ -1,0 +1,1 @@
+testData/diagnostics/var_scope_3.nut line = (7) column = (8) : error Unknown variable [x]

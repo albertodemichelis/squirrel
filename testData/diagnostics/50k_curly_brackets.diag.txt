@@ -1,0 +1,1 @@
+testData/diagnostics/50k_curly_brackets.nut line = (2) column = (124) : error AST too big. Consider simplifing it

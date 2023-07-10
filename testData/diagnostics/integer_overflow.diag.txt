@@ -1,0 +1,1 @@
+testData/diagnostics/integer_overflow.nut line = (1) column = (48) : error integer constant overflow

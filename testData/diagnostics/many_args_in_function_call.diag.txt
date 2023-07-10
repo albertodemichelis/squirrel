@@ -1,0 +1,1 @@
+testData/diagnostics/many_args_in_function_call.nut line = (-1) column = (-1) : error internal compiler error: too many locals

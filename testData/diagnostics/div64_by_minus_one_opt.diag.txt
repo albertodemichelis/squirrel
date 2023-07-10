@@ -1,0 +1,1 @@
+testData/diagnostics/div64_by_minus_one_opt.nut line = (1) column = (28) : error too many digits for an Hex number

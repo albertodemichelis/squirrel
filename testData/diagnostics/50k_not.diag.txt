@@ -1,0 +1,1 @@
+testData/diagnostics/50k_not.nut line = (2) column = (36) : error AST too big. Consider simplifing it

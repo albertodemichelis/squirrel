@@ -1,0 +1,1 @@
+testData/diagnostics/float_overflow.nut line = (1) column = (50) : error float constant overflow

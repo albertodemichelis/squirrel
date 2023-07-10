@@ -1,0 +1,1 @@
+testData/diagnostics/assign_and_crash.nut line = (1) column = (29) : error malformed number
