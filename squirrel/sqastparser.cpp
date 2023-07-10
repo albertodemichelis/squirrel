@@ -8,6 +8,26 @@
 #include "sqcompiler.h"
 #include <stdarg.h>
 
+struct NestingChecker {
+    SQParser *_p;
+    const uint32_t _max_depth;
+    uint32_t _depth;
+    NestingChecker(SQParser *p) : _p(p), _depth(0), _max_depth(500) {
+        inc();
+    }
+
+    ~NestingChecker() {
+        _p->_depth -= _depth;
+    }
+
+    void inc() {
+        if (_p->_depth > _max_depth) {
+            _p->Error("AST too big. Consider simplifing it");
+        }
+        _p->_depth += 1;
+        _depth += 1;
+    }
+};
 
 SQParser::SQParser(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, Arena *astArena, bool raiseerror)
     : _lex(_ss(v))
@@ -20,6 +40,7 @@ SQParser::SQParser(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* so
     _compilererror[0] = _SC('\0');
     _expression_context = SQE_REGULAR;
     _lang_features = _ss(v)->defaultLangFeatures;
+    _depth = 0;
 }
 
 
@@ -212,6 +233,7 @@ RootBlock* SQParser::parse()
 
 Block* SQParser::parseStatements()
 {
+    NestingChecker nc(this);
     Block *result = newNode<Block>(arena());
     while(_token != _SC('}') && _token != TK_DEFAULT && _token != TK_CASE) {
         Statement *stmt = parseStatement();
@@ -224,6 +246,7 @@ Block* SQParser::parseStatements()
 
 Statement* SQParser::parseStatement(bool closeframe)
 {
+    NestingChecker nc(this);
     Statement *result = NULL;
     SQInteger l = _lex._currentline, c = _lex._currentcolumn;
 
@@ -311,6 +334,7 @@ Statement* SQParser::parseStatement(bool closeframe)
 
 Expr* SQParser::parseCommaExpr(SQExpressionContext expression_context)
 {
+    NestingChecker nc(this);
     SQInteger l = _lex._currentline;
     SQInteger c = _lex._currentcolumn;
     Expr *expr = Expression(expression_context);
@@ -333,6 +357,7 @@ Expr* SQParser::parseCommaExpr(SQExpressionContext expression_context)
 
 Expr* SQParser::Expression(SQExpressionContext expression_context)
 {
+    NestingChecker nc(this);
     SQExpressionContext saved_expression_context = _expression_context;
     _expression_context = expression_context;
 
@@ -427,8 +452,10 @@ template<typename T> Expr* SQParser::BIN_EXP(T f, enum TreeOp top, Expr *lhs)
 
 Expr* SQParser::LogicalNullCoalesceExp()
 {
+    NestingChecker nc(this);
     Expr *lhs = LogicalOrExp();
     for (;;) {
+        nc.inc();
         if (_token == TK_NULLCOALESCE) {
             Lex();
 
@@ -442,8 +469,10 @@ Expr* SQParser::LogicalNullCoalesceExp()
 
 Expr* SQParser::LogicalOrExp()
 {
+    NestingChecker nc(this);
     Expr *lhs = LogicalAndExp();
     for (;;) {
+        nc.inc();
         if (_token == TK_OR) {
             Lex();
 
@@ -456,8 +485,10 @@ Expr* SQParser::LogicalOrExp()
 
 Expr* SQParser::LogicalAndExp()
 {
+    NestingChecker nc(this);
     Expr *lhs = BitwiseOrExp();
     for (;;) {
+        nc.inc();
         switch (_token) {
         case TK_AND: {
             Lex();
@@ -473,8 +504,10 @@ Expr* SQParser::LogicalAndExp()
 
 Expr* SQParser::BitwiseOrExp()
 {
+    NestingChecker nc(this);
     Expr *lhs = BitwiseXorExp();
     for (;;) {
+        nc.inc();
         if (_token == _SC('|')) {
             return BIN_EXP(&SQParser::BitwiseOrExp, TO_OR, lhs);
         }
@@ -484,8 +517,10 @@ Expr* SQParser::BitwiseOrExp()
 
 Expr* SQParser::BitwiseXorExp()
 {
+    NestingChecker nc(this);
     Expr * lhs = BitwiseAndExp();
     for (;;) {
+        nc.inc();
         if (_token == _SC('^')) {
             lhs = BIN_EXP(&SQParser::BitwiseAndExp, TO_XOR, lhs);
         }
@@ -495,8 +530,10 @@ Expr* SQParser::BitwiseXorExp()
 
 Expr* SQParser::BitwiseAndExp()
 {
+    NestingChecker nc(this);
     Expr *lhs = EqExp();
     for (;;) {
+        nc.inc();
         if (_token == _SC('&')) {
             lhs = BIN_EXP(&SQParser::EqExp, TO_AND, lhs);
         }
@@ -506,8 +543,10 @@ Expr* SQParser::BitwiseAndExp()
 
 Expr* SQParser::EqExp()
 {
+    NestingChecker nc(this);
     Expr *lhs = CompExp();
     for (;;) {
+        nc.inc();
         switch (_token) {
         case TK_EQ: lhs = BIN_EXP(&SQParser::CompExp, TO_EQ, lhs); break;
         case TK_NE: lhs = BIN_EXP(&SQParser::CompExp, TO_NE, lhs); break;
@@ -519,8 +558,10 @@ Expr* SQParser::EqExp()
 
 Expr* SQParser::CompExp()
 {
+    NestingChecker nc(this);
     Expr *lhs = ShiftExp();
     for (;;) {
+        nc.inc();
         switch (_token) {
         case _SC('>'): lhs = BIN_EXP(&SQParser::ShiftExp, TO_GT, lhs); break;
         case _SC('<'): lhs = BIN_EXP(&SQParser::ShiftExp, TO_LT, lhs); break;
@@ -547,8 +588,10 @@ Expr* SQParser::CompExp()
 
 Expr* SQParser::ShiftExp()
 {
+    NestingChecker nc(this);
     Expr *lhs = PlusExp();
     for (;;) {
+        nc.inc();
         switch (_token) {
         case TK_USHIFTR: lhs = BIN_EXP(&SQParser::PlusExp, TO_USHR, lhs); break;
         case TK_SHIFTL: lhs = BIN_EXP(&SQParser::PlusExp, TO_SHL, lhs); break;
@@ -560,8 +603,10 @@ Expr* SQParser::ShiftExp()
 
 Expr* SQParser::PlusExp()
 {
+    NestingChecker nc(this);
     Expr *lhs = MultExp();
     for (;;) {
+        nc.inc();
         switch (_token) {
         case _SC('+'): lhs = BIN_EXP(&SQParser::MultExp, TO_ADD, lhs); break;
         case _SC('-'): lhs = BIN_EXP(&SQParser::MultExp, TO_SUB, lhs); break;
@@ -573,8 +618,10 @@ Expr* SQParser::PlusExp()
 
 Expr* SQParser::MultExp()
 {
+    NestingChecker nc(this);
     Expr *lhs = PrefixedExpr();
     for (;;) {
+        nc.inc();
         switch (_token) {
         case _SC('*'): lhs = BIN_EXP(&SQParser::PrefixedExpr, TO_MUL, lhs); break;
         case _SC('/'): lhs = BIN_EXP(&SQParser::PrefixedExpr, TO_DIV, lhs); break;
@@ -587,11 +634,13 @@ Expr* SQParser::MultExp()
 
 Expr* SQParser::PrefixedExpr()
 {
+    NestingChecker nc(this);
     //if 'pos' != -1 the previous variable is a local variable
     SQInteger pos;
     Expr *e = Factor(pos);
     bool nextIsNullable = false;
     for(;;) {
+        nc.inc();
         switch(_token) {
         case _SC('.'):
         case TK_NULLGETSTR: {
@@ -652,6 +701,7 @@ Expr* SQParser::PrefixedExpr()
 
 Expr* SQParser::Factor(SQInteger &pos)
 {
+    NestingChecker nc(this);
     Expr *r = NULL;
 
     SQInteger l = _lex._currentline, c = _lex._currentcolumn;
@@ -785,12 +835,14 @@ Expr* SQParser::Factor(SQInteger &pos)
 
 Expr* SQParser::UnaryOP(enum TreeOp op)
 {
+    NestingChecker nc(this);
     Expr *arg = PrefixedExpr();
     return newNode<UnExpr>(op, arg);
 }
 
 void SQParser::ParseTableOrClass(TableDecl *decl, SQInteger separator, SQInteger terminator)
 {
+    NestingChecker nc(this);
     NewObjectType otype = separator==_SC(',') ? NOT_TABLE : NOT_CLASS;
 
     while(_token != terminator) {
@@ -872,6 +924,7 @@ void SQParser::ParseTableOrClass(TableDecl *decl, SQInteger separator, SQInteger
 
 Decl* SQParser::parseLocalDeclStatement(bool assignable)
 {
+    NestingChecker nc(this);
     Lex();
     SQInteger l = _lex._currentline, c = _lex._currentcolumn;
     if (_token == TK_FUNCTION) {
@@ -967,6 +1020,7 @@ Decl* SQParser::parseLocalDeclStatement(bool assignable)
 
 Statement* SQParser::IfBlock()
 {
+    NestingChecker nc(this);
     Statement *stmt = NULL;
     if (_token == _SC('{'))
     {
@@ -987,6 +1041,7 @@ Statement* SQParser::IfBlock()
 
 IfStatement* SQParser::parseIfStatement()
 {
+    NestingChecker nc(this);
     Consume(TK_IF);
 
     Expect(_SC('('));
@@ -1005,6 +1060,7 @@ IfStatement* SQParser::parseIfStatement()
 
 WhileStatement* SQParser::parseWhileStatement()
 {
+    NestingChecker nc(this);
     Consume(TK_WHILE);
 
     Expect(_SC('('));
@@ -1018,6 +1074,7 @@ WhileStatement* SQParser::parseWhileStatement()
 
 DoWhileStatement* SQParser::parseDoWhileStatement()
 {
+    NestingChecker nc(this);
     Consume(TK_DO); // DO
 
     Statement *body = parseStatement();
@@ -1033,6 +1090,7 @@ DoWhileStatement* SQParser::parseDoWhileStatement()
 
 ForStatement* SQParser::parseForStatement()
 {
+    NestingChecker nc(this);
     Consume(TK_FOR);
 
     Expect(_SC('('));
@@ -1063,6 +1121,7 @@ ForStatement* SQParser::parseForStatement()
 
 ForeachStatement* SQParser::parseForEachStatement()
 {
+    NestingChecker nc(this);
     Consume(TK_FOREACH);
 
     Expect(_SC('('));
@@ -1099,6 +1158,7 @@ ForeachStatement* SQParser::parseForEachStatement()
 
 SwitchStatement* SQParser::parseSwitchStatement()
 {
+    NestingChecker nc(this);
     Consume(TK_SWITCH);
 
     Expect(_SC('('));
@@ -1134,6 +1194,7 @@ SwitchStatement* SQParser::parseSwitchStatement()
 
 LiteralExpr* SQParser::ExpectScalar()
 {
+    NestingChecker nc(this);
     LiteralExpr *ret = NULL;
     SQInteger l = _lex._currentline, c = _lex._currentcolumn;
 
@@ -1177,6 +1238,7 @@ LiteralExpr* SQParser::ExpectScalar()
 
 ConstDecl* SQParser::parseConstStatement(bool global)
 {
+    NestingChecker nc(this);
     SQInteger l = _lex._currentline, c = _lex._currentcolumn;
     Lex();
     Id *id = (Id *)Expect(TK_IDENTIFIER);
@@ -1194,6 +1256,7 @@ ConstDecl* SQParser::parseConstStatement(bool global)
 
 EnumDecl* SQParser::parseEnumStatement(bool global)
 {
+    NestingChecker nc(this);
     SQInteger l = _lex._currentline, c = _lex._currentcolumn;
     Lex();
     Id *id = (Id *)Expect(TK_IDENTIFIER);
@@ -1232,6 +1295,7 @@ EnumDecl* SQParser::parseEnumStatement(bool global)
 
 TryStatement* SQParser::parseTryCatchStatement()
 {
+    NestingChecker nc(this);
     Consume(TK_TRY);
 
     Statement *t = parseStatement();
@@ -1263,6 +1327,7 @@ Id* SQParser::generateSurrogateFunctionName()
 
 DeclExpr* SQParser::FunctionExp(SQInteger ftype, bool lambda)
 {
+    NestingChecker nc(this);
     SQInteger l = _lex._currentline, c = _lex._currentcolumn;
     Lex();
     Id *funcName = (_token == TK_IDENTIFIER) ? (Id *)Expect(TK_IDENTIFIER) : generateSurrogateFunctionName();
@@ -1276,6 +1341,7 @@ DeclExpr* SQParser::FunctionExp(SQInteger ftype, bool lambda)
 
 ClassDecl* SQParser::ClassExp(Expr *key)
 {
+    NestingChecker nc(this);
     Expr *baseExpr = NULL;
     if(_token == TK_EXTENDS) {
         Lex();
@@ -1290,6 +1356,7 @@ ClassDecl* SQParser::ClassExp(Expr *key)
 
 Expr* SQParser::DeleteExpr()
 {
+    NestingChecker nc(this);
     Consume(TK_DELETE);
     Expr *arg = PrefixedExpr();
     return newNode<UnExpr>(TO_DELETE, arg);
@@ -1298,6 +1365,7 @@ Expr* SQParser::DeleteExpr()
 
 Expr* SQParser::PrefixIncDec(SQInteger token)
 {
+    NestingChecker nc(this);
     SQInteger diff = (token==TK_MINUSMINUS) ? -1 : 1;
     Lex();
     Expr *arg = PrefixedExpr();
@@ -1307,6 +1375,7 @@ Expr* SQParser::PrefixIncDec(SQInteger token)
 
 FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
 {
+    NestingChecker nc(this);
     FunctionDecl *f = ctor ? newNode<ConstructorDecl>(arena(), name->id()) : newNode<FunctionDecl>(arena(), name->id());
     f->setLinePos(_lex._currentline); f->setColumnPos(_lex._currentcolumn);
 

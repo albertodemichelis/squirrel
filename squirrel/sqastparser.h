@@ -45,6 +45,7 @@ class SQParser
     Arena *arena() { return _astArena; }
 
 public:
+    uint32_t _depth;
 
     SQParser(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, Arena *astArena, bool raiseerror);
 
