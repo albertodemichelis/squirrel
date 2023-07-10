@@ -1161,7 +1161,7 @@ bool CodegenVisitor::isLValue(Expr *expr) {
     switch (expr->op())
     {
     case TO_GETFIELD:
-    case TO_GETTABLE: return true;
+    case TO_GETTABLE: return expr->asAccessExpr()->receiver()->op() != TO_BASE;
     case TO_ID:
         return !expr->asId()->isBinding();
     default:
@@ -1228,7 +1228,12 @@ void CodegenVisitor::emitAssign(Expr *lvalue, Expr * rvalue, bool inExpr) {
         }
     }
     else if (lvalue->isAccessExpr()) {
-        emitFieldAssign(canBeLiteral(lvalue->asAccessExpr()));
+        if (lvalue->asAccessExpr()->receiver()->op() != TO_BASE) {
+            emitFieldAssign(canBeLiteral(lvalue->asAccessExpr()));
+        }
+        else {
+            error(lvalue, _SC("can't assign to expression"));
+        }
     }
     else {
         error(lvalue, _SC("can't assign to expression"));
