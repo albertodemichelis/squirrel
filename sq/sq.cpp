@@ -284,6 +284,11 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                     fprintf(stderr, _SC("Error [%s]\n"), errMsg.c_str());
                     return _ERROR;
                 }
+
+                if (sq_isinteger(exports.o)) {
+                    *retval = exports.o._unVal.nInteger;
+                }
+
                 return _DONE;
             }
 
