@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import tempfile
 from asyncio.subprocess import DEVNULL
 from os import path
 from re import S
@@ -9,6 +10,7 @@ from pathlib import Path
 import argparse
 import subprocess
 from subprocess import Popen, PIPE
+import platform
 
 CRED    = '\33[31m'
 CGREEN  = '\33[32m'
@@ -42,7 +44,7 @@ def compareFilesLineByLine(marker, testFile, actualFile, expectedFile):
         actl = actual.readlines()
 
         if len(expt) != len(actl):
-            xprint(f"Test {testFile} -- FAIL", CBOLD + CRED)
+            xprint(f"FAIL: {testFile}", CBOLD + CRED)
             xprint(f" {marker}: actual output len ({len(actl)}) differs from expected len ({len(expt)})")
             numOfFailedTests = numOfFailedTests + 1
             return False
@@ -53,7 +55,7 @@ def compareFilesLineByLine(marker, testFile, actualFile, expectedFile):
                 e = expt[i].rstrip()
                 a = actl[i].rstrip()
                 if (e != a):
-                    xprint(f"Test {testFile} -- FAIL", CBOLD + CRED)
+                    xprint(f"FAIL: {testFile}", CBOLD + CRED)
                     xprint(f" {marker}: actual output differs from expected in line {i + 1}")
                     xprint(f"  ACTUAL:   {a}")
                     xprint(f"  EXPECTED: {e}")
@@ -111,7 +113,8 @@ def runTestGeneric(compiler, workingDir, dirname, name, kind, suffix, extraargs,
       return
 
     if proc.returncode != 0:
-        xprint("TEST: {0} Crashed".format(testFilePath), CBOLD + CRED)
+        xprint("CRASH: {0}".format(testFilePath), CBOLD + CRED)
+        xprint(f"STDOUT: {0}".format(outs))
         xprint(f"STDERR: {0}".format(errs))
     else:
         testOk = True
@@ -119,7 +122,7 @@ def runTestGeneric(compiler, workingDir, dirname, name, kind, suffix, extraargs,
             testOk = compareFilesLineByLine(kind, testFilePath, actualResultFilePath, expectedResultFilePath)
 
         if (testOk):
-            xprint(f"TEST: {testFilePath} -- OK", CBOLD + CGREEN)
+            xprint(f"PASSED: {testFilePath}", CBOLD + CGREEN)
 
         updateExpectedFromActualIfNeed(kind, actualResultFilePath, expectedResultFilePath)
 
@@ -143,15 +146,15 @@ def runTestForData(filePath, compiler, workingDir, testMode):
     basename = os.path.basename(filePath)
     dirname = os.path.dirname(filePath)
     index_of_dot = basename.index('.')
-    suffix = basename[index_of_dot + 1:]
+    suffix = Path(basename).suffix
     # print(f"dirname: {dirname}, baseName: {basename}, suffix: {suffix}")
     name = basename[:index_of_dot]
-    if suffix == "nut":
-        if testMode == 'a':
+    if suffix == ".nut":
+        if testMode == 'ast':
             runASTTest(compiler, workingDir, dirname, name)
-        elif testMode == 'd':
+        elif testMode == 'diag':
             runDiagTest(compiler, workingDir, dirname, name)
-        elif testMode == 'e':
+        elif testMode == 'exec':
             runExecuteTest(compiler, workingDir, dirname, name)
         else:
             xprint(f"Unknown test mode {testMode}")
@@ -166,6 +169,12 @@ def walkDirectory(path, indent, block):
         else:
             block(file)
 
+def checkCompiler(compiler):
+    compProc = Popen([compiler, '-v'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    compProc.communicate()
+    if compProc.returncode != 0:
+        xprint('FAIL: {0} is not an sq compiler'.format(compiler))
+        exit(1)
 
 def main():
     global numOfFailedTests
@@ -192,22 +201,23 @@ def main():
         position = position + 1
 
     if compiler == '':
-        xprint(f"SQ is not specified")
-        exit(-1)
-    elif workingDir =='':
-        xprint(f"working dir is not specified")
-        exit(-1)
+        compiler = computePath('build', 'bin', 'Debug', 'sq.exe' if platform.system() == 'Windows' else 'sq')
 
-    walkDirectory(Path(computePath('testData', 'exec')), 0, lambda a: runTestForData(a, compiler, workingDir, 'e'))
-    walkDirectory(Path(computePath('testData', 'diagnostics')), 0, lambda a: runTestForData(a, compiler, workingDir, 'd'))
-    walkDirectory(Path(computePath('testData', 'ast')), 0, lambda a: runTestForData(a, compiler, workingDir, 'a'))
+    checkCompiler(compiler)
+
+    if workingDir == '':
+        workingDir = tempfile.TemporaryDirectory().name
+
+    walkDirectory(Path(computePath('testData', 'exec')), 0, lambda a: runTestForData(a, compiler, workingDir, 'exec'))
+    walkDirectory(Path(computePath('testData', 'diagnostics')), 0, lambda a: runTestForData(a, compiler, workingDir, 'diag'))
+    walkDirectory(Path(computePath('testData', 'ast')), 0, lambda a: runTestForData(a, compiler, workingDir, 'ast'))
 
     if numOfFailedTests:
         xprint(f"Failed tests: {numOfFailedTests}", CBOLD + CRED)
     else:
         xprint(f"All tests passed", CBOLD + CGREEN)
 
-    exit (numOfFailedTests)
+    exit (1 if numOfFailedTests > 0 else 0)
 
 
 
