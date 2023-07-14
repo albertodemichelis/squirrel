@@ -671,6 +671,7 @@ SQInteger SQLexer::ReadNumber()
 
     SQInteger type = TINT, firstchar = CUR_CHAR;
     SQChar *sTemp;
+    volatile SQFloat value;
     INIT_TEMP_STRING();
     NUM_NEXT();
     if(firstchar == _SC('0') && isdigit(CUR_CHAR))
@@ -718,8 +719,9 @@ SQInteger SQLexer::ReadNumber()
     switch(type) {
     case TSCIENTIFIC:
     case TFLOAT:
-        _fvalue = (SQFloat)strtod(&_longstr[0],&sTemp);
-        if(_fvalue == 0)
+        value = (SQFloat)strtod(&_longstr[0],&sTemp);
+        _fvalue = value;
+        if(value == 0)
         {
             for(int i = 0; i < _longstr.size(); i++)
             {
