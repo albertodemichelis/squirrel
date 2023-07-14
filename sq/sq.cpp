@@ -28,16 +28,6 @@ static SqModules *module_mgr = nullptr;
 
 void PrintVersionInfos();
 
-#if defined(_MSC_VER) && defined(_DEBUG)
-int MemAllocHook( int allocType, void *userData, size_t size, int blockType,
-   long requestNumber, const unsigned char *filename, int lineNumber)
-{
-    //if(requestNumber==769)_asm int 3;
-    return 1;
-}
-#endif
-
-
 SQInteger quit(HSQUIRRELVM v)
 {
     int *done;
@@ -411,9 +401,6 @@ int main(int argc, char* argv[])
 {
     HSQUIRRELVM v;
     SQInteger retval = 0;
-#if defined(_MSC_VER) && defined(_DEBUG)
-    _CrtSetAllocHook(MemAllocHook);
-#endif
 
     v=sq_open(1024);
     sq_setprintfunc(v,printfunc,errorfunc);
@@ -461,9 +448,6 @@ int main(int argc, char* argv[])
     delete module_mgr;
     sq_close(v);
 
-#if defined(_MSC_VER) && defined(_DEBUG)
-    _CrtMemDumpAllObjectsSince( NULL );
-#endif
     return int(retval);
 }
 
