@@ -12,10 +12,10 @@ import subprocess
 from subprocess import Popen, PIPE
 import platform
 
-CRED    = '\33[31m'
-CGREEN  = '\33[32m'
+CRED = '\33[31m'
+CGREEN = '\33[32m'
 RESET = "\033[0;0m"
-CBOLD     = '\33[1m'
+CBOLD = '\33[1m'
 
 numOfTests=0
 numOfFailedTests=0
@@ -37,32 +37,37 @@ def xprint(str, color = ''):
 def computePath(path, *paths):
     return os.path.normpath(os.path.join(path, *paths))
 
+
 def compareFilesLineByLine(marker, testFile, actualFile, expectedFile):
     global numOfFailedTests
     with open(expectedFile) as expected, open(actualFile) as actual:
-        expt = expected.readlines()
-        actl = actual.readlines()
-
-        if len(expt) != len(actl):
-            xprint(f"FAIL: {testFile}", CBOLD + CRED)
-            xprint(f" {marker}: actual output len ({len(actl)}) differs from expected len ({len(expt)})")
-            numOfFailedTests = numOfFailedTests + 1
-            return False
-        else:
+        expectedLines = expected.readlines()
+        actualLines = actual.readlines()
+        differs = len(expectedLines) != len(actualLines)
+        if differs == False:
             i = 0
+            while i < len(expectedLines):
+                e = expectedLines[i].rstrip()
+                a = actualLines[i].rstrip()
+                i += 1
+                if e != a:
+                    differs = True
+                    break
 
-            while (i < len(expt)):
-                e = expt[i].rstrip()
-                a = actl[i].rstrip()
-                if (e != a):
-                    xprint(f"FAIL: {testFile}", CBOLD + CRED)
-                    xprint(f" {marker}: actual output differs from expected in line {i + 1}")
-                    xprint(f"  ACTUAL:   {a}")
-                    xprint(f"  EXPECTED: {e}")
-                    numOfFailedTests = numOfFailedTests + 1
-                    return False
-                i = i + 1
+        if differs == True:
+            xprint("")
+            xprint(f"\nFAIL: {testFile}", CBOLD + CRED)
+            xprint("--Actual------------------", CBOLD + CRED)
+            xprint("".join(actualLines))
+            xprint("--Expected----------------", CBOLD + CRED)
+            xprint("".join(expectedLines))
+            xprint("--------------------------", CBOLD + CRED)
+            xprint("")
+            numOfFailedTests += 1
+            return False
+
     return True
+
 
 def updateExpectedFromActualIfNeed(marker, actualFile, expectedFile):
     if (not path.exists(expectedFile)):
@@ -103,20 +108,29 @@ def runTestGeneric(compiler, workingDir, dirname, name, kind, suffix, extraargs,
 
     proc = Popen(compialtionCommand, stdout=outredirect, stderr=subprocess.PIPE)
 
+    outs = None
+    errs = None
     try:
-      outs, errs = proc.communicate(timeout=10)
+        outs, errs = proc.communicate(timeout=10)
     except subprocess.TimeoutExpired:
-      proc.kill()
-      outs, errs = proc.communicate()
-      xprint("\nTIMEOUT: sq freezed on test: {0}".format(testFilePath), CBOLD + CRED)
-      numOfFailedTests = numOfFailedTests + 1
-      return
+        proc.kill()
+        outs, errs = proc.communicate()
+        xprint("\nTIMEOUT: sq freezed on test: {0}\n".format(testFilePath), CBOLD + CRED)
+        numOfFailedTests = numOfFailedTests + 1
+        return
 
     if proc.returncode != 0:
-        xprint("CRASH: {0}".format(testFilePath), CBOLD + CRED)
-        xprint(f"STDOUT: {0}".format(outs))
-        xprint(f"STDERR: {0}".format(errs))
+        xprint("\nCRASH: {0}".format(testFilePath), CBOLD + CRED)
         numOfFailedTests = numOfFailedTests + 1
+        if outs != None:
+            xprint("--stdout------------------", CBOLD + CRED)
+            xprint(outs.decode('utf-8'))
+        if errs != None:
+            xprint("--stderr------------------", CBOLD + CRED)
+            xprint(errs.decode('utf-8'))
+        if errs != None or outs != None:
+            xprint("--------------------------", CBOLD + CRED)
+            xprint("")
     else:
         testOk = True
         if (path.exists(expectedResultFilePath)):
@@ -127,11 +141,14 @@ def runTestGeneric(compiler, workingDir, dirname, name, kind, suffix, extraargs,
 
         updateExpectedFromActualIfNeed(kind, actualResultFilePath, expectedResultFilePath)
 
+
 def runDiagTest(compiler, workingDir, dirname, name):
     runTestGeneric(compiler, workingDir, dirname, name, "Diagnostics", '.diag.txt', ["-diag-file"], False)
 
+
 def runExecuteTest(compiler, workingDir, dirname, name):
     runTestGeneric(compiler, workingDir, dirname, name, "Exec", '.out', [], True)
+
 
 def runASTTest(compiler, workingDir, dirname, name):
     runTestGeneric(compiler, workingDir, dirname, name, "AST", '.opt.txt', ["-ast-dump"], False)
@@ -161,7 +178,6 @@ def runTestForData(filePath, compiler, workingDir, testMode):
             xprint(f"Unknown test mode {testMode}")
 
 
-
 def walkDirectory(path, indent, block):
     for file in path.iterdir():
         # print('\t' * indent + f"Walk path {file}")
@@ -171,11 +187,16 @@ def walkDirectory(path, indent, block):
             block(file)
 
 def checkCompiler(compiler):
-    compProc = Popen([compiler, '-v'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    compProc.communicate()
-    if compProc.returncode != 0:
+    try:
+        compProc = Popen([compiler, '-v'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        compProc.communicate()
+        if compProc.returncode != 0:
+            xprint('FAIL: {0} is not an sq compiler'.format(compiler))
+            exit(1)
+    except:
         xprint('FAIL: {0} is not an sq compiler'.format(compiler))
         exit(1)
+
 
 def main():
     global numOfFailedTests
@@ -224,10 +245,4 @@ def main():
 
 if __name__ == "__main__":
    main()
-
-
-
-
-
-
 
