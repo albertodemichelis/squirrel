@@ -116,6 +116,7 @@ def runTestGeneric(compiler, workingDir, dirname, name, kind, suffix, extraargs,
         xprint("CRASH: {0}".format(testFilePath), CBOLD + CRED)
         xprint(f"STDOUT: {0}".format(outs))
         xprint(f"STDERR: {0}".format(errs))
+        numOfFailedTests = numOfFailedTests + 1
     else:
         testOk = True
         if (path.exists(expectedResultFilePath)):
