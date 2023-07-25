@@ -1,1 +1,4 @@
-testData/diagnostics/float_underflow.nut line = (1) column = (75) : error float constant underflow
+testData/diagnostics/float_underflow.nut line = (1) column = (8) : error: float constant underflow
+println(0.00000000000000000000000000000000000000000000000000000000000000001)
+        ^------------------------------------------------------------------
+

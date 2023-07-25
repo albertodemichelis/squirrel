@@ -26,16 +26,16 @@ static bool isOuter(const Expr *expr) {
 }
 
 
-CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm, const SQChar *sourceName, bool lineinfo, bool raiseerror)
+CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm, const SQChar *sourceName, SQCompilationContext &ctx, bool lineinfo)
     : Visitor(),
     _fs(NULL),
     _childFs(NULL),
+    _ctx(ctx),
     _scopedconsts(_ss(vm)->_alloc_ctx),
     _sourceName(sourceName),
     _vm(vm),
     _donot_get(false),
     _lineinfo(lineinfo),
-    _raiseerror(raiseerror),
     _arena(arena),
     _scope(),
     _errorjmp() {
@@ -53,19 +53,20 @@ CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm
     }
 }
 
-void CodegenVisitor::error(Node *n, const SQChar *s, ...) {
-    va_list vl;
-    va_start(vl, s);
-    vsnprintf(_compilererror, MAX_COMPILER_ERROR_LEN, s, vl);
-    va_end(vl);
-    _errorNode = n;
-    longjmp(_errorjmp, 1);
+
+void CodegenVisitor::reportDiagnostic(Node *n, enum DiagnosticsId id, ...) {
+  va_list vargs;
+  va_start(vargs, id);
+
+  _ctx.vreportDiagnostic(id, n->lineStart(), n->columnStart(), n->columnEnd() - n->columnStart(), vargs);
+
+  va_end(vargs);
 }
 
 bool CodegenVisitor::generate(RootBlock *root, SQObjectPtr &out) {
-    SQFuncState funcstate(_ss(_vm), NULL, CodegenVisitor::ThrowError, this);
+    SQFuncState funcstate(_ss(_vm), NULL, _ctx);
 
-    if (setjmp(_errorjmp) == 0) {
+    if (setjmp(_ctx.errorJump()) == 0) {
 
         _fs = &funcstate;
         _childFs = NULL;
@@ -96,15 +97,6 @@ bool CodegenVisitor::generate(RootBlock *root, SQObjectPtr &out) {
         _fs = NULL;
         return true;
     } else {
-        if (_raiseerror && _ss(_vm)->_compilererrorhandler) {
-            SQInteger l = -1, c = -1;
-            if (_errorNode) {
-                l = _errorNode->lineStart();
-                c = _errorNode->columnStart();
-            }
-            _ss(_vm)->_compilererrorhandler(_vm, _compilererror, _sourceName ? _sourceName : _SC("unknown"), l, c);
-        }
-        _vm->_lasterror = SQString::Create(_ss(_vm), _compilererror, -1);
         return false;
     }
 }
@@ -112,13 +104,13 @@ bool CodegenVisitor::generate(RootBlock *root, SQObjectPtr &out) {
 void CodegenVisitor::CheckDuplicateLocalIdentifier(Node *n, SQObject name, const SQChar *desc, bool ignore_global_consts) {
     bool assignable = false;
     if (_fs->GetLocalVariable(name, assignable) >= 0)
-        error(n, _SC("%s name '%s' conflicts with existing local variable"), desc, _string(name)->_val);
+        reportDiagnostic(n, DiagnosticsId::DI_CONFLICTS_WITH, desc, _string(name)->_val, "existing local variable");
     if (_string(name) == _string(_fs->_name))
-        error(n, _SC("%s name '%s' conflicts with function name"), desc, _stringval(name));
+        reportDiagnostic(n, DiagnosticsId::DI_CONFLICTS_WITH, desc, _stringval(name), "function name");
 
     SQObject constant;
     if (ignore_global_consts ? IsLocalConstant(name, constant) : IsConstant(name, constant))
-        error(n, _SC("%s name '%s' conflicts with existing constant/enum/import"), desc, _stringval(name));
+        reportDiagnostic(n, DiagnosticsId::DI_CONFLICTS_WITH, desc, _stringval(name), "existing constant/enum/import");
 }
 
 static bool compareLiterals(LiteralExpr *a, LiteralExpr *b) {
@@ -138,7 +130,7 @@ bool CodegenVisitor::CheckMemberUniqueness(ArenaVector<Expr *> &vec, Expr *obj) 
         Expr *vecobj = vec[i];
         if (vecobj->op() == TO_ID && obj->op() == TO_ID) {
             if (strcmp(vecobj->asId()->id(), obj->asId()->id()) == 0) {
-                error(obj, _SC("duplicate key '%s'"), obj->asId()->id());
+                reportDiagnostic(obj, DiagnosticsId::DI_DUPLICATE_KEY, obj->asId()->id());
                 return false;
             }
             continue;
@@ -148,10 +140,12 @@ bool CodegenVisitor::CheckMemberUniqueness(ArenaVector<Expr *> &vec, Expr *obj) 
             LiteralExpr *b = (LiteralExpr*)obj;
             if (compareLiterals(a, b)) {
                 if (a->kind() == LK_STRING) {
-                  error(obj, _SC("duplicate key '%s'"), a->s());
+                  reportDiagnostic(obj, DiagnosticsId::DI_DUPLICATE_KEY, a->s());
                 }
                 else {
-                  error(obj, _SC("duplicate key '%llu'"), a->raw());
+                  char b[32] = { 0 };
+                  snprintf(b, sizeof b, "%llu", a->raw());
+                  reportDiagnostic(obj, DiagnosticsId::DI_DUPLICATE_KEY, b);
                 }
                 return false;
             }
@@ -534,7 +528,8 @@ void CodegenVisitor::visitTryStatement(TryStatement *tryStmt) {
 
 void CodegenVisitor::visitBreakStatement(BreakStatement *breakStmt) {
     addLineNumber(breakStmt);
-    if (_fs->_breaktargets.size() <= 0) error(breakStmt, _SC("'break' has to be in a loop block"));
+    if (_fs->_breaktargets.size() <= 0)
+        reportDiagnostic(breakStmt, DiagnosticsId::DI_LOOP_CONTROLER_NOT_IN_LOOP, "break");
     if (_fs->_breaktargets.top() > 0) {
         _fs->AddInstruction(_OP_POPTRAP, _fs->_breaktargets.top(), 0);
     }
@@ -545,7 +540,8 @@ void CodegenVisitor::visitBreakStatement(BreakStatement *breakStmt) {
 
 void CodegenVisitor::visitContinueStatement(ContinueStatement *continueStmt) {
     addLineNumber(continueStmt);
-    if (_fs->_continuetargets.size() <= 0) error(continueStmt, _SC("'continue' has to be in a loop block"));
+    if (_fs->_continuetargets.size() <= 0)
+        reportDiagnostic(continueStmt, DiagnosticsId::DI_LOOP_CONTROLER_NOT_IN_LOOP, "continue");
     if (_fs->_continuetargets.top() > 0) {
         _fs->AddInstruction(_OP_POPTRAP, _fs->_continuetargets.top(), 0);
     }
@@ -652,10 +648,10 @@ void CodegenVisitor::checkClassKey(Expr *key) {
         return;
     case TO_BASE:
     case TO_ID:
-        error(key, _SC("cannot create a local class with the syntax (class <local>)"));
+        reportDiagnostic(key, DiagnosticsId::DI_LOCAL_CLASS_SYNTAX);
         break;
     default:
-        error(key, _SC("invalid class name or context"));
+        reportDiagnostic(key, DiagnosticsId::DI_INVALID_CLASS_NAME);
         break;
     }
 }
@@ -1032,7 +1028,7 @@ void CodegenVisitor::emitUnaryOp(SQOpcode op, UnExpr *u) {
     visitForceGet(arg);
 
     if (_fs->_targetstack.size() == 0)
-        error(u, _SC("cannot evaluate unary-op"));
+        reportDiagnostic(u, DiagnosticsId::DI_CANNOT_EVAL_UNARY);
 
     SQInteger src = _fs->PopTarget();
     _fs->AddInstruction(op, _fs->PushTarget(), src);
@@ -1047,13 +1043,13 @@ void CodegenVisitor::emitDelete(UnExpr *ud) {
     case TO_GETFIELD:
     case TO_GETTABLE: break;
     case TO_BASE:
-        error(ud, _SC("can't delete 'base'"));
+        reportDiagnostic(ud, DiagnosticsId::DI_CANNOT_DELETE, "'base'");
         break;
     case TO_ID:
-        error(ud, _SC("cannot delete an (outer) local"));
+        reportDiagnostic(ud, DiagnosticsId::DI_CANNOT_DELETE, "an (outer) local");
         break;
     default:
-        error(ud, _SC("can't delete an expression"));
+        reportDiagnostic(ud, DiagnosticsId::DI_CANNOT_DELETE, "an expression");
         break;
     }
 
@@ -1115,7 +1111,7 @@ void CodegenVisitor::emitCompoundArith(SQOpcode op, SQInteger opcode, Expr *lval
         Id *id = lvalue->asId();
 
         if (!id->isAssignable()) {
-          error(lvalue, _SC("can't assign to binding '%s' (probably declaring using 'local' was intended, but 'let' was used)"), id->id());
+          reportDiagnostic(lvalue, DiagnosticsId::DI_ASSIGN_TO_BINDING, id->id());
         }
 
         if (id->isOuter()) {
@@ -1143,7 +1139,7 @@ void CodegenVisitor::emitCompoundArith(SQOpcode op, SQInteger opcode, Expr *lval
             _fs->AddInstruction(_OP_COMPARITH, _fs->PushTarget(), (src << 16) | val, key, opcode);
         }
         else {
-            error(lvalue, _SC("can't assign to expression"));
+            reportDiagnostic(lvalue, DiagnosticsId::DI_ASSIGN_TO_EXPR);
         }
     }
     else if (lvalue->isAccessExpr()) {
@@ -1154,7 +1150,7 @@ void CodegenVisitor::emitCompoundArith(SQOpcode op, SQInteger opcode, Expr *lval
         _fs->AddInstruction(_OP_COMPARITH, _fs->PushTarget(), (src << 16) | val, key, opcode);
     }
     else {
-        error(lvalue, _SC("can't assign to expression"));
+        reportDiagnostic(lvalue, DiagnosticsId::DI_ASSIGN_TO_EXPR);
     }
 }
 
@@ -1183,7 +1179,7 @@ void CodegenVisitor::emitNewSlot(Expr *lvalue, Expr *rvalue) {
         _fs->AddInstruction(_OP_NEWSLOT, _fs->PushTarget(), src, key, val);
     }
     else {
-        error(lvalue, _SC("can't 'create' a local slot"));
+        reportDiagnostic(lvalue, DiagnosticsId::DI_LOCAL_SLOT_CREATE);
     }
 }
 
@@ -1208,7 +1204,8 @@ void CodegenVisitor::emitAssign(Expr *lvalue, Expr * rvalue, bool inExpr) {
         Id *id = lvalue->asId();
 
         if (!id->isAssignable()) {
-          error(lvalue, _SC("can't assign to binding '%s' (probably declaring using 'local' was intended, but 'let' was used)"), id->id());
+            reportDiagnostic(lvalue, DiagnosticsId::DI_ASSIGN_TO_BINDING, id->id());
+            return;
         }
 
         if (id->isOuter()) {
@@ -1225,7 +1222,7 @@ void CodegenVisitor::emitAssign(Expr *lvalue, Expr * rvalue, bool inExpr) {
             emitFieldAssign(false);
         }
         else {
-            error(lvalue, _SC("can't assign to expression"));
+            reportDiagnostic(lvalue, DiagnosticsId::DI_ASSIGN_TO_EXPR);
         }
     }
     else if (lvalue->isAccessExpr()) {
@@ -1233,11 +1230,11 @@ void CodegenVisitor::emitAssign(Expr *lvalue, Expr * rvalue, bool inExpr) {
             emitFieldAssign(canBeLiteral(lvalue->asAccessExpr()));
         }
         else {
-            error(lvalue, _SC("can't assign to expression"));
+            reportDiagnostic(lvalue, DiagnosticsId::DI_ASSIGN_TO_EXPR);
         }
     }
     else {
-        error(lvalue, _SC("can't assign to expression"));
+        reportDiagnostic(lvalue, DiagnosticsId::DI_ASSIGN_TO_EXPR);
     }
 }
 
@@ -1347,7 +1344,8 @@ void CodegenVisitor::visitGetFieldExpr(GetFieldExpr *expr) {
             }
             else {
                 _constVal.Null();
-                error(expr, _SC("invalid enum [no '%s' field]"), expr->fieldName());
+                reportDiagnostic(expr, DiagnosticsId::DI_INVALID_ENUM, expr->fieldName(), "enum");
+                return;
             }
         }
     }
@@ -1470,7 +1468,7 @@ void CodegenVisitor::visitIncExpr(IncExpr *expr) {
     visitNoGet(arg);
 
     if (!isLValue(arg)) {
-        error(arg, _SC("argument of inc/dec operation is not assiangable"));
+        reportDiagnostic(arg, DiagnosticsId::DI_INC_DEC_NOT_ASSIGNABLE);
     }
 
     bool isPostfix = expr->form() == IF_POSTFIX;
@@ -1499,11 +1497,11 @@ void CodegenVisitor::visitIncExpr(IncExpr *expr) {
             Emit2ArgsOP(isPostfix ? _OP_PINC : _OP_INC, expr->diff());
         }
         else {
-            error(arg, _SC("argument of inc/dec operation is not assiangable"));
+            reportDiagnostic(arg, DiagnosticsId::DI_INC_DEC_NOT_ASSIGNABLE);
         }
     }
     else {
-        error(arg, _SC("argument of inc/dec operation is not assiangable"));
+        reportDiagnostic(arg, DiagnosticsId::DI_INC_DEC_NOT_ASSIGNABLE);
     }
 }
 
@@ -1570,7 +1568,7 @@ void CodegenVisitor::visitId(Id *id) {
     }
 
     if (_string(idObj) == _string(_fs->_name)) {
-        error(id, _SC("Variable name %s conflicts with function name"), _stringval(idObj));
+        reportDiagnostic(id, DiagnosticsId::DI_CONFLICTS_WITH, "Varibale", id->id(), "function name");
     }
 
     if ((pos = _fs->GetLocalVariable(idObj, assignable)) != -1) {
@@ -1622,7 +1620,7 @@ void CodegenVisitor::visitId(Id *id) {
         */
         // TODO: probably we need a special handling for some corner cases
         if (!(_fs->lang_features & LF_TOOLS_COMPILE_CHECK))
-            error(id, _SC("Unknown variable [%s]"), _stringval(idObj));
+            reportDiagnostic(id, DiagnosticsId::DI_UNKNOWN_SYMBOL, id->id());
 
         _fs->PushTarget(0);
         _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(idObj));

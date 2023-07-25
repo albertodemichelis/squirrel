@@ -1,1 +1,5 @@
-testData/diagnostics/need_space_after_hex.nut line = (2) column = (12) : error expected hex digits after '0x'
+testData/diagnostics/need_space_after_hex.nut line = (2) column = (9) : error: expected hex digits after '0x'
+let x = 123
+println([0xx][1])
+         ^-
+

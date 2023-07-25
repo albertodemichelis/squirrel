@@ -41,7 +41,7 @@ void DumpLiteral(OutputStream *stream, SQObjectPtr &o)
     }
 }
 
-SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc efunc,void *ed) :
+SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,SQCompilationContext &ctx) :
     _vlocals(ss->_alloc_ctx),
     _targetstack(ss->_alloc_ctx),
     _unresolvedbreaks(ss->_alloc_ctx),
@@ -57,7 +57,8 @@ SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc
     _continuetargets(ss->_alloc_ctx),
     _blockstacksizes(ss->_alloc_ctx),
     _defaultparams(ss->_alloc_ctx),
-    _childstates(ss->_alloc_ctx)
+    _childstates(ss->_alloc_ctx),
+    _ctx(ctx)
 {
         _nliterals = 0;
         _literals = SQTable::Create(ss,0);
@@ -70,18 +71,11 @@ SQFuncState::SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc
         _traps = 0;
         _returnexp = 0;
         _varparams = false;
-        _errfunc = efunc;
-        _errtarget = ed;
         _bgenerator = false;
         _outers = 0;
         _hoistLevel = 0;
         _ss = ss;
         lang_features = parent ? parent->lang_features : ss->defaultLangFeatures;
-}
-
-void SQFuncState::Error(const SQChar *err)
-{
-    _errfunc(_errtarget,err);
 }
 
 void Dump(SQFunctionProto *func) {
@@ -213,7 +207,7 @@ SQInteger SQFuncState::GetConstant(const SQObject &cons)
         _nliterals++;
         if(_nliterals > MAX_LITERALS) {
             val.Null();
-            Error(_SC("internal compiler error: too many literals"));
+            _ctx.reportDiagnostic(DiagnosticsId::DI_TOO_MANY_SYMBOLS, -1, -1, 0, "literals");
         }
     }
     return _integer(val);
@@ -242,7 +236,8 @@ SQInteger SQFuncState::AllocStackPos()
     SQInteger npos=_vlocals.size();
     _vlocals.push_back(SQLocalVarInfo());
     if(_vlocals.size()>((SQUnsignedInteger)_stacksize)) {
-        if(_stacksize>MAX_FUNC_STACKSIZE) Error(_SC("internal compiler error: too many locals"));
+        if(_stacksize>MAX_FUNC_STACKSIZE)
+            _ctx.reportDiagnostic(DiagnosticsId::DI_TOO_MANY_SYMBOLS, -1, -1, 0, "locals");
         _stacksize=_vlocals.size();
     }
     return npos;
@@ -602,7 +597,7 @@ SQFunctionProto *SQFuncState::BuildProto()
 SQFuncState *SQFuncState::PushChildState(SQSharedState *ss)
 {
     SQFuncState *child = (SQFuncState *)sq_malloc(ss->_alloc_ctx, sizeof(SQFuncState));
-    new (child) SQFuncState(ss,this,_errfunc,_errtarget);
+    new (child) SQFuncState(ss,this,_ctx);
     _childstates.push_back(child);
     return child;
 }

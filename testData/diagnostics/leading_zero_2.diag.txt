@@ -1,1 +1,4 @@
-testData/diagnostics/leading_zero_2.nut line = (1) column = (7) : error leading 0 is not allowed, octal numbers are not supported
+testData/diagnostics/leading_zero_2.nut line = (1) column = (6) : error: leading 0 is not allowed, octal numbers are not supported
+print(01)
+      ^
+

@@ -1,1 +1,4 @@
-testData/diagnostics/integer_overflow.nut line = (1) column = (48) : error integer constant overflow
+testData/diagnostics/integer_overflow.nut line = (1) column = (8) : error: integer constant overflow
+println(1000000000000000000000000000000000000000)
+        ^---------------------------------------
+

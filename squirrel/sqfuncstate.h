@@ -3,13 +3,14 @@
 #define _SQFUNCSTATE_H_
 ///////////////////////////////////
 #include "squtils.h"
+#include "sqcompilationcontext.h"
+using namespace SQCompilation;
 
 struct SQFuncState
 {
-    SQFuncState(SQSharedState *ss,SQFuncState *parent,CompilerErrorFunc efunc,void *ed);
+    SQFuncState(SQSharedState *ss,SQFuncState *parent,SQCompilationContext &ctx);
     ~SQFuncState();
 
-    void Error(const SQChar *err);
     SQFuncState *PushChildState(SQSharedState *ss);
     void PopChildState();
     void AddInstruction(SQOpcode _op,SQInteger arg0=0,SQInteger arg1=0,SQInteger arg2=0,SQInteger arg3=0){SQInstruction i(_op,arg0,arg1,arg2,arg3);AddInstruction(i);}
@@ -85,8 +86,7 @@ struct SQFuncState
     sqvector<SQFuncState*> _childstates;
     SQInteger GetConstant(const SQObject &cons);
 private:
-    CompilerErrorFunc _errfunc;
-    void *_errtarget;
+    SQCompilationContext &_ctx;
     SQSharedState *_ss;
 };
 

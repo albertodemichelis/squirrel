@@ -1,1 +1,4 @@
-testData/diagnostics/float_overflow.nut line = (1) column = (50) : error float constant overflow
+testData/diagnostics/float_overflow.nut line = (1) column = (8) : error: float constant overflow
+println(1000000000000000000000000000000000000000.0)
+        ^-----------------------------------------
+

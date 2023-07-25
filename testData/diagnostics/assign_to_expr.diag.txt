@@ -1,1 +1,5 @@
-testData/diagnostics/assign_to_expr.nut line = (2) column = (2) : error can't assign to expression
+testData/diagnostics/assign_to_expr.nut line = (2) column = (0) : error: can't assign to expression
+local x
+x-- = 1
+^--
+

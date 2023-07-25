@@ -1725,7 +1725,7 @@ SQRESULT sq_compilewithast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const
     if (!ast)
         return SQ_ERROR;
 
-    return sq_translateasttobytecode(v, ast, bindings, sourcename, raiseerror, debugInfo);
+    return sq_translateasttobytecode(v, ast, bindings, sourcename, s, size, raiseerror, debugInfo);
 }
 
 SQRESULT sq_compileonepass(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo, const HSQOBJECT *bindings)
@@ -1784,10 +1784,10 @@ void sq_dumpbytecode(HSQUIRRELVM v, HSQOBJECT obj, OutputStream *s)
     }
 }
 
-SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo)
+SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, const SQChar *s, SQInteger size, SQBool raiseerror, SQBool debugInfo)
 {
     SQObjectPtr o;
-    if (TranslateASTToBytecode(v, ast, bindings, sourcename, o, raiseerror, debugInfo))
+    if (TranslateASTToBytecode(v, ast, bindings, sourcename, s, size, o, raiseerror, debugInfo))
     {
         v->Push(SQClosure::Create(_ss(v), _funcproto(o),
             _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));

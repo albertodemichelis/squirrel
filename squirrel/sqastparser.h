@@ -8,6 +8,7 @@
 #include "sqcompiler.h"
 #include "sqlexer.h"
 #include "sqvm.h"
+#include "sqcompilationcontext.h"
 #include "sqast.h"
 
 namespace SQCompilation {
@@ -69,16 +70,13 @@ class SQParser
     SQInteger width() const { return _lex._currentcolumn - _lex._tokencolumn; }
 
 public:
+    SQCompilationContext &_ctx;
+
+    void reportDiagnostic(enum DiagnosticsId id, ...);
+
     uint32_t _depth;
 
-    SQParser(SQVM *v, const char *code, size_t codeSize, const SQChar* sourcename, Arena *astArena, bool raiseerror);
-
-    static void ThrowError(void *ud, const SQChar *s) {
-        SQParser *c = (SQParser *)ud;
-        c->Error(s);
-    }
-    void Error(const SQChar *s, ...);
-
+    SQParser(SQVM *v, const char *code, size_t codeSize, const SQChar* sourcename, Arena *astArena, SQCompilationContext &ctx);
 
     bool ProcessPosDirective();
     void Lex();

@@ -164,6 +164,6 @@ bool CompileWithAst(SQVM *vm, const char *sourceText, size_t sourceTextSize, con
 bool CompileOnePass(SQVM *vm, const char *sourceText, size_t sourceTextSize, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo);
 SQCompilation::RootBlock *ParseToAST(Arena *astArena, SQVM *vm, const char *sourceText, size_t sourceTextSize, const SQChar *sourcename, bool raiseerror);
 bool ParseAndSaveBinaryAST(SQVM *vm, const char *sourceText, size_t sourceTextSize, const SQChar *sourcename, OutputStream *ostream, bool raiseerror);
-bool TranslateASTToBytecode(SQVM *vm, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo);
+bool TranslateASTToBytecode(SQVM *vm, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, const char *sourceText, size_t sourceTextSize, SQObjectPtr &out, bool raiseerror, bool lineinfo);
 bool TranslateBinaryASTToBytecode(SQVM *vm, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQObjectPtr &out, bool raiseerror, bool lineinfo);
 #endif //_SQCOMPILER_H_

@@ -2,6 +2,8 @@
 #ifndef _SQLEXER_H_
 #define _SQLEXER_H_
 
+#include "sqcompilationcontext.h"
+
 typedef unsigned char LexChar;
 
 struct SQLexerMacroState
@@ -38,13 +40,13 @@ struct SQLexerMacroState
     }
 };
 
+using namespace SQCompilation;
 
 struct SQLexer
 {
-    SQLexer(SQSharedState *ss);
+    SQLexer(SQSharedState *ss, SQCompilationContext &ctx);
     ~SQLexer();
-    void Init(SQSharedState *ss, const char *code, size_t codeSize, CompilerErrorFunc efunc, void *ed);
-    void Error(const SQChar *err);
+    void Init(SQSharedState *ss, const char *code, size_t codeSize);
     SQInteger Lex();
     const SQChar *Tok2Str(SQInteger tok);
 private:
@@ -67,6 +69,7 @@ private:
     SQTable *_keywords;
     SQBool _reached_eof;
     SQLexerMacroState macroState;
+    SQCompilationContext &_ctx;
     const char *_code;
     size_t _codeSize;
     size_t _codePtr;
@@ -85,8 +88,6 @@ public:
     LexChar _currdata;
     SQSharedState *_sharedstate;
     sqvector<SQChar> _longstr;
-    CompilerErrorFunc _errfunc;
-    void *_errtarget;
 };
 
 #endif

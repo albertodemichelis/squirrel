@@ -3,6 +3,7 @@
 #include "sqast.h"
 #include "sqcompiler.h"
 #include "sqopcodes.h"
+#include "sqcompilationcontext.h"
 #include <setjmp.h>
 
 struct SQFuncState;
@@ -36,18 +37,16 @@ class CodegenVisitor : public Visitor {
 
     SQObjectPtr _constVal;
 
+    SQCompilationContext &_ctx;
+
 public:
-    CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm, const SQChar *sourceName, bool lineinfo, bool raiseerror);
+    CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm, const SQChar *sourceName, SQCompilationContext &ctx, bool lineinfo);
 
     bool generate(RootBlock *root, SQObjectPtr &out);
 
-    static void ThrowError(void *ud, const SQChar *s) {
-        CodegenVisitor *c = (CodegenVisitor *)ud;
-        c->error(NULL, s);
-    }
-
 private:
-    void error(Node *n, const SQChar *s, ...);
+
+    void reportDiagnostic(Node *n, enum DiagnosticsId id, ...);
 
     void CheckDuplicateLocalIdentifier(Node *n, SQObject name, const SQChar *desc, bool ignore_global_consts);
     bool CheckMemberUniqueness(ArenaVector<Expr *> &vec, Expr *obj);

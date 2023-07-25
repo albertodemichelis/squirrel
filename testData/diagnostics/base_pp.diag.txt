@@ -1,1 +1,4 @@
-testData/diagnostics/base_pp.nut line = (1) column = (4) : error argument of inc/dec operation is not assiangable
+testData/diagnostics/base_pp.nut line = (1) column = (0) : error: argument of inc/dec operation is not assiangable
+base++
+^---
+

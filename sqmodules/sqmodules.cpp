@@ -191,7 +191,7 @@ bool SqModules::compileScriptImpl(const std::vector<char> &buf, const char *sour
         onAST_cb(sqvm, ast, up_data);
     }
 
-    if (SQ_FAILED(sq_translateasttobytecode(sqvm, ast, bindings, sourcename, compilationOptions.raiseError, compilationOptions.debugInfo)))
+    if (SQ_FAILED(sq_translateasttobytecode(sqvm, ast, bindings, sourcename, &buf[0], buf.size(), compilationOptions.raiseError, compilationOptions.debugInfo)))
     {
       return true;
     }

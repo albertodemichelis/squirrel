@@ -6,6 +6,7 @@
 #include "sqcompiler.h"
 #include "sqastparser.h"
 #include "sqcompiler.h"
+#include "sqcompilationcontext.h"
 #include <stdarg.h>
 
 namespace SQCompilation {
@@ -24,37 +25,35 @@ struct NestingChecker {
 
     void inc() {
         if (_p->_depth > _max_depth) {
-            _p->Error("AST too big. Consider simplifing it");
+            _p->reportDiagnostic(DiagnosticsId::DI_TOO_BIG_AST);
         }
         _p->_depth += 1;
         _depth += 1;
     }
 };
 
-SQParser::SQParser(SQVM *v, const char *code, size_t codeSize, const SQChar* sourcename, Arena *astArena, bool raiseerror)
-    : _lex(_ss(v))
+SQParser::SQParser(SQVM *v, const char *code, size_t codeSize, const SQChar* sourcename, Arena *astArena, SQCompilationContext &ctx)
+    : _lex(_ss(v), ctx)
+    , _ctx(ctx)
     , _astArena(astArena)
 {
     _vm=v;
-    _lex.Init(_ss(v), code, codeSize, ThrowError, this);
+    _lex.Init(_ss(v), code, codeSize);
     _sourcename = sourcename;
-    _raiseerror = raiseerror;
     _compilererror[0] = _SC('\0');
     _expression_context = SQE_REGULAR;
     _lang_features = _ss(v)->defaultLangFeatures;
     _depth = 0;
 }
 
+void SQParser::reportDiagnostic(enum DiagnosticsId id, ...) {
+  va_list vargs;
+  va_start(vargs, id);
 
-void SQParser::Error(const SQChar *s, ...)
-{
-    va_list vl;
-    va_start(vl, s);
-    vsnprintf(_compilererror, MAX_COMPILER_ERROR_LEN, s, vl);
-    va_end(vl);
-    longjmp(_errorjmp,1);
+  _ctx.vreportDiagnostic(id, line(), column(), width(), vargs);
+
+  va_end(vargs);
 }
-
 
 bool SQParser::ProcessPosDirective()
 {
@@ -62,19 +61,19 @@ bool SQParser::ProcessPosDirective()
     if (strncmp(sval, _SC("pos:"), 4) != 0)
         return false;
 
-        sval += 4;
+    sval += 4;
     if (!isdigit(*sval))
-            Error(_SC("expected line number after #pos:"));
-        SQChar * next = NULL;
-        _lex._currentline = scstrtol(sval, &next, 10);
-        if (!next || *next != ':')
-            Error(_SC("expected ':'"));
-        next++;
+        reportDiagnostic(DiagnosticsId::DI_EXPECTED_LINENUM);
+    SQChar * next = NULL;
+    _lex._currentline = scstrtol(sval, &next, 10);
+    if (!next || *next != ':')
+        reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, ":");
+    next++;
     if (!isdigit(*next))
-            Error(_SC("expected column number after #pos:<line>:"));
-        _lex._currentcolumn = scstrtol(next, NULL, 10);
+        reportDiagnostic(DiagnosticsId::DI_EXPECTED_COLNUM);
+    _lex._currentcolumn = scstrtol(next, NULL, 10);
     return true;
-    }
+}
 
 
 Statement* SQParser::parseDirectiveStatement()
@@ -109,7 +108,7 @@ Statement* SQParser::parseDirectiveStatement()
     else if (strcmp(sval, _SC("enable-optimizer")) == 0)
         clearFlags = LF_DISABLE_OPTIMIZER;
     else
-        Error(_SC("unsupported directive"));
+        reportDiagnostic(DiagnosticsId::DI_UNSUPPORTED_DIRECTIVE, sval);
 
     DirectiveStmt *d = newNode<DirectiveStmt>();
     d->setLineStartPos(_lex._tokenline);
@@ -146,6 +145,11 @@ void SQParser::Lex()
     }
 }
 
+static const char *tok2Str(SQInteger tok) {
+  static char s[3];
+  snprintf(s, sizeof s, "%c", tok);
+  return s;
+}
 
 Expr* SQParser::Expect(SQInteger tok)
 {
@@ -173,9 +177,9 @@ Expr* SQParser::Expect(SQInteger tok)
                 default:
                     etypename = _lex.Tok2Str(tok);
                 }
-                Error(_SC("expected '%s'"), etypename);
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, etypename);
             }
-            Error(_SC("expected '%c'"), tok);
+            reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, tok2Str(tok));
         }
     }
     Expr *ret = NULL;
@@ -203,7 +207,7 @@ void SQParser::OptionalSemicolon()
 {
     if(_token == _SC(';')) { Lex(); return; }
     if(!IsEndOfStatement()) {
-        Error(_SC("end of statement expected (; or lf)"));
+        reportDiagnostic(DiagnosticsId::DI_END_OF_STMT_EXPECTED);
     }
 }
 
@@ -212,7 +216,7 @@ RootBlock* SQParser::parse()
 {
     RootBlock *rootBlock = newNode<RootBlock>(arena());
 
-    if(setjmp(_errorjmp) == 0) {
+    if(setjmp(_ctx.errorJump()) == 0) {
         Lex();
         rootBlock->setLineStartPos(line());
         rootBlock->setColumnStartPos(column());
@@ -224,11 +228,6 @@ RootBlock* SQParser::parse()
         rootBlock->setColumnEndPos(_lex._currentcolumn);
     }
     else {
-        if(_raiseerror && _ss(_vm)->_compilererrorhandler) {
-            _ss(_vm)->_compilererrorhandler(_vm, _compilererror, _sourcename ? _sourcename : _SC("unknown"),
-                _lex._currentline, _lex._currentcolumn);
-        }
-        _vm->_lasterror = SQString::Create(_ss(_vm), _compilererror, -1);
         return NULL;
     }
 
@@ -324,7 +323,7 @@ Statement* SQParser::parseStatement(bool closeframe)
         else if (_token == TK_ENUM)
             result = parseEnumStatement(true);
         else
-            Error(_SC("global can be applied to const and enum only"));
+            reportDiagnostic(DiagnosticsId::DI_GLOBAL_CONSTS_ONLY);
         break;
     default:
         result = newNode<ExprStatement>(Expression(SQE_REGULAR));
@@ -366,7 +365,7 @@ Expr* SQParser::Expression(SQExpressionContext expression_context)
     Expr *expr = LogicalNullCoalesceExp();
 
     if (_token == TK_INEXPR_ASSIGNMENT && (expression_context == SQE_REGULAR || expression_context == SQE_FUNCTION_ARG))
-        Error(_SC(": intra-expression assignment can be used only in 'if', 'for', 'while' or 'switch'"));
+        reportDiagnostic(DiagnosticsId::DI_INCORRECT_INTRA_ASSIGN);
 
     switch(_token)  {
     case _SC('='):
@@ -389,19 +388,19 @@ Expr* SQParser::Expression(SQExpressionContext expression_context)
                 switch (expression_context)
                 {
                 case SQE_IF:
-                    Error(_SC("'=' inside 'if' is forbidden"));
+                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "if");
                     break;
                 case SQE_LOOP_CONDITION:
-                    Error(_SC("'=' inside loop condition is forbidden"));
+                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "loop condition");
                     break;
                 case SQE_SWITCH:
-                    Error(_SC("'=' inside switch is forbidden"));
+                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "switch");
                     break;
                 case SQE_FUNCTION_ARG:
-                    Error(_SC("'=' inside function argument is forbidden"));
+                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "function argument");
                     break;
                 case SQE_RVALUE:
-                    Error(_SC("'=' inside expression is forbidden"));
+                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "expression");
                     break;
                 case SQE_REGULAR:
                     break;
@@ -574,7 +573,7 @@ Expr* SQParser::CompExp()
                 lhs = setCoordinates(newNode<UnExpr>(TO_NOT, lhs), l, c);
             }
             else
-                Error(_SC("'in' expected "));
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, "in");
         }
         default: return lhs;
         }
@@ -660,7 +659,8 @@ Expr* SQParser::PrefixedExpr()
             {
                 nextIsNullable = true;
             }
-            if(_lex._prevtoken == _SC('\n')) Error(_SC("cannot break deref/or comma needed after [exp]=exp slot declaration"));
+            if(_lex._prevtoken == _SC('\n'))
+                reportDiagnostic(DiagnosticsId::DI_BROKEN_SLOT_DECLARATION);
             Lex();
             Expr *reciever = e;
             Expr *key = Expression(SQE_RVALUE);
@@ -733,7 +733,7 @@ Expr* SQParser::Factor(SQInteger &pos)
     case TK_THIS: r = newNode<Id>(_SC("this")); Lex(); break;
     case TK_DOUBLE_COLON:  // "::"
         if (_lang_features & LF_FORBID_ROOT_TABLE)
-            Error(_SC("Access to root table is forbidden"));
+            reportDiagnostic(DiagnosticsId::DI_ROOT_TABLE_FORBIDDEN);
         _token = _SC('.'); /* hack: drop into PrefixExpr, case '.'*/
         r = setCoordinates(newNode<RootExpr>(), l, c);
         break;
@@ -837,7 +837,8 @@ Expr* SQParser::Factor(SQInteger &pos)
         r = setCoordinates(newNode<LiteralExpr>(_sourcename), l, c);
         Lex();
         break;
-    default: Error(_SC("expression expected"));
+    default:
+        reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, "expression");
     }
     return r;
 }
@@ -975,7 +976,7 @@ Decl* SQParser::parseLocalDeclStatement(bool assignable)
         }
         else {
             if (!assignable && !destructurer)
-                Error(_SC("Binding '%s' must be initialized"), varname->id()); //-V522
+                _ctx.reportDiagnostic(DiagnosticsId::DI_UNINITIALIZED_BINDING, varname->lineStart(), varname->columnStart(), varname->textWidth(), varname->id());  //-V522
             cur = newNode<VarDecl>(varname->id(), nullptr, assignable);
         }
 
@@ -1157,7 +1158,7 @@ ForeachStatement* SQParser::parseForEachStatement()
         assert(valname);
 
         if (strcmp(idxname->id(), valname->id()) == 0) //-V522
-            Error(_SC("foreach() key and value names are the same: %s"), valname->id());
+            _ctx.reportDiagnostic(DiagnosticsId::DI_SAME_FOREACH_KV_NAMES, valname->lineStart(), valname->columnStart(), valname->textWidth(), valname->id());
     }
     else {
         //idxname = newNode<Id>(_SC("@INDEX@"));
@@ -1247,11 +1248,11 @@ LiteralExpr* SQParser::ExpectScalar()
                 ret = newNode<LiteralExpr>(-_lex._fvalue);
             break;
             default:
-                Error(_SC("scalar expected : integer, float"));
+                reportDiagnostic(DiagnosticsId::DI_SCALAR_EXPECTED, "integer, float");
             }
             break;
         default:
-            Error(_SC("scalar expected : integer, float, or string"));
+            reportDiagnostic(DiagnosticsId::DI_SCALAR_EXPECTED, "integer, float, or string");
     }
 
     setCoordinates(ret, l, c);
@@ -1415,11 +1416,13 @@ FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
 
     while (_token!=_SC(')')) {
         if (_token == TK_VARPARAMS) {
-            if(defparams > 0) Error(_SC("function with default parameters cannot have variable number of parameters"));
+            if(defparams > 0)
+                reportDiagnostic(DiagnosticsId::DI_VARARG_WITH_DEFAULT_ARG);
             f->addParameter(_SC("vargv"));
             f->setVararg(true);
             Lex();
-            if(_token != _SC(')')) Error(_SC("expected ')'"));
+            if(_token != _SC(')'))
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, ")");
             break;
         }
         else {
@@ -1431,13 +1434,15 @@ FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
                 defparams++;
             }
             else {
-                if (defparams > 0) Error(_SC("expected '='"));
+                if (defparams > 0)
+                    reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, "=");
             }
 
             f->addParameter(paramname->id(), defVal);
 
             if(_token == _SC(',')) Lex();
-            else if(_token != _SC(')')) Error(_SC("expected ')' or ','"));
+            else if(_token != _SC(')'))
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, ") or ,");
         }
     }
 
@@ -1459,7 +1464,7 @@ FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
     }
     else {
         if (_token != '{')
-            Error(_SC("'{' expected"));
+            reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, "{");
         body = (Block *)parseStatement(false);
     }
     SQInteger line2 = _lex._prevtoken == _SC('\n') ? _lex._lasttokenline : _lex._currentline;

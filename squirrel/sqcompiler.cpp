@@ -22,6 +22,7 @@
 #include "sqastcodegen.h"
 #include "optimizations/closureHoisting.h"
 #include "sqbinaryast.h"
+#include "sqcompilationcontext.h"
 
 
 
@@ -46,15 +47,16 @@ using namespace SQCompilation;
 class SQCompiler //-V553
 {
 public:
-    SQCompiler(SQVM *v, const char *code, size_t codeSize, const HSQOBJECT *bindings, const SQChar* sourcename, bool raiseerror, bool lineinfo) :
-        _lex(_ss(v)),
+    SQCompiler(SQVM *v, const char *code, size_t codeSize, const HSQOBJECT *bindings, const SQChar* sourcename, SQCompilationContext &ctx, bool lineinfo) :
+        _lex(_ss(v), ctx),
         _scopedconsts(_ss(v)->_alloc_ctx),
-        _member_constant_keys_check(_ss(v)->_alloc_ctx)
+        _member_constant_keys_check(_ss(v)->_alloc_ctx),
+        _ctx(ctx)
     {
         _vm = v;
-        _lex.Init(_ss(v), code, codeSize, ThrowError, this);
+        _lex.Init(_ss(v), code, codeSize);
         _sourcename = SQString::Create(_ss(v), sourcename);
-        _lineinfo = lineinfo; _raiseerror = raiseerror;
+        _lineinfo = lineinfo;
         _scope.outers = 0;
         _scope.stacksize = 0;
         _compilererror[0] = _SC('\0');
@@ -68,6 +70,15 @@ public:
                 _num_initial_bindings = 1;
             }
         }
+    }
+
+    void reportDiagnostic(enum DiagnosticsId id, ...) {
+      va_list vargs;
+      va_start(vargs, id);
+
+      _ctx.vreportDiagnostic(id, line(), column(), width(), vargs);
+
+      va_end(vargs);
     }
 
     bool IsConstant(const SQObject &name, SQObject &e)
@@ -114,9 +125,12 @@ public:
         va_start(vl, s);
         vsnprintf(_compilererror, MAX_COMPILER_ERROR_LEN, s, vl);
         va_end(vl);
-        longjmp(_errorjmp, 1);
+        longjmp(_ctx.errorJump(), 1);
     }
 
+    SQInteger line() const { return _lex._tokenline; }
+    SQInteger column() const { return _lex._tokencolumn; }
+    SQInteger width() const { return _lex._currentcolumn - _lex._tokencolumn; }
 
     void ProcessDirective()
     {
@@ -125,14 +139,14 @@ public:
         if (strncmp(sval, _SC("pos:"), 4) == 0) {
             sval += 4;
             if (!isdigit(*sval))
-                Error(_SC("expected line number after #pos:"));
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_LINENUM);
             SQChar * next = NULL;
             _lex._currentline = scstrtol(sval, &next, 10);
             if (!next || *next != ':')
-                Error(_SC("expected ':'"));
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, ":");
             next++;
             if (!isdigit(*next))
-                Error(_SC("expected column number after #pos:<line>:"));
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_COLNUM);
             _lex._currentcolumn = scstrtol(next, NULL, 10);
 
             return;
@@ -166,7 +180,7 @@ public:
         else if (strcmp(sval, _SC("enable-optimizer")) == 0)
             clearFlags = LF_DISABLE_OPTIMIZER;
         else
-            Error(_SC("unsupported directive"));
+            reportDiagnostic(DiagnosticsId::DI_UNSUPPORTED_DIRECTIVE, sval);
 
         _fs->lang_features = (_fs->lang_features | setFlags) & ~clearFlags;
         if (applyToDefault)
@@ -186,6 +200,11 @@ public:
         }
     }
 
+    const char *tok2str(SQInteger tok) {
+        static char s[3];
+        snprintf(s, sizeof s, "%c", tok);
+        return s;
+    }
 
     SQObject Expect(SQInteger tok)
     {
@@ -214,9 +233,9 @@ public:
                     default:
                         etypename = _lex.Tok2Str(tok);
                     }
-                    Error(_SC("expected '%s'"), etypename);
+                    reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, etypename);
                 }
-                Error(_SC("expected '%c'"), tok);
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, tok2str(tok));
             }
         }
         SQObjectPtr ret;
@@ -243,7 +262,7 @@ public:
     {
         if (_token == _SC(';')) { Lex(); return; }
         if (!IsEndOfStatement()) {
-            Error(_SC("end of statement expected (; or lf)"));
+            reportDiagnostic(DiagnosticsId::DI_END_OF_STMT_EXPECTED);
         }
     }
     void MoveIfCurrentTargetIsLocal() {
@@ -261,7 +280,7 @@ public:
     bool Compile(SQObjectPtr &o)
     {
         _scopedconsts.push_back();
-        SQFuncState funcstate(_ss(_vm), NULL, ThrowError, this);
+        SQFuncState funcstate(_ss(_vm), NULL, _ctx);
         funcstate._name = SQString::Create(_ss(_vm), _SC("__main__"));
         _fs = &funcstate; //-V506 It's ok to store address of local funcsate, since no code is executed after Compile() returns
         _fs->AddParameter(_fs->CreateString(_SC("this")));
@@ -269,7 +288,7 @@ public:
         _fs->_varparams = true;
         _fs->_sourcename = _sourcename;
         SQInteger stacksize = _fs->GetStackSize();
-        if (setjmp(_errorjmp) == 0) {
+        if (setjmp(_ctx.errorJump()) == 0) {
             Lex();
             while (_token > 0) {
                 Statement();
@@ -290,11 +309,6 @@ public:
             o = _fs->BuildProto();
         }
         else {
-            if (_raiseerror && _ss(_vm)->_compilererrorhandler) {
-                _ss(_vm)->_compilererrorhandler(_vm, _compilererror, sq_type(_sourcename) == OT_STRING ? _stringval(_sourcename) : _SC("unknown"),
-                    _lex._currentline, _lex._currentcolumn);
-            }
-            _vm->_lasterror = SQString::Create(_ss(_vm), _compilererror, -1);
             CleanupAfterError();
             return false;
         }
@@ -350,7 +364,8 @@ public:
             }
             break; }
         case TK_BREAK:
-            if (_fs->_breaktargets.size() <= 0)Error(_SC("'break' has to be in a loop block"));
+            if (_fs->_breaktargets.size() <= 0)
+                reportDiagnostic(DiagnosticsId::DI_LOOP_CONTROLER_NOT_IN_LOOP, "break");
             if (_fs->_breaktargets.top() > 0) {
                 _fs->AddInstruction(_OP_POPTRAP, _fs->_breaktargets.top(), 0);
             }
@@ -360,7 +375,8 @@ public:
             Lex();
             break;
         case TK_CONTINUE:
-            if (_fs->_continuetargets.size() <= 0)Error(_SC("'continue' has to be in a loop block"));
+            if (_fs->_continuetargets.size() <= 0)
+                reportDiagnostic(DiagnosticsId::DI_LOOP_CONTROLER_NOT_IN_LOOP, "continue");
             if (_fs->_continuetargets.top() > 0) {
                 _fs->AddInstruction(_OP_POPTRAP, _fs->_continuetargets.top(), 0);
             }
@@ -403,7 +419,7 @@ public:
             else if (_token == TK_ENUM)
                 EnumStatement(true);
             else
-                Error(_SC("global can be applied to const and enum only"));
+                reportDiagnostic(DiagnosticsId::DI_GLOBAL_CONSTS_ONLY);
             break;
         default:
             Expression(SQE_REGULAR);
@@ -479,10 +495,11 @@ public:
         _es.epos = -1;
         _es.donot_get = false;
         _es.literal_field = false;
+        const SQChar *sval = _lex._svalue;
         LogicalNullCoalesceExp();
 
         if (_token == TK_INEXPR_ASSIGNMENT && (expression_context == SQE_REGULAR || expression_context == SQE_FUNCTION_ARG))
-            Error(_SC(": intra-expression assignment can be used only in 'if', 'for', 'while' or 'switch'"));
+            reportDiagnostic(DiagnosticsId::DI_INCORRECT_INTRA_ASSIGN);
 
         switch (_token) {
         case _SC('='):
@@ -497,9 +514,12 @@ public:
             SQInteger ds = _es.etype;
             SQInteger pos = _es.epos;
             bool literalField = _es.literal_field;
-            if (ds == EXPR) Error(_SC("can't assign to expression"));
-            else if (ds == BASE) Error(_SC("'base' cannot be modified"));
-            else if (_es.isBinding() && _token != TK_INEXPR_ASSIGNMENT) Error(_SC("can't assign to binding (probably declaring using 'local' was intended, but 'let' was used)"));
+            if (ds == EXPR)
+                reportDiagnostic(DiagnosticsId::DI_ASSIGN_TO_EXPR);
+            else if (ds == BASE)
+                reportDiagnostic(DiagnosticsId::DI_BASE_NOT_MODIFIABLE);
+            else if (_es.isBinding() && _token != TK_INEXPR_ASSIGNMENT)
+                reportDiagnostic(DiagnosticsId::DI_ASSIGN_TO_BINDING, sval);
             Lex(); Expression(SQE_RVALUE);
 
             switch (op) {
@@ -507,7 +527,7 @@ public:
                 if (ds == OBJECT)
                     EmitDerefOp(_OP_NEWSLOT);
                 else //if _derefstate != DEREF_NO_DEREF && DEREF_FIELD so is the index of a local
-                    Error(_SC("can't 'create' a local slot"));
+                    reportDiagnostic(DiagnosticsId::DI_LOCAL_SLOT_CREATE);
                 break;
 
             case TK_INEXPR_ASSIGNMENT:
@@ -516,19 +536,19 @@ public:
                     switch (expression_context)
                     {
                     case SQE_IF:
-                        Error(_SC("'=' inside 'if' is forbidden"));
+                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "if");
                         break;
                     case SQE_LOOP_CONDITION:
-                        Error(_SC("'=' inside loop condition is forbidden"));
+                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "loop condition");
                         break;
                     case SQE_SWITCH:
-                        Error(_SC("'=' inside switch is forbidden"));
+                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "switch");
                         break;
                     case SQE_FUNCTION_ARG:
-                        Error(_SC("'=' inside function argument is forbidden"));
+                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "function argument");
                         break;
                     case SQE_RVALUE:
-                        Error(_SC("'=' inside expression is forbidden"));
+                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "expression");
                         break;
                     case SQE_REGULAR:
                         break;
@@ -729,7 +749,7 @@ public:
                 _fs->AddInstruction(_OP_NOT, _fs->PushTarget(), src);
             }
             else
-                Error(_SC("'in' expected "));
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, "in");
         }
         default: return;
         }
@@ -846,7 +866,8 @@ public:
                     flags = OP_GET_FLAG_NO_ERROR;
                     nextIsNullable = true;
                 }
-                if (_lex._prevtoken == _SC('\n')) Error(_SC("cannot break deref/or comma needed after [exp]=exp slot declaration"));
+                if (_lex._prevtoken == _SC('\n'))
+                    reportDiagnostic(DiagnosticsId::DI_BROKEN_SLOT_DECLARATION);
                 _es.literal_field = false;
                 Lex(); Expression(SQE_RVALUE); Expect(_SC(']'));
                 pos = -1;
@@ -872,13 +893,19 @@ public:
                 SQInteger diff = (_token == TK_MINUSMINUS) ? -1 : 1;
                 Lex();
                 if (_es.isBinding())
-                    Error(_SC("can't '++' or '--' a binding"));
+                    reportDiagnostic(DiagnosticsId::DI_CANNOT_INC_DEC, "a binding");
                 switch (_es.etype)
                 {
-                case EXPR: Error(_SC("can't '++' or '--' an expression")); break;
-                case BASE: Error(_SC("'base' cannot be modified")); break;
+                case EXPR:
+                    reportDiagnostic(DiagnosticsId::DI_CANNOT_INC_DEC, "an expression");
+                case BASE:
+                    reportDiagnostic(DiagnosticsId::DI_BASE_NOT_MODIFIABLE);
+                    break;
                 case OBJECT:
-                    if (_es.donot_get == true) { Error(_SC("can't '++' or '--' an expression")); break; } //mmh dor this make sense?
+                    if (_es.donot_get == true) {
+                        reportDiagnostic(DiagnosticsId::DI_CANNOT_INC_DEC, "an expression");
+                        break;
+                    } //mmh dor this make sense?
                     Emit2ArgsOP(_OP_PINC, diff);
                     break;
                 case LOCAL: {
@@ -950,14 +977,14 @@ public:
         {
             Lex();
             if (_token != TK_IDENTIFIER)
-                Error(_SC("Identifier expected"));
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, "identifier");
 
             SQObject id = _fs->CreateString(_lex._svalue);
             CheckDuplicateLocalIdentifier(id, _SC("In-expr local"), false);
             _fs->PushLocalVariable(id, _token == TK_LOCAL);
             SQInteger res = Factor();
             if (_token != TK_INEXPR_ASSIGNMENT)
-                Error(_SC(":= expected"));
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, ":=");
             return res;
         }
 
@@ -998,7 +1025,7 @@ public:
             }
 
             if (_string(id) == _string(_fs->_name)) {
-                Error(_SC("Variable name %s conflicts with function name"), _stringval(id));
+                reportDiagnostic(DiagnosticsId::DI_VARNAME_CONFLICTS, _stringval(id));
             }
 
             SQInteger pos = -1;
@@ -1033,7 +1060,7 @@ public:
                     SQObject constid = Expect(TK_IDENTIFIER);
                     if (!_table(constval)->Get(constid, constval)) {
                         constval.Null();
-                        Error(_SC("invalid enum [no '%s' field in '%s']"), _stringval(constid), _stringval(id));
+                        reportDiagnostic(DiagnosticsId::DI_INVALID_ENUM, _stringval(constid), _stringval(id));
                     }
                 }
                 _es.epos = _fs->PushTarget();
@@ -1056,7 +1083,7 @@ public:
                 * the _OP_GET instruction.
                 */
                 if (!(_fs->lang_features & LF_TOOLS_COMPILE_CHECK))
-                    Error(_SC("Unknown variable [%s]"), _stringval(id));
+                    reportDiagnostic(DiagnosticsId::DI_UNKNOWN_SYMBOL, _stringval(id));
 
                 _fs->PushTarget(0);
                 _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(id));
@@ -1070,7 +1097,7 @@ public:
                       break;
         case TK_DOUBLE_COLON:  // "::"
             if (_fs->lang_features & LF_FORBID_ROOT_TABLE)
-                Error(_SC("Access to root table is forbidden"));
+                reportDiagnostic(DiagnosticsId::DI_ROOT_TABLE_FORBIDDEN);
             _fs->AddInstruction(_OP_LOADROOT, _fs->PushTarget());
             _es.etype = OBJECT;
             _token = _SC('.'); /* hack: drop into PrefixExpr, case '.'*/
@@ -1140,7 +1167,8 @@ public:
             break;
         case TK___LINE__: EmitLoadConstInt(_lex._currentline, -1); Lex(); break;
         case TK___FILE__: _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(_sourcename)); Lex(); break;
-        default: Error(_SC("expression expected"));
+        default:
+            reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, "expression");
         }
         _es.etype = EXPR;
         return -1;
@@ -1173,7 +1201,7 @@ public:
     {
         PrefixedExpr();
         if (_fs->_targetstack.size() == 0)
-            Error(_SC("cannot evaluate unary-op"));
+            reportDiagnostic(DiagnosticsId::DI_CANNOT_EVAL_UNARY);
         SQInteger src = _fs->PopTarget();
         _fs->AddInstruction(op, _fs->PushTarget(), src);
     }
@@ -1185,7 +1213,7 @@ public:
         case _SC('='): case TK_NEWSLOT: case TK_MODEQ: case TK_MULEQ:
         case TK_DIVEQ: case TK_MINUSEQ: case TK_PLUSEQ:
             if (_expression_context != SQE_REGULAR)
-                Error("can't assign to an expression or inside return/yield");
+                reportDiagnostic(DiagnosticsId::DI_ASSIGN_TO_EXPR);
             return false;
         case TK_PLUSPLUS: case TK_MINUSMINUS:
             if (!IsEndOfStatement()) {
@@ -1219,9 +1247,9 @@ public:
         for (SQUnsignedInteger i = 0, n = vec.size(); i < n; ++i) {
             if (vec[i]._type == obj._type && vec[i]._unVal.raw == obj._unVal.raw) {
                 if (sq_isstring(obj))
-                    Error(_SC("duplicate key '%s'"), sq_objtostring(&obj));
+                    reportDiagnostic(DiagnosticsId::DI_DUPLICATE_KEY, sq_objtostring(&obj));
                 else
-                    Error(_SC("duplicate key"));
+                    reportDiagnostic(DiagnosticsId::DI_DUPLICATE_KEY, "");
                 return false;
             }
         }
@@ -1305,7 +1333,7 @@ public:
                     else if (IsConstant(id, constant))
                         _fs->AddInstruction(_OP_LOAD, _fs->PushTarget(), _fs->GetConstant(constant));
                     else
-                        Error(_SC("Invalid slot initializer '%s' - no such variable/constant or incorrect expression"), _stringval(id));
+                        reportDiagnostic(DiagnosticsId::DI_INCORRECT_INTRA_ASSIGN, _stringval(id));
                 }
                 else {
                     Expect(_SC('=')); Expression(SQE_RVALUE);
@@ -1335,13 +1363,13 @@ public:
     {
         bool assignable = false;
         if (_fs->GetLocalVariable(name, assignable) >= 0)
-            Error(_SC("%s name '%s' conflicts with existing local variable"), desc, _string(name)->_val);
+            reportDiagnostic(DiagnosticsId::DI_CONFLICTS_WITH, desc, _string(name)->_val, "existing local variable");
         if (_string(name) == _string(_fs->_name))
-            Error(_SC("%s name '%s' conflicts with function name"), desc, _stringval(name));
+            reportDiagnostic(DiagnosticsId::DI_CONFLICTS_WITH, desc, _stringval(name), "function name");
 
         SQObject constant;
         if (ignore_global_consts ? IsLocalConstant(name, constant) : IsConstant(name, constant))
-            Error(_SC("%s name '%s' conflicts with existing constant/enum/import"), desc, _stringval(name));
+            reportDiagnostic(DiagnosticsId::DI_CONFLICTS_WITH, desc, _stringval(name), "existing constant/enum/import");
     }
     void LocalDeclStatement(bool assignable)
     {
@@ -1390,7 +1418,7 @@ public:
             }
             else {
                 if (!assignable && !destructurer)
-                    Error(_SC("Binding '%s' must be initialized"), _stringval(varname));
+                    reportDiagnostic(DiagnosticsId::DI_UNINITIALIZED_BINDING, _stringval(varname));
                 _fs->AddInstruction(_OP_LOADNULLS, _fs->PushTarget(), 1);
                 flags.push_back(0);
             }
@@ -1592,7 +1620,7 @@ public:
             Lex(); valname = Expect(TK_IDENTIFIER);
             CheckDuplicateLocalIdentifier(valname, _SC("Iterator"), false);
             if (_string(idxname) == _string(valname))
-                Error(_SC("foreach() key and value names are the same: %s"), _stringval(valname));
+                reportDiagnostic(DiagnosticsId::DI_SAME_FOREACH_KV_NAMES, _stringval(valname));
         }
         else {
             idxname = _fs->CreateString(_SC("@INDEX@"));
@@ -1721,11 +1749,11 @@ public:
                 val._unVal.fFloat = -_lex._fvalue;
                 break;
             default:
-                Error(_SC("scalar expected : integer, float"));
+                reportDiagnostic(DiagnosticsId::DI_SCALAR_EXPECTED, "integer, float");
             }
             break;
         default:
-            Error(_SC("scalar expected : integer, float, or string"));
+            reportDiagnostic(DiagnosticsId::DI_SCALAR_EXPECTED, "integer, float, or string");
         }
         Lex();
         return val;
@@ -1865,13 +1893,15 @@ public:
         es = _es;
         _es.donot_get = true;
         PrefixedExpr();
-        if (_es.etype == EXPR) Error(_SC("can't delete an expression"));
-        if (_es.etype == BASE) Error(_SC("can't delete 'base'"));
+        if (_es.etype == EXPR)
+            reportDiagnostic(DiagnosticsId::DI_CANNOT_DELETE, "an expression");
+        if (_es.etype == BASE)
+            reportDiagnostic(DiagnosticsId::DI_CANNOT_DELETE, "'base'");
         if (_es.etype == OBJECT) {
             Emit2ArgsOP(_OP_DELETE);
         }
         else {
-            Error(_SC("cannot delete an (outer) local"));
+            reportDiagnostic(DiagnosticsId::DI_CANNOT_DELETE, "an (outer) local");
         }
         _es = es;
     }
@@ -1884,16 +1914,16 @@ public:
         _es.donot_get = true;
         PrefixedExpr();
         if (_es.etype == EXPR) {
-            Error(_SC("can't '++' or '--' an expression"));
+            reportDiagnostic(DiagnosticsId::DI_CANNOT_INC_DEC, "an expression");
         }
         else if (_es.etype == BASE) {
-            Error(_SC("'base' cannot be modified"));
+            reportDiagnostic(DiagnosticsId::DI_BASE_NOT_MODIFIABLE);
         }
         else if (_es.etype == OBJECT) {
             Emit2ArgsOP(_OP_INC, diff);
         }
         else if (_es.isBinding()) {
-            Error(_SC("can't '++' or '--' a binding"));
+            reportDiagnostic(DiagnosticsId::DI_CANNOT_INC_DEC, "a binding");
         }
         else if (_es.etype == LOCAL) {
             SQInteger src = _fs->TopTarget();
@@ -1918,11 +1948,13 @@ public:
         SQInteger defparams = 0;
         while (_token != _SC(')')) {
             if (_token == TK_VARPARAMS) {
-                if (defparams > 0) Error(_SC("function with default parameters cannot have variable number of parameters"));
+                if (defparams > 0)
+                    reportDiagnostic(DiagnosticsId::DI_VARARG_WITH_DEFAULT_ARG);
                 funcstate->AddParameter(_fs->CreateString(_SC("vargv")));
                 funcstate->_varparams = true;
                 Lex();
-                if (_token != _SC(')')) Error(_SC("expected ')'"));
+                if (_token != _SC(')'))
+                    reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, ")");
                 break;
             }
             else {
@@ -1935,10 +1967,12 @@ public:
                     defparams++;
                 }
                 else {
-                    if (defparams > 0) Error(_SC("expected '='"));
+                    if (defparams > 0)
+                        reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, "=");
                 }
                 if (_token == _SC(',')) Lex();
-                else if (_token != _SC(')')) Error(_SC("expected ')' or ','"));
+                else if (_token != _SC(')'))
+                    reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, ") or ,");
             }
         }
         Expect(_SC(')'));
@@ -1955,7 +1989,7 @@ public:
         }
         else {
             if (_token != '{')
-                Error(_SC("'{' expected"));
+                reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, "{");
             Statement(false);
         }
         funcstate->AddLineInfos(_lex._prevtoken == _SC('\n') ? _lex._lasttokenline : _lex._currentline, _lineinfo, true);
@@ -2037,12 +2071,14 @@ private:
     SQVM *_vm;
     SQObjectPtrVec _scopedconsts;
     SQUnsignedInteger _num_initial_bindings;
+    SQCompilationContext &_ctx;
     sqvector<sqvector<SQObject>*> _member_constant_keys_check;
 };
 
 
 bool CompileOnePass(SQVM *vm, const char *sourceText, size_t sourceTextSize, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
-    SQCompiler p(vm, sourceText, sourceTextSize, bindings, sourcename, raiseerror, lineinfo);
+    SQCompilationContext ctx(vm, NULL, sourcename, sourceText, sourceTextSize, raiseerror);
+    SQCompiler p(vm, sourceText, sourceTextSize, bindings, sourcename, ctx, lineinfo);
 
     if (vm->_on_compile_file)
         vm->_on_compile_file(vm, sourcename);
@@ -2051,7 +2087,8 @@ bool CompileOnePass(SQVM *vm, const char *sourceText, size_t sourceTextSize, con
 }
 
 RootBlock *ParseToAST(Arena *astArena, SQVM *vm, const char *sourceText, size_t sourceTextSize, const SQChar *sourcename, bool raiseerror) {
-  SQParser p(vm, sourceText, sourceTextSize, sourcename, astArena, raiseerror);
+  SQCompilationContext ctx(vm, astArena, sourcename, sourceText, sourceTextSize, raiseerror);
+  SQParser p(vm, sourceText, sourceTextSize, sourcename, astArena, ctx);
 
   RootBlock *r = p.parse();
 
@@ -2074,7 +2111,8 @@ bool CompileWithAst(SQVM *vm, const char *sourceText, size_t sourceTextSize, con
     if (!r) return false;
 
     Arena cgArena(_ss(vm)->_alloc_ctx, "Codegen");
-    CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, lineinfo, raiseerror);
+    SQCompilationContext ctx(vm, &cgArena, sourcename, sourceText, sourceTextSize, raiseerror);
+    CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, ctx, lineinfo);
 
     return codegen.generate(r, out);
 }
@@ -2090,10 +2128,11 @@ bool Compile(SQVM *vm, const char *sourceText, size_t sourceTextSize, const HSQO
         : CompileOnePass(vm, sourceText, sourceTextSize, bindings, sourcename, out, raiseerror, lineinfo);
 }
 
-bool TranslateASTToBytecode(SQVM *vm, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
+bool TranslateASTToBytecode(SQVM *vm, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, const char *sourceText, size_t sourceTextSize, SQObjectPtr &out, bool raiseerror, bool lineinfo)
 {
     Arena cgArena(_ss(vm)->_alloc_ctx, "Codegen");
-    CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, lineinfo, raiseerror);
+    SQCompilationContext ctx(vm, &cgArena, sourcename, sourceText, sourceTextSize, raiseerror);
+    CodegenVisitor codegen(&cgArena, bindings, vm, sourcename, ctx, lineinfo);
 
     assert(ast->op() == TO_BLOCK && ast->asStatement()->asBlock()->isRoot());
 
@@ -2113,7 +2152,7 @@ bool TranslateBinaryASTToBytecode(SQVM *vm, const uint8_t *buffer, size_t size, 
       return false;
     }
 
-    return TranslateASTToBytecode(vm, r, bindings, sourcename, out, raiseerror, lineinfo);
+    return TranslateASTToBytecode(vm, r, bindings, sourcename, NULL, 0, out, raiseerror, lineinfo);
 }
 
 bool ParseAndSaveBinaryAST(SQVM *vm, const char *sourceText, size_t sourceTextSize, const SQChar *sourcename, OutputStream *ostream, bool raiseerror) {

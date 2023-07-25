@@ -1,1 +1,5 @@
-testData/diagnostics/need_space_after_float.nut line = (2) column = (13) : error malformed number
+testData/diagnostics/need_space_after_float.nut line = (2) column = (9) : error: malformed number
+local f = 333
+println([5.0f][1])
+         ^--
+
