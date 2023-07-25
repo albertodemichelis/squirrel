@@ -96,6 +96,7 @@ public:
     bool useAST;
     bool raiseError;
     bool debugInfo;
+    bool doStaticAnalysis;
   } compilationOptions;
 
   void *up_data;

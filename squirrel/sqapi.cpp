@@ -1796,6 +1796,11 @@ SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, SqAstNode *ast, const HSQOBJEC
     return SQ_ERROR;
 }
 
+void sq_analyseast(HSQUIRRELVM v, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, const SQChar *s, SQInteger size)
+{
+    AnalyseCode(v, ast, bindings, sourcename, s, size);
+}
+
 Arena *sq_createarena(HSQUIRRELVM v, const SQChar *name)
 {
     void *ptr = sq_malloc(_ss(v)->_alloc_ctx, sizeof(Arena));

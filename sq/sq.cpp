@@ -244,6 +244,11 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                     PrintVersionInfos();
                     PrintUsage();
                     return _DONE;
+                case 's':
+                    if (strcmp("-sa", argv[arg]) == 0) {
+                        module_mgr->compilationOptions.doStaticAnalysis = true;
+                        break;
+                    }
                 default:
                 unknown_opt:
                     PrintVersionInfos();

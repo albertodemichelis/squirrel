@@ -195,6 +195,11 @@ bool SqModules::compileScriptImpl(const std::vector<char> &buf, const char *sour
     {
       return true;
     }
+
+    if (compilationOptions.doStaticAnalysis)
+    {
+      sq_analyseast(sqvm, ast, bindings, sourcename, &buf[0], buf.size());
+    }
   }
   else
   {

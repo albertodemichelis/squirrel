@@ -23,6 +23,7 @@
 #include "optimizations/closureHoisting.h"
 #include "sqbinaryast.h"
 #include "sqcompilationcontext.h"
+#include "static_analyser/analyser.h"
 
 
 
@@ -2137,6 +2138,18 @@ bool TranslateASTToBytecode(SQVM *vm, SqAstNode *ast, const HSQOBJECT *bindings,
     assert(ast->op() == TO_BLOCK && ast->asStatement()->asBlock()->isRoot());
 
     return codegen.generate((RootBlock *)ast, out);
+}
+
+void AnalyseCode(SQVM *vm, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, const char *sourceText, size_t sourceTextSize)
+{
+    Arena saArena(_ss(vm)->_alloc_ctx, "Analyser");
+    SQCompilationContext ctx(vm, &saArena, sourcename, sourceText, sourceTextSize, true);
+
+    StaticAnalyser sa(ctx);
+
+    assert(ast->op() == TO_BLOCK && ast->asStatement()->asBlock()->isRoot());
+
+    sa.runAnalysis((RootBlock *)ast);
 }
 
 bool TranslateBinaryASTToBytecode(SQVM *vm, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
