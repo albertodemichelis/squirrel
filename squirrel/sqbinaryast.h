@@ -16,6 +16,7 @@
 
 #define MAGIC "QAST"
 
+using namespace SQCompilation;
 
 class SQASTWriter {
 

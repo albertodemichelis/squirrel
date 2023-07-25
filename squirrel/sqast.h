@@ -98,7 +98,7 @@ enum TreeOp {
 
 };
 
-namespace sqast {
+namespace SQCompilation {
 
 extern const char* sq_tree_op_names[];
 
@@ -1382,8 +1382,6 @@ Node *Node::transform(T *transformer) {
   }
 }
 
-} // namespace sqast
-
-using namespace sqast;
+} // namespace SQCompilation
 
 #endif // _SQAST_H_

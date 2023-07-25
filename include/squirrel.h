@@ -62,12 +62,12 @@ struct SQOuter;
 
 class OutputStream;
 class Arena;
-namespace sqast
+namespace SQCompilation
 {
   class Node;
 }
 
-using SqAstNode = sqast::Node;
+using SqAstNode = SQCompilation::Node;
 
 #include "sqconfig.h"
 

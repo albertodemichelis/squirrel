@@ -7,6 +7,8 @@
 #include <map>
 #include <set>
 
+namespace SQCompilation {
+
 struct cmp_str
 {
   bool operator()(char const *a, char const *b) const
@@ -191,5 +193,6 @@ public:
   void run(RootBlock *root);
 };
 
+} // namespace SQCompilation
 
 #endif // _SQ_OPT_CLOSURE_HOSTING_

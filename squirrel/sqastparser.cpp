@@ -8,6 +8,8 @@
 #include "sqcompiler.h"
 #include <stdarg.h>
 
+namespace SQCompilation {
+
 struct NestingChecker {
     SQParser *_p;
     const uint32_t _max_depth;
@@ -1446,5 +1448,6 @@ FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
     return f;
 }
 
+} // namespace SQCompilation
 
 #endif

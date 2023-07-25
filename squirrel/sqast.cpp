@@ -7,7 +7,7 @@ const char* sq_tree_op_names[] = {
 };
 #undef DEF_TREE_OP
 
-using namespace sqast;
+namespace SQCompilation {
 
 void Node::visitChildren(Visitor *visitor) {
     switch (op())
@@ -565,3 +565,4 @@ void ExprStatement::transformChildren(Transformer *transformer) {
   _expr = _expr->transform(transformer)->asExpression();
 }
 
+};

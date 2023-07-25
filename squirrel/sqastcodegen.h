@@ -6,6 +6,7 @@
 #include <setjmp.h>
 
 struct SQFuncState;
+namespace SQCompilation {
 
 class CodegenVisitor : public Visitor {
 
@@ -189,3 +190,5 @@ public:
 
     void visitDirectiveStatement(DirectiveStmt *dir) override;
 };
+
+} // namespace SQCompilation

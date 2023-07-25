@@ -41,6 +41,8 @@ struct SQExpState {
     bool isBinding() { return (etype == LOCAL || etype == OUTER) && !is_assignable_var; }
 };
 
+using namespace SQCompilation;
+
 class SQCompiler //-V553
 {
 public:

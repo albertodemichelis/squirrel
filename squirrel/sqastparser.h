@@ -10,6 +10,7 @@
 #include "sqvm.h"
 #include "sqast.h"
 
+namespace SQCompilation {
 
 class SQParser
 {
@@ -129,5 +130,7 @@ private:
     jmp_buf _errorjmp;
     SQVM *_vm;
 };
+
+} // namespace SQCompilation
 
 #endif

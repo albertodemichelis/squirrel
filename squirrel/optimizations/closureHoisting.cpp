@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <stdio.h>
 
+namespace SQCompilation {
+
 ClosureHoistingOpt::ClosureHoistingOpt(SQSharedState *ss, Arena *astA)
   : _ss(ss)
   , astArena(astA)
@@ -407,3 +409,5 @@ void ClosureHoistingOpt::run(RootBlock *root) {
     // 5. Do once again if we could hoist something else
   }
 }
+
+} // namespace SQCompilation

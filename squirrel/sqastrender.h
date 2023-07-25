@@ -2,6 +2,8 @@
 
 #include "sqastio.h"
 
+namespace SQCompilation {
+
 class RenderVisitor : public Visitor {
 
 
@@ -456,3 +458,5 @@ public:
         destruct->initiExpression()->visit(this);
     }
 };
+
+} // namsespace SQCompilation

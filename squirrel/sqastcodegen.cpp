@@ -11,6 +11,7 @@
 #include "sqtable.h"
 #include <stdarg.h>
 
+namespace SQCompilation {
 
 static bool isObject(const Expr *expr) {
     if (expr->isConst()) return false;
@@ -1645,5 +1646,7 @@ void CodegenVisitor::visitForceGet(Node *n) {
     n->visit(this);
     _donot_get = old_dng;
 }
+
+} // namespace SQCompilation
 
 #endif
