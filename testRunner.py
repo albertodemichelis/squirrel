@@ -145,6 +145,8 @@ def runTestGeneric(compiler, workingDir, dirname, name, kind, suffix, extraargs,
 def runDiagTest(compiler, workingDir, dirname, name):
     runTestGeneric(compiler, workingDir, dirname, name, "Diagnostics", '.diag.txt', ["-diag-file"], False)
 
+def runSATest(compiler, workingDir, dirname, name):
+    runTestGeneric(compiler, workingDir, dirname, name, "Static Analyser", '.diag.txt', ["-sa", "-diag-file"], False)
 
 def runExecuteTest(compiler, workingDir, dirname, name):
     runTestGeneric(compiler, workingDir, dirname, name, "Exec", '.out', [], True)
@@ -174,6 +176,8 @@ def runTestForData(filePath, compiler, workingDir, testMode):
             runDiagTest(compiler, workingDir, dirname, name)
         elif testMode == 'exec':
             runExecuteTest(compiler, workingDir, dirname, name)
+        elif testMode == 'sa':
+            runSATest(compiler, workingDir, dirname, name)
         else:
             xprint(f"Unknown test mode {testMode}")
 
@@ -233,6 +237,7 @@ def main():
     walkDirectory(Path(computePath('testData', 'exec')), 0, lambda a: runTestForData(a, compiler, workingDir, 'exec'))
     walkDirectory(Path(computePath('testData', 'diagnostics')), 0, lambda a: runTestForData(a, compiler, workingDir, 'diag'))
     walkDirectory(Path(computePath('testData', 'ast')), 0, lambda a: runTestForData(a, compiler, workingDir, 'ast'))
+    walkDirectory(Path(computePath('testData', 'static_analyser')), 0, lambda a: runTestForData(a, compiler, workingDir, 'sa'))
 
     if numOfFailedTests:
         xprint(f"Failed tests: {numOfFailedTests}", CBOLD + CRED)
