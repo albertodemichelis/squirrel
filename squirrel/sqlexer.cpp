@@ -84,6 +84,8 @@ void SQLexer::Init(SQSharedState *ss, SQLEXREADFUNC rg, SQUserPointer up,Compile
     _lasttokenline = _currentline = 1;
     _currentcolumn = 0;
     _prevtoken = -1;
+    _tokencolumn = 0;
+    _tokenline = 1;
     _reached_eof = SQFalse;
     Next();
 }
@@ -335,6 +337,8 @@ SQInteger SQLexer::LexSingleToken()
 {
     _lasttokenline = _currentline;
     while(CUR_CHAR != SQUIRREL_EOB) {
+        _tokenline = _currentline;
+        _tokencolumn = _currentcolumn;
         switch(CUR_CHAR){
         case _SC('\t'): case _SC('\r'): case _SC(' '): NEXT(); continue;
         case _SC('\n'):
@@ -342,7 +346,7 @@ SQInteger SQLexer::LexSingleToken()
             _prevtoken=_curtoken;
             _curtoken=_SC('\n');
             NEXT();
-            _currentcolumn=1;
+            _currentcolumn=0;
             continue;
         case _SC('/'):
             NEXT();

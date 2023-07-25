@@ -117,7 +117,9 @@ class GetTableExpr;
 
 class Node : public ArenaObj {
 protected:
-    Node(enum TreeOp op): _op(op), _line(-1), _column(-1) {}
+    Node(enum TreeOp op): _op(op) {
+      _coordinates.lineStart = _coordinates.lineEnd = _coordinates.columnStart = _coordinates.columnEnd = -1;
+    }
 public:
     virtual ~Node() {}
 
@@ -146,16 +148,27 @@ public:
     GetFieldExpr *asGetField() { assert(_op == TO_GETFIELD); return (GetFieldExpr*)this; }
     GetTableExpr *asGetTable() { assert(_op == TO_GETTABLE); return (GetTableExpr*)this; }
 
-    SQInteger linePos() const { return _line; }
-    void setLinePos(SQInteger pos) { _line = pos; }
+    SQInteger lineStart() const { return _coordinates.lineStart; }
+    void setLineStartPos(SQInteger pos) { _coordinates.lineStart = pos; }
+    SQInteger lineEnd() const { return _coordinates.lineEnd; }
+    void setLineEndPos(SQInteger pos) { _coordinates.lineEnd = pos; }
 
-    SQInteger columnPos() const { return _column; }
-    void setColumnPos(SQInteger pos) { _column = pos; }
+    SQInteger columnStart() const { return _coordinates.columnStart; }
+    void setColumnStartPos(SQInteger pos) { _coordinates.columnStart = pos; }
+    SQInteger columnEnd() const { return _coordinates.columnEnd; }
+    void setColumnEndPos(SQInteger pos) { _coordinates.columnEnd = pos; }
+
+    SQInteger textWidth() const { return columnEnd() - columnStart(); }
 
 private:
 
-    SQInteger _line;
-    SQInteger _column;
+    struct {
+      SQInteger lineStart;
+      SQInteger columnStart;
+
+      SQInteger lineEnd;
+      SQInteger columnEnd;
+    } _coordinates;
 
     enum TreeOp _op;
 };
@@ -213,7 +226,10 @@ private:
 
 class UnExpr : public Expr {
 public:
-    UnExpr(enum TreeOp op, Expr *arg): Expr(op), _arg(arg) {}
+    UnExpr(enum TreeOp op, Expr *arg): Expr(op), _arg(arg) {
+        setLineEndPos(arg->lineEnd());
+        setColumnEndPos(arg->columnEnd());
+    }
 
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
@@ -227,8 +243,10 @@ private:
 class BinExpr : public Expr {
 public:
     BinExpr(enum TreeOp op, Expr *lhs, Expr *rhs) : Expr(op), _lhs(lhs), _rhs(rhs) {
-        setColumnPos(lhs->columnPos());
-        setLinePos(lhs->linePos());
+        setLineStartPos(lhs->lineStart());
+        setColumnStartPos(lhs->columnStart());
+        setLineEndPos(rhs->lineEnd());
+        setColumnEndPos(rhs->columnEnd());
     }
 
     void visitChildren(Visitor *visitor);
@@ -244,8 +262,10 @@ public:
 class TerExpr : public Expr {
 public:
     TerExpr(Expr *a, Expr *b, Expr *c) : Expr(TO_TERNARY), _a(a), _b(b), _c(c) {
-        setColumnPos(a->columnPos());
-        setLinePos(a->linePos());
+        setLineStartPos(a->lineStart());
+        setColumnStartPos(a->columnStart());
+        setLineEndPos(c->lineEnd());
+        setColumnEndPos(c->columnEnd());
     }
 
     void visitChildren(Visitor *visitor);
@@ -297,10 +317,7 @@ private:
 
 class GetFieldExpr : public FieldAccessExpr {
 public:
-    GetFieldExpr(Expr *receiver, const SQChar *field, bool nullable): FieldAccessExpr(TO_GETFIELD, receiver, field, nullable) {
-        setColumnPos(receiver->columnPos());
-        setLinePos(receiver->linePos());
-    }
+    GetFieldExpr(Expr *receiver, const SQChar *field, bool nullable): FieldAccessExpr(TO_GETFIELD, receiver, field, nullable) {}
 
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
@@ -309,10 +326,7 @@ public:
 
 class SetFieldExpr : public FieldAccessExpr {
 public:
-    SetFieldExpr(Expr *receiver, const SQChar *field, Expr *value, bool nullable): FieldAccessExpr(TO_SETFIELD, receiver, field, nullable), _value(value) {
-        setColumnPos(receiver->columnPos());
-        setLinePos(receiver->linePos());
-    }
+    SetFieldExpr(Expr *receiver, const SQChar *field, Expr *value, bool nullable): FieldAccessExpr(TO_SETFIELD, receiver, field, nullable), _value(value) {}
 
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
@@ -326,10 +340,7 @@ private:
 
 class TableAccessExpr : public AccessExpr {
 protected:
-    TableAccessExpr(enum TreeOp op, Expr *receiver, Expr *key, bool nullable) : AccessExpr(op, receiver, nullable), _key(key) {
-        setColumnPos(receiver->columnPos());
-        setLinePos(receiver->linePos());
-    }
+    TableAccessExpr(enum TreeOp op, Expr *receiver, Expr *key, bool nullable) : AccessExpr(op, receiver, nullable), _key(key) {}
 public:
 
     Expr *key() const { return _key; }
@@ -339,10 +350,7 @@ protected:
 
 class GetTableExpr : public TableAccessExpr {
 public:
-    GetTableExpr(Expr *receiver, Expr *key, bool nullable): TableAccessExpr(TO_GETTABLE, receiver, key, nullable) {
-        setColumnPos(receiver->columnPos());
-        setLinePos(receiver->linePos());
-    }
+    GetTableExpr(Expr *receiver, Expr *key, bool nullable): TableAccessExpr(TO_GETTABLE, receiver, key, nullable) {}
 
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
@@ -350,10 +358,7 @@ public:
 
 class SetTableExpr : public TableAccessExpr {
 public:
-    SetTableExpr(Expr *receiver, Expr *key, Expr *val, bool nullable): TableAccessExpr(TO_SETTABLE, receiver, key, nullable), _val(val) {
-        setColumnPos(receiver->columnPos());
-        setLinePos(receiver->linePos());
-    }
+    SetTableExpr(Expr *receiver, Expr *key, Expr *val, bool nullable): TableAccessExpr(TO_SETTABLE, receiver, key, nullable), _val(val) {}
 
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
@@ -433,10 +438,7 @@ enum IncForm {
 
 class IncExpr : public Expr {
 public:
-    IncExpr(Expr *arg, SQInteger diff, enum IncForm form) : Expr(TO_INC), _arg(arg), _diff(diff), _form(form) {
-        setColumnPos(arg->columnPos());
-        setLinePos(arg->linePos());
-    }
+    IncExpr(Expr *arg, SQInteger diff, enum IncForm form) : Expr(TO_INC), _arg(arg), _diff(diff), _form(form) {}
 
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
@@ -506,7 +508,18 @@ class CommaExpr : public Expr {
 public:
     CommaExpr(Arena *arena) : Expr(TO_COMMA), _exprs(arena) {}
 
-    void addExpression(Expr *expr) { _exprs.push_back(expr); }
+    void addExpression(Expr *expr) {
+      if (_exprs.empty()) {
+        setLineStartPos(expr->lineStart());
+        setColumnStartPos(expr->columnStart());
+      }
+      else {
+        setLineEndPos(expr->lineEnd());
+        setColumnEndPos(expr->columnEnd());
+      }
+
+      _exprs.push_back(expr);
+    }
 
     void visitChildren(Visitor *visitor);
     void transformChildren(Transformer *transformer);
@@ -776,7 +789,7 @@ private:
 
 class Block : public Statement {
 public:
-    Block(Arena *arena, bool is_root = false) : Statement(TO_BLOCK), _statements(arena), _is_root(is_root), _endLine(-1), _is_body(false) {}
+    Block(Arena *arena, bool is_root = false) : Statement(TO_BLOCK), _statements(arena), _is_root(is_root), _is_body(false) {}
 
     void addStatement(Statement *stmt) { assert(stmt); _statements.push_back(stmt); }
 
@@ -791,16 +804,7 @@ public:
     bool isBody() const { return _is_body; }
     void setIsBody() { _is_body = true; }
 
-    void setStartLine(SQInteger l) { setLinePos(l); }
-    void setEndLine(SQInteger l) { _endLine = l; }
-
-    SQInteger startLine() const { return linePos(); }
-    SQInteger endLine() const { return _endLine; }
-
-
-
 private:
-    SQInteger _endLine;
     bool _is_root;
     bool _is_body;
     ArenaVector<Statement *> _statements;

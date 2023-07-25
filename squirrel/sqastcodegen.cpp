@@ -81,7 +81,7 @@ bool CodegenVisitor::generate(RootBlock *root, SQObjectPtr &out) {
         root->visit(this);
 
         _fs->SetStackSize(stacksize);
-        _fs->AddLineInfos(root->endLine(), _lineinfo, true);
+        _fs->AddLineInfos(root->lineEnd(), _lineinfo, true);
         _fs->AddInstruction(_OP_RETURN, 0xFF);
 
         if (!(_fs->lang_features & LF_DISABLE_OPTIMIZER)) {
@@ -99,8 +99,8 @@ bool CodegenVisitor::generate(RootBlock *root, SQObjectPtr &out) {
         if (_raiseerror && _ss(_vm)->_compilererrorhandler) {
             SQInteger l = -1, c = -1;
             if (_errorNode) {
-                l = _errorNode->linePos();
-                c = _errorNode->columnPos();
+                l = _errorNode->lineStart();
+                c = _errorNode->columnStart();
             }
             _ss(_vm)->_compilererrorhandler(_vm, _compilererror, _sourceName ? _sourceName : _SC("unknown"), l, c);
         }
@@ -615,8 +615,8 @@ void CodegenVisitor::generateTableDecl(TableDecl *tableDecl) {
     for (SQUnsignedInteger i = 0; i < members.size(); ++i) {
         const TableMember &m = members[i];
 #if SQ_LINE_INFO_IN_STRUCTURES
-        if (i < 100 && m.key->linePos() != -1) {
-            _fs->AddLineInfos(m.key->linePos(), false);
+        if (i < 100 && m.key->lineStart() != -1) {
+            _fs->AddLineInfos(m.key->lineStart(), false);
         }
 #endif
         CheckMemberUniqueness(memberConstantKeys, m.key);
@@ -810,7 +810,7 @@ void CodegenVisitor::visitFunctionDecl(FunctionDecl *funcDecl) {
     }
 
     Block *body = funcDecl->body();
-    SQInteger startLine = body->startLine();
+    SQInteger startLine = body->lineStart();
     if (startLine != -1) {
         _childFs->AddLineInfos(startLine, _lineinfo, false);
     }
@@ -827,7 +827,7 @@ void CodegenVisitor::visitFunctionDecl(FunctionDecl *funcDecl) {
         _fs = _childFs->_parent;
     }
 
-    _childFs->AddLineInfos(body->endLine(), _lineinfo, true);
+    _childFs->AddLineInfos(body->lineEnd(), _lineinfo, true);
     _childFs->AddInstruction(_OP_RETURN, -1);
 
     if (!(_childFs->lang_features & LF_DISABLE_OPTIMIZER)) {
@@ -911,13 +911,13 @@ void CodegenVisitor::MoveIfCurrentTargetIsLocal() {
 void CodegenVisitor::maybeAddInExprLine(Expr *expr) {
     if (!_ss(_vm)->_lineInfoInExpressions) return;
 
-    if (expr->linePos() != -1) {
-        _fs->AddLineInfos(expr->linePos(), _lineinfo, false);
+    if (expr->lineStart() != -1) {
+        _fs->AddLineInfos(expr->lineStart(), _lineinfo, false);
     }
 }
 
 void CodegenVisitor::addLineNumber(Statement *stmt) {
-    SQInteger line = stmt->linePos();
+    SQInteger line = stmt->lineStart();
     if (line != -1) {
         _fs->AddLineInfos(line, _lineinfo, false);
     }
@@ -1017,8 +1017,8 @@ void CodegenVisitor::visitArrayExpr(ArrayExpr *expr) {
     for (SQUnsignedInteger i = 0; i < inits.size(); ++i) {
         Expr *valExpr = inits[i];
 #if SQ_LINE_INFO_IN_STRUCTURES
-        if (i < 100 && valExpr->linePos() != -1)
-            _fs->AddLineInfos(valExpr->linePos(), false);
+        if (i < 100 && valExpr->lineStart() != -1)
+            _fs->AddLineInfos(valExpr->lineStart(), false);
 #endif
         visitForceGet(valExpr);
         SQInteger val = _fs->PopTarget();

@@ -125,8 +125,11 @@ public:
 
 void SQASTWritingVisitor::writeNodeHeader(const Node *n) {
   stream->writeInt32(n->op() + OP_DELTA);
-  stream->writeSQInteger(n->linePos());
-  stream->writeSQInteger(n->columnPos());
+
+  stream->writeSQInteger(n->lineStart());
+  stream->writeSQInteger(n->columnStart());
+  stream->writeSQInteger(n->lineEnd());
+  stream->writeSQInteger(n->columnEnd());
 }
 
 void SQASTWritingVisitor::writeNull() {
@@ -395,7 +398,6 @@ void SQASTWritingVisitor::visitSwitchStatement(SwitchStatement *swtch) {
 void SQASTWritingVisitor::visitBlock(Block *b) {
   writeNodeHeader(b);
 
-  stream->writeSQInteger(b->endLine());
   stream->writeUInt64(b->statements().size());
 
   for (auto &s : b->statements()) {
@@ -704,22 +706,23 @@ RootBlock *SQASTReader::readRoot() {
   RootBlock *root = (RootBlock *)readBlock(true);
   assert(root->isRoot());
 
-  root->setLinePos(line);
-  root->setColumnPos(column);
-
   return root;
 }
 
 Node *SQASTReader::readNullable() {
   int32_t op = stream->readInt32();
   if (op) {
-    SQInteger line = stream->readSQInteger();
-    SQInteger column = stream->readSQInteger();
+    SQInteger lineS = stream->readSQInteger();
+    SQInteger columnS = stream->readSQInteger();
+    SQInteger lineE = stream->readSQInteger();
+    SQInteger columnE = stream->readSQInteger();
 
     Node *n = readNode((enum TreeOp)(op - op_delta));
 
-    n->setLinePos(line);
-    n->setColumnPos(column);
+    n->setLineStartPos(lineS);
+    n->setColumnStartPos(columnS);
+    n->setLineEndPos(lineE);
+    n->setColumnEndPos(columnE);
 
     return n;
   }
@@ -739,8 +742,6 @@ Block *SQASTReader::readBlock(bool isRoot) {
   for (size_t i = 0; i < size; ++i) {
     b->addStatement(readStatement());
   }
-
-  b->setEndLine(lineEnd);
 
   return b;
 }

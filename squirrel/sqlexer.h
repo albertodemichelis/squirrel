@@ -71,6 +71,8 @@ public:
     SQInteger _currentline;
     SQInteger _lasttokenline;
     SQInteger _currentcolumn;
+    SQInteger _tokencolumn;
+    SQInteger _tokenline;
     const SQChar *_svalue;
     SQInteger _nvalue;
     SQFloat _fvalue;

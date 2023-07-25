@@ -31,19 +31,42 @@ class SQParser
 
     Id *newId(const SQChar *name) {
         Id *r = newNode<Id>(copyString(name));
-        r->setLinePos(_lex._currentline);
-        r->setColumnPos(_lex._currentcolumn);
+        r->setLineEndPos(_lex._currentline);
+        r->setColumnEndPos(_lex._currentcolumn);
         return r;
     }
 
     LiteralExpr *newStringLiteral(const SQChar *s) {
         LiteralExpr *r = newNode<LiteralExpr>(copyString(s));
-        r->setLinePos(_lex._currentline);
-        r->setColumnPos(_lex._currentcolumn);
+        r->setLineEndPos(_lex._currentline);
+        r->setColumnEndPos(_lex._currentcolumn);
         return r;
     }
 
     Arena *arena() { return _astArena; }
+
+    template<typename N>
+    N *copyCoordinates(const Node *from, N *to) {
+      to->setLineStartPos(from->lineStart());
+      to->setColumnStartPos(from->columnStart());
+      to->setLineEndPos(from->lineEnd());
+      to->setColumnEndPos(from->columnEnd());
+      return to;
+    }
+
+    template<typename N>
+    N *setCoordinates(N *to, SQInteger l, SQInteger c) {
+      to->setLineStartPos(l);
+      to->setColumnStartPos(c);
+      to->setLineEndPos(_lex._currentline);
+      to->setColumnEndPos(_lex._currentcolumn);
+      return to;
+    }
+
+
+    SQInteger line() const { return _lex._tokenline; }
+    SQInteger column() const { return _lex._tokencolumn; }
+    SQInteger width() const { return _lex._currentcolumn - _lex._tokencolumn; }
 
 public:
     uint32_t _depth;
