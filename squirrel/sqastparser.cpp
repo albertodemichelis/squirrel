@@ -31,12 +31,12 @@ struct NestingChecker {
     }
 };
 
-SQParser::SQParser(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, Arena *astArena, bool raiseerror)
+SQParser::SQParser(SQVM *v, const char *code, size_t codeSize, const SQChar* sourcename, Arena *astArena, bool raiseerror)
     : _lex(_ss(v))
     , _astArena(astArena)
 {
     _vm=v;
-    _lex.Init(_ss(v), rg, up,ThrowError,this);
+    _lex.Init(_ss(v), code, codeSize, ThrowError, this);
     _sourcename = sourcename;
     _raiseerror = raiseerror;
     _compilererror[0] = _SC('\0');

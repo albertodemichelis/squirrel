@@ -46,13 +46,13 @@ using namespace SQCompilation;
 class SQCompiler //-V553
 {
 public:
-    SQCompiler(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar* sourcename, bool raiseerror, bool lineinfo) :
+    SQCompiler(SQVM *v, const char *code, size_t codeSize, const HSQOBJECT *bindings, const SQChar* sourcename, bool raiseerror, bool lineinfo) :
         _lex(_ss(v)),
         _scopedconsts(_ss(v)->_alloc_ctx),
         _member_constant_keys_check(_ss(v)->_alloc_ctx)
     {
         _vm = v;
-        _lex.Init(_ss(v), rg, up, ThrowError, this);
+        _lex.Init(_ss(v), code, codeSize, ThrowError, this);
         _sourcename = SQString::Create(_ss(v), sourcename);
         _lineinfo = lineinfo; _raiseerror = raiseerror;
         _scope.outers = 0;
@@ -2041,8 +2041,8 @@ private:
 };
 
 
-bool CompileOnePass(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
-    SQCompiler p(vm, rg, up, bindings, sourcename, raiseerror, lineinfo);
+bool CompileOnePass(SQVM *vm, const char *sourceText, size_t sourceTextSize, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo) {
+    SQCompiler p(vm, sourceText, sourceTextSize, bindings, sourcename, raiseerror, lineinfo);
 
     if (vm->_on_compile_file)
         vm->_on_compile_file(vm, sourcename);
@@ -2050,8 +2050,8 @@ bool CompileOnePass(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJEC
     return p.Compile(out);
 }
 
-RootBlock *ParseToAST(Arena *astArena, SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, bool raiseerror) {
-  SQParser p(vm, rg, up, sourcename, astArena, raiseerror);
+RootBlock *ParseToAST(Arena *astArena, SQVM *vm, const char *sourceText, size_t sourceTextSize, const SQChar *sourcename, bool raiseerror) {
+  SQParser p(vm, sourceText, sourceTextSize, sourcename, astArena, raiseerror);
 
   RootBlock *r = p.parse();
 
@@ -2063,13 +2063,13 @@ RootBlock *ParseToAST(Arena *astArena, SQVM *vm, SQLEXREADFUNC rg, SQUserPointer
   return r;
 }
 
-bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
+bool CompileWithAst(SQVM *vm, const char *sourceText, size_t sourceTextSize, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
 {
     if (vm->_on_compile_file)
       vm->_on_compile_file(vm, sourcename);
 
     Arena astArena(_ss(vm)->_alloc_ctx, "AST");
-    RootBlock * r = ParseToAST(&astArena, vm, rg, up, sourcename, raiseerror);
+    RootBlock * r = ParseToAST(&astArena, vm, sourceText, sourceTextSize, sourcename, raiseerror);
 
     if (!r) return false;
 
@@ -2079,15 +2079,15 @@ bool CompileWithAst(SQVM *vm,SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT
     return codegen.generate(r, out);
 }
 
-bool Compile(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo, bool use_ast) {
+bool Compile(SQVM *vm, const char *sourceText, size_t sourceTextSize, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo, bool use_ast) {
 #ifdef FORCE_NEW_COMPILER
     use_ast = true;
 #endif // FORCE_NEW_COMPILER
 
 
     return use_ast
-        ? CompileWithAst(vm, rg, up, bindings, sourcename, out, raiseerror, lineinfo)
-        : CompileOnePass(vm, rg, up, bindings, sourcename, out, raiseerror, lineinfo);
+        ? CompileWithAst(vm, sourceText, sourceTextSize, bindings, sourcename, out, raiseerror, lineinfo)
+        : CompileOnePass(vm, sourceText, sourceTextSize, bindings, sourcename, out, raiseerror, lineinfo);
 }
 
 bool TranslateASTToBytecode(SQVM *vm, SqAstNode *ast, const HSQOBJECT *bindings, const SQChar *sourcename, SQObjectPtr &out, bool raiseerror, bool lineinfo)
@@ -2116,12 +2116,12 @@ bool TranslateBinaryASTToBytecode(SQVM *vm, const uint8_t *buffer, size_t size, 
     return TranslateASTToBytecode(vm, r, bindings, sourcename, out, raiseerror, lineinfo);
 }
 
-bool ParseAndSaveBinaryAST(SQVM *vm, SQLEXREADFUNC rg, SQUserPointer up, const SQChar *sourcename, OutputStream *ostream, bool raiseerror) {
+bool ParseAndSaveBinaryAST(SQVM *vm, const char *sourceText, size_t sourceTextSize, const SQChar *sourcename, OutputStream *ostream, bool raiseerror) {
     assert(_ss(vm)->checkCompilationOption(CompilationOptions::CO_USE_AST_COMPILER));
 
     Arena astArena(_ss(vm)->_alloc_ctx, "AST");
 
-    RootBlock *r = ParseToAST(&astArena, vm, rg, up, sourcename, raiseerror);
+    RootBlock *r = ParseToAST(&astArena, vm, sourceText, sourceTextSize, sourcename, raiseerror);
 
     if (!r) {
         return false;

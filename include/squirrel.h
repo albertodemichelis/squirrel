@@ -244,7 +244,7 @@ SQUIRREL_API SQRESULT sq_registerbaselib(HSQUIRRELVM v);
 /*compiler*/
 SQUIRREL_API SQRESULT sq_compileonepass(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo, const HSQOBJECT *bindings = nullptr);
 SQUIRREL_API SQRESULT sq_compilewithast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo, const HSQOBJECT *bindings = nullptr);
-SQUIRREL_API SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,const SQChar *sourcename,SQBool raiseerror,const HSQOBJECT *bindings=nullptr);
+SQRESULT sq_compile(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, const HSQOBJECT *bindings=nullptr);
 SQUIRREL_API SQRESULT sq_compilebuffer(HSQUIRRELVM v,const SQChar *s,SQInteger size,const SQChar *sourcename,SQBool raiseerror,const HSQOBJECT *bindings=nullptr);
 
 SQUIRREL_API SQRESULT sq_parsetobinaryast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, OutputStream *ostream, SQBool raiseerror);

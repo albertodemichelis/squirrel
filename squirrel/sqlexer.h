@@ -43,7 +43,7 @@ struct SQLexer
 {
     SQLexer(SQSharedState *ss);
     ~SQLexer();
-    void Init(SQSharedState *ss,SQLEXREADFUNC rg,SQUserPointer up,CompilerErrorFunc efunc,void *ed);
+    void Init(SQSharedState *ss, const char *code, size_t codeSize, CompilerErrorFunc efunc, void *ed);
     void Error(const SQChar *err);
     SQInteger Lex();
     const SQChar *Tok2Str(SQInteger tok);
@@ -60,12 +60,16 @@ private:
     void AppendPosDirective(sqvector<SQChar> & vec);
     bool ProcessReaderMacro();
     void ExitReaderMacro();
+    static SQInteger readf(void *);
     SQInteger AddUTF8(SQUnsignedInteger ch);
     SQInteger ProcessStringHexEscape(SQChar *dest, SQInteger maxdigits);
     SQInteger _curtoken;
     SQTable *_keywords;
     SQBool _reached_eof;
     SQLexerMacroState macroState;
+    const char *_code;
+    size_t _codeSize;
+    size_t _codePtr;
 public:
     SQInteger _prevtoken;
     SQInteger _currentline;

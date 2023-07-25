@@ -308,58 +308,32 @@ SQInteger file_write(SQUserPointer file,SQUserPointer p,SQInteger size)
     return sqstd_fwrite(p,1,size,(SQFILE)file);
 }
 
+static SQChar *readFileData(HSQUIRRELVM v, SQFILE f, SQInteger &s) {
+    sqstd_fseek(f, 0, SQ_SEEK_SET);
+    SQInteger size = sqstd_fseek(f, 0, SQ_SEEK_END);
+    SQChar *buffer = (SQChar *)sq_malloc(sq_getallocctx(v), size * sizeof(SQChar));
+
+    sqstd_fseek(f, 0, SQ_SEEK_SET);
+    s = sqstd_fread(buffer, sizeof(SQChar), size, f);
+
+    return buffer;
+}
+
 SQRESULT sqstd_loadfile(HSQUIRRELVM v,const SQChar *filename,SQBool printerror)
 {
     SQFILE file = sqstd_fopen(filename,_SC("rb"));
 
-    SQInteger ret;
-    unsigned short us;
-    unsigned char uc;
-    SQLEXREADFUNC func = _io_file_lexfeed_PLAIN;
     if(file){
-        ret = sqstd_fread(&us,1,2,file);
-        if(ret != 2) {
-            //probably an empty file
-            us = 0;
-        }
-        if(us == SQ_BYTECODE_STREAM_TAG) { //BYTECODE
-            sqstd_fseek(file,0,SQ_SEEK_SET);
-            if(SQ_SUCCEEDED(sq_readclosure(v,file_read,file))) {
-                sqstd_fclose(file);
-                return SQ_OK;
-            }
-        }
-        else { //SCRIPT
+        SQInteger size = 0;
+        SQChar *buffer = readFileData(v, file, size);
+        SQRESULT r = SQ_ERROR;
 
-            switch(us)
-            {
-                //gotta swap the next 2 lines on BIG endian machines
-                case 0xFFFE: func = _io_file_lexfeed_UCS2_BE; break;//UTF-16 little endian;
-                case 0xFEFF: func = _io_file_lexfeed_UCS2_LE; break;//UTF-16 big endian;
-                case 0xBBEF:
-                    if(sqstd_fread(&uc,1,sizeof(uc),file) == 0) {
-                        sqstd_fclose(file);
-                        return sq_throwerror(v,_SC("io error"));
-                    }
-                    if(uc != 0xBF) {
-                        sqstd_fclose(file);
-                        return sq_throwerror(v,_SC("Unrecognized encoding"));
-                    }
-                    func = _io_file_lexfeed_PLAIN;
-                    break;//UTF-8 ;
-                default: sqstd_fseek(file,0,SQ_SEEK_SET); break; // ascii
-            }
-            IOBuffer buffer;
-            buffer.ptr = 0;
-            buffer.size = 0;
-            buffer.file = file;
-            if(SQ_SUCCEEDED(sq_compile(v,func,&buffer,filename,printerror))){
-                sqstd_fclose(file);
-                return SQ_OK;
-            }
+        if(SQ_SUCCEEDED(sq_compile(v,buffer,size,filename,printerror))){
+            r = SQ_OK;
         }
+        sq_free(sq_getallocctx(v), buffer, size);
         sqstd_fclose(file);
-        return SQ_ERROR;
+        return r;
     }
     return sq_throwerror(v,_SC("cannot open the file"));
 }

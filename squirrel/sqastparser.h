@@ -71,7 +71,7 @@ class SQParser
 public:
     uint32_t _depth;
 
-    SQParser(SQVM *v, SQLEXREADFUNC rg, SQUserPointer up, const SQChar* sourcename, Arena *astArena, bool raiseerror);
+    SQParser(SQVM *v, const char *code, size_t codeSize, const SQChar* sourcename, Arena *astArena, bool raiseerror);
 
     static void ThrowError(void *ud, const SQChar *s) {
         SQParser *c = (SQParser *)ud;

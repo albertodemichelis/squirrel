@@ -162,12 +162,12 @@ void sq_close(HSQUIRRELVM v)
     sq_vm_destroy_alloc_context(&allocctx);
 }
 
-SQRESULT sq_compile(HSQUIRRELVM v,SQLEXREADFUNC read,SQUserPointer p,const SQChar *sourcename,SQBool raiseerror,const HSQOBJECT *bindings)
+SQRESULT sq_compile(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename,SQBool raiseerror,const HSQOBJECT *bindings)
 {
     SQObjectPtr o;
 #ifndef NO_COMPILER
     bool useAst = _ss(v)->checkCompilationOption(CompilationOptions::CO_USE_AST_COMPILER);
-    if(Compile(v, read, p, bindings, sourcename, o, raiseerror?true:false, _ss(v)->_debuginfo, useAst)) {
+    if(Compile(v, s, size, bindings, sourcename, o, raiseerror?true:false, _ss(v)->_debuginfo, useAst)) {
         v->Push(SQClosure::Create(_ss(v), _funcproto(o),
                 _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
         return SQ_OK;
@@ -1714,11 +1714,7 @@ SQInteger buf_lexfeed(SQUserPointer file)
 }
 
 SQRESULT sq_compilebuffer(HSQUIRRELVM v,const SQChar *s,SQInteger size,const SQChar *sourcename,SQBool raiseerror,const HSQOBJECT *bindings) {
-    BufState buf;
-    buf.buf = s;
-    buf.size = size;
-    buf.ptr = 0;
-    return sq_compile(v, buf_lexfeed, &buf, sourcename, raiseerror, bindings);
+    return sq_compile(v, s, size, sourcename, raiseerror, bindings);
 }
 
 SQRESULT sq_compilewithast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, SQBool debugInfo, const HSQOBJECT *bindings) {
@@ -1740,7 +1736,7 @@ SQRESULT sq_compileonepass(HSQUIRRELVM v, const SQChar *s, SQInteger size, const
     buf.ptr = 0;
 
     SQObjectPtr o;
-    if (CompileOnePass(v, buf_lexfeed, &buf, bindings, sourcename, o, raiseerror, debugInfo)) {
+    if (CompileOnePass(v, s, size, bindings, sourcename, o, raiseerror, debugInfo)) {
         v->Push(SQClosure::Create(_ss(v), _funcproto(o),
             _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
         return SQ_OK;
@@ -1760,20 +1756,12 @@ SQRESULT sq_translatebinaryasttobytecode(HSQUIRRELVM v, const uint8_t *buffer, s
 }
 
 SQRESULT sq_parsetobinaryast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, OutputStream *ostream, SQBool raiseerror) {
-    BufState buf;
-    buf.buf = s;
-    buf.size = size;
-    buf.ptr = 0;
-    return ParseAndSaveBinaryAST(v, buf_lexfeed, &buf, sourcename, ostream, raiseerror) ? SQ_OK : SQ_ERROR;
+    return ParseAndSaveBinaryAST(v, s, size, sourcename, ostream, raiseerror) ? SQ_OK : SQ_ERROR;
 }
 
 SqAstNode *sq_parsetoast(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar *sourcename, SQBool raiseerror, Arena *arena)
 {
-    BufState buf;
-    buf.buf = s;
-    buf.size = size;
-    buf.ptr = 0;
-    return (Node *)ParseToAST(arena, v, buf_lexfeed, &buf, sourcename, raiseerror);
+    return (Node *)ParseToAST(arena, v, s, size, sourcename, raiseerror);
 }
 
 void sq_dumpast(HSQUIRRELVM v, SqAstNode *ast, OutputStream *s)
