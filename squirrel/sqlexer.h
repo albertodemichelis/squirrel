@@ -70,9 +70,9 @@ private:
     SQBool _reached_eof;
     SQLexerMacroState macroState;
     SQCompilationContext &_ctx;
-    const char *_code;
-    size_t _codeSize;
-    size_t _codePtr;
+    const char *_sourceText;
+    size_t _sourceTextSize;
+    size_t _sourceTextPtr;
 public:
     SQInteger _prevtoken;
     SQInteger _currentline;

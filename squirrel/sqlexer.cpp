@@ -33,7 +33,7 @@ SQLexer::~SQLexer()
     _keywords->Release();
 }
 
-void SQLexer::Init(SQSharedState *ss, const char *code, size_t codeSize)
+void SQLexer::Init(SQSharedState *ss, const char *sourceText, size_t sourceTextSize)
 {
     _sharedstate = ss;
     _keywords = SQTable::Create(ss, 38);
@@ -80,9 +80,9 @@ void SQLexer::Init(SQSharedState *ss, const char *code, size_t codeSize)
 
 
     macroState.reset();
-    _code = code;
-    _codeSize = codeSize;
-    _codePtr = 0;
+    _sourceText = sourceText;
+    _sourceTextSize = sourceTextSize;
+    _sourceTextPtr = 0;
     _readf = &readf;
     _up = this;
     _lasttokenline = _currentline = 1;
@@ -96,11 +96,11 @@ void SQLexer::Init(SQSharedState *ss, const char *code, size_t codeSize)
 
 SQInteger SQLexer::readf(void *up) {
   SQLexer *l = (SQLexer *)up;
-  if (l->_codePtr >= l->_codeSize) {
+  if (l->_sourceTextPtr >= l->_sourceTextSize) {
     return SQUIRREL_EOB;
   }
 
-  return l->_code[l->_codePtr++];
+  return l->_sourceText[l->_sourceTextPtr++];
 }
 
 void SQLexer::Next()

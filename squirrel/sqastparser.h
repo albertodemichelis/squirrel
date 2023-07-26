@@ -76,7 +76,7 @@ public:
 
     uint32_t _depth;
 
-    SQParser(SQVM *v, const char *code, size_t codeSize, const SQChar* sourcename, Arena *astArena, SQCompilationContext &ctx);
+    SQParser(SQVM *v, const char *sourceText, size_t sourceTextSize, const SQChar* sourcename, Arena *astArena, SQCompilationContext &ctx);
 
     bool ProcessPosDirective();
     void Lex();
