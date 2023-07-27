@@ -842,7 +842,7 @@ public:
             }
             break;
         case _SC('{'):
-            _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(),0,NOT_TABLE);
+            _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(),0,0,NOT_TABLE);
             Lex();ParseTableOrClass(_SC(','),_SC('}'));
             break;
         case TK_FUNCTION: FunctionExp();break;
@@ -979,7 +979,7 @@ public:
             //check if is an attribute
             if(separator == ';') {
                 if(_token == TK_ATTR_OPEN) {
-                    _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(),0,NOT_TABLE); Lex();
+                    _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(),0,0,NOT_TABLE); Lex();
                     ParseTableOrClass(',',TK_ATTR_CLOSE);
                     hasattrs = true;
                 }
@@ -1064,7 +1064,12 @@ public:
                 Lex(); Expression();
                 SQInteger src = _fs->PopTarget();
                 SQInteger dest = _fs->PushTarget();
-                if(dest != src) _fs->AddInstruction(_OP_MOVE, dest, src);
+                if (dest != src) {
+                    if (_fs->IsLocal(src)) {
+                        _fs->SnoozeOpt();
+                    }
+                    _fs->AddInstruction(_OP_MOVE, dest, src);
+                }
             }
             else{
                 _fs->AddInstruction(_OP_LOADNULLS, _fs->PushTarget(),1);
@@ -1468,7 +1473,7 @@ public:
         }
         if(_token == TK_ATTR_OPEN) {
             Lex();
-            _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(),0,NOT_TABLE);
+            _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(),0,0,NOT_TABLE);
             ParseTableOrClass(_SC(','),TK_ATTR_CLOSE);
             attrs = _fs->TopTarget();
         }
