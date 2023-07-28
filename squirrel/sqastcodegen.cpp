@@ -720,7 +720,12 @@ void CodegenVisitor::visitVarDecl(VarDecl *var) {
         visitForceGet(var->initializer());
         SQInteger src = _fs->PopTarget();
         SQInteger dest = _fs->PushTarget();
-        if (dest != src) _fs->AddInstruction(_OP_MOVE, dest, src);
+        if (dest != src) {
+            if (_fs->IsLocal(src)) {
+                _fs->SnoozeOpt();
+            }
+            _fs->AddInstruction(_OP_MOVE, dest, src);
+        }
     }
     else {
         _fs->AddInstruction(_OP_LOADNULLS, _fs->PushTarget(), 1);

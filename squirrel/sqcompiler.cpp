@@ -1414,7 +1414,12 @@ public:
                 Lex(); Expression(SQE_REGULAR);
                 SQInteger src = _fs->PopTarget();
                 SQInteger dest = _fs->PushTarget();
-                if (dest != src) _fs->AddInstruction(_OP_MOVE, dest, src);
+                if (dest != src) {
+                    if (_fs->IsLocal(src)) {
+                        _fs->SnoozeOpt();
+                    }
+                    _fs->AddInstruction(_OP_MOVE, dest, src);
+                }
                 flags.push_back(OP_GET_FLAG_NO_ERROR | OP_GET_FLAG_KEEP_VAL);
             }
             else {
