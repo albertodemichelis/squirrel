@@ -92,21 +92,21 @@ def runTestGeneric(compiler, workingDir, dirname, name, kind, suffix, extraargs,
     if path.exists(actualResultFilePath):
         os.remove(actualResultFilePath)
 
-    compialtionCommand = [compiler, "-ast", "-optCH"]
-    compialtionCommand += extraargs
+    compilationCommand = [compiler, "-ast", "-optCH"]
+    compilationCommand += extraargs
 
     if verbose:
-        xprint(compialtionCommand)
+        xprint(compilationCommand)
 
     if stdoutFile:
         outredirect = open(actualResultFilePath, 'w+')
     else:
         outredirect = subprocess.PIPE
-        compialtionCommand += [actualResultFilePath]
+        compilationCommand += [actualResultFilePath]
 
-    compialtionCommand += [testFilePath]
+    compilationCommand += [testFilePath]
 
-    proc = Popen(compialtionCommand, stdout=outredirect, stderr=subprocess.PIPE)
+    proc = Popen(compilationCommand, stdout=outredirect, stderr=subprocess.PIPE)
 
     outs = None
     errs = None
@@ -115,7 +115,7 @@ def runTestGeneric(compiler, workingDir, dirname, name, kind, suffix, extraargs,
     except subprocess.TimeoutExpired:
         proc.kill()
         outs, errs = proc.communicate()
-        xprint("\nTIMEOUT: sq freezed on test: {0}\n".format(testFilePath), CBOLD + CRED)
+        xprint("\nTIMEOUT: sq froze on test: {0}\n".format(testFilePath), CBOLD + CRED)
         numOfFailedTests = numOfFailedTests + 1
         return
 
