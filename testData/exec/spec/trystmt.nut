@@ -3,7 +3,7 @@ let function foo(a, b, c) {
     println($"TRYING {a}")
     throw b
   } catch (e) {
-    println($"CAOUGHT {e}")
+    println($"CAUGHT {e}")
   }
   println($"FINISHING {c}")
 }
