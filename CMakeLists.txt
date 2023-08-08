@@ -1,5 +1,10 @@
-cmake_minimum_required(VERSION 3.4)
-project(squirrel VERSION 3.2 LANGUAGES C CXX)
+cmake_minimum_required(VERSION 3.12)
+project(squirrel
+  VERSION 3.2
+  DESCRIPTION "The Squirrel programming language"
+  HOMEPAGE_URL "http://squirrel-lang.org/"
+  LANGUAGES C CXX
+  )
 
 option(DISABLE_STATIC "Avoid building/installing static libraries.")
 option(LONG_OUTPUT_NAMES "Use longer names for binaries and libraries: squirrel3 (not sq).")
@@ -31,6 +36,15 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 elseif(MSVC)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
+# Need to be defined here to be visible to squirrel.pc.in
+if(LONG_OUTPUT_NAMES)
+  set(LIBSQUIRREL_NAME squirrel3)
+  set(SQSTDLIB_NAME sqstdlib3)
+else()
+  set(LIBSQUIRREL_NAME squirrel)
+  set(SQSTDLIB_NAME sqstdlib)
 endif()
 
 add_subdirectory(squirrel)
@@ -95,6 +109,12 @@ configure_package_config_file(
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/squirrel"
   )
 
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/squirrel.pc.in"
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+  @ONLY
+)
+
 if(NOT SQ_DISABLE_INSTALLER AND NOT SQ_DISABLE_CMAKE_INSTALLER)
   export(EXPORT squirrel
     NAMESPACE squirrel::
@@ -107,6 +127,17 @@ if(NOT SQ_DISABLE_INSTALLER AND NOT SQ_DISABLE_CMAKE_INSTALLER)
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/squirrel"
     COMPONENT Development
     )
+
+  # pc(5) only allows static variant to have extra flags, not an entirely new
+  # set of flags. While it's uncommon, a way to do it would be to generate a
+  # ${PROJECT_NAME}_static.pc file.
+  if(NOT DISABLE_DYNAMIC)
+    install(
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+      COMPONENT Development
+    )
+  endif()
 
   install(EXPORT squirrel
     NAMESPACE squirrel::

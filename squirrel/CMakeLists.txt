@@ -15,6 +15,7 @@ if(NOT DISABLE_DYNAMIC)
   add_library(squirrel SHARED ${SQUIRREL_SRC})
   add_library(squirrel::squirrel ALIAS squirrel)
   set_property(TARGET squirrel PROPERTY EXPORT_NAME squirrel)
+  set_property(TARGET squirrel PROPERTY OUTPUT_NAME ${LIBSQUIRREL_NAME})
   if(NOT SQ_DISABLE_INSTALLER)
     install(TARGETS squirrel EXPORT squirrel
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Libraries
@@ -45,10 +46,6 @@ if(NOT DISABLE_STATIC)
 endif()
 
 if(LONG_OUTPUT_NAMES)
-  if(NOT DISABLE_DYNAMIC)
-    set_target_properties(squirrel PROPERTIES OUTPUT_NAME squirrel3)
-  endif()
-
   if(NOT DISABLE_STATIC)
     set_target_properties(squirrel_static PROPERTIES OUTPUT_NAME squirrel3_static)
   endif()
