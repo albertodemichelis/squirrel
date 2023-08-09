@@ -1036,6 +1036,8 @@ public:
     void transformChildren(Transformer *transformer) {}
 };
 
+const char* treeopStr(enum TreeOp op);
+
 class Visitor {
 protected:
     Visitor() {}
