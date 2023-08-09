@@ -139,14 +139,14 @@ public:
     bool isExpression() const { return TO_STATEMENT_MARK < _op && _op < TO_EXPR_MARK; }
     bool isStatementOrDeclaration() const { return isStatement() || isDeclaration(); }
 
-    inline Expr *asExpression() { assert(isExpression()); return (Expr *)(this); }
-    inline Statement *asStatement() { assert(isStatementOrDeclaration()); return (Statement *)(this); }
-    inline Decl *asDeclaration() { assert(isDeclaration()); return (Decl *)(this); }
+    inline Expr *asExpression() const { assert(isExpression()); return (Expr *)(this); }
+    inline Statement *asStatement() const { assert(isStatementOrDeclaration()); return (Statement *)(this); }
+    inline Decl *asDeclaration() const { assert(isDeclaration()); return (Decl *)(this); }
 
     Id *asId() { assert(_op == TO_ID); return (Id*)this; }
     const Id *asId() const { assert(_op == TO_ID); return (const Id*)this; }
-    GetFieldExpr *asGetField() { assert(_op == TO_GETFIELD); return (GetFieldExpr*)this; }
-    GetTableExpr *asGetTable() { assert(_op == TO_GETTABLE); return (GetTableExpr*)this; }
+    GetFieldExpr *asGetField() const { assert(_op == TO_GETFIELD); return (GetFieldExpr*)this; }
+    GetTableExpr *asGetTable() const { assert(_op == TO_GETTABLE); return (GetTableExpr*)this; }
 
     SQInteger lineStart() const { return _coordinates.lineStart; }
     void setLineStartPos(SQInteger pos) { _coordinates.lineStart = pos; }
@@ -203,7 +203,7 @@ public:
     void visitChildren(Visitor *visitor) {}
     void transformChildren(Transformer *transformer) {}
 
-    const SQChar *id() { return _id; }
+    const SQChar *id() const { return _id; }
 
     void setOuterPos(SQInteger pos) { _outpos = pos; }
     
@@ -538,7 +538,7 @@ protected:
     Statement(enum TreeOp op) : Node(op) {}
 
 public:
-    inline Block *asBlock() { assert(op() == TO_BLOCK); return (Block *)(this); }
+    inline Block *asBlock() const { assert(op() == TO_BLOCK); return (Block *)(this); }
 };
 
 class DirectiveStmt : public Statement {
@@ -566,8 +566,8 @@ public:
     void setContext(enum DeclarationContext ctx) { _context = ctx; }
     enum DeclarationContext context() const { return _context; }
 
-    ParamDecl *asParam() { assert(op() == TO_PARAM); return (ParamDecl *)(this); }
-    VarDecl *asVarDecl() { assert(op() == TO_VAR); return (VarDecl *)(this); }
+    ParamDecl *asParam() const { assert(op() == TO_PARAM); return (ParamDecl *)(this); }
+    VarDecl *asVarDecl() const { assert(op() == TO_VAR); return (VarDecl *)(this); }
 
 private:
     enum DeclarationContext _context;
