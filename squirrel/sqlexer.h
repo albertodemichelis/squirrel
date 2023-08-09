@@ -77,6 +77,7 @@ public:
     SQInteger _prevtoken;
     SQInteger _currentline;
     SQInteger _lasttokenline;
+    SQInteger _lasttokencolumn;
     SQInteger _currentcolumn;
     SQInteger _tokencolumn;
     SQInteger _tokenline;

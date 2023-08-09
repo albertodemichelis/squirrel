@@ -86,7 +86,7 @@ void SQLexer::Init(SQSharedState *ss, const char *sourceText, size_t sourceTextS
     _readf = &readf;
     _up = this;
     _lasttokenline = _currentline = 1;
-    _currentcolumn = 0;
+    _lasttokencolumn = _currentcolumn = 0;
     _prevtoken = -1;
     _tokencolumn = 0;
     _tokenline = 1;
@@ -346,6 +346,7 @@ SQInteger SQLexer::Lex()
 SQInteger SQLexer::LexSingleToken()
 {
     _lasttokenline = _currentline;
+    _lasttokencolumn = _currentcolumn;
     while(CUR_CHAR != SQUIRREL_EOB) {
         _tokenline = _currentline;
         _tokencolumn = _currentcolumn;
