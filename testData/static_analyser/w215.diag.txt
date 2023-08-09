@@ -1,0 +1,16 @@
+testData/static_analyser/w215.nut line = (4) column = (10) : Warning: The '?:' operator has lower priority than the '+' operator. Perhaps the '?:' operator works in a different way than it was expected.
+local flag = true
+local b = 10 + flag ? 1 : 2
+          ^--------
+::print(b)
+
+
+AN ERROR HAS OCCURRED [arith op + on between 'integer' and 'bool']
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w215.nut line [4]
+
+LOCALS
+[flag] true
+[vargv] ARRAY
+[this] TABLE

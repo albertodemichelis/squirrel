@@ -1,0 +1,5 @@
+testData/static_analyser/w273.nut line = (3) column = (0) : Error: Unknown variable [x]
+x <- 6
+^
+return x
+

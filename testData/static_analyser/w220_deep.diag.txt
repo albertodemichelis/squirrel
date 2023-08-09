@@ -1,0 +1,6 @@
+testData/static_analyser/w220_deep.nut line = (5) column = (15) : Warning: 'foreach' on potentially nullable expression.
+  local container = a?.y()
+  foreach(x in container) {
+               ^--------
+    ::print(x)
+

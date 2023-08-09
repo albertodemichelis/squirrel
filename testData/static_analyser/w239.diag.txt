@@ -1,0 +1,5 @@
+testData/static_analyser/w239.nut line = (3) column = (4) : Warning: Function name 'isLoggedIn' implies a return boolean type but not all control paths returns boolean.
+let function isLoggedIn() { //-declared-never-used
+    ^
+  if (::userName == "")
+

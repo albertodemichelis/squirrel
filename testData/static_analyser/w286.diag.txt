@@ -1,0 +1,8 @@
+testData/static_analyser/w286.nut line = (5) column = (7) : Warning: Declaration used in arith expression as operand.
+return fn1 || ::fn2
+       ^--
+
+testData/static_analyser/w286.nut line = (5) column = (7) : Warning: Constant in a boolean expression.
+return fn1 || ::fn2
+       ^-----------
+

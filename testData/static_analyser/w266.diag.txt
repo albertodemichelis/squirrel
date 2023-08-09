@@ -1,0 +1,15 @@
+testData/static_analyser/w266.nut line = (5) column = (2) : Warning: 'while' after the statement list (forgot 'do' ?)
+  ::x++
+} while (::x)
+  ^
+::x--
+
+
+AN ERROR HAS OCCURRED [the index 'x' does not exist]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w266.nut line [4]
+
+LOCALS
+[vargv] ARRAY
+[this] TABLE

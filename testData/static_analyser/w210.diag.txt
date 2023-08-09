@@ -1,0 +1,4 @@
+testData/static_analyser/w210.nut line = (5) column = (9) : Warning: Potentially nullable expression used as array index.
+::f <- x[y?["a"]]
+         ^------
+

@@ -1,0 +1,12 @@
+testData/static_analyser/w279_1.nut line = (4) column = (18) : Warning: The variable used in for-loop does not match the initialized one.
+local j;
+for (local k = 0; j < 5; k++) {
+                  ^----
+    j = 10
+
+testData/static_analyser/w279_1.nut line = (4) column = (18) : Warning: Usage of unitialized variable.
+local j;
+for (local k = 0; j < 5; k++) {
+                  ^
+    j = 10
+

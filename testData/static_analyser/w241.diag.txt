@@ -1,0 +1,17 @@
+testData/static_analyser/w241.nut line = (4) column = (13) : Warning: Module 'string' has been required already.
+local str1 = require("string")
+local str2 = require("string")
+             ^----------------
+::print(str1, str2)
+
+
+AN ERROR HAS OCCURRED [wrong number of parameters passed to native closure 'print' (3 passed, 2 required)]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w241.nut line [5]
+
+LOCALS
+[str2] TABLE
+[str1] TABLE
+[vargv] ARRAY
+[this] TABLE

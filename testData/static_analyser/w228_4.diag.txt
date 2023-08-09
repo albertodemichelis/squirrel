@@ -1,0 +1,10 @@
+testData/static_analyser/w228_4.nut line = (3) column = (0) : Warning: let 'f' was declared but never used.
+let f = function foo() {}
+^--
+let c = class {}
+
+testData/static_analyser/w228_4.nut line = (4) column = (0) : Warning: let 'c' was declared but never used.
+let f = function foo() {}
+let c = class {}
+^---------------
+

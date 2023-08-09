@@ -1,0 +1,5 @@
+testData/static_analyser/w286_2.nut line = (6) column = (7) : Warning: Declaration used in arith expression as operand.
+}
+return cls || ::fn2 //-const-in-bool-expr
+       ^--
+

@@ -1,0 +1,6 @@
+testData/static_analyser/w220.nut line = (4) column = (15) : Warning: 'foreach' on potentially nullable expression.
+let function foo(a){ //-declared-never-used
+  foreach(x in a?.y()) {
+               ^-----
+    ::print(x)
+

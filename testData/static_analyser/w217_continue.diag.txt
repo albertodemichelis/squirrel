@@ -1,0 +1,12 @@
+testData/static_analyser/w217_continue.nut line = (7) column = (4) : Warning: Unconditional 'continue' inside a loop.
+      ::h(::a, x)
+    continue;
+    ^--------
+    x--;
+
+testData/static_analyser/w217_continue.nut line = (8) column = (4) : Warning: Unreachable code after 'continue'.
+    continue;
+    x--;
+    ^--
+  } while (x)
+

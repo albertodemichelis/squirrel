@@ -1,0 +1,6 @@
+testData/static_analyser/w211.nut line = (12) column = (7) : Warning: Duplicate case value.
+  case MODE.MODE_2: ::print("2"); break;
+  case MODE.MODE_1: ::print("3"); break;
+       ^----------
+  default:
+

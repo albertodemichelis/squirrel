@@ -1,0 +1,6 @@
+testData/static_analyser/w275.nut line = (19) column = (6) : Warning: A 'break' statement is probably missing in a 'switch' statement.
+    case 4:
+      ::print("ccc")
+      ^-------------
+    default:        // <<<<<<< here
+

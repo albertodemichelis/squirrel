@@ -1,0 +1,14 @@
+testData/static_analyser/w254.nut line = (3) column = (4) : Warning: Boolean passed to 'in' operator.
+if (!"weapModSlotName" in ::item)
+    ^---------------------------
+  return null
+
+
+AN ERROR HAS OCCURRED [the index 'item' does not exist]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w254.nut line [3]
+
+LOCALS
+[vargv] ARRAY
+[this] TABLE

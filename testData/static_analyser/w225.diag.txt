@@ -1,0 +1,5 @@
+testData/static_analyser/w225.nut line = (3) column = (4) : Warning: Not all control paths return a value.
+let function x(y) { //-declared-never-used
+    ^
+  if (y == 1)
+

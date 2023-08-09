@@ -1,0 +1,4 @@
+testData/static_analyser/w235.nut line = (3) column = (19) : Warning: Result of division will be integer.
+::aspect_ratio <- (1280 / (720))
+                   ^-----------
+

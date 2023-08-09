@@ -1,0 +1,6 @@
+testData/static_analyser/w229.nut line = (4) column = (16) : Warning: Duplicate expression found inside the sequance of operations.
+local a ={x=0, y=0, z=1}
+if (a.x == 0 && a.y == 0 && a.x == 0)
+                ^-------------------
+  ::print("vector == zero")
+

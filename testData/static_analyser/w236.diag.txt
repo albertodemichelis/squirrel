@@ -1,0 +1,6 @@
+testData/static_analyser/w236.nut line = (4) column = (30) : Warning: Shift operator has lower priority. Perhaps parentheses are missing?
+let function foo(berserkFx, state){ //-declared-never-used
+  if (!berserkFx && (state & (1 << ::SCRIPT_STATE_USER_SHIFT + 4)))
+                              ^---------------------------------
+    ::print(1)
+

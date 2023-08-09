@@ -1,0 +1,6 @@
+testData/static_analyser/w200_arith.nut line = (3) column = (10) : Warning: Arithmetic operation with potentially nullable expression.
+local x = {y = 2}
+local a = x?.y - 8
+          ^---
+::print(a)
+

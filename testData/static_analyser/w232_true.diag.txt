@@ -1,0 +1,5 @@
+testData/static_analyser/w232_true.nut line = (7) column = (8) : Warning: Expression is always 'true'.
+local i = 2
+::print(s.charAt(i) != ' ' || s.charAt(i) != '\t')
+        ^----------------------------------------
+

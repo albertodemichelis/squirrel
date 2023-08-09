@@ -1,0 +1,13 @@
+testData/static_analyser/w250.nut line = (3) column = (8) : Warning: Comparison with a array.
+return (::a != [])
+        ^--------
+
+
+AN ERROR HAS OCCURRED [the index 'a' does not exist]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w250.nut line [3]
+
+LOCALS
+[vargv] ARRAY
+[this] TABLE

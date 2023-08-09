@@ -1,0 +1,6 @@
+testData/static_analyser/w279_2.nut line = (4) column = (25) : Warning: The variable used in for-loop does not match the initialized one.
+local j = 0;
+for (local k = 0; k < 5; j++) {
+                         ^--
+    k = 10
+

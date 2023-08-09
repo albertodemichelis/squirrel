@@ -1,0 +1,5 @@
+testData/static_analyser/w212.nut line = (4) column = (4) : Warning: Detected pattern 'if (A) {...} else if (A) {...}'. Branch unreachable.
+if (x == 1)
+    ^-----
+  ::print("1")
+

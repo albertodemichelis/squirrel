@@ -1,0 +1,5 @@
+testData/static_analyser/w217_throw.nut line = (8) column = (4) : Warning: Unconditional 'throw' inside a loop.
+    throw "err"
+    ^----------
+  }
+

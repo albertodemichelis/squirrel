@@ -1,0 +1,6 @@
+testData/static_analyser/w222.nut line = (4) column = (12) : Warning: Boolean used as array index.
+let function foo(a,x,y) { //-declared-never-used
+  ::print(a[x < y])
+            ^----
+}
+

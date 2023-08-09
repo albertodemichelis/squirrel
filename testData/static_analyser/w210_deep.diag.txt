@@ -1,0 +1,4 @@
+testData/static_analyser/w210_deep.nut line = (6) column = (9) : Warning: Potentially nullable expression used as array index.
+::f <- x[index]
+         ^----
+

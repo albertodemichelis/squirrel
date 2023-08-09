@@ -1,0 +1,6 @@
+testData/static_analyser/w208.nut line = (3) column = (0) : Warning: Assignment to potentially nullable expression.
+local x = { z = {y = 3}}
+x.z?.y <- 6
+^-----
+::print(x.z.y)
+

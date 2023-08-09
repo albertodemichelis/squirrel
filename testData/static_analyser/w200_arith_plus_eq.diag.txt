@@ -1,0 +1,6 @@
+testData/static_analyser/w200_arith_plus_eq.nut line = (4) column = (0) : Warning: Arithmetic operation with potentially nullable expression.
+local a = x?.z
+a -= 10
+^
+::print(a)
+

@@ -1,0 +1,5 @@
+testData/static_analyser/w232_false.nut line = (7) column = (8) : Warning: Expression is always 'false'.
+}
+::print(a == ::XEnum.PARAM_A && a == ::XEnum.PARAM_B)
+        ^-------------------------------------------
+

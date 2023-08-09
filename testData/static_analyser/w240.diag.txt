@@ -1,0 +1,13 @@
+testData/static_analyser/w240.nut line = (6) column = (13) : Warning: The '??' operator has a lower priority than the '!=' operator (a??b > c == a??(b > c)). Perhaps the '??' operator works in a different way than it was expected.
+::print(a ?? b != 1) // expected boolean
+             ^-----
+
+
+AN ERROR HAS OCCURRED [the index 'x' does not exist]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w240.nut line [3]
+
+LOCALS
+[vargv] ARRAY
+[this] TABLE

@@ -1,32 +1,48 @@
-testData/static_analyser/logic_ops_paren.nut line = (4) column = (8) : warning: Priority of the '&&' operator is higher than that of the '||' operator. Perhaps parentheses are missing?
+testData/static_analyser/logic_ops_paren.nut line = (4) column = (8) : Warning: Priority of the '&&' operator is higher than that of the '||' operator. Perhaps parentheses are missing?
 let a = x && y || z
         ^----------
 let b = x || y && z
 
-testData/static_analyser/logic_ops_paren.nut line = (5) column = (8) : warning: Priority of the '&&' operator is higher than that of the '||' operator. Perhaps parentheses are missing?
+testData/static_analyser/logic_ops_paren.nut line = (4) column = (8) : Warning: Constant in a boolean expression.
+let a = x && y || z
+        ^-----
+let b = x || y && z
+
+testData/static_analyser/logic_ops_paren.nut line = (5) column = (8) : Warning: Priority of the '&&' operator is higher than that of the '||' operator. Perhaps parentheses are missing?
 let a = x && y || z
 let b = x || y && z
         ^----------
 let c = (x && y) || z
 
-testData/static_analyser/logic_ops_paren.nut line = (9) column = (8) : warning: Result of bitwise operation used in boolean expression. Perhaps parentheses are missing?
+testData/static_analyser/logic_ops_paren.nut line = (5) column = (13) : Warning: Constant in a boolean expression.
+let a = x && y || z
+let b = x || y && z
+             ^-----
+let c = (x && y) || z
+
+testData/static_analyser/logic_ops_paren.nut line = (7) column = (14) : Warning: Constant in a boolean expression.
+let c = (x && y) || z
+let d = x || (y && z)
+              ^-----
+
+testData/static_analyser/logic_ops_paren.nut line = (9) column = (8) : Warning: Result of bitwise operation used in boolean expression. Perhaps parentheses are missing?
 let e = x || y | z
         ^---------
 let f = x || y & z
 
-testData/static_analyser/logic_ops_paren.nut line = (10) column = (8) : warning: Result of bitwise operation used in boolean expression. Perhaps parentheses are missing?
+testData/static_analyser/logic_ops_paren.nut line = (10) column = (8) : Warning: Result of bitwise operation used in boolean expression. Perhaps parentheses are missing?
 let e = x || y | z
 let f = x || y & z
         ^---------
 let g = x && y | z
 
-testData/static_analyser/logic_ops_paren.nut line = (11) column = (8) : warning: Result of bitwise operation used in boolean expression. Perhaps parentheses are missing?
+testData/static_analyser/logic_ops_paren.nut line = (11) column = (8) : Warning: Result of bitwise operation used in boolean expression. Perhaps parentheses are missing?
 let f = x || y & z
 let g = x && y | z
         ^---------
 let h = x && y & z
 
-testData/static_analyser/logic_ops_paren.nut line = (12) column = (8) : warning: Result of bitwise operation used in boolean expression. Perhaps parentheses are missing?
+testData/static_analyser/logic_ops_paren.nut line = (12) column = (8) : Warning: Result of bitwise operation used in boolean expression. Perhaps parentheses are missing?
 let g = x && y | z
 let h = x && y & z
         ^---------

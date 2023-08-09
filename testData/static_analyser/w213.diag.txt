@@ -1,0 +1,6 @@
+testData/static_analyser/w213.nut line = (8) column = (7) : Warning: then' statement is equivalent to 'else' statement.
+  }
+  else {
+       ^
+    x /= 4
+

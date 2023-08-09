@@ -1,0 +1,4 @@
+testData/static_analyser/w227_fn_with_same_param.nut line = (3) column = (17) : Warning: parameter 'txt' hides function with the same name.
+let function txt(txt) {} //-declared-never-used
+                 ^--
+

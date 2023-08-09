@@ -1,0 +1,6 @@
+testData/static_analyser/w227.nut line = (6) column = (4) : Warning: variable 'a' hides parameter with the same name.
+    local x = c
+    local a = x
+    ^-
+    ::print(a)
+

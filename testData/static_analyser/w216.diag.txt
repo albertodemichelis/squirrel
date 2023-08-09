@@ -1,0 +1,5 @@
+testData/static_analyser/w216.nut line = (5) column = (4) : Warning: Left and right operands of '<' operator are the same.
+if (a.x < a.x)
+    ^--------
+  ::print("x < y")
+

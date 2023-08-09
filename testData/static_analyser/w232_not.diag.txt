@@ -1,0 +1,11 @@
+testData/static_analyser/w232_not.nut line = (3) column = (8) : Warning: Expression is always 'false'.
+local i = {x = true}
+::print(i.x && !i.x)
+        ^-----------
+::print(!i.x || i.x)
+
+testData/static_analyser/w232_not.nut line = (4) column = (8) : Warning: Expression is always 'true'.
+::print(i.x && !i.x)
+::print(!i.x || i.x)
+        ^----------
+

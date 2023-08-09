@@ -1,0 +1,4 @@
+testData/static_analyser/w260_local_function.nut line = (3) column = (6) : Warning: Function 'getSettings' has name like it should return a value, but not all control paths returns a value.
+local function getSettings(path) { return } //-declared-never-used
+      ^------------------------------------
+

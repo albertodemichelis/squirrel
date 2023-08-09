@@ -1,0 +1,4 @@
+testData/static_analyser/w209.nut line = (5) column = (0) : Warning: The variable is assigned to itself.
+x.y = (((x.y)))
+^--------------
+

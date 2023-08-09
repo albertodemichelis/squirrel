@@ -1,0 +1,7 @@
+testData/static_analyser/w228_3.nut line = (4) column = (2) : Warning: variable 'f' was declared but never used.
+let function fn() { //-declared-never-used
+  local f = 123
+  ^----
+  local c = { f = 3 }
+
+testData/static_analyser/w228_3.nut line = (-1) column = (-1) : Warning: field 'f' hides variable with the same name.

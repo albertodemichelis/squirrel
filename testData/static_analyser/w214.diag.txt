@@ -1,0 +1,13 @@
+testData/static_analyser/w214.nut line = (9) column = (7) : Warning: Both branches of operator '<> ? <> : <>' are equivalent.
+::x <- test ? REPLAY.SKIRMISH : REPLAY.SKIRMISH
+       ^---------------------------------------
+
+
+AN ERROR HAS OCCURRED [the index 'f' does not exist]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w214.nut line [2]
+
+LOCALS
+[vargv] ARRAY
+[this] TABLE

@@ -1,4 +1,4 @@
-
+//-file:declared-never-used
 local x = 1, y = 2, z = 3;
 
 let a = x && y || z

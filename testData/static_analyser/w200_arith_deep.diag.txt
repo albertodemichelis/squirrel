@@ -1,0 +1,6 @@
+testData/static_analyser/w200_arith_deep.nut line = (4) column = (10) : Warning: Arithmetic operation with potentially nullable expression.
+local z = x?.y
+local a = z - 8
+          ^
+::print(a)
+

@@ -1,0 +1,5 @@
+testData/static_analyser/w226.nut line = (3) column = (4) : Warning: Function can return different types.
+let function x(y) { //-declared-never-used
+    ^
+  if (y == 1)
+

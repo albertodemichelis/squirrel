@@ -1,0 +1,6 @@
+testData/static_analyser/w224_while.nut line = (8) column = (18) : Warning: 'while' operator has an empty body.
+      break;
+  } while (x < 6) ;
+                  ^
+}
+

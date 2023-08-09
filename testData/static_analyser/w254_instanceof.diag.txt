@@ -1,0 +1,16 @@
+testData/static_analyser/w254_instanceof.nut line = (3) column = (4) : Warning: Boolean passed to 'instanceof' operator.
+local x = 10
+if (x instanceof !"weapModSlotName")
+    ^-------------------------------
+  return null
+
+
+AN ERROR HAS OCCURRED [cannot apply instanceof between a bool and a integer]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w254_instanceof.nut line [3]
+
+LOCALS
+[x] 10
+[vargv] ARRAY
+[this] TABLE

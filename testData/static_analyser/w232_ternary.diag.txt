@@ -1,0 +1,6 @@
+testData/static_analyser/w232_ternary.nut line = (2) column = (12) : Warning: Expression is always 'true'.
+//expect:w232
+local foo = function() { } ? false : true
+            ^---------------
+return foo
+

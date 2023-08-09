@@ -1,0 +1,5 @@
+testData/static_analyser/w274.nut line = (6) column = (17) : Warning: Iterator 'v' is trying to be captured in closure.
+foreach (v in [1, 2, 3])
+  tab.append(@() v)
+                 ^
+

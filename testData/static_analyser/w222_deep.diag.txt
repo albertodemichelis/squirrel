@@ -1,0 +1,6 @@
+testData/static_analyser/w222_deep.nut line = (10) column = (14) : Warning: Boolean used as array index.
+    b()
+    ::print(a[index])
+              ^----
+  }
+

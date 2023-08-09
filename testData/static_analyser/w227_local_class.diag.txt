@@ -1,0 +1,6 @@
+testData/static_analyser/w227_local_class.nut line = (6) column = (4) : Warning: variable 'x' hides field with the same name.
+  function fn() {
+    local x = 6
+    ^-
+    ::print(x)
+

@@ -1,0 +1,5 @@
+testData/static_analyser/w233.nut line = (4) column = (19) : Warning: Constant in a boolean expression.
+::flags <- 0x2040
+::aspect_ratio <- (::flags && 0x40)
+                   ^--------------
+

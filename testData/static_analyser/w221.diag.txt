@@ -1,0 +1,6 @@
+testData/static_analyser/w221.nut line = (6) column = (4) : Warning: Result of operation is not used.
+    z--
+    ::x == y
+    ^-------
+  }
+

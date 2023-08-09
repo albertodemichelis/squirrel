@@ -1,0 +1,5 @@
+testData/static_analyser/w224_then.nut line = (4) column = (11) : Warning: 'then' operator has an empty body.
+if (x == 5);
+           ^
+{
+

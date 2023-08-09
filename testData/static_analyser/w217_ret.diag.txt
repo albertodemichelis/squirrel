@@ -1,0 +1,5 @@
+testData/static_analyser/w217_ret.nut line = (8) column = (4) : Warning: Unconditional 'return' inside a loop.
+    return
+    ^-----
+  }
+

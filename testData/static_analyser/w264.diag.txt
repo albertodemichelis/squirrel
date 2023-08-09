@@ -1,0 +1,4 @@
+testData/static_analyser/w264.nut line = (7) column = (7) : Warning: Usage of '+' for string concatenation.
+return a + 3
+       ^----
+

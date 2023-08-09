@@ -1,0 +1,6 @@
+testData/static_analyser/w234.nut line = (4) column = (10) : Warning: Integer division by zero.
+let function foo() { //-declared-never-used
+  ::print(1 / (0))
+          ^------
+}
+
