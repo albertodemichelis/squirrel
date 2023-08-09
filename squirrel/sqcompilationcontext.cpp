@@ -15,6 +15,9 @@ struct DiagnosticDescriptor {
 };
 
 static const char severityPrefixes[] = "hwe";
+static const char *severityNames[] = {
+  "Hint", "Warning", "Error", nullptr
+};
 
 static DiagnosticDescriptor diagnsoticDescriptors[] = {
 #define DEF_DIAGNOSTIC(_, severity, ___, num_id, text_id, fmt) { _SC(fmt), DS_##severity, num_id, _SC(text_id), false }
@@ -148,7 +151,7 @@ void SQCompilationContext::vreportDiagnostic(enum DiagnosticsId diagId, int32_t 
   char tempBuffer[2048] = { 0 };
   std::string message;
 
-  int32_t i = snprintf(tempBuffer, sizeof tempBuffer, "%s: ", isError ? "error" : "warning");
+  int32_t i = snprintf(tempBuffer, sizeof tempBuffer, "%s: ", severityNames[desc.severity]);
 
   message.append(tempBuffer);
 
