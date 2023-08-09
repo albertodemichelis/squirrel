@@ -238,6 +238,7 @@ public:
         _out->writeString(")\n");
         _indent += 2;
         visitLoopStatement(loop);
+        newLine();
         _indent -= 2;
         indent(_indent);
         _out->writeString("END_WHILE");
