@@ -1,4 +1,4 @@
-testData/diagnostics/assign_and_crash.nut line = (1) column = (28) : error: malformed number
+testData/diagnostics/assign_and_crash.nut line = (1) column = (28) : Error: malformed number
 1*5*5*2?2?.v.v:=22?.v.v:=3.*5w5*2?2?.v.v:=2*;
                             ^
 

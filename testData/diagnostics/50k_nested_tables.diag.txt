@@ -1,4 +1,4 @@
-testData/diagnostics/50k_nested_tables.nut line = (1) column = (101) : error: AST too big. Consider simplifing it
+testData/diagnostics/50k_nested_tables.nut line = (1) column = (101) : Error: AST too big. Consider simplifing it
 x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={
                                                                                                      ^
 x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={x={

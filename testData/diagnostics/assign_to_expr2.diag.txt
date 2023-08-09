@@ -1,4 +1,4 @@
-testData/diagnostics/assign_to_expr2.nut line = (1) column = (13) : error: can't assign to expression
+testData/diagnostics/assign_to_expr2.nut line = (1) column = (13) : Error: can't assign to expression
 local x; @() !x = 1
              ^---
 

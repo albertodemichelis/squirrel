@@ -1,4 +1,4 @@
-testData/diagnostics/50k_paren_brackets.nut line = (1) column = (35) : error: AST too big. Consider simplifing it
+testData/diagnostics/50k_paren_brackets.nut line = (1) column = (35) : Error: AST too big. Consider simplifing it
 (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
                                    ^
 (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((

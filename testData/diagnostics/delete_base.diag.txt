@@ -1,4 +1,4 @@
-testData/diagnostics/delete_base.nut line = (1) column = (0) : error: can't delete 'base'
+testData/diagnostics/delete_base.nut line = (1) column = (0) : Error: can't delete 'base'
 delete base
 ^----------
 

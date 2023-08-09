@@ -1,4 +1,4 @@
-testData/diagnostics/unfinished_hex.nut line = (1) column = (8) : error: expected hex digits after '0x'
+testData/diagnostics/unfinished_hex.nut line = (1) column = (8) : Error: expected hex digits after '0x'
 println(0x)
         ^-
 

@@ -1,4 +1,4 @@
-testData/diagnostics/var_scope_4.nut line = (8) column = (10) : error: Unknown variable [x]
+testData/diagnostics/var_scope_4.nut line = (8) column = (10) : Error: Unknown variable [x]
   case 1:
     print(x);
           ^

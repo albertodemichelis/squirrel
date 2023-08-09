@@ -1,4 +1,4 @@
-testData/diagnostics/hex_overflow.nut line = (1) column = (8) : error: too many digits for an Hex number
+testData/diagnostics/hex_overflow.nut line = (1) column = (8) : Error: too many digits for an Hex number
 println(0x1_0000_0000_0000_0000)
         ^----------------------
 
