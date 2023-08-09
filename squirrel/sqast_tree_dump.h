@@ -3,6 +3,8 @@
 #include <iostream>
 #include "sqast.h"
 
+namespace SQCompilation {
+
 class TreeDumpVisitor : public Visitor {
 
     void indent(int ind) {
@@ -83,3 +85,4 @@ public:
     }
 };
 
+} // namespace SQCompilation
