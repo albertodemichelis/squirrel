@@ -68,7 +68,7 @@ static const char *strstr_nl(const char *str, const char *fnd) {
 
   while (*str != '\0' && *str != '\n') {
     if (*str == *fnd) {
-      if (memcmp(str, fnd, len)) {
+      if (strncmp(str, fnd, len) == 0) {
         return str;
       }
     }
