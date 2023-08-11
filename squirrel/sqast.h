@@ -7,6 +7,8 @@
 #include "arena.h"
 #include "sqobject.h"
 
+// NOTE: There are some checkers that rely on the order of this list so re-arrange it carrefuly
+
 #define TREE_OPS \
     DEF_TREE_OP(BLOCK), \
     DEF_TREE_OP(IF), \
