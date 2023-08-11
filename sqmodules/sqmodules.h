@@ -35,6 +35,7 @@ public:
     compilationOptions.useAST = false;
     compilationOptions.raiseError = true;
     compilationOptions.debugInfo = false;
+    compilationOptions.doStaticAnalysis = false;
   }
 
   HSQUIRRELVM getVM() { return sqvm; }
