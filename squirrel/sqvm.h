@@ -81,7 +81,6 @@ public:
     bool Set(const SQObjectPtr &self, const SQObjectPtr &key, const SQObjectPtr &val, SQInteger selfidx);
     SQInteger FallBackSet(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val);
     bool NewSlot(const SQObjectPtr &self, const SQObjectPtr &key, const SQObjectPtr &val,bool bstatic);
-    bool NewSlotA(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val,bool bstatic,bool raw);
     bool DeleteSlot(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &res);
     bool Clone(const SQObjectPtr &self, SQObjectPtr &target);
     bool ObjCmp(const SQObjectPtr &o1, const SQObjectPtr &o2,SQInteger &res);

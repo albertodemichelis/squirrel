@@ -315,8 +315,6 @@ For C++ programmers: "metamethods behave roughly like overloaded operators".
 The metamethods supported by classes are ``_add, _sub, _mul, _div, _unm, _modulo,
 _set, _get, _typeof, _nexti, _cmp, _call, _delslot, _tostring``
 
-Class objects instead support only 2 metamethods : ``_newmember`` and ``_inherited``
-
 the following example show how to create a class that implements the metamethod ``_add``.::
 
     class Vector3 {
@@ -340,7 +338,3 @@ the following example show how to create a class that implements the metamethod 
     let v1 = Vector3(11,12,13)
     let v2 = v0 + v1
     println($"{v2.x}, "{v2.y}, {v2.z}")
-
-Since version 2.1, classes support 2 metamethods ``_inherited`` and ``_newmember``.
-``_inherited`` is invoked when a class inherits from the one that implements ``_inherited``.
-``_newmember`` is invoked for each member that is added to the class(at declaration time).

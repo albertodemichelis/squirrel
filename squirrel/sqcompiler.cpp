@@ -1351,7 +1351,7 @@ public:
                 _fs->AddInstruction(_OP_NEWSLOT, 0xFF, table, key, val);
             }
             else {
-                _fs->AddInstruction(_OP_NEWSLOTA, flags, table, key, val); //this for classes only as it invokes _newmember
+                _fs->AddInstruction(_OP_NEWSLOTA, flags, table, key, val); //for classes only
             }
         }
         if (otype == NOT_TABLE)

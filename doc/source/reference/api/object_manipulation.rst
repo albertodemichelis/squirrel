@@ -252,7 +252,6 @@ Determines if an object is an instance of a certain class. Expects an instance a
     :param SQInteger idx: index of the target table in the stack
     :param SQBool bstatic: if SQTrue creates a static member.
     :returns: a SQRESULT
-    :remarks: Invokes the _newmember metamethod in the class. it only works on classes.
 
 pops a key and a value from the stack and performs a new slot operation on the class that is at position idx in the stack; if the slot does not exist, it will be created.
 
@@ -315,22 +314,6 @@ Deletes a slot from a table without employing the _delslot metamethod. Pops a ke
     :remarks: Only works on tables and arrays.
 
 pops a key from the stack and performs a get operation on the object at position idx in the stack, without employing delegation or metamethods.
-
-
-
-
-
-.. _sq_rawnewmember:
-
-.. c:function:: SQRESULT sq_rawnewmember(HSQUIRRELVM v, SQInteger idx, SQBool bstatic)
-
-    :param HSQUIRRELVM v: the target VM
-    :param SQInteger idx: index of the target table in the stack
-    :param SQBool bstatic: if SQTrue creates a static member.
-    :returns: a SQRESULT
-    :remarks: it only works on classes.
-
-pops a key and a value from the stack and performs a new slot operation on the class that is at position idx in the stack; if the slot does not exist it will be created.
 
 
 

@@ -7,7 +7,7 @@ Metamethods
 Metamethods are a mechanism that allows the customization of certain aspects of the
 language semantics. Those methods are normal functions placed in a class declaration;
 It is possible to change many aspects of a table/class instance behavior by just defining
-a metamethod. Class objects (not instances) support only 2 metamethods ``_newmember, _inherited`` .
+a metamethod.
 
 For example when we use relational operators other than '==' on 2 instances, the VM will
 check if the class has a method in his parent called '_cmp'; if so it will call it to determine
@@ -224,28 +224,3 @@ Invoked when during string concatenation or when the ``print`` function prints a
 The method is also invoked by the sq_tostring() API.
 
 Must return a string representation of the object.
-
-^^^^^^^^^^^^^^^^^^^^^^^^
-_inherited
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-::
-
-    _inherited()
-
-invoked when a class object inherits from the class implementing ``_inherited``.
-The ``this`` contains the new class.
-
-Return value is ignored.
-
-^^^^^^^^^^^^^^^^^^^^^^^^
-_newmember
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-::
-
-    _newmember(index,value,isstatic)
-
-invoked for each member declared in a class body (at declaration time).
-
-If the function is implemented, members will not be added to the class.

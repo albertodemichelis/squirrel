@@ -2234,22 +2234,6 @@ static SQInteger class_newmember(HSQUIRRELVM v)
     return SQ_SUCCEEDED(sq_newmember(v,-4,bstatic))?1:SQ_ERROR;
 }
 
-static SQInteger class_rawnewmember(HSQUIRRELVM v)
-{
-    SQInteger top = sq_gettop(v);
-    SQBool bstatic = SQFalse;
-    if(top == 5)
-    {
-        sq_tobool(v,-1,&bstatic);
-        sq_pop(v,1);
-    }
-
-    if(top < 4) {
-        sq_pushnull(v);
-    }
-    return SQ_SUCCEEDED(sq_rawnewmember(v,-4,bstatic))?1:SQ_ERROR;
-}
-
 
 static SQInteger get_class_metamethod(HSQUIRRELVM v)
 {
@@ -2276,7 +2260,6 @@ const SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
     {_SC("instance"),class_instance,1, _SC("y")},
     {_SC("getbase"),class_getbase,1, _SC("y")},
     {_SC("newmember"),class_newmember,-3, _SC("y")},
-    {_SC("rawnewmember"),class_rawnewmember,-3, _SC("y")},
     {_SC("getfuncinfos"),class_getfuncinfos,1, _SC("y")},
     {_SC("call"),closure_call,-1, _SC("y")},
     {_SC("pcall"),closure_pcall,-1, _SC("y")},

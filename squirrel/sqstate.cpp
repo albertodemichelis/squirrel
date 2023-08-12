@@ -143,8 +143,6 @@ void SQSharedState::Init()
     newmetamethod(MM_NEWSLOT);
     newmetamethod(MM_DELSLOT);
     newmetamethod(MM_TOSTRING);
-    newmetamethod(MM_NEWMEMBER);
-    newmetamethod(MM_INHERITED);
 
     _constructorstr = SQString::Create(this,_SC("constructor"));
     _registry = SQTable::Create(this,0);

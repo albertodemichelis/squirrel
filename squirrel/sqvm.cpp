@@ -703,16 +703,6 @@ bool SQVM::CLASS_OP(SQObjectPtr &target,SQInteger baseclass)
         base = _class(_stack._vals[_stackbase + baseclass]);
     }
     target = SQClass::Create(_ss(this),base);
-    if(sq_type(_class(target)->_metamethods[MT_INHERITED]) != OT_NULL) {
-        int nparams = 1;
-        SQObjectPtr ret;
-        Push(target);
-        if(!Call(_class(target)->_metamethods[MT_INHERITED],nparams,_top - nparams, ret, false)) {
-            Pop(nparams);
-            return false;
-        }
-        Pop(nparams);
-    }
     return true;
 }
 
@@ -1414,7 +1404,7 @@ exception_restore:
                 continue;
             case _OP_THROW: Raise_Error(TARGET); SQ_THROW(); continue;
             case _OP_NEWSLOTA:
-                _GUARD(NewSlotA(STK(arg1),STK(arg2),STK(arg3),(arg0&NEW_SLOT_STATIC_FLAG)?true:false,false));
+                _GUARD(NewSlot(STK(arg1),STK(arg2),STK(arg3),(arg0&NEW_SLOT_STATIC_FLAG)?true:false));
                 continue;
             case _OP_GETBASE:{
                 SQClosure *clo = _closure(ci->_closure);
@@ -1953,25 +1943,6 @@ cloned_mt:
     }
 }
 
-bool SQVM::NewSlotA(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val,bool bstatic,bool raw)
-{
-    if(sq_type(self) != OT_CLASS) {
-        Raise_Error(_SC("object must be a class"));
-        return false;
-    }
-    SQClass *c = _class(self);
-    if(!raw) {
-        SQObjectPtr &mm = c->_metamethods[MT_NEWMEMBER];
-        if(sq_type(mm) != OT_NULL ) {
-            Push(self); Push(key); Push(val);
-            Push(bstatic);
-            return CallMetaMethod(mm,MT_NEWMEMBER,5,temp_reg);
-        }
-    }
-    if(!NewSlot(self, key, val,bstatic))
-        return false;
-    return true;
-}
 
 bool SQVM::NewSlot(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val,bool bstatic)
 {

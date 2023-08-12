@@ -765,12 +765,8 @@ sets the slot 'key' with the value 'val' without employing delegation. If the sl
 
 .. sq:function:: class.newmember(key,val,[bstatic])
 
-sets/adds the slot 'key' with the value 'val' and if present invokes the _newmember metamethod. If bstatic is true the slot will be added as static. If the slot does not exists , it will be created.
+sets/adds the slot 'key' with the value 'val'. If bstatic is true the slot will be added as static. If the slot does not exists , it will be created.
 
-
-.. sq:function:: class.rawnewmember(key,val,[bstatic])
-
-sets/adds the slot 'key' with the value 'val'. If bstatic is true the slot will be added as static. If the slot does not exist, it will be created. It doesn't invoke any metamethod.
 
 .. sq:function:: class.getfuncinfos()
 

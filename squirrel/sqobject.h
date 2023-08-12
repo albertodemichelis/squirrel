@@ -33,8 +33,6 @@ enum SQMetaMethod{
     MT_NEWSLOT=13,
     MT_DELSLOT=14,
     MT_TOSTRING=15,
-    MT_NEWMEMBER=16,
-    MT_INHERITED=17,
     MT_LAST = 18
 };
 
@@ -54,8 +52,6 @@ enum SQMetaMethod{
 #define MM_NEWSLOT  _SC("_newslot")
 #define MM_DELSLOT  _SC("_delslot")
 #define MM_TOSTRING _SC("_tostring")
-#define MM_NEWMEMBER _SC("_newmember")
-#define MM_INHERITED _SC("_inherited")
 
 
 #define _CONSTRUCT_VECTOR(type,size,ptr) { \
