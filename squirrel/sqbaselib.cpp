@@ -84,7 +84,7 @@ static SQInteger base_collectgarbage(HSQUIRRELVM v)
     sq_pushinteger(v, sq_collectgarbage(v));
     return 1;
 }
-static SQInteger base_resurectureachable(HSQUIRRELVM v)
+static SQInteger base_resurrectunreachable(HSQUIRRELVM v)
 {
     sq_resurrectunreachable(v);
     return 1;
@@ -434,7 +434,7 @@ static const SQRegFunction base_funcs[]={
     {_SC("callee"),base_callee,0,NULL},
 #ifndef NO_GARBAGE_COLLECTOR
     {_SC("collectgarbage"),base_collectgarbage,0, NULL},
-    {_SC("resurrectunreachable"),base_resurectureachable,0, NULL},
+    {_SC("resurrectunreachable"),base_resurrectunreachable,0, NULL},
 #endif
     {_SC("min"),base_min_max<-1>,-3,_SC(".nnnnnnnn")},
     {_SC("max"),base_min_max<1>,-3,_SC(".nnnnnnnn")},

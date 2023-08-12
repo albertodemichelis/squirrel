@@ -662,11 +662,11 @@ Expr* SQParser::PrefixedExpr()
             Lex();
 
             SQInteger l = _lex._currentline, c = _lex._currentcolumn;
-            Expr *reciever = e;
+            Expr *receiver = e;
             Id *id = (Id *)Expect(TK_IDENTIFIER);
             assert(id);
-            e = newNode<GetFieldExpr>(reciever, id->id(), nextIsNullable); //-V522
-            e->setLineStartPos(reciever->lineStart()); e->setColumnStartPos(reciever->columnStart());
+            e = newNode<GetFieldExpr>(receiver, id->id(), nextIsNullable); //-V522
+            e->setLineStartPos(receiver->lineStart()); e->setColumnStartPos(receiver->columnStart());
             e->setLineEndPos(l); e->setColumnEndPos(c);
             break;
         }
@@ -679,9 +679,9 @@ Expr* SQParser::PrefixedExpr()
             if(_lex._prevtoken == _SC('\n'))
                 reportDiagnostic(DiagnosticsId::DI_BROKEN_SLOT_DECLARATION);
             Lex();
-            Expr *reciever = e;
+            Expr *receiver = e;
             Expr *key = Expression(SQE_RVALUE);
-            e = setCoordinates(newNode<GetTableExpr>(reciever, key, nextIsNullable), reciever->lineStart(), reciever->columnStart());
+            e = setCoordinates(newNode<GetTableExpr>(receiver, key, nextIsNullable), receiver->lineStart(), receiver->columnStart());
             Expect(_SC(']'));
             break;
         }

@@ -985,22 +985,22 @@ CallExpr *SQASTReader::readCallExpr() {
 }
 
 GetFieldExpr *SQASTReader::readGetFieldExpr() {
-  Expr *reciever = readExpression();
+  Expr *receiver = readExpression();
 
   bool nullable = (bool)stream->readInt8();
   const SQChar *s = readString();
 
-  return newNode<GetFieldExpr>(reciever, s, nullable);
+  return newNode<GetFieldExpr>(receiver, s, nullable);
 }
 
 GetTableExpr *SQASTReader::readGetTableExpr() {
-  Expr *reciever = readExpression();
+  Expr *receiver = readExpression();
 
   bool nullable = (bool)stream->readInt8();
 
   Expr *key = readExpression();
 
-  return newNode<GetTableExpr>(reciever, key, nullable);
+  return newNode<GetTableExpr>(receiver, key, nullable);
 }
 
 ValueDecl *SQASTReader::readValueDecl(bool isVar) {
