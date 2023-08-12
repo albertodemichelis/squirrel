@@ -791,10 +791,10 @@ Expr* SQParser::Factor(SQInteger &pos)
         break;
     }
     case TK_FUNCTION:
-        r = FunctionExp(_token);
+        r = FunctionExp(false);
         break;
     case _SC('@'):
-        r = FunctionExp(_token,true);
+        r = FunctionExp(true);
         break;
     case TK_CLASS: {
         Lex();
@@ -1370,7 +1370,7 @@ Id* SQParser::generateSurrogateFunctionName()
 }
 
 
-DeclExpr* SQParser::FunctionExp(SQInteger ftype, bool lambda)
+DeclExpr* SQParser::FunctionExp(bool lambda)
 {
     NestingChecker nc(this);
     SQInteger l = line(), c = column();

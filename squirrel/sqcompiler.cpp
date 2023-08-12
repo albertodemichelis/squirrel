@@ -1139,8 +1139,8 @@ public:
             _fs->AddInstruction(_OP_NEWOBJ, _fs->PushTarget(), 0, 0, NOT_TABLE);
             Lex(); ParseTableOrClass(_SC(','), _SC('}'));
             break;
-        case TK_FUNCTION: FunctionExp(_token); break;
-        case _SC('@'): FunctionExp(_token, true); break;
+        case TK_FUNCTION: FunctionExp(false); break;
+        case _SC('@'): FunctionExp(true); break;
         case TK_CLASS: Lex(); ClassExp(); break;
         case _SC('-'):
             Lex();
@@ -1871,14 +1871,14 @@ public:
         return _fs->CreateString(buf);
     }
 
-    void FunctionExp(SQInteger ftype, bool lambda = false)
+    void FunctionExp(bool lambda)
     {
         Lex();
         SQObject functionName = (_token == TK_IDENTIFIER) ? Expect(TK_IDENTIFIER) : generateSurrogateFunctionName();
         Expect(_SC('('));
 
         CreateFunction(functionName, lambda);
-        _fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1, ftype == TK_FUNCTION ? 0 : 1);
+        _fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1);
     }
     void ClassExp()
     {

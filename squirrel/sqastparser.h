@@ -133,7 +133,7 @@ public:
     EnumDecl* parseEnumStatement(bool global);
     TryStatement* parseTryCatchStatement();
     Id* generateSurrogateFunctionName();
-    DeclExpr* FunctionExp(SQInteger ftype, bool lambda = false);
+    DeclExpr* FunctionExp(bool lambda);
     ClassDecl* ClassExp(Expr *key);
     Expr* DeleteExpr();
     Expr* PrefixIncDec(SQInteger token);
