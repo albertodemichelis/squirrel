@@ -12,18 +12,16 @@ struct SQClosure : public CHAINABLE_OBJ
 private:
     SQClosure(SQSharedState *ss,SQFunctionProto *func)
     {
-      _function = func; __ObjAddRef(_function); _base = NULL; INIT_CHAIN();ADD_TO_CHAIN(&_ss(this)->_gc_chain,this); _env = NULL; _root=NULL;
+      _function = func; __ObjAddRef(_function); _base = NULL; INIT_CHAIN();ADD_TO_CHAIN(&_ss(this)->_gc_chain,this); _env = NULL;
     }
 
 public:
-    static SQClosure *Create(SQSharedState *ss,SQFunctionProto *func,SQWeakRef *root){
+    static SQClosure *Create(SQSharedState *ss,SQFunctionProto *func){
         SQInteger size = _CALC_CLOSURE_SIZE(func);
         SQClosure *nc=(SQClosure*)SQ_MALLOC(ss->_alloc_ctx, size);
         new (nc) SQClosure(ss,func);
         nc->_outervalues = (SQObjectPtr *)(nc + 1);
         nc->_defaultparams = &nc->_outervalues[func->_noutervalues];
-        nc->_root = root;
-         __ObjAddRef(nc->_root);
         _CONSTRUCT_VECTOR(SQObjectPtr,func->_noutervalues,nc->_outervalues);
         _CONSTRUCT_VECTOR(SQObjectPtr,func->_ndefaultparams,nc->_defaultparams);
         return nc;
@@ -38,16 +36,10 @@ public:
         this->~SQClosure();
         sq_vm_free(ctx, this, size);
     }
-    void SetRoot(SQWeakRef *r)
-    {
-        __ObjRelease(_root);
-        _root = r;
-        __ObjAddRef(_root);
-    }
     SQClosure *Clone()
     {
         SQFunctionProto *f = _function;
-        SQClosure * ret = SQClosure::Create(_opt_ss(this),f,_root);
+        SQClosure * ret = SQClosure::Create(_opt_ss(this),f);
         ret->_env = _env;
         if(ret->_env) __ObjAddRef(ret->_env);
         _COPY_VECTOR(ret->_outervalues,_outervalues,f->_noutervalues);
@@ -68,7 +60,6 @@ public:
     SQObjectType GetType() {return OT_CLOSURE;}
 #endif
     SQWeakRef *_env;
-    SQWeakRef *_root;
     SQClass *_base;
     SQFunctionProto *_function;
     SQObjectPtr *_outervalues;

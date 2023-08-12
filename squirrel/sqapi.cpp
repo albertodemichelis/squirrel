@@ -168,8 +168,7 @@ SQRESULT sq_compile(HSQUIRRELVM v, const SQChar *s, SQInteger size, const SQChar
 #ifndef NO_COMPILER
     bool useAst = _ss(v)->checkCompilationOption(CompilationOptions::CO_USE_AST_COMPILER);
     if(Compile(v, s, size, bindings, sourcename, o, raiseerror?true:false, _ss(v)->_debuginfo, useAst)) {
-        v->Push(SQClosure::Create(_ss(v), _funcproto(o),
-                _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
+        v->Push(SQClosure::Create(_ss(v), _funcproto(o)));
         return SQ_OK;
     }
     return SQ_ERROR;
@@ -599,26 +598,6 @@ SQRESULT sq_getclosurename(HSQUIRRELVM v,SQInteger idx)
     return SQ_OK;
 }
 
-SQRESULT sq_setclosureroot(HSQUIRRELVM v,SQInteger idx)
-{
-    SQObjectPtr &c = stack_get(v,idx);
-    SQObject o = stack_get(v, -1);
-    if(!sq_isclosure(c)) return sq_throwerror(v, _SC("closure expected"));
-    if(sq_istable(o)) {
-        _closure(c)->SetRoot(_table(o)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, o._flags));
-        v->Pop();
-        return SQ_OK;
-    }
-    return sq_throwerror(v, _SC("invalid type"));
-}
-
-SQRESULT sq_getclosureroot(HSQUIRRELVM v,SQInteger idx)
-{
-    SQObjectPtr &c = stack_get(v,idx);
-    if(!sq_isclosure(c)) return sq_throwerror(v, _SC("closure expected"));
-    v->Push(_closure(c)->_root->_obj);
-    return SQ_OK;
-}
 
 SQRESULT sq_clear(HSQUIRRELVM v,SQInteger idx)
 {
@@ -1722,8 +1701,7 @@ SQRESULT sq_compileonepass(HSQUIRRELVM v, const SQChar *s, SQInteger size, const
 
     SQObjectPtr o;
     if (CompileOnePass(v, s, size, bindings, sourcename, o, raiseerror, debugInfo)) {
-        v->Push(SQClosure::Create(_ss(v), _funcproto(o),
-            _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
+        v->Push(SQClosure::Create(_ss(v), _funcproto(o)));
         return SQ_OK;
     }
 
@@ -1733,8 +1711,7 @@ SQRESULT sq_compileonepass(HSQUIRRELVM v, const SQChar *s, SQInteger size, const
 SQRESULT sq_translatebinaryasttobytecode(HSQUIRRELVM v, const uint8_t *buffer, size_t size, const HSQOBJECT *bindings, SQBool raiseerror) {
     SQObjectPtr o;
     if (TranslateBinaryASTToBytecode(v, buffer, size, bindings, o, raiseerror, _ss(v)->_debuginfo)) {
-        v->Push(SQClosure::Create(_ss(v), _funcproto(o),
-          _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
+        v->Push(SQClosure::Create(_ss(v), _funcproto(o)));
         return SQ_OK;
     }
     return SQ_ERROR;
@@ -1774,8 +1751,7 @@ SQRESULT sq_translateasttobytecode(HSQUIRRELVM v, SqAstNode *ast, const HSQOBJEC
     SQObjectPtr o;
     if (TranslateASTToBytecode(v, ast, bindings, sourcename, s, size, o, raiseerror, debugInfo))
     {
-        v->Push(SQClosure::Create(_ss(v), _funcproto(o),
-            _table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0)));
+        v->Push(SQClosure::Create(_ss(v), _funcproto(o)));
         return SQ_OK;
     }
     return SQ_ERROR;

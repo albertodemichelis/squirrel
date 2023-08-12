@@ -7,28 +7,13 @@ Execution Context
 .. index::
     single: execution context
 
-The execution context is the union of the function stack frame and the function
-environment object(this) and the function root(root table).
-The stack frame is the portion of stack where the local variables declared in its body are
-stored.
-The environment object is an implicit parameter that is automatically passed by the
+The execution context is the union of the function stack frame and the compile-time bindings and constants.
+The stack frame is the portion of stack where the local variables declared in its body are stored.
+The environment object (``this``) is an implicit parameter that is automatically passed by the
 function caller (see see :ref:`functions <functions>`).
-The root table is a table associated to the function during its creation.
-The root table value of a function is the root table of the VM at the function creation.
-The root table of function can also be changed after creation with closure.setroot().
 During the execution, the body of a function can only transparently refer to its execution
 context.
-This means that a single identifier can refer to one of the following:
-
-1. named binding
-2. local variable
-3. an environment object slot
-4. or to the slot of the closure root table;
-
-Implicit lookups (3. and 4.) can be turned off using :ref:`compiler directives <compiler_directives>`
-and are subject for removal in future versions.
-The environment object can be explicitly accessed by the keyword ``this``.
-The closure root table can be explicitly accessed through the operator ``::`` (see :ref:`Variables <variables>`).
+The root table can be explicitly accessed through the operator ``::`` (see :ref:`Variables <variables>`).
 
 .. _named_bindings:
 

@@ -668,7 +668,7 @@ bool SQVM::FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr
 bool SQVM::CLOSURE_OP(SQObjectPtr &target, SQFunctionProto *func)
 {
     SQInteger nouters;
-    SQClosure *closure = SQClosure::Create(_ss(this), func,_table(_roottable)->GetWeakRef(_sharedstate->_alloc_ctx, OT_TABLE, 0));
+    SQClosure *closure = SQClosure::Create(_ss(this), func);
     if((nouters = func->_noutervalues)) {
         for(SQInteger i = 0; i<nouters; i++) {
             SQOuterVar &v = func->_outervalues[i];
@@ -1184,14 +1184,8 @@ exception_restore:
                 }
                 continue;
             case _OP_LOADNULLS:{ for(SQInt32 n=0; n < arg1; n++) STK(arg0+n).Null(); }continue;
-            case _OP_LOADROOT:  {
-                SQWeakRef *w = _closure(ci->_closure)->_root;
-                if(sq_type(w->_obj) != OT_NULL) {
-                    TARGET = w->_obj;
-                } else {
-                    TARGET = _roottable; //shoud this be like this? or null
-                }
-                                }
+            case _OP_LOADROOT:
+                TARGET = _roottable;
                 continue;
             case _OP_LOADBOOL: TARGET = arg1?true:false; continue;
             case _OP_LOADCALLEE: TARGET = ci->_closure; continue;

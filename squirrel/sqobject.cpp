@@ -260,7 +260,6 @@ SQInteger SQFunctionProto::GetLine(SQInstruction *curr)
 
 SQClosure::~SQClosure()
 {
-    __ObjRelease(_root);
     __ObjRelease(_env);
     __ObjRelease(_base);
     REMOVE_FROM_CHAIN(&_ss(this)->_gc_chain,this);
@@ -379,8 +378,7 @@ bool SQClosure::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &ret)
     SQObjectPtr func;
     _CHECK_IO(SQFunctionProto::Load(v,up,read,func));
     _CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_TAIL));
-    ret = SQClosure::Create(_ss(v),_funcproto(func),_table(v->_roottable)->GetWeakRef(_ss(v)->_alloc_ctx, OT_TABLE, 0));
-    //FIXME: load an root for this closure
+    ret = SQClosure::Create(_ss(v),_funcproto(func));
     return true;
 }
 

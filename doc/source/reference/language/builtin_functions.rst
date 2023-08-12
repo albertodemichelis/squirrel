@@ -684,16 +684,6 @@ returns a weak reference to the object.
 returns the string "(closure : pointer)".
 
 
-.. sq:function:: function.setroot(table)
-
-sets the root table of a closure
-
-
-.. sq:function:: function.getroot()
-
-returns the root table of the closure
-
-
 .. sq:function:: function.bindenv(env)
 
 clones the function(aka closure) and bind the environment object to it(table,class or instance). the this parameter of the newly create function will always be set to env. Note that the created function holds a weak reference to its environment object so cannot be used to control its lifetime.
