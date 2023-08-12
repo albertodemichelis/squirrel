@@ -336,7 +336,7 @@ public:
         case TK_SWITCH: SwitchStatement();      break;
         case TK_LOCAL:
         case TK_LET:
-            LocalDeclStatement(_token == TK_LOCAL);
+            LocalDeclStatement();
             break;
         case TK_RETURN:
         case TK_YIELD: {
@@ -385,6 +385,12 @@ public:
             _fs->AddInstruction(_OP_JMP, 0, -1234);
             _fs->_unresolvedcontinues.push_back(_fs->GetCurrentPos());
             Lex();
+            break;
+        case TK_FUNCTION:
+            LocalFunctionDeclStmt(false);
+            break;
+        case TK_CLASS:
+            LocalClassDeclStmt(false);
             break;
         case TK_ENUM:
             EnumStatement(false);
@@ -1372,28 +1378,44 @@ public:
         if (ignore_global_consts ? IsLocalConstant(name, constant) : IsConstant(name, constant))
             reportDiagnostic(DiagnosticsId::DI_CONFLICTS_WITH, desc, _stringval(name), "existing constant/enum/import");
     }
-    void LocalDeclStatement(bool assignable)
+    
+    void LocalFunctionDeclStmt(bool assignable)
     {
-        SQObject varname;
+        assert(_token == TK_FUNCTION);
+        Lex(); // consume TK_FUNCTION
+        SQObject varname = Expect(TK_IDENTIFIER);
+        CheckDuplicateLocalIdentifier(varname, _SC("Function"), false);
+        Expect(_SC('('));
+        CreateFunction(varname, false);
+        _fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1, 0);
+        _fs->PopTarget();
+        _fs->PushLocalVariable(varname, assignable);
+
+    }
+
+    void LocalClassDeclStmt(bool assignable)
+    {
+        assert(_token == TK_CLASS);
+        Lex(); // consume TK_CLASS
+        SQObject varname = Expect(TK_IDENTIFIER);
+        CheckDuplicateLocalIdentifier(varname, _SC("Class"), false);
+        ClassExp();
+        _fs->PopTarget();
+        _fs->PushLocalVariable(varname, assignable);
+    }
+    
+    void LocalDeclStatement()
+    {
+        assert(_token == TK_LET || _token == TK_LOCAL);
+        bool assignable = (_token == TK_LOCAL);
         Lex();
+
         if (_token == TK_FUNCTION) {
-            Lex();
-            varname = Expect(TK_IDENTIFIER);
-            CheckDuplicateLocalIdentifier(varname, _SC("Function"), false);
-            Expect(_SC('('));
-            CreateFunction(varname, false);
-            _fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1, 0);
-            _fs->PopTarget();
-            _fs->PushLocalVariable(varname, assignable);
+            LocalFunctionDeclStmt(assignable);
             return;
         }
         else if (_token == TK_CLASS) {
-            Lex();
-            varname = Expect(TK_IDENTIFIER);
-            CheckDuplicateLocalIdentifier(varname, _SC("Class"), false);
-            ClassExp();
-            _fs->PopTarget();
-            _fs->PushLocalVariable(varname, assignable);
+            LocalClassDeclStmt(assignable);
             return;
         }
 
@@ -1402,6 +1424,8 @@ public:
             destructurer = _token;
             Lex();
         }
+
+        SQObject varname;
 
         sqvector<SQInteger> targets(_ss(_vm)->_alloc_ctx);
         sqvector<SQInteger> flags(_ss(_vm)->_alloc_ctx);
@@ -1574,7 +1598,8 @@ public:
         Lex();
         BEGIN_SCOPE();
         Expect(_SC('('));
-        if (_token == TK_LOCAL) LocalDeclStatement(true);
+        if (_token == TK_LOCAL)
+            LocalDeclStatement();
         else if (_token != _SC(';')) {
             CommaExpr(SQE_REGULAR);
             _fs->PopTarget();

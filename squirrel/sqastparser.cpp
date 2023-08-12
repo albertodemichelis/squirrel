@@ -265,7 +265,7 @@ Statement* SQParser::parseStatement(bool closeframe)
     case TK_SWITCH: result = parseSwitchStatement();      break;
     case TK_LOCAL:
     case TK_LET:
-        result = parseLocalDeclStatement(_token == TK_LOCAL);
+        result = parseLocalDeclStatement();
         break;
     case TK_RETURN:
     case TK_YIELD: {
@@ -306,6 +306,12 @@ Statement* SQParser::parseStatement(bool closeframe)
     case TK_CONTINUE:
         result = newNode<ContinueStatement>(nullptr);
         Lex();
+        break;
+    case TK_FUNCTION:
+        result = parseLocalFunctionDeclStmt(false);
+        break;
+    case TK_CLASS:
+        result = parseLocalClassDeclStmt(false);
         break;
     case TK_ENUM:
         result = parseEnumStatement(false);
@@ -943,31 +949,49 @@ void SQParser::ParseTableOrClass(TableDecl *decl, SQInteger separator, SQInteger
     Lex();
 }
 
+Decl *SQParser::parseLocalFunctionDeclStmt(bool assignable)
+{
+    SQInteger l = _lex._currentline, c = _lex._currentcolumn;
 
-Decl* SQParser::parseLocalDeclStatement(bool assignable)
+    assert(_token == TK_FUNCTION);
+    Lex();
+
+    Id *varname = (Id *)Expect(TK_IDENTIFIER);
+    Expect(_SC('('));
+    FunctionDecl *f = CreateFunction(varname, false);
+    f->setContext(DC_LOCAL);
+    VarDecl *d = newNode<VarDecl>(varname->id(), newNode<DeclExpr>(f), assignable); //-V522
+    setCoordinates(d, l, c);
+    return d;
+}
+
+Decl *SQParser::parseLocalClassDeclStmt(bool assignable)
+{
+    SQInteger l = _lex._currentline, c = _lex._currentcolumn;
+
+    assert(_token == TK_CLASS);
+    Lex();
+
+    Id *varname = (Id *)Expect(TK_IDENTIFIER);
+    ClassDecl *cls = ClassExp(NULL);
+    cls->setContext(DC_LOCAL);
+    VarDecl *d = newNode<VarDecl>(varname->id(), newNode<DeclExpr>(cls), assignable); //-V522
+    setCoordinates(d, l, c);
+    return d;
+}
+
+Decl* SQParser::parseLocalDeclStatement()
 {
     NestingChecker nc(this);
+
+    assert(_token == TK_LET || _token == TK_LOCAL);
+    bool assignable = _token == TK_LOCAL;
     Lex();
-    SQInteger l = line(), c = column();
+
     if (_token == TK_FUNCTION) {
-        Lex();
-        Id *varname = (Id *)Expect(TK_IDENTIFIER);
-        Expect(_SC('('));
-        FunctionDecl *f = CreateFunction(varname, false);
-        f->setLineStartPos(l); f->setColumnStartPos(c);
-        f->setContext(DC_LOCAL);
-        VarDecl *d = newNode<VarDecl>(varname->id(), copyCoordinates(f, newNode<DeclExpr>(f)), assignable);
-        setCoordinates(d, l, c);
-        return d;
+        return parseLocalFunctionDeclStmt(assignable);
     } else if (_token == TK_CLASS) {
-        Lex();
-        Id *varname = (Id *)Expect(TK_IDENTIFIER);
-        ClassDecl *cls = ClassExp(NULL);
-        cls->setLineStartPos(l); cls->setColumnStartPos(c);
-        cls->setContext(DC_LOCAL);
-        VarDecl *d = newNode<VarDecl>(varname->id(), copyCoordinates(cls, newNode<DeclExpr>(cls)), assignable);
-        setCoordinates(d, l, c);
-        return d;
+        return parseLocalClassDeclStmt(assignable);
     }
 
     DeclGroup *decls = NULL;
@@ -976,6 +1000,7 @@ Decl* SQParser::parseLocalDeclStatement(bool assignable)
     SQInteger destructurer = 0;
 
     if (_token == _SC('{') || _token == _SC('[')) {
+        SQInteger l = line(), c = column();
         destructurer = _token;
         Lex();
         decls = dd = newNode<DestructuringDecl>(arena(), destructurer == _SC('{') ? DT_TABLE : DT_ARRAY);
@@ -983,8 +1008,8 @@ Decl* SQParser::parseLocalDeclStatement(bool assignable)
     }
 
     do {
-        l = line();
-        c = column();
+        SQInteger l = line();
+        SQInteger c = column();
         Id *varname = (Id *)Expect(TK_IDENTIFIER);
         assert(varname);
         VarDecl *cur = NULL;
@@ -1134,7 +1159,8 @@ ForStatement* SQParser::parseForStatement()
     Expect(_SC('('));
 
     Node *init = NULL;
-    if (_token == TK_LOCAL) init = parseLocalDeclStatement(true);
+    if (_token == TK_LOCAL)
+        init = parseLocalDeclStatement();
     else if (_token != _SC(';')) {
         init = parseCommaExpr(SQE_REGULAR);
     }

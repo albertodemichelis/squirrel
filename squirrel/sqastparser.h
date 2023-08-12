@@ -118,7 +118,10 @@ public:
 
     void ParseTableOrClass(TableDecl *decl, SQInteger separator, SQInteger terminator);
 
-    Decl* parseLocalDeclStatement(bool assignable);
+    Decl* parseLocalDeclStatement();
+    Decl *parseLocalFunctionDeclStmt(bool assignable);
+    Decl *parseLocalClassDeclStmt(bool assignable);
+
     Statement* IfBlock();
     IfStatement* parseIfStatement();
     WhileStatement* parseWhileStatement();
