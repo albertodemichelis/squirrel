@@ -39,10 +39,6 @@ hook_type can be 'l' - line, 'r' - return, 'c' - call or 'x' for VM shutdown
 
 call of debughook for each line performed only when debuginfo is enabled
 
-.. sq:function:: enabledebuginfo(enable)
-
-enable/disable the debug line information generation at compile time. enable != null enables. enable == null disables.
-
 .. sq:function:: getroottable()
 
 returns the root table of the VM.

@@ -116,14 +116,6 @@ static SQInteger base_setdebughook(HSQUIRRELVM v)
     return 0;
 }
 
-static SQInteger base_enabledebuginfo(HSQUIRRELVM v)
-{
-    SQObjectPtr &o=stack_get(v,2);
-
-    sq_enabledebuginfo(v,SQVM::IsFalse(o)?SQFalse:SQTrue);
-    return 0;
-}
-
 static SQInteger __getcallstackinfos(HSQUIRRELVM v,SQInteger level)
 {
     SQStackInfos si;
@@ -417,7 +409,6 @@ static const SQRegFunction base_funcs[]={
     //generic
     {_SC("seterrorhandler"),base_seterrorhandler,2, NULL},
     {_SC("setdebughook"),base_setdebughook,2, NULL},
-    {_SC("enabledebuginfo"),base_enabledebuginfo,2, NULL},
     {_SC("getstackinfos"),base_getstackinfos,2, _SC(".n")},
     {_SC("getroottable"),base_getroottable,1, NULL},
     {_SC("getconsttable"),base_getconsttable,1, NULL},

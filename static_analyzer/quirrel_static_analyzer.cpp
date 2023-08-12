@@ -208,7 +208,6 @@ namespace settings
     {
       "seterrorhandler",
       "setdebughook",
-      "enabledebuginfo",
       "getstackinfos",
       "getroottable",
       "getconsttable",
