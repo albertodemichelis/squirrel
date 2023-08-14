@@ -2339,11 +2339,10 @@ void CheckerVisitor::checkAlreadyRequired(const CallExpr *call) {
 }
 
 void CheckerVisitor::checkCallNullable(const CallExpr *call) {
-  const Expr *cc = call->callee();
-  const Expr *c = maybeEval(cc);
+  const Expr *c = call->callee();
 
   if (isPotentiallyNullable(c) && !call->isNullable()) {
-    report(call, DiagnosticsId::DI_ACCESS_POT_NULLABLE, cc->op() == TO_ID ? cc->asId()->id() : "expression", "function");
+    report(call, DiagnosticsId::DI_ACCESS_POT_NULLABLE, c->op() == TO_ID ? c->asId()->id() : "expression", "function");
   }
 }
 
@@ -2409,10 +2408,10 @@ void CheckerVisitor::visitBinExpr(BinExpr *expr) {
     visitBinaryBranches(expr, &nullValue, RT_NULL, 0);
     break;
   case TO_ANDAND:
-    visitBinaryBranches(expr, &trueValue, 0, RT_NULL);
+    visitBinaryBranches(expr, nullptr, 0, RT_NULL);
     break;
   case TO_OROR:
-    visitBinaryBranches(expr, &falseValue, RT_NULL, 0);
+    visitBinaryBranches(expr, nullptr, RT_NULL, 0);
     break;
   case TO_PLUSEQ:
   case TO_MINUSEQ:
@@ -2443,12 +2442,12 @@ void CheckerVisitor::visitTerExpr(TerExpr *expr) {
 
   VarScope *ifTrueScope = trunkScope->copy(arena);
   currentScope = ifTrueScope;
-  setExpression(expr->a(), &trueValue, 0, RT_NULL);
+  setExpression(expr->a(), nullptr, 0, RT_NULL);
   expr->b()->visit(this);
 
   VarScope *ifFalseScope = trunkScope->copy(arena);
   currentScope = ifFalseScope;
-  setExpression(expr->a(), &falseValue, RT_NULL, 0);
+  setExpression(expr->a(), nullptr, RT_NULL, 0);
   expr->c()->visit(this);
 
   trunkScope->merge(ifTrueScope);
@@ -2859,7 +2858,7 @@ void CheckerVisitor::visitForStatement(ForStatement *loop) {
 
   if (cond) {
     cond->visit(this);
-    setExpression(cond, &trueValue, 0, RT_NULL);
+    setExpression(cond, nullptr, 0, RT_NULL);
   }
 
   loop->body()->visit(this);
@@ -2941,7 +2940,7 @@ void CheckerVisitor::visitWhileStatement(WhileStatement *loop) {
   currentScope = loopScope;
   // TODO: set condition -- true
 
-  setExpression(loop->condition(), &trueValue, 0, RT_NULL);
+  setExpression(loop->condition(), nullptr, 0, RT_NULL);
   loop->body()->visit(this);
 
   trunkScope->merge(loopScope);
@@ -2978,12 +2977,12 @@ void CheckerVisitor::visitIfStatement(IfStatement *ifstmt) {
   VarScope *trunkScope = currentScope;
   VarScope *thenScope = trunkScope->copy(arena);
   currentScope = thenScope;
-  setExpression(ifstmt->condition(), &trueValue, 0, RT_NULL);
+  setExpression(ifstmt->condition(), nullptr, 0, RT_NULL);
   ifstmt->thenBranch()->visit(this);
   VarScope *elseScope = nullptr;
   if (ifstmt->elseBranch()) {
     currentScope = elseScope = trunkScope->copy(arena);
-    setExpression(ifstmt->condition(), &falseValue, RT_NULL, 0);
+    setExpression(ifstmt->condition(), nullptr, RT_NULL, 0);
     ifstmt->elseBranch()->visit(this);
   }
 
@@ -3420,8 +3419,10 @@ void CheckerVisitor::setExpression(const Expr *lvalue, const Expr *rvalue, unsig
   ValueRef *v = findValueInScopes(name);
 
   if (v) {
-    v->expression = rvalue;
-    v->state = VRS_EXPRESSION;
+    if (rvalue) {
+      v->expression = rvalue;
+      v->state = VRS_EXPRESSION;
+    }
 
     v->flagsPositive |= pf;
     v->flagsPositive &= ~nf;
@@ -3442,6 +3443,19 @@ const ValueRef *CheckerVisitor::findValueForExpr(const Expr *e) {
 }
 
 bool CheckerVisitor::isPotentiallyNullable(const Expr *e) {
+
+  const ValueRef *v = findValueForExpr(e);
+
+  if (v) {
+    if (v->flagsPositive & RT_NULL)
+      return true;
+
+    if (v->flagsNegative & RT_NULL)
+      return false;
+  }
+
+  e = maybeEval(e);
+
   if (e->op() == TO_LITERAL) {
     const LiteralExpr *l = e->asLiteral();
     if (l->kind() == LK_NULL) {
@@ -3472,16 +3486,9 @@ bool CheckerVisitor::isPotentiallyNullable(const Expr *e) {
     return isPotentiallyNullable(static_cast<const BinExpr *>(e)->rhs());
   }
 
-  const ValueRef *v = findValueForExpr(e);
+  v = findValueForExpr(e);
+
   if (v) {
-    if (v->flagsPositive & RT_NULL) {
-      return true;
-    }
-
-    if (v->flagsNegative & RT_NULL) {
-      return false;
-    }
-
     switch (v->state)
     {
     case VRS_EXPRESSION:
