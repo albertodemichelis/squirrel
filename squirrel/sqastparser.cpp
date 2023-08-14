@@ -951,7 +951,7 @@ void SQParser::ParseTableOrClass(TableDecl *decl, SQInteger separator, SQInteger
 
 Decl *SQParser::parseLocalFunctionDeclStmt(bool assignable)
 {
-    SQInteger l = _lex._currentline, c = _lex._currentcolumn;
+    SQInteger l = line(), c = column();
 
     assert(_token == TK_FUNCTION);
     Lex();
@@ -960,6 +960,7 @@ Decl *SQParser::parseLocalFunctionDeclStmt(bool assignable)
     Expect(_SC('('));
     FunctionDecl *f = CreateFunction(varname, false);
     f->setContext(DC_LOCAL);
+    f->setLineStartPos(l); f->setColumnStartPos(c);
     VarDecl *d = newNode<VarDecl>(varname->id(), newNode<DeclExpr>(f), assignable); //-V522
     setCoordinates(d, l, c);
     return d;
