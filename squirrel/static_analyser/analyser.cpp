@@ -3744,6 +3744,7 @@ void CheckerVisitor::visitParamDecl(ParamDecl *p) {
   v->expression = nullptr;
   info->declarator.p = p;
   info->ownedScope = currentScope;
+  info->used = p->isVararg();
 
   if (dv && dv->op() == TO_LITERAL) {
     if (dv->asLiteral()->kind() == LK_NULL) {
