@@ -177,6 +177,7 @@ private:
 
 class AccessExpr;
 class LiteralExpr;
+class DeclExpr;
 
 class Expr : public Node {
 protected:
@@ -186,6 +187,7 @@ public:
     bool isAccessExpr() const { return TO_GETFIELD <= op() && op() <= TO_SETTABLE; }
     AccessExpr *asAccessExpr() const { assert(isAccessExpr()); return (AccessExpr*)this; }
     LiteralExpr *asLiteral() const { assert(op() == TO_LITERAL); return (LiteralExpr *)this; }
+    DeclExpr *asDeclExpr() const { assert(op() == TO_DECL_EXPR); return (DeclExpr *)this; }
 
     void setConst() { _isConst = true; }
     bool isConst() const { return _isConst; }
