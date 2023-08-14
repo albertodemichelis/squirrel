@@ -3588,7 +3588,16 @@ void CheckerVisitor::computeNameRef(const GetFieldExpr *access, SQChar *b, int32
 }
 
 const FunctionInfo *CheckerVisitor::findFunctionInfo(const Expr *e, bool &isCtor) {
-  const SQChar *name = computeNameRef(maybeEval(e));
+  const Expr *ee = maybeEval(e);
+
+  if (ee->op() == TO_DECL_EXPR) {
+    const Decl *decl = ee->asDeclExpr()->declaration();
+    if (decl->op() == TO_FUNCTION || decl->op() == TO_CLASS) {
+      return functionInfoMap[static_cast<const FunctionDecl *>(decl)];
+    }
+  }
+
+  const SQChar *name = computeNameRef(ee);
 
   if (!name)
     return nullptr;
