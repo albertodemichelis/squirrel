@@ -1470,6 +1470,7 @@ FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
                 reportDiagnostic(DiagnosticsId::DI_VARARG_WITH_DEFAULT_ARG);
             f->addParameter(_SC("vargv"));
             f->setVararg(true);
+            f->parameters().back()->setVararg();
             Lex();
             if(_token != _SC(')'))
                 reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, ")");

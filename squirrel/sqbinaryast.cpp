@@ -1143,6 +1143,10 @@ FunctionDecl *SQASTReader::readFunctionDecl(bool isCtor) {
   f->setSourceName(readString());
   f->setContext((enum DeclarationContext)ctx);
 
+  if (f->isVararg()) {
+    f->parameters().back()->setVararg();
+  }
+
   return f;
 }
 

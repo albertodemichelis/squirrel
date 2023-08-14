@@ -594,11 +594,15 @@ private:
 };
 
 class ParamDecl : public ValueDecl {
+  bool _isVararg;
 public:
-    ParamDecl(const SQChar *name, Expr *defaltVal) : ValueDecl(TO_PARAM, name, defaltVal) {}
+    ParamDecl(const SQChar *name, Expr *defaltVal) : ValueDecl(TO_PARAM, name, defaltVal), _isVararg(false) {}
 
     bool hasDefaultValue() const { return expression() != NULL; }
     Expr *defaultValue() const { return expression(); }
+
+    void setVararg() { _isVararg = true; };
+    bool isVararg() const { return _isVararg; }
 };
 
 class VarDecl : public ValueDecl {
