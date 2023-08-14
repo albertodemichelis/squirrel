@@ -1,5 +1,6 @@
 #include "analyser.h"
 #include <stdarg.h>
+#include <cctype>
 #include <unordered_set>
 
 namespace SQCompilation {
@@ -1501,6 +1502,7 @@ class CheckerVisitor : public Visitor {
   void checkExtendToAppend(const CallExpr *callExpr);
   void checkAlreadyRequired(const CallExpr *callExpr);
   void checkCallNullable(const CallExpr *callExpr);
+  void checkArguments(const CallExpr *callExpr);
   void checkBoolIndex(const GetTableExpr *expr);
   void checkNullableIndex(const GetTableExpr *expr);
 
@@ -1517,6 +1519,9 @@ class CheckerVisitor : public Visitor {
 
     return false;
   }
+
+  const SQChar *normalizeParamName(const SQChar *name, SQChar *buffer = nullptr);
+  int32_t normalizeParamNameLength(const SQChar *n);
 
   void checkDuplicateSwitchCases(SwitchStatement *swtch);
   void checkDuplicateIfBranches(IfStatement *ifStmt);
@@ -2346,6 +2351,86 @@ void CheckerVisitor::checkCallNullable(const CallExpr *call) {
   }
 }
 
+int32_t CheckerVisitor::normalizeParamNameLength(const SQChar *name) {
+  int32_t r = 0;
+
+  while (*name) {
+    if (*name != '_')
+      ++r;
+    ++name;
+  }
+
+  return r;
+}
+
+const SQChar *CheckerVisitor::normalizeParamName(const SQChar *name, SQChar *buffer) {
+
+  if (!buffer) {
+    int32_t nl = normalizeParamNameLength(name);
+    buffer = (SQChar *)arena->allocate(nl + 1);
+  }
+
+  int32_t i = 0, j = 0;
+  while (name[i]) {
+    SQChar c = name[i++];
+    if (c != '_') {
+      buffer[j++] = std::tolower(c);
+    }
+  }
+
+  buffer[j] = '\0';
+
+  return buffer;
+}
+
+void CheckerVisitor::checkArguments(const CallExpr *callExpr) {
+  bool dummy;
+  const FunctionInfo *info = findFunctionInfo(callExpr->callee(), dummy);
+
+  if (!info)
+    return;
+
+  const auto& params = info->parameters;
+  const auto& args = callExpr->arguments();
+  const FunctionDecl *decl = info->declaration;
+
+  const size_t efferctiveParamSize = decl->isVararg() ? params.size() - 2 : params.size() - 1;
+
+  if (efferctiveParamSize != args.size()) {
+    if (!decl->isVararg() || args.size() <= params.size()) {
+      report(callExpr, DiagnosticsId::DI_PARAM_COUNT_MISMATCH, decl->name());
+    }
+  }
+
+  for (int i = 1; i < params.size(); ++i) {
+    const SQChar *paramName = params[i];
+    for (int j = 0; j < args.size(); ++j) {
+      const Expr *arg = args[j];
+      const SQChar *possibleArgName = nullptr;
+
+      if (arg->op() == TO_ID)
+        possibleArgName = arg->asId()->id();
+      else if (arg->op() == TO_GETFIELD)
+        possibleArgName = arg->asGetField()->fieldName();
+
+      if (!possibleArgName)
+        continue;
+
+      int32_t argNL = normalizeParamNameLength(possibleArgName);
+      SQChar *buffer = (SQChar *)malloc(argNL + 1);
+      normalizeParamName(possibleArgName, buffer);
+
+      if ((i - 1) != j) {
+        if (strcmp(paramName, buffer) == 0) {
+          report(arg, DiagnosticsId::DI_PARAM_POSITION_MISMATCH, paramName);
+        }
+      }
+
+      free(buffer);
+    }
+  }
+}
+
 void CheckerVisitor::visitBinaryBranches(const BinExpr *expr, const Expr *v, unsigned pf, unsigned nf) {
   Expr *lhs = expr->lhs();
   Expr *rhs = expr->rhs();
@@ -2463,6 +2548,7 @@ void CheckerVisitor::visitCallExpr(CallExpr *expr) {
   checkExtendToAppend(expr);
   checkAlreadyRequired(expr);
   checkCallNullable(expr);
+  checkArguments(expr);
 
   applyCallToScope(expr);
 
@@ -3769,6 +3855,9 @@ void CheckerVisitor::visitParamDecl(ParamDecl *p) {
   }
 
   declareSymbol(p->name(), v);
+
+  assert(currectInfo);
+  currectInfo->parameters.push_back(normalizeParamName(p->name()));
 }
 
 void CheckerVisitor::visitVarDecl(VarDecl *decl) {

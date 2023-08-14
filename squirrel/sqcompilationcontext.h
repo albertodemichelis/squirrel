@@ -121,7 +121,9 @@
   DEF_DIAGNOSTIC(REASSIGN_WITH_NO_USAGE, WARNING, SEMA, 301, "re-asssign-no-use", "Re-assign variable without usage of previous assign."), \
   DEF_DIAGNOSTIC(POSSIBLE_GARGABE, WARNING, SEMA, 302, "possible-garbage", "Not all paths initialize variable %s, it could potentially contain garbage."), \
   DEF_DIAGNOSTIC(UNITNIALIZED_VAR, WARNING, SEMA, 303, "uninitialized-variable", "Usage of unitialized variable."), \
-  DEF_DIAGNOSTIC(INTEGER_OVERFLOW, WARNING, SEMA, 304, "integer-overflow", "Integer Overflow.")
+  DEF_DIAGNOSTIC(INTEGER_OVERFLOW, WARNING, SEMA, 304, "integer-overflow", "Integer Overflow."), \
+  DEF_DIAGNOSTIC(PARAM_COUNT_MISMATCH, WARNING, SEMA, 288, "param-count", "Function '%s' is called with the wrong number of parameters."),\
+  DEF_DIAGNOSTIC(PARAM_POSITION_MISMATCH, WARNING, SEMA, 289, "param-pos", "The function parameter '%s' seems to be in the wrong position.")
 
 
 namespace SQCompilation {
