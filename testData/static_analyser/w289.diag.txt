@@ -1,0 +1,5 @@
+testData/static_analyser/w289.nut line = (6) column = (13) : Warning: The function parameter 'aaax' seems to be in the wrong position.
+local b = -1;
+return fn(b, aaaX);
+             ^---
+

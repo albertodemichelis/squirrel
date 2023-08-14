@@ -1,4 +1,5 @@
 //-file:declared-never-used
+//-file:const-in-bool-expr
 local x = 1, y = 2, z = 3;
 
 let a = x && y || z
