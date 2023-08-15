@@ -411,7 +411,7 @@ public:
         }
 
         if (f->isVararg()) {
-          _out->writeString(", ...");
+          _out->writeString("...");
         }
         _out->writeString(") ");
 
