@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <ctype.h>
+#include <string>
 
 #if defined(_MSC_VER) && defined(_DEBUG)
 #include <crtdbg.h>
@@ -70,6 +72,11 @@ void PrintUsage()
         _SC("   -bytecode-dump [file] dump SQ bytecode into console or file if specified\n")
         _SC("   -c               compiles only\n")
         _SC("   -diag-file file  write diagnostics into specified file")
+        _SC("   -sa              enable static analyser")
+        _SC("   --inverse-warnings flip diagnostic state")
+        _SC("   --warnings-list  print all warnings and exit")
+        _SC("   -W<num>          disable diagnostic by numeric id")
+        _SC("   -<diagnostic_name> disable diagnostic by text id")
         _SC("   -optCH           enable Closure Hoisting Optimization\n")
         _SC("   -d               generates debug infos\n")
         _SC("   -v               displays version infos\n")
@@ -138,6 +145,61 @@ static void dumpBytecodeAst_callback(HSQUIRRELVM vm, HSQOBJECT obj, void *opts)
     }
 }
 
+bool search_sqconfig(const char * initial_file_name, char *buffer, size_t bufferSize)
+{
+  if (!initial_file_name)
+    return false;
+
+  size_t curSize = bufferSize;
+  char *ptr = buffer;
+  const char * slash1 = strrchr(initial_file_name, '\\');
+  const char * slash2 = strrchr(initial_file_name, '/');
+  const char * slash = slash1 > slash2 ? slash1 : slash2;
+
+  if (slash) {
+    size_t prefixSize = slash - initial_file_name + 1;
+    if (prefixSize > curSize)
+      return false;
+
+    memcpy(buffer, initial_file_name, prefixSize);
+    curSize -= prefixSize;
+    ptr += prefixSize;
+  }
+
+  static const char configName[] = ".sqconfig";
+  const size_t configNameSize = (sizeof configName) - 1;
+  static const char upDir[] = "../";
+  const size_t upDirSize = (sizeof upDir) - 1;
+
+  char *dirPtr = ptr;
+
+  memcpy(ptr, configName, configNameSize);
+  ptr += configNameSize;
+  curSize -= configNameSize;
+  ptr[0] = '\0';
+
+  for (int i = 0; i < 16 && curSize > 0; i++) {
+    if (FILE * f = fopen(buffer, "rt")) {
+      fclose(f);
+      return true;
+    }
+
+    if (curSize > upDirSize) {
+      memcpy(dirPtr, upDir, upDirSize);
+      dirPtr += upDirSize;
+      curSize -= upDirSize;
+      ptr += upDirSize;
+      memcpy(dirPtr, configName, configNameSize);
+      ptr[0] = '\0';
+    }
+    else {
+      break;
+    }
+  }
+
+  return false;
+}
+
 #define _INTERACTIVE 0
 #define _DONE 2
 #define _ERROR 3
@@ -147,6 +209,8 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
     DumpOptions dumpOpt = { 0 };
     FILE *diagFile = nullptr;
     int compiles_only = 0;
+    bool static_analysis = false;
+    bool flip_warnigns = false;
 #ifdef SQUNICODE
     static SQChar temp[500];
 #endif
@@ -246,10 +310,33 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                     return _DONE;
                 case 's':
                     if (strcmp("-sa", argv[arg]) == 0) {
-                        module_mgr->compilationOptions.doStaticAnalysis = true;
+                        static_analysis = true;
                         break;
                     }
+                case 'w':
+                case 'W':
+                    if (isdigit(argv[arg][2])) {
+                      if (!sq_switchdiagnosticstate_i(atoi(&argv[arg][2]), false)) {
+                        printf("Unknown warning ID %s\n", &argv[arg][2]);
+                      }
+                    }
+                    break;
+                case '-':
+                    if (strcmp(argv[arg], "--inverse-warnings") == 0) {
+                      flip_warnigns = true;
+                    }
+                    else if (strcmp(argv[arg], "--warnings-list") == 0) {
+                      sq_printwarningslist(stdout);
+                      return _DONE;
+                    }
+                    else {
+                      goto unknown_opt;
+                    }
+                    break;
                 default:
+                    if (static_analysis && isalpha(argv[arg][1]) && sq_switchdiagnosticstate_t(argv[arg] + 1, false)) {
+                      break;
+                    }
                 unknown_opt:
                     PrintVersionInfos();
                     printf(_SC("unknown prameter '-%c'\n"),argv[arg][1]);
@@ -265,6 +352,12 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
         module_mgr->onAST_cb = &dumpAst_callback;
         module_mgr->onBytecode_cb = &dumpBytecodeAst_callback;
 
+        if (flip_warnigns)
+          sq_invertwarningsstate();
+
+        module_mgr->compilationOptions.doStaticAnalysis = static_analysis;
+
+
         if (diagFile)
         {
             errorStream = diagFile;
@@ -275,6 +368,17 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
         if(arg<argc) {
             const SQChar *filename=NULL;
             filename=argv[arg];
+
+            if (static_analysis) {
+              sq_resetanalyserconfig();
+              char buffer[1024];
+              if (search_sqconfig(filename, buffer, sizeof buffer)) {
+                if (!sq_loadanalyserconfig(buffer)) {
+                  fprintf(errorStream, "Cannot load .sqconfig file %s\n", buffer);
+                  return _ERROR;
+                }
+              }
+            }
 
             arg++;
 
