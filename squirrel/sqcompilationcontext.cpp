@@ -22,7 +22,7 @@ static const char *severityNames[] = {
   "Hint", "Warning", "Error", nullptr
 };
 
-static DiagnosticDescriptor diagnsoticDescriptors[] = {
+static DiagnosticDescriptor diagnosticDescriptors[] = {
 #define DEF_DIAGNOSTIC(_, severity, ___, num_id, text_id, fmt) { _SC(fmt), DS_##severity, num_id, _SC(text_id), false }
   DIAGNOSTICS
 #undef DEF_DIAGNOSTIC
@@ -196,7 +196,7 @@ void SQCompilationContext::resetConfig() {
 }
 bool SQCompilationContext::loadConfigFile(const char *configFile) {
   KeyValueFile config;
-  if (!config.loadFromFile(configFile)) {
+  if (!config.loadFromFile(configFile)){
     return false;
   }
 
@@ -285,7 +285,7 @@ static const char *strstr_nl(const char *str, const char *fnd) {
 }
 
 void SQCompilationContext::printAllWarnings(FILE *ostream) {
-  for (auto &diag : diagnsoticDescriptors) {
+  for (auto &diag : diagnosticDescriptors) {
     if (diag.severity == DS_ERROR)
       continue;
     fprintf(ostream, "w%d (%s)\n", diag.id, diag.textId);
@@ -295,7 +295,7 @@ void SQCompilationContext::printAllWarnings(FILE *ostream) {
 }
 
 void SQCompilationContext::flipWarningsState() {
-  for (auto &diag : diagnsoticDescriptors) {
+  for (auto &diag : diagnosticDescriptors) {
     if (diag.severity == DS_ERROR)
       continue;
     diag.disabled = !diag.disabled;
@@ -303,7 +303,7 @@ void SQCompilationContext::flipWarningsState() {
 }
 
 bool SQCompilationContext::switchDiagnosticState(const char *diagName, bool state) {
-  for (auto &diag : diagnsoticDescriptors) {
+  for (auto &diag : diagnosticDescriptors) {
     if (strcmp(diagName, diag.textId) == 0) {
       if (diag.severity != DS_ERROR) {
         diag.disabled = !state;
@@ -315,7 +315,7 @@ bool SQCompilationContext::switchDiagnosticState(const char *diagName, bool stat
 }
 
 bool SQCompilationContext::switchDiagnosticState(int32_t id, bool state) {
-  for (auto &diag : diagnsoticDescriptors) {
+  for (auto &diag : diagnosticDescriptors) {
     if (id == diag.id) {
       if (diag.severity != DS_ERROR) {
         diag.disabled = !state;
@@ -327,7 +327,7 @@ bool SQCompilationContext::switchDiagnosticState(int32_t id, bool state) {
 }
 
 bool SQCompilationContext::isDisabled(enum DiagnosticsId id, int line, int pos) {
-  DiagnosticDescriptor &descriptor = diagnsoticDescriptors[id];
+  DiagnosticDescriptor &descriptor = diagnosticDescriptors[id];
   if (descriptor.severity >= DS_ERROR) return false;
 
   const char *codeLine = findLine(line);
@@ -391,7 +391,7 @@ void SQCompilationContext::vreportDiagnostic(enum DiagnosticsId diagId, int32_t 
     return;
   }
 
-  auto &desc = diagnsoticDescriptors[diagId];
+  auto &desc = diagnosticDescriptors[diagId];
   bool isError = desc.severity >= DS_ERROR;
   char tempBuffer[2048] = { 0 };
   std::string message;
