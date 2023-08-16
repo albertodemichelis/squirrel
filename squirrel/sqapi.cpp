@@ -1852,3 +1852,28 @@ SQRESULT sq_limitthreadaccess(HSQUIRRELVM vm, int64_t tid)
     vm->check_thread_access = tid;
     return SQ_OK;
 }
+
+
+void sq_resetanalyserconfig() {
+  SQCompilationContext::resetConfig();
+}
+
+bool sq_loadanalyserconfig(const char *configFileName) {
+  return SQCompilationContext::loadConfigFile(configFileName);
+}
+
+bool sq_switchdiagnosticstate_t(const char *diagId, bool state) {
+  return SQCompilationContext::switchDiagnosticState(diagId, state);
+}
+
+bool sq_switchdiagnosticstate_i(int32_t id, bool state) {
+  return SQCompilationContext::switchDiagnosticState(id, state);
+}
+
+void sq_invertwarningsstate() {
+  SQCompilationContext::flipWarningsState();
+}
+
+void sq_printwarningslist(FILE *ostream) {
+  SQCompilationContext::printAllWarnings(ostream);
+}

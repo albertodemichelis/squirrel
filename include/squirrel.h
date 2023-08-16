@@ -70,6 +70,7 @@ namespace SQCompilation
 using SqAstNode = SQCompilation::Node;
 
 #include "sqconfig.h"
+#include <stdio.h>
 
 #define SQUIRREL_VERSION_NUMBER_MAJOR 4
 #define SQUIRREL_VERSION_NUMBER_MINOR 6
@@ -422,6 +423,14 @@ SQUIRREL_API void sq_setnativedebughook(HSQUIRRELVM v,SQDEBUGHOOK hook);
 SQUIRREL_API SQGETTHREAD sq_set_thread_id_function(HSQUIRRELVM v, SQGETTHREAD func);
 SQUIRREL_API void sq_setcompilecheckmode(HSQUIRRELVM v, SQBool on);
 SQUIRREL_API void sq_forbidglobalconstrewrite(HSQUIRRELVM v, SQBool on);
+
+/*static analysis*/
+SQUIRREL_API void sq_resetanalyserconfig();
+SQUIRREL_API bool sq_loadanalyserconfig(const char *configFileName);
+SQUIRREL_API bool sq_switchdiagnosticstate_t(const char *diagId, bool state);
+SQUIRREL_API bool sq_switchdiagnosticstate_i(int32_t id, bool state);
+SQUIRREL_API void sq_invertwarningsstate();
+SQUIRREL_API void sq_printwarningslist(FILE *ostream);
 
 /*UTILITY MACRO*/
 #define sq_isnumeric(o) ((o)._type&SQOBJECT_NUMERIC)
