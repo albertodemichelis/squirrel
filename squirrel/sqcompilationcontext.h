@@ -154,6 +154,23 @@ public:
 
   Arena *arena() const { return _arena; }
 
+  static void resetConfig();
+  static bool loadConfigFile(const char *configFile);
+
+  static std::vector<std::string> function_can_return_string;
+  static std::vector<std::string> function_should_return_bool_prefix;
+  static std::vector<std::string> function_should_return_something_prefix;
+  static std::vector<std::string> function_result_must_be_utilized;
+  static std::vector<std::string> function_can_return_null;
+  static std::vector<std::string> function_calls_lambda_inplace;
+  static std::vector<std::string> function_forbidden;
+  static std::vector<std::string> function_forbidden_parent_dir;
+  static std::vector<std::string> function_modifies_object;
+  static std::vector<std::string> function_must_be_called_from_root;
+
+  static std::vector<std::string> std_identifier;
+  static std::vector<std::string> std_function;
+
 private:
 
   bool isDisabled(enum DiagnosticsId id, int line, int pos);

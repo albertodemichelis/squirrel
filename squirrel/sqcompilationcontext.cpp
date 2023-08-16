@@ -1,8 +1,11 @@
 
 #include <assert.h>
+#include <sqconfig.h>
+
 #include "sqcompilationcontext.h"
 #include "sqstring.h"
-#include <sqconfig.h>
+
+#include "keyValueFile.h"
 
 namespace SQCompilation {
 
@@ -41,6 +44,206 @@ SQCompilationContext::SQCompilationContext(SQVM *vm, Arena *arena, const SQChar 
 
 SQCompilationContext::~SQCompilationContext()
 {
+}
+
+std::vector<std::string> SQCompilationContext::function_forbidden;
+std::vector<std::string> SQCompilationContext::function_can_return_string;
+std::vector<std::string> SQCompilationContext::function_should_return_bool_prefix;
+std::vector<std::string> SQCompilationContext::function_should_return_something_prefix;
+std::vector<std::string> SQCompilationContext::function_result_must_be_utilized;
+std::vector<std::string> SQCompilationContext::function_can_return_null;
+std::vector<std::string> SQCompilationContext::function_calls_lambda_inplace;
+std::vector<std::string> SQCompilationContext::function_forbidden_parent_dir;
+std::vector<std::string> SQCompilationContext::function_modifies_object;
+std::vector<std::string> SQCompilationContext::function_must_be_called_from_root;
+
+std::vector<std::string> SQCompilationContext::std_identifier;
+std::vector<std::string> SQCompilationContext::std_function;
+
+void SQCompilationContext::resetConfig() {
+
+  function_forbidden = {
+
+  };
+
+  function_can_return_string = {
+    "subst",
+    "concat",
+    "tostring",
+    "toupper",
+    "tolower",
+    "slice",
+    "trim",
+    "join",
+    "format",
+    "replace"
+  };
+
+  function_should_return_bool_prefix = {
+    "has",
+    "Has",
+    "have",
+    "Have",
+    "should",
+    "Should",
+    "need",
+    "Need",
+    "is",
+    "Is",
+    "was",
+    "Was",
+    "will",
+    "Will"
+  };
+
+  function_should_return_something_prefix = {
+    "get",
+    "Get"
+  };
+
+  function_result_must_be_utilized = {
+    "__merge",
+    "indexof",
+    "findindex",
+    "findvalue",
+    "len",
+    "reduce",
+    "tostring",
+    "tointeger",
+    "tofloat",
+    "slice",
+    "tolower",
+    "toupper"
+  };
+
+  function_can_return_null = {
+    "indexof",
+    "findindex",
+    "findvalue"
+  };
+
+  function_calls_lambda_inplace = {
+    "findvalue",
+    "findindex",
+    "__update",
+    "filter",
+    "map",
+    "reduce",
+    "each",
+    "sort",
+    "assert",
+    "persist",
+    "join",
+  };
+
+  function_forbidden_parent_dir = {
+    "require",
+    "require_optional",
+  };
+
+  function_modifies_object = {
+    "extend",
+    "append",
+    "__update",
+    "insert",
+    "apply",
+    "clear",
+    "sort",
+    "reverse",
+    "resize",
+    "rawdelete",
+    "rawset",
+  };
+
+  function_must_be_called_from_root = {
+    "keepref"
+  };
+
+  std_identifier = {
+    "require",
+    "require_optional",
+    "vargv",
+    "persist",
+    "getclass",
+    "__name__",
+    "__filename__",
+    "keepref",
+  };
+
+  std_function = {
+    "seterrorhandler",
+    "setdebughook",
+    "getstackinfos",
+    "getroottable",
+    "getconsttable",
+    "getclass",
+    "assert",
+    "print",
+    "error",
+    "compilestring",
+    "newthread",
+    "suspend",
+    "array",
+    "type",
+    "callee",
+    "collectgarbage",
+    "resurrectunreachable",
+    "min",
+    "max",
+    "clamp",
+  };
+
+}
+bool SQCompilationContext::loadConfigFile(const char *configFile) {
+  KeyValueFile config;
+  if (!config.loadFromFile(configFile)) {
+    return false;
+  }
+
+  //for (auto && v : config.getValuesList("format_function_name"))
+  //{
+  //  string functionName(v);
+  //  std::transform(functionName.begin(), functionName.end(), functionName.begin(), ::tolower);
+  //  format_function_name.push_back(functionName);
+  //}
+
+  for (auto && v : config.getValuesList("forbidden_function"))
+    function_forbidden.push_back(v);
+
+  for (auto && v : config.getValuesList("function_can_return_null"))
+    function_can_return_null.push_back(v);
+
+  for (auto && v : config.getValuesList("function_calls_lambda_inplace"))
+    function_calls_lambda_inplace.push_back(v);
+
+  for (auto && v : config.getValuesList("std_identifier"))
+    std_identifier.push_back(v);
+
+  for (auto && v : config.getValuesList("std_function"))
+    std_function.push_back(v);
+
+  for (auto && v : config.getValuesList("function_result_must_be_utilized"))
+    function_result_must_be_utilized.push_back(v);
+
+  for (auto && v : config.getValuesList("function_can_return_string"))
+    function_can_return_string.push_back(v);
+
+  for (auto && v : config.getValuesList("function_should_return_bool_prefix"))
+    function_should_return_bool_prefix.push_back(v);
+
+  for (auto && v : config.getValuesList("function_should_return_something_prefix"))
+    function_should_return_something_prefix.push_back(v);
+
+  for (auto && v : config.getValuesList("function_forbidden_parent_dir"))
+    function_forbidden_parent_dir.push_back(v);
+
+  for (auto && v : config.getValuesList("function_modifies_object"))
+    function_modifies_object.push_back(v);
+
+  for (auto && v : config.getValuesList("function_must_be_called_from_root"))
+    function_must_be_called_from_root.push_back(v);
+
+  return true;
 }
 
 void SQCompilationContext::buildLineMap() {

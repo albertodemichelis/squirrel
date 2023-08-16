@@ -951,72 +951,6 @@ static const char *terminatorOpToName(enum TreeOp op) {
   }
 }
 
-static const SQChar *function_can_return_string[] =
-{
-  "subst",
-  "concat",
-  "tostring",
-  "toupper",
-  "tolower",
-  "slice",
-  "trim",
-  "join",
-  "format",
-  "replace",
-  nullptr
-};
-
-static const SQChar *function_should_return_bool_prefix[] =
-{
-  "has",
-  "Has",
-  "have",
-  "Have",
-  "should",
-  "Should",
-  "need",
-  "Need",
-  "is",
-  "Is",
-  "was",
-  "Was",
-  "will",
-  "Will",
-  nullptr
-};
-
-static const SQChar *function_should_return_something_prefix[] =
-{
-  "get",
-  "Get",
-  nullptr
-};
-
-static const SQChar *function_result_must_be_utilized[] =
-{
-  "__merge",
-  "indexof",
-  "findindex",
-  "findvalue",
-  "len",
-  "reduce",
-  "tostring",
-  "tointeger",
-  "tofloat",
-  "slice",
-  "tolower",
-  "toupper",
-  nullptr
-};
-
-static const SQChar *function_can_return_null[] =
-{
-  "indexof",
-  "findindex",
-  "findvalue",
-  nullptr
-};
-
 static bool hasPrefix(const SQChar *str, const SQChar *prefix, unsigned &length) {
   unsigned i = 0;
 
@@ -1040,10 +974,10 @@ static bool hasPrefix(const SQChar *str, const SQChar *prefix, unsigned &length)
   }
 }
 
-static bool hasAnyPrefix(const SQChar *str, const SQChar *prefixes[]) {
-  for (int32_t i = 0; prefixes[i]; ++i) {
+static bool hasAnyPrefix(const SQChar *str, const std::vector<std::string> &prefixes) {
+  for (auto &prefix : prefixes) {
     unsigned length = 0;
-    if (hasPrefix(str, prefixes[i], length)) {
+    if (hasPrefix(str, /*&prefix[0]*/prefix.c_str(), length)) {
       SQChar c = str[length];
       if (!c || c == '_' || c != tolower(c)) {
         return true;
@@ -1058,7 +992,7 @@ static bool nameLooksLikeResultMustBeBoolean(const SQChar *funcName) {
   if (!funcName)
     return false;
 
-  return hasAnyPrefix(funcName, function_should_return_bool_prefix);
+  return hasAnyPrefix(funcName, SQCompilationContext::function_should_return_bool_prefix);
 }
 
 static bool nameLooksLikeFunctionMustReturnResult(const SQChar *funcName) {
@@ -1066,7 +1000,7 @@ static bool nameLooksLikeFunctionMustReturnResult(const SQChar *funcName) {
     return false;
 
   bool nameInList = nameLooksLikeResultMustBeBoolean(funcName) ||
-    hasAnyPrefix(funcName, function_should_return_something_prefix);
+    hasAnyPrefix(funcName, SQCompilationContext::function_should_return_something_prefix);
 
   if (!nameInList)
     if ((strstr(funcName, "_ctor") || strstr(funcName, "Ctor")) && strstr(funcName, "set") != funcName)
@@ -1076,15 +1010,15 @@ static bool nameLooksLikeFunctionMustReturnResult(const SQChar *funcName) {
 }
 
 static bool nameLooksLikeResultMustBeUtilised(const SQChar *name) {
-  return hasAnyPrefix(name, function_result_must_be_utilized) || nameLooksLikeResultMustBeBoolean(name);
+  return hasAnyPrefix(name, SQCompilationContext::function_result_must_be_utilized) || nameLooksLikeResultMustBeBoolean(name);
 }
 
 static bool nameLooksLikeResultMustBeString(const SQChar *name) {
-  return hasAnyPrefix(name, function_can_return_string);
+  return hasAnyPrefix(name, SQCompilationContext::function_can_return_string);
 }
 
 static bool canFunctionReturnNull(const SQChar *n) {
-  return hasAnyPrefix(n, function_can_return_null);
+  return hasAnyPrefix(n, SQCompilationContext::function_can_return_null);
 }
 
 static const SQChar rootName[] = "::";

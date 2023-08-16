@@ -46,6 +46,7 @@ if(NOT DISABLE_DYNAMIC)
   target_include_directories(squirrel PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/internal>"
+    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/helpers>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 endif()
@@ -60,6 +61,7 @@ if(NOT DISABLE_STATIC)
   target_include_directories(squirrel_static PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/internal>"
+    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/helpers>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 endif()
