@@ -284,6 +284,48 @@ static const char *strstr_nl(const char *str, const char *fnd) {
   return nullptr;
 }
 
+void SQCompilationContext::printAllWarnings(FILE *ostream) {
+  for (auto &diag : diagnsoticDescriptors) {
+    if (diag.severity == DS_ERROR)
+      continue;
+    fprintf(ostream, "w%d (%s)\n", diag.id, diag.textId);
+    fprintf(ostream, diag.format, "***", "***", "***", "***", "***", "***", "***", "***");
+    fprintf(ostream, "\n\n");
+  }
+}
+
+void SQCompilationContext::flipWarningsState() {
+  for (auto &diag : diagnsoticDescriptors) {
+    if (diag.severity == DS_ERROR)
+      continue;
+    diag.disabled = !diag.disabled;
+  }
+}
+
+bool SQCompilationContext::switchDiagnosticState(const char *diagName, bool state) {
+  for (auto &diag : diagnsoticDescriptors) {
+    if (strcmp(diagName, diag.textId) == 0) {
+      if (diag.severity != DS_ERROR) {
+        diag.disabled = !state;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+bool SQCompilationContext::switchDiagnosticState(int32_t id, bool state) {
+  for (auto &diag : diagnsoticDescriptors) {
+    if (id == diag.id) {
+      if (diag.severity != DS_ERROR) {
+        diag.disabled = !state;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
 bool SQCompilationContext::isDisabled(enum DiagnosticsId id, int line, int pos) {
   DiagnosticDescriptor &descriptor = diagnsoticDescriptors[id];
   if (descriptor.severity >= DS_ERROR) return false;

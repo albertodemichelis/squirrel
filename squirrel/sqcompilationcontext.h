@@ -152,6 +152,11 @@ public:
   void vreportDiagnostic(enum DiagnosticsId diag, int32_t line, int32_t pos, int32_t width, va_list args);
   void reportDiagnostic(enum DiagnosticsId diag, int32_t line, int32_t pos, int32_t width, ...);
 
+  static void printAllWarnings(FILE *ostream);
+  static void flipWarningsState();
+  static bool switchDiagnosticState(const char *diagName, bool state);
+  static bool switchDiagnosticState(int32_t id, bool state);
+
   Arena *arena() const { return _arena; }
 
   static void resetConfig();
