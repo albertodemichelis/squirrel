@@ -1512,6 +1512,7 @@ FunctionDecl* SQParser::CreateFunction(Id *name, bool lambda, bool ctor)
         SQInteger line = _lex._prevtoken == _SC('\n') ? _lex._lasttokenline : _lex._currentline;
         Expr *expr = Expression(SQE_REGULAR);
         ReturnStatement *retStmt = newNode<ReturnStatement>(expr);
+        retStmt->setIsLambda();
         copyCoordinates(expr, retStmt);
         body = newNode<Block>(arena());
         body->addStatement(retStmt);
