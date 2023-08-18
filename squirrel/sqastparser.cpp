@@ -40,10 +40,10 @@ SQParser::SQParser(SQVM *v, const char *sourceText, size_t sourceTextSize, const
     _vm=v;
     _lex.Init(_ss(v), sourceText, sourceTextSize);
     _sourcename = sourcename;
-    _compilererror[0] = _SC('\0');
     _expression_context = SQE_REGULAR;
     _lang_features = _ss(v)->defaultLangFeatures;
     _depth = 0;
+    _token = 0;
 }
 
 void SQParser::reportDiagnostic(enum DiagnosticsId id, ...) {
@@ -66,8 +66,10 @@ bool SQParser::ProcessPosDirective()
         reportDiagnostic(DiagnosticsId::DI_EXPECTED_LINENUM);
     SQChar * next = NULL;
     _lex._currentline = scstrtol(sval, &next, 10);
-    if (!next || *next != ':')
+    if (!next || *next != ':') {
         reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, ":");
+        return false;
+    }
     next++;
     if (!isdigit(*next))
         reportDiagnostic(DiagnosticsId::DI_EXPECTED_COLNUM);

@@ -52,7 +52,8 @@ public:
         _lex(_ss(v), ctx),
         _scopedconsts(_ss(v)->_alloc_ctx),
         _member_constant_keys_check(_ss(v)->_alloc_ctx),
-        _ctx(ctx)
+        _ctx(ctx),
+        _es()
     {
         _vm = v;
         _lex.Init(_ss(v), code, codeSize);
@@ -60,9 +61,10 @@ public:
         _lineinfo = lineinfo;
         _scope.outers = 0;
         _scope.stacksize = 0;
-        _compilererror[0] = _SC('\0');
         _expression_context = SQE_REGULAR;
         _num_initial_bindings = 0;
+        _token = 0;
+        _fs = nullptr;
 
         if (bindings) {
             assert(sq_type(*bindings) == OT_TABLE || sq_type(*bindings) == OT_NULL);
@@ -116,19 +118,6 @@ public:
         return false;
     }
 
-    static void ThrowError(void *ud, const SQChar *s) {
-        SQCompiler *c = (SQCompiler *)ud;
-        c->Error(s);
-    }
-    void Error(const SQChar *s, ...)
-    {
-        va_list vl;
-        va_start(vl, s);
-        vsnprintf(_compilererror, MAX_COMPILER_ERROR_LEN, s, vl);
-        va_end(vl);
-        longjmp(_ctx.errorJump(), 1);
-    }
-
     SQInteger line() const { return _lex._tokenline; }
     SQInteger column() const { return _lex._tokencolumn; }
     SQInteger width() const { return _lex._currentcolumn - _lex._tokencolumn; }
@@ -143,8 +132,10 @@ public:
                 reportDiagnostic(DiagnosticsId::DI_EXPECTED_LINENUM);
             SQChar * next = NULL;
             _lex._currentline = scstrtol(sval, &next, 10);
-            if (!next || *next != ':')
+            if (!next || *next != ':') {
                 reportDiagnostic(DiagnosticsId::DI_EXPECTED_TOKEN, ":");
+                return;
+            }
             next++;
             if (!isdigit(*next))
                 reportDiagnostic(DiagnosticsId::DI_EXPECTED_COLNUM);
@@ -2093,12 +2084,9 @@ private:
     SQObjectPtr _sourcename;
     SQLexer _lex;
     bool _lineinfo;
-    bool _raiseerror;
     SQExpState   _es;
     SQScope _scope;
     SQExpressionContext _expression_context;
-    SQChar _compilererror[MAX_COMPILER_ERROR_LEN];
-    jmp_buf _errorjmp;
     SQVM *_vm;
     SQObjectPtrVec _scopedconsts;
     SQUnsignedInteger _num_initial_bindings;

@@ -147,11 +147,8 @@ private:
     SQInteger _token;
     const SQChar *_sourcename;
     SQLexer _lex;
-    bool _raiseerror;
     SQExpressionContext _expression_context;
     SQUnsignedInteger _lang_features;
-    SQChar _compilererror[MAX_COMPILER_ERROR_LEN];
-    jmp_buf _errorjmp;
     SQVM *_vm;
 };
 

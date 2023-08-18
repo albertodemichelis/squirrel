@@ -23,15 +23,9 @@ class CodegenVisitor : public Visitor {
     SQInteger _num_initial_bindings;
 
     bool _lineinfo;
-    bool _raiseerror;
     const SQChar *_sourceName;
 
-    jmp_buf _errorjmp;
-
     Arena *_arena;
-
-    SQChar _compilererror[MAX_COMPILER_ERROR_LEN];
-    Node *_errorNode;
 
     SQInteger _last_pop = -1;
 

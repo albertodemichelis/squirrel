@@ -37,12 +37,9 @@ CodegenVisitor::CodegenVisitor(Arena *arena, const HSQOBJECT *bindings, SQVM *vm
     _donot_get(false),
     _lineinfo(lineinfo),
     _arena(arena),
-    _scope(),
-    _errorjmp() {
+    _scope() {
 
     _num_initial_bindings = 0;
-    _compilererror[0] = _SC('\0');
-    _errorNode = NULL;
 
     if (bindings) {
         assert(sq_type(*bindings) == OT_TABLE || sq_type(*bindings) == OT_NULL);
