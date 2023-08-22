@@ -330,6 +330,8 @@ bool SQCompilationContext::isDisabled(enum DiagnosticsId id, int line, int pos) 
   DiagnosticDescriptor &descriptor = diagnosticDescriptors[id];
   if (descriptor.severity >= DS_ERROR) return false;
 
+  if (descriptor.disabled) return true;
+
   const char *codeLine = findLine(line);
 
   if (!codeLine)
