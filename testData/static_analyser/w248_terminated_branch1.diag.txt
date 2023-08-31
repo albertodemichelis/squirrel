@@ -1,0 +1,17 @@
+testData/static_analyser/w248_terminated_branch1.nut line = (19) column = (12) : Warning: Potentially nullable expression used as array index.
+        res[t] <- {}
+        res[nu] <- {}
+            ^-
+      }
+
+testData/static_analyser/w248_terminated_branch1.nut line = (23) column = (10) : Warning: Potentially nullable expression used as array index.
+      res[t][g] <- d
+      res[nu][g] <- d
+          ^-
+    }
+
+testData/static_analyser/w248_terminated_branch1.nut line = (8) column = (0) : Warning: let 'bar' was declared but never used.
+function bar() {
+^--
+    let c = a.value
+

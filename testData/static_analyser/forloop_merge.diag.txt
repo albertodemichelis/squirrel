@@ -1,0 +1,5 @@
+testData/static_analyser/forloop_merge.nut line = (2) column = (0) : Warning: let 'findlast' was declared but never used.
+function findlast(str, substr, startidx=0){
+^--
+    local ret = null
+

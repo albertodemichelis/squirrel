@@ -4,7 +4,7 @@ for (local k = 0; j < 5; k++) {
                   ^----
     j = 10
 
-testData/static_analyser/w279_1.nut line = (4) column = (18) : Warning: Usage of unitialized variable.
+testData/static_analyser/w279_1.nut line = (4) column = (18) : Warning: Comparison operation with potentially nullable expression.
 local j;
 for (local k = 0; j < 5; k++) {
                   ^

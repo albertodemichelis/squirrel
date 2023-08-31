@@ -1,0 +1,5 @@
+testData/static_analyser/w301_arith.nut line = (11) column = (0) : Warning: Variable is assigned twice successively.
+x /= foo();
+x = foo();
+^--------
+

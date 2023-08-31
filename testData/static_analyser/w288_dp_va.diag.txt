@@ -1,0 +1,40 @@
+testData/static_analyser/w288_dp_va.nut line = (11) column = (0) : Warning: Function 'foo' is called with the wrong number of parameters.
+foo(10, 20, 30, 40)
+^------------------
+foo(10, 20, 30)
+
+testData/static_analyser/w288_dp_va.nut line = (15) column = (0) : Warning: Function 'foo' is called with the wrong number of parameters.
+foo(10)
+foo()
+^----
+
+testData/static_analyser/w288_dp_va.nut line = (18) column = (0) : Warning: Function 'bar' is called with the wrong number of parameters.
+bar()
+^----
+bar(10)
+
+testData/static_analyser/w288_dp_va.nut line = (19) column = (0) : Warning: Function 'bar' is called with the wrong number of parameters.
+bar()
+bar(10)
+^------
+bar(10, 20)
+
+testData/static_analyser/w288_dp_va.nut line = (9) column = (0) : Warning: let 'hflow' was declared but never used.
+let FlowH = 30
+let hflow = @(...) comp(FlowH, vargv)
+^--
+
+
+AN ERROR HAS OCCURRED [wrong number of parameters passed to 'foo' testData/static_analyser/w288_dp_va.nut:4 (5 passed, 4 required)]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w288_dp_va.nut line [11]
+
+LOCALS
+[hflow] CLOSURE
+[FlowH] 30
+[bar] CLOSURE
+[foo] CLOSURE
+[comp] CLOSURE
+[vargv] ARRAY
+[this] TABLE

@@ -1,0 +1,5 @@
+testData/static_analyser/w227_lambdas.nut line = (3) column = (0) : Warning: let 'y' was declared but never used.
+local x = 10
+let y = x > 320 ? @() 20 : function() { return 30 }
+^--------------------------------------------------
+

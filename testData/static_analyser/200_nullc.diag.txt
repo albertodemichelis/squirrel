@@ -1,0 +1,4 @@
+testData/static_analyser/200_nullc.nut line = (7) column = (44) : Warning: Comparison operation with potentially nullable expression.
+let _x =  (((item?.isPrimaryBuy ?? false) > (res?.isPrimaryBuy ?? null) ? item : res))
+                                            ^--------------------------
+

@@ -1,0 +1,4 @@
+testData/static_analyser/w227_table.nut line = (3) column = (0) : Warning: let 'fx' was declared but never used.
+let fx = 10
+^-----
+
