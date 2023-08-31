@@ -69,6 +69,7 @@ void PrintUsage()
         _SC("   -o               specifies output file for the -c option\n")
         _SC("   -ast             use AST compiler\n")
         _SC("   -ast-dump [file] dump AST into console or file if specified\n")
+        _SC("   -absolute-path   use absolute path when print diangostics\n")
         _SC("   -bytecode-dump [file] dump SQ bytecode into console or file if specified\n")
         _SC("   -c               compiles only\n")
         _SC("   -diag-file file  write diagnostics into specified file")
@@ -239,6 +240,10 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                         {
                             dumpOpt.astDumpFileName = argv[++arg];
                         }
+                    }
+                    else if (strcmp("-absolute-path", argv[arg]) == 0)
+                    {
+                        module_mgr->compilationOptions.useAbsolutePath = true;
                     }
                     else {
                         goto unknown_opt;
