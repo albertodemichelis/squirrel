@@ -1,4 +1,0 @@
-testData/static_analyser/w302.nut line = (9) column = (8) : Warning: Not all paths initialize variable x, it could potentially contain garbage.
-::print(x)
-        ^
-

@@ -1,0 +1,6 @@
+testData/static_analyser/w248_type_func.nut line = (4) column = (15) : Warning: 'f' can be null, but is used as a function without checking.
+    if ((type(colorStr) != "string" || (colorStr.len() != 8 && colorStr.len() != 6)) && (type(f) == "null") )
+        return f("first param must be string with len 6 or 8")
+               ^
+}
+

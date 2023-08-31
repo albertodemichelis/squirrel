@@ -1,0 +1,5 @@
+testData/static_analyser/w228_table.nut line = (3) column = (0) : Warning: let 'foo' was declared but never used.
+function foo(y) {
+^
+    let x = y
+

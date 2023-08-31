@@ -1,0 +1,10 @@
+testData/static_analyser/w248_andor.nut line = (4) column = (28) : Warning: 'expression' can be null, but is used as a container without checking.
+    let a = list != null && list.len() == 0
+    let b = list != null || list.len() == 0
+                            ^---
+
+testData/static_analyser/w248_andor.nut line = (1) column = (0) : Warning: let 'riIsEmptyGroup' was declared but never used.
+let function riIsEmptyGroup(x) {
+^--
+    let list = x?.list
+

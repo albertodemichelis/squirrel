@@ -1,0 +1,22 @@
+testData/static_analyser/w248_complex_key.nut line = (14) column = (4) : Warning: 'expression' can be null, but is used as a container without checking.
+qux(a.z, h.z)
+    ^
+
+testData/static_analyser/w248_complex_key.nut line = (14) column = (9) : Warning: 'expression' can be null, but is used as a container without checking.
+qux(a.z, h.z)
+         ^
+
+
+AN ERROR HAS OCCURRED [the index 'z' does not exist]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w248_complex_key.nut line [14]
+
+LOCALS
+[h] NULL
+[a] NULL
+[qux] CLOSURE
+[bar] CLOSURE
+[foo] CLOSURE
+[vargv] ARRAY
+[this] TABLE

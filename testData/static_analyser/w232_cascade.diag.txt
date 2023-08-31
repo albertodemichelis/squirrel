@@ -1,0 +1,5 @@
+testData/static_analyser/w232_cascade.nut line = (6) column = (0) : Warning: let 'foo' was declared but never used.
+function foo(size, a, b) {
+^--
+    if (a && b)
+

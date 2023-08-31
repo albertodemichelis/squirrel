@@ -1,0 +1,6 @@
+testData/static_analyser/w248_while_cond.nut line = (13) column = (8) : Warning: 'expression' can be null, but is used as a container without checking.
+  if ((c?.d ?? 0) > d){
+    d = c.d
+        ^
+  }
+

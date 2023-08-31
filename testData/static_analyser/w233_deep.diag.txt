@@ -1,5 +1,0 @@
-testData/static_analyser/w233_deep.nut line = (5) column = (19) : Warning: Constant in a boolean expression.
-local mask = -0x40
-::aspect_ratio <- (::flags && !mask)
-                   ^----------------
-

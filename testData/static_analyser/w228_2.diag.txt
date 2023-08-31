@@ -4,4 +4,3 @@ let function fn() { //-declared-never-used
   ^----
   local c = { f = 3 }
 
-testData/static_analyser/w228_2.nut line = (-1) column = (-1) : Warning: field 'f' hides variable with the same name.

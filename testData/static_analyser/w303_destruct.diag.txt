@@ -1,0 +1,17 @@
+testData/static_analyser/w303_destruct.nut line = (3) column = (13) : Warning: parameter 'u' was declared but never used.
+function foo() { return "1" }
+function bar(u) {}
+             ^
+
+
+AN ERROR HAS OCCURRED [the index 'x' does not exist]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w303_destruct.nut line [5]
+
+LOCALS
+[x] NULL
+[bar] CLOSURE
+[foo] CLOSURE
+[vargv] ARRAY
+[this] TABLE

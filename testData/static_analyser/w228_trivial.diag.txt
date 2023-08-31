@@ -1,0 +1,5 @@
+testData/static_analyser/w228_trivial.nut line = (5) column = (0) : Warning: let 'refreshOnWindowActivate' was declared but never used.
+function refreshOnWindowActivate(repeatAmount = 1, refreshPeriodSec = 10.0) {
+^-------
+    readyRefreshTime = 0
+

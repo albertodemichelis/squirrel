@@ -1,0 +1,17 @@
+testData/static_analyser/w208_rec.nut line = (4) column = (14) : Warning: parameter 'x' was declared but never used.
+function bart(x) { return "" }
+              ^
+
+
+AN ERROR HAS OCCURRED [the index 'xx' does not exist]
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w208_rec.nut line [12]
+
+LOCALS
+[editorIsActive] 42
+[editorState] TABLE
+[bart] CLOSURE
+[foo] CLOSURE
+[vargv] ARRAY
+[this] TABLE
