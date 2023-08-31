@@ -1019,12 +1019,12 @@ Decl* SQParser::parseLocalDeclStatement()
         if(_token == _SC('=')) {
             Lex();
             Expr *expr = Expression(SQE_REGULAR);
-            cur = newNode<VarDecl>(varname->id(), expr, assignable);
+            cur = newNode<VarDecl>(varname->id(), expr, assignable, destructurer != 0);
         }
         else {
             if (!assignable && !destructurer)
                 _ctx.reportDiagnostic(DiagnosticsId::DI_UNINITIALIZED_BINDING, varname->lineStart(), varname->columnStart(), varname->textWidth(), varname->id());  //-V522
-            cur = newNode<VarDecl>(varname->id(), nullptr, assignable);
+            cur = newNode<VarDecl>(varname->id(), nullptr, assignable, destructurer != 0);
         }
 
         setCoordinates(cur, l, c);
