@@ -2351,7 +2351,7 @@ void CheckerVisitor::checkArguments(const CallExpr *callExpr) {
         continue;
 
       int32_t argNL = normalizeParamNameLength(possibleArgName);
-      SQChar *buffer = (SQChar *)malloc(argNL + 1);
+      SQChar *buffer = (SQChar *)sq_malloc(_ctx.allocContext(), argNL + 1);
       normalizeParamName(possibleArgName, buffer);
 
       if ((i - 1) != j) {
@@ -2360,7 +2360,7 @@ void CheckerVisitor::checkArguments(const CallExpr *callExpr) {
         }
       }
 
-      free(buffer);
+      sq_free(_ctx.allocContext(), buffer, argNL + 1);
     }
   }
 }
