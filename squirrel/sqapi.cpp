@@ -1862,6 +1862,10 @@ bool sq_loadanalyserconfig(const char *configFileName) {
   return SQCompilationContext::loadConfigFile(configFileName);
 }
 
+bool sq_loadanalyserconfigblk(const KeyValueFile &config) {
+  return SQCompilationContext::loadConfigFile(config);
+}
+
 bool sq_switchdiagnosticstate_t(const char *diagId, bool state) {
   return SQCompilationContext::switchDiagnosticState(diagId, state);
 }
