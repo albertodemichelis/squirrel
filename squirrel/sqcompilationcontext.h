@@ -150,6 +150,8 @@ public:
 
   jmp_buf &errorJump() { return _errorjmp; }
 
+  SQAllocContext allocContext() const { return _ss(_vm)->_alloc_ctx; }
+
   void vreportDiagnostic(enum DiagnosticsId diag, int32_t line, int32_t pos, int32_t width, va_list args);
   void reportDiagnostic(enum DiagnosticsId diag, int32_t line, int32_t pos, int32_t width, ...);
 
