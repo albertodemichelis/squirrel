@@ -11,6 +11,7 @@
 #include "squtils.h"
 #include "arena.h"
 
+class KeyValueFile;
 
 #define DIAGNOSTICS \
   DEF_DIAGNOSTIC(LITERAL_OVERFLOW, ERROR, LEX, -1, "", "%s constant overflow"), \
@@ -160,6 +161,7 @@ public:
   Arena *arena() const { return _arena; }
 
   static void resetConfig();
+  static bool loadConfigFile(const KeyValueFile &configBlk);
   static bool loadConfigFile(const char *configFile);
 
   static std::vector<std::string> function_can_return_string;

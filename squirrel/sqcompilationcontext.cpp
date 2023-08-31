@@ -194,11 +194,18 @@ void SQCompilationContext::resetConfig() {
   };
 
 }
+
 bool SQCompilationContext::loadConfigFile(const char *configFile) {
   KeyValueFile config;
-  if (!config.loadFromFile(configFile)){
+  if (!config.loadFromFile(configFile)) {
     return false;
   }
+
+  return loadConfigFile(config);
+}
+
+bool SQCompilationContext::loadConfigFile(const KeyValueFile &config) {
+
 
   //for (auto && v : config.getValuesList("format_function_name"))
   //{
