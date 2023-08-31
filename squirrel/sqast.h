@@ -607,14 +607,16 @@ public:
 
 class VarDecl : public ValueDecl {
 public:
-    VarDecl(const SQChar *name, Expr *init, bool assignable) : ValueDecl(TO_VAR, name, init), _assignable(assignable) {}
+    VarDecl(const SQChar *name, Expr *init, bool assignable, bool destruct = false) : ValueDecl(TO_VAR, name, init), _assignable(assignable), _destructured(destruct) {}
 
     Expr *initializer() const { return expression(); }
 
     bool isAssignable() const { return _assignable; }
+    bool isDestructured() const { return _destructured; }
 
 private:
     bool _assignable;
+    bool _destructured;
 };
 
 struct TableMember {
