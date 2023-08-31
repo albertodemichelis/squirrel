@@ -339,10 +339,12 @@ bool SQCompilationContext::isDisabled(enum DiagnosticsId id, int line, int pos) 
 
   char suppressLineIntBuf[64] = { 0 };
   char suppressLineTextBuf[128] = { 0 };
-  snprintf(suppressLineIntBuf, sizeof(suppressLineIntBuf), "//-%c%d", severityPrefixes[descriptor.severity], descriptor.id);
-  int lt = snprintf(suppressLineTextBuf, sizeof(suppressLineTextBuf), "//-%s", descriptor.textId);
+  snprintf(suppressLineIntBuf, sizeof(suppressLineIntBuf), "-%c%d", severityPrefixes[descriptor.severity], descriptor.id);
+  int lt = snprintf(suppressLineTextBuf, sizeof(suppressLineTextBuf), "-%s", descriptor.textId);
 
-  if (strstr_nl(codeLine, suppressLineIntBuf) || strstr_nl(codeLine, suppressLineTextBuf)) {
+  const char *commentPart = strstr_nl(codeLine, "//");
+
+  if (commentPart && (strstr_nl(commentPart, suppressLineIntBuf) || strstr_nl(commentPart, suppressLineTextBuf))) {
     return true;
   }
 
