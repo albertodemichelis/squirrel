@@ -178,6 +178,8 @@ private:
 class AccessExpr;
 class LiteralExpr;
 class DeclExpr;
+class BinExpr;
+class CallExpr;
 
 class Expr : public Node {
 protected:
@@ -188,6 +190,8 @@ public:
     AccessExpr *asAccessExpr() const { assert(isAccessExpr()); return (AccessExpr*)this; }
     LiteralExpr *asLiteral() const { assert(op() == TO_LITERAL); return (LiteralExpr *)this; }
     DeclExpr *asDeclExpr() const { assert(op() == TO_DECL_EXPR); return (DeclExpr *)this; }
+    BinExpr *asBinExpr() const { assert(TO_NULLC <= op() && op() <= TO_MODEQ); return (BinExpr *)this; }
+    CallExpr *asCallExpr() const { assert(op() == TO_CALL); return (CallExpr *)this; }
 
     void setConst() { _isConst = true; }
     bool isConst() const { return _isConst; }
