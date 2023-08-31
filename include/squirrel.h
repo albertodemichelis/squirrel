@@ -62,6 +62,9 @@ struct SQOuter;
 
 class OutputStream;
 class Arena;
+
+class KeyValueFile;
+
 namespace SQCompilation
 {
   class Node;
@@ -427,6 +430,8 @@ SQUIRREL_API void sq_forbidglobalconstrewrite(HSQUIRRELVM v, SQBool on);
 /*static analysis*/
 SQUIRREL_API void sq_resetanalyserconfig();
 SQUIRREL_API bool sq_loadanalyserconfig(const char *configFileName);
+SQUIRREL_API bool sq_loadanalyserconfigblk(const KeyValueFile &config);
+
 SQUIRREL_API bool sq_switchdiagnosticstate_t(const char *diagId, bool state);
 SQUIRREL_API bool sq_switchdiagnosticstate_i(int32_t id, bool state);
 SQUIRREL_API void sq_invertwarningsstate();
