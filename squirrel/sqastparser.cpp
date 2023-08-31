@@ -929,7 +929,7 @@ void SQParser::ParseTableOrClass(TableDecl *decl, SQInteger separator, SQInteger
                 break;
             }  //-V796
         default: {
-            Id *id = (Id *)Expect(TK_IDENTIFIER);
+            Id *id = (Id *)setCoordinates(Expect(TK_IDENTIFIER), l, c);
             assert(id);
             LiteralExpr *key = newNode<LiteralExpr>(id->id()); //-V522
             copyCoordinates(id, key);
