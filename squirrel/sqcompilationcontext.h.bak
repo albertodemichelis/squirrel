@@ -5,14 +5,12 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <setjmp.h>
-#include <vector>
 #include "squirrel.h"
 #include "sqvm.h"
 #include "sqstate.h"
 #include "squtils.h"
 #include "arena.h"
 
-class KeyValueFile;
 
 #define DIAGNOSTICS \
   DEF_DIAGNOSTIC(LITERAL_OVERFLOW, ERROR, LEX, -1, "", "%s constant overflow"), \
@@ -127,6 +125,7 @@ class KeyValueFile;
   DEF_DIAGNOSTIC(PARAM_COUNT_MISMATCH, WARNING, SEMA, 288, "param-count", "Function '%s' is called with the wrong number of parameters."),\
   DEF_DIAGNOSTIC(PARAM_POSITION_MISMATCH, WARNING, SEMA, 289, "param-pos", "The function parameter '%s' seems to be in the wrong position.")
 
+
 namespace SQCompilation {
 
 enum DiagnosticsId {
@@ -149,8 +148,6 @@ public:
   ~SQCompilationContext();
 
   jmp_buf &errorJump() { return _errorjmp; }
-
-  SQAllocContext allocContext() const { return _ss(_vm)->_alloc_ctx; }
 
   void vreportDiagnostic(enum DiagnosticsId diag, int32_t line, int32_t pos, int32_t width, va_list args);
   void reportDiagnostic(enum DiagnosticsId diag, int32_t line, int32_t pos, int32_t width, ...);
