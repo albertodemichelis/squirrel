@@ -9,7 +9,8 @@
 #include <sqstddatetime.h>
 #include <sqstdaux.h>
 #include <sqdirect.h>
-
+#include <stdlib.h>
+#include <limits.h>
 #include <string.h>
 
 #ifdef _WIN32
@@ -218,6 +219,19 @@ bool SqModules::compileScriptImpl(const std::vector<char> &buf, const char *sour
   return false;
 }
 
+static const char *computeAbsolutePath(const char *resolved_fn) {
+  char *r = nullptr;
+#ifdef _WIN32
+  char *full = (char *)malloc(_MAX_PATH);
+  r = _fullpath(full, resolved_fn, _MAX_PATH);
+#else // _WIN32
+  // unix
+  r = realpath(resolved_fn, nullptr);
+#endif // _WIN32
+  assert(r);
+  return r;
+}
+
 SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn, const char *requested_fn,
                                                         const HSQOBJECT *bindings,
                                                         Sqrat::Object &script_closure, string &out_err_msg)
@@ -231,16 +245,29 @@ SqModules::CompileScriptResult SqModules::compileScript(const char *resolved_fn,
     return CompileScriptResult::FileNotFound;
   }
 
-  if (compileScriptImpl(buf, resolved_fn, bindings))
-  {
-    out_err_msg = string("Failed to compile file: ") + requested_fn +" / " + resolved_fn;
-    return CompileScriptResult::CompilationFailed;
+  const char *filePath = resolved_fn;
+
+  if (compilationOptions.useAbsolutePath) {
+    filePath = computeAbsolutePath(resolved_fn);
   }
 
-  script_closure.attachToStack(sqvm, -1);
-  sq_pop(sqvm, 1);
+  auto compileResult = CompileScriptResult::Ok;
 
-  return CompileScriptResult::Ok;
+  if (compileScriptImpl(buf, filePath, bindings))
+  {
+    out_err_msg = string("Failed to compile file: ") + requested_fn +" / " + resolved_fn;
+    compileResult = CompileScriptResult::CompilationFailed;
+  }
+  else {
+    script_closure.attachToStack(sqvm, -1);
+    sq_pop(sqvm, 1);
+  }
+
+  if (filePath != resolved_fn) {
+    free(const_cast<char *>(filePath));
+  }
+
+  return compileResult;
 }
 
 

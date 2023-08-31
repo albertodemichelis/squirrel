@@ -36,6 +36,7 @@ public:
     compilationOptions.raiseError = true;
     compilationOptions.debugInfo = false;
     compilationOptions.doStaticAnalysis = false;
+    compilationOptions.useAbsolutePath = false;
   }
 
   HSQUIRRELVM getVM() { return sqvm; }
@@ -98,6 +99,7 @@ public:
     bool raiseError;
     bool debugInfo;
     bool doStaticAnalysis;
+    bool useAbsolutePath;
   } compilationOptions;
 
   void *up_data;
