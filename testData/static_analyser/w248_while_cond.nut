@@ -11,5 +11,7 @@ while (c && (c?.o ?? "") != ""){
   c = a?[x.value?[t][c.o]]
   if ((c?.d ?? 0) > d){
     d = c.d
+  } else {
+    d = d.xyz
   }
 }

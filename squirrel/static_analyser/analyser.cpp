@@ -1758,6 +1758,7 @@ class CheckerVisitor : public Visitor {
   void speculateIfConditionHeuristics(const Expr *cond, VarScope *thenScope, VarScope *elseScope, bool inv = false);
   void speculateIfConditionHeuristics(const Expr *cond, VarScope *thenScope, VarScope *elseScope, std::unordered_set<const Expr *> &visited, int32_t evalId, unsigned flags, bool inv);
   bool detectTypeOfPattern(const Expr *expr, const Expr *&r_checkee, const LiteralExpr *&r_lit);
+  bool detectNullCPattern(enum TreeOp op, const Expr *expr, const Expr *&checkee);
 
   void checkAssertCall(const CallExpr *call);
 
@@ -3638,6 +3639,47 @@ bool CheckerVisitor::detectTypeOfPattern(const Expr *expr, const Expr *&res_chec
   return false;
 }
 
+bool CheckerVisitor::detectNullCPattern(enum TreeOp op, const Expr *cond, const Expr *&checkee) {
+
+  // detect patterns like `(o?.x ?? D) <op> D` which implies o not null
+
+  // (o?.f ?? D) != V -- then-branch implies `o` non-null
+  // (o?.f ?? D) == V -- assume else-branch implies `o` non-null
+  // (o?.f ?? D) > V -- then-b implies `o` non-null
+  // (o?.f ?? D) < V -- then-b implies `o` non-null
+  // (o?.f ?? D) >= V -- nothing could be said
+  // (o?.f ?? D) <= V -- nothing
+
+  if (op != TO_LT && op != TO_GT && op != TO_EQ && op != TO_NE) {
+    return false;
+  }
+
+  const BinExpr *bin = cond->asBinExpr();
+
+  const Expr *lhs = deparen(bin->lhs());
+  const Expr *rhs = deparen(bin->rhs());
+
+  if (lhs->op() != TO_NULLC && rhs->op() != TO_NULLC) // -V522
+    return false;
+
+  const BinExpr *nullc = lhs->op() == TO_NULLC ? lhs->asBinExpr() : rhs->asBinExpr();
+  const Expr *V = lhs == nullc ? rhs : lhs;
+  const Expr *D = deparen(nullc->rhs());
+  const Expr *candidate = deparen(nullc->lhs());
+
+  const Expr *reciever = extractReceiver(candidate);
+
+  if (reciever == nullptr)
+    return false;
+
+  if (V->op() == TO_ID || _equalChecker.check(D, V)) { // -V522
+    checkee = reciever;
+    return true;
+  }
+
+  return false;
+}
+
 void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *thenScope, VarScope *elseScope, bool inv) {
 
   std::unordered_set<const Expr *> visited;
@@ -3678,6 +3720,30 @@ void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *
 
   if (inv) {
     std::swap(thenScope, elseScope);
+  }
+
+  const Expr *nullcCheckee = nullptr;
+  if (detectNullCPattern(op, cond, nullcCheckee)) {
+    // (o?.f ?? D) == V -- assume else-branch implies `o` non-null
+    // (o?.f ?? D) > V -- then-b implies `o` non-null
+    // (o?.f ?? D) < V -- then-b implies `o` non-null
+
+    if (op == TO_EQ) {
+      if (elseScope) {
+        currentScope = elseScope;
+        setValueFlags(nullcCheckee, 0, RT_NULL);
+      }
+    }
+    else {
+      assert(op == TO_LT || op == TO_GT);
+      if (thenScope) {
+        currentScope = thenScope;
+        setValueFlags(nullcCheckee, 0, RT_NULL);
+      }
+    }
+
+    currentScope = thisScope; // -V519
+    return;
   }
 
   if (evalId == -1 && op == TO_CALL && thenScope) {
@@ -3767,31 +3833,6 @@ void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *
     if (lit && lit->kind() == LK_NULL) { // -V522
       speculateIfConditionHeuristics(testee, elseScope, thenScope, visited, evalId, flags | NULL_CHECK_F, false);
       return;
-    }
-
-    const BinExpr *lhs_nullc = lhs->op() == TO_NULLC ? lhs->asBinExpr() : nullptr;
-    const BinExpr *rhs_nullc = rhs->op() == TO_NULLC ? rhs->asBinExpr() : nullptr;
-
-    if (lhs_nullc || rhs_nullc) {
-      const BinExpr *nullc = lhs_nullc ? lhs_nullc : rhs_nullc;
-      const Expr *other = nullc == lhs_nullc ? rhs : lhs;
-      const Expr *arg = deparen(nullc->lhs()); // -V1004
-      const Id *checkee = extractReceiver(arg);
-
-      if (!checkee)
-        return;
-
-      const Expr *defValue = deparen(nullc->rhs());
-
-      if (_equalChecker.check(defValue, other)) { // ((o?.f() ?? D) == D)
-        // TODO: what about // ((o?.f() ?? D) <= D) pattern?
-        if (elseScope) {
-          currentScope = elseScope;
-          setValueFlags(checkee, 0, RT_NULL);
-        }
-        currentScope = thisScope; // -V519
-        return;
-      }
     }
   }
 
