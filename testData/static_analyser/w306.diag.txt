@@ -1,0 +1,6 @@
+testData/static_analyser/w306.nut line = (6) column = (4) : Warning: Suspicious expression, probably parens are missed
+local z = 2
+if (x == y != z)
+    ^----------
+  ::print("a")
+

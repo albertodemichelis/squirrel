@@ -2314,7 +2314,19 @@ void CheckerVisitor::checkCompareWithBool(const BinExpr *expr) {
   const Expr *l = expr->lhs();
   const Expr *r = expr->rhs();
 
-  if (isBoolCompareOperator(expr->op()) && l->op() != TO_PAREN && r->op() != TO_PAREN) {
+  enum TreeOp thisOp = expr->op();
+  enum TreeOp lhsOp = l->op();
+  enum TreeOp rhsOp = r->op();
+
+  // if (a == b != c)
+  if (thisOp == TO_EQ || thisOp == TO_NE) {
+    if (lhsOp == TO_EQ || lhsOp == TO_NE || rhsOp == TO_EQ || rhsOp == TO_NE) {
+      report(expr, DiagnosticsId::DI_EQ_PAREN_MISSED);
+      return;
+    }
+  }
+
+  if (isBoolCompareOperator(thisOp) && lhsOp != TO_PAREN && rhsOp != TO_PAREN) {
     const Expr *lhs = maybeEval(l);
     const Expr *rhs = maybeEval(r);
 
