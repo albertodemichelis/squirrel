@@ -1756,7 +1756,7 @@ class CheckerVisitor : public Visitor {
   BinExpr *wrapConditionIntoNC(Expr *e);
   void visitBinaryBranches(Expr *lhs, Expr *rhs, bool inv);
   void speculateIfConditionHeuristics(const Expr *cond, VarScope *thenScope, VarScope *elseScope, bool inv = false);
-  void speculateIfConditionHeuristics(const Expr *cond, VarScope *thenScope, VarScope *elseScope, std::unordered_set<const Expr *> &visited, int32_t evalId, bool inv);
+  void speculateIfConditionHeuristics(const Expr *cond, VarScope *thenScope, VarScope *elseScope, std::unordered_set<const Expr *> &visited, int32_t evalId, unsigned flags, bool inv);
   bool detectTypeOfPattern(const Expr *expr, const Expr *&r_checkee, const LiteralExpr *&r_lit);
 
   void checkAssertCall(const CallExpr *call);
@@ -3642,10 +3642,12 @@ void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *
 
   std::unordered_set<const Expr *> visited;
 
-  speculateIfConditionHeuristics(cond, thenScope, elseScope, visited, -1, inv);
+  speculateIfConditionHeuristics(cond, thenScope, elseScope, visited, -1, 0, inv);
 }
 
-void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *thenScope, VarScope *elseScope, std::unordered_set<const Expr *> &visited, int32_t evalId, bool inv) {
+#define NULL_CHECK_F 1
+
+void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *thenScope, VarScope *elseScope, std::unordered_set<const Expr *> &visited, int32_t evalId, unsigned flags, bool inv) {
   cond = deparen(cond);
 
   if (visited.find(cond) != visited.end()) {
@@ -3660,7 +3662,7 @@ void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *
 
   if (op == TO_NOT) {
     const UnExpr *u = static_cast<const UnExpr *>(cond);
-    return speculateIfConditionHeuristics(u->argument(), thenScope, elseScope, visited, evalId, !inv);
+    return speculateIfConditionHeuristics(u->argument(), thenScope, elseScope, visited, evalId, flags, !inv);
   }
 
   bool invertLR = false;
@@ -3699,9 +3701,18 @@ void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *
   }
 
   if (op == TO_ID) {
-    if (thenScope) {
+    if (thenScope && evalId < 0) {
+      // set iff it was explicit check like `if (o) { .. }`
+      // otherwise there could be complexities, see intersected_assignment.nut
       currentScope = thenScope;
       setValueFlags(cond, 0, RT_NULL);
+      currentScope = thisScope;
+    }
+
+    if (elseScope && evalId < 0 && (flags & NULL_CHECK_F)) {
+      // set NULL iff it was explicit null check `if (o == null) { ... }` otherwise it could not be null, see w233_inc_in_for.nut
+      currentScope = elseScope;
+      setValueFlags(cond, RT_NULL, 0);
       currentScope = thisScope;
     }
 
@@ -3711,26 +3722,29 @@ void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *
     if (eval != cond) {
       // let cond = x != null
       // if (cond) { ... }
-      speculateIfConditionHeuristics(eval, thenScope, elseScope, visited, evalIndex, false);
+      speculateIfConditionHeuristics(eval, thenScope, elseScope, visited, evalIndex, flags, false);
     }
     return;
   }
 
-  if (op == TO_GETTABLE) {
+  if (op == TO_GETTABLE || op == TO_GETFIELD) {
     // x?[y]
-    const GetTableExpr *acc = static_cast<const GetTableExpr *>(cond);
-    const Expr *key = deparen(acc->key());
-
-    if (thenScope) {
-      currentScope = thenScope;
-      setValueFlags(key, 0, RT_NULL);
-    }
-
+    const AccessExpr *acc = static_cast<const AccessExpr *>(cond);
     const Expr *reciever = extractReceiver(deparen(acc->receiver()));
+
     if (reciever && thenScope) {
       currentScope = thenScope;
       setValueFlags(reciever, 0, RT_NULL);
     }
+
+    if (op == TO_GETTABLE) {
+      const Expr *key = deparen(acc->asGetTable()->key());
+      if (thenScope) {
+        currentScope = thenScope;
+        setValueFlags(key, 0, RT_NULL);
+      }
+    }
+
     currentScope = thisScope; // -V519
 
     return;
@@ -3747,58 +3761,12 @@ void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *
     const LiteralExpr *lhs_lit = lhs->op() == TO_LITERAL ? lhs->asLiteral() : nullptr; // -V522
     const LiteralExpr *rhs_lit = rhs->op() == TO_LITERAL ? rhs->asLiteral() : nullptr; // -V522
 
-    unsigned pf = RT_NULL;
-    unsigned nf = 0;
+    const LiteralExpr *lit = lhs_lit ? lhs_lit : rhs_lit;
+    const Expr *testee = lit == lhs ? rhs : lhs;
 
-    const Expr *v = &nullValue;
-    const Expr *nv = nullptr;
-
-    if (lhs_id && rhs_lit) { // o == null
-      if (rhs_lit->kind() == LK_NULL) {
-
-        int32_t lhsEvalId = -1;
-        const Expr *lhsEval = nullptr;
-        if (evalId >= 0) {
-          lhsEval = maybeEval(lhs, lhsEvalId);
-        }
-
-        if (!lhsEval || evalId >= lhsEvalId) {
-          if (thenScope) {
-            currentScope = thenScope;
-            setValueFlags(lhs_id, pf, nf);
-          }
-          if (elseScope) {
-            currentScope = elseScope;
-            // since it is else branch we swap flags
-            setValueFlags(lhs_id, nf, pf); // -V764
-          }
-          currentScope = thisScope; // -V519
-        }
-        return;
-      }
-    }
-    else if (lhs_lit && rhs_id) { // null == o
-      if (lhs_lit->kind() == LK_NULL) {
-
-        int32_t rhsEvalId = -1;
-        const Expr *rhsEval = nullptr;
-        if (evalId >= 0) {
-          rhsEval = maybeEval(rhs, rhsEvalId);
-        }
-
-        if (!rhsEval || evalId >= rhsEvalId) {
-          if (thenScope) {
-            currentScope = thenScope;
-            setValueFlags(rhs_id, pf, nf);
-          }
-          if (elseScope) {
-            currentScope = elseScope;
-            setValueFlags(rhs_id, nf, pf); // -V764
-          }
-          currentScope = thisScope; // -V519
-        }
-        return;
-      }
+    if (lit && lit->kind() == LK_NULL) { // -V522
+      speculateIfConditionHeuristics(testee, elseScope, thenScope, visited, evalId, flags | NULL_CHECK_F, false);
+      return;
     }
 
     const BinExpr *lhs_nullc = lhs->op() == TO_NULLC ? lhs->asBinExpr() : nullptr;
@@ -3885,8 +3853,8 @@ void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *
       rhsEScope = elseScope->copy(arena);
     }
 
-    speculateIfConditionHeuristics(lhs, thenScope, lhsEScope, visited, evalId, invertLR);
-    speculateIfConditionHeuristics(rhs, thenScope, rhsEScope, visited, evalId, invertLR);
+    speculateIfConditionHeuristics(lhs, thenScope, lhsEScope, visited, evalId, flags, invertLR);
+    speculateIfConditionHeuristics(rhs, thenScope, rhsEScope, visited, evalId, flags, invertLR);
 
     if (elseScope) {
       // In contrast in `false`-branch there is no such integral effect, all we could say is something common of both side so
