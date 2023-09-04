@@ -957,12 +957,16 @@ bool isRelationOperator(enum TreeOp op) {
   return TO_3CMP <= op && op <= TO_LT;
 }
 
+bool isBoolRelationOperator(enum TreeOp op) {
+  return TO_GE <= op && op <= TO_LT;
+}
+
 bool isBitwiseOperator(enum TreeOp op) {
   return op == TO_OR || op == TO_AND || op == TO_XOR;
 }
 
 bool isBoolCompareOperator(enum TreeOp op) {
-  return op == TO_NE || op == TO_EQ || (TO_GE <= op && op <= TO_LT);
+  return op == TO_NE || op == TO_EQ || isBoolRelationOperator(op);
 }
 
 bool isCompareOperator(enum TreeOp op) {
@@ -1601,6 +1605,7 @@ class CheckerVisitor : public Visitor {
   void checkPotentiallyNullableOperands(const BinExpr *expr);
   void checkBitwiseToBool(const BinExpr *expr);
   void checkCompareWithBool(const BinExpr *expr);
+  void checkRelativeCompareWithBool(const BinExpr *expr);
   void checkCopyOfExpression(const BinExpr *expr);
   void checkConstInBoolExpr(const BinExpr *expr);
   void checkShiftPriority(const BinExpr *expr);
@@ -2279,6 +2284,29 @@ void CheckerVisitor::checkBitwiseToBool(const BinExpr *bin) {
 
 }
 
+void CheckerVisitor::checkRelativeCompareWithBool(const BinExpr *expr) {
+  if (effectsOnly)
+    return;
+
+  if (!isBoolRelationOperator(expr->op()))
+    return;
+
+  const Expr *l = expr->lhs();
+  const Expr *r = expr->rhs();
+
+  const Expr *dl = deparen(l);
+  const Expr *dr = deparen(r);
+
+  const Expr *el = maybeEval(dl);
+  const Expr *er = maybeEval(dr);
+
+  if (looksLikeBooleanExpr(l) || looksLikeBooleanExpr(r) ||
+    looksLikeBooleanExpr(dl) || looksLikeBooleanExpr(dr) ||
+    looksLikeBooleanExpr(el) || looksLikeBooleanExpr(er)) {
+    report(expr, DiagnosticsId::DI_RELATIVE_CMP_BOOL);
+  }
+}
+
 void CheckerVisitor::checkCompareWithBool(const BinExpr *expr) {
   if (effectsOnly)
     return;
@@ -2795,6 +2823,7 @@ void CheckerVisitor::visitBinExpr(BinExpr *expr) {
   checkPotentiallyNullableOperands(expr);
   checkBitwiseToBool(expr);
   checkCompareWithBool(expr);
+  checkRelativeCompareWithBool(expr);
   checkCopyOfExpression(expr);
   checkConstInBoolExpr(expr);
   checkShiftPriority(expr);

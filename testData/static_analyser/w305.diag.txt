@@ -1,0 +1,21 @@
+testData/static_analyser/w305.nut line = (5) column = (4) : Warning: Comparison with boolean.
+if (B == x > y)
+    ^---------
+  ::print("a")
+
+testData/static_analyser/w305.nut line = (8) column = (4) : Warning: Relative comparison with boolean. It is potential runtime error
+if ((B == x) > y)
+    ^-----------
+  ::print("a")
+
+
+AN ERROR HAS OCCURRED [comparison between 'bool' and '1']
+
+CALLSTACK
+*FUNCTION [__main__()] testData/static_analyser/w305.nut line [8]
+
+LOCALS
+[y] 1
+[x] 1
+[vargv] ARRAY
+[this] TABLE
