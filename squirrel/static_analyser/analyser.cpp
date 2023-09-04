@@ -920,7 +920,7 @@ static bool isSuspiciousNeighborOfNullCoalescing(enum TreeOp op) {
 
 static bool isSuspiciousTernaryConditionOp(enum TreeOp op) {
   return op == TO_ADD || op == TO_SUB || op == TO_MUL || op == TO_DIV || op == TO_MOD ||
-    op == TO_AND || op == TO_OR || op == TO_SHL || op == TO_SHR || op == TO_USHR || op == TO_3CMP;
+    op == TO_AND || op == TO_OR || op == TO_SHL || op == TO_SHR || op == TO_USHR || op == TO_3CMP || op == TO_NULLC;
 }
 
 static bool isSuspiciousSameOperandsBinaryOp(enum TreeOp op) {

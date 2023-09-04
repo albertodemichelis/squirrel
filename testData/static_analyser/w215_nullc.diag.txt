@@ -1,0 +1,4 @@
+testData/static_analyser/w215_nullc.nut line = (8) column = (9) : Warning: The '?:' operator has lower priority than the '??' operator. Perhaps the '?:' operator works in a different way than it was expected.
+let _u = o?.u ?? s ? s / r : 0.0
+         ^--------
+
