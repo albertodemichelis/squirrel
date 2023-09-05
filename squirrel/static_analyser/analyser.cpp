@@ -1149,8 +1149,6 @@ enum ValueRefState {
 enum SymbolKind {
   SK_EXCEPTION,
   SK_FUNCTION,
-  SK_METHOD,
-  SK_FIELD,
   SK_CLASS,
   SK_TABLE,
   SK_VAR,
@@ -1167,8 +1165,6 @@ static const char *symbolContextName(enum SymbolKind k) {
   {
   case SK_EXCEPTION: return "exception";
   case SK_FUNCTION: return "function";
-  case SK_METHOD: return "method";
-  case SK_FIELD: return "field";
   case SK_CLASS: return "class";
   case SK_TABLE: return "table";
   case SK_VAR: return "variable";
@@ -1288,9 +1284,6 @@ struct SymbolInfo {
       return declarator.x;
     case SK_FUNCTION:
       return declarator.f;
-    case SK_METHOD:
-    case SK_FIELD:
-      return declarator.m->key;
     case SK_CLASS:
       return declarator.k;
     case SK_TABLE:
@@ -4998,6 +4991,7 @@ void CheckerVisitor::analyse(RootBlock *root) {
 }
 
 class NameShadowingChecker : public Visitor {
+  // TODO: merge this checker into main one. Find hiden symbols in a single pass
   SQCompilationContext _ctx;
 
   std::vector<const Node *> nodeStack;
@@ -5018,7 +5012,6 @@ class NameShadowingChecker : public Visitor {
       const Id *x;
       const FunctionDecl *f;
       const ClassDecl *k;
-      const TableMember *m;
       const VarDecl *v;
       const TableDecl *t;
       const ParamDecl *p;
@@ -5063,8 +5056,6 @@ class NameShadowingChecker : public Visitor {
 
   struct Scope *scope;
 
-  void walkTableMembers(const TableDecl *t);
-
   void declareVar(enum SymbolKind k, const VarDecl *v);
   void declareSymbol(const SQChar *name, SymbolInfo *info);
 
@@ -5098,9 +5089,6 @@ const Node *NameShadowingChecker::extractPointedNode(const SymbolInfo *info) {
     return info->declaration.x;
   case SK_FUNCTION:
     return info->declaration.f;
-  case SK_METHOD:
-  case SK_FIELD:
-    return info->declaration.m->key;
   case SK_CLASS:
     return info->declaration.k;
   case SK_TABLE:
@@ -5143,23 +5131,12 @@ void NameShadowingChecker::declareSymbol(const SQChar *name, SymbolInfo *info) {
       }
     }
 
-    if (existedInfo->kind == SK_METHOD && info->kind == SK_FUNCTION) {
-      const Node *ln = nodeStack.back();
-      if (existedInfo->declaration.m->value == ln) {
-        warn = false;
-      }
-    }
-
     if (existedInfo->kind == SK_FUNCTION && info->kind == SK_FUNCTION) {
       const FunctionDecl *existed = existedInfo->declaration.f;
       const FunctionDecl *_new = info->declaration.f;
       if (existed->name()[0] == '(' && _new->name()[0] == '(') {
         warn = false;
       }
-    }
-
-    if ((info->kind == SK_FIELD || info->kind == SK_METHOD) && warn) {
-      warn = info->ownerScope->owner->op() == TO_CLASS;
     }
 
     if (info->kind == SK_PARAM && existedInfo->kind == SK_PARAM && warn) {
@@ -5275,24 +5252,9 @@ static bool isFunctionDecl(const Expr *e) {
   return d->op() == TO_FUNCTION || d->op() == TO_CONSTRUCTOR;
 }
 
-void NameShadowingChecker::walkTableMembers(const TableDecl *t) {
-  for (auto &m : t->members()) {
-    if (m.key->op() == TO_LITERAL && m.key->asLiteral()->kind() == LK_STRING) {
-      const SQChar *name = m.key->asLiteral()->s();
-      bool isMethod = isFunctionDecl(m.value);
-      SymbolInfo *info = newSymbolInfo(isMethod ? SK_METHOD : SK_FIELD);
-      info->declaration.m = &m;
-      info->name = name;
-      info->ownerScope = scope;
-      declareSymbol(name, info);
-    }
-  }
-}
-
 void NameShadowingChecker::visitTableDecl(TableDecl *t) {
   Scope tableScope(this, t);
 
-  walkTableMembers(t);
   nodeStack.push_back(t);
   t->visitChildren(this);
   nodeStack.pop_back();
@@ -5301,7 +5263,6 @@ void NameShadowingChecker::visitTableDecl(TableDecl *t) {
 void NameShadowingChecker::visitClassDecl(ClassDecl *k) {
   Scope klassScope(this, k);
 
-  walkTableMembers(k);
   nodeStack.push_back(k);
   k->visitChildren(this);
   nodeStack.pop_back();
