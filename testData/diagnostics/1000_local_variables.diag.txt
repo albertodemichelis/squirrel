@@ -1,1 +1,2 @@
-testData/diagnostics/1000_local_variables.nut line = (-1) column = (-1) : Error: internal compiler error: too many locals
+ERROR: internal compiler error: too many locals
+testData/diagnostics/1000_local_variables.nut:-1:-1

@@ -1,5 +1,8 @@
-testData/static_analyser/w273.nut line = (3) column = (0) : Error: Unknown variable [x]
+ERROR: Unknown variable [x]
+testData/static_analyser/w273.nut:3:0
+
 x <- 6
 ^
 return x
+
 

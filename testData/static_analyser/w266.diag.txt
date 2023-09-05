@@ -1,8 +1,11 @@
-testData/static_analyser/w266.nut line = (5) column = (2) : Warning: 'while' after the statement list (forgot 'do' ?)
+WARNING: w266 (forgotten-do) 'while' after the statement list (forgot 'do' ?)
+testData/static_analyser/w266.nut:5:2
+
   ::x++
 } while (::x)
   ^
 ::x--
+
 
 
 AN ERROR HAS OCCURRED [the index 'x' does not exist]

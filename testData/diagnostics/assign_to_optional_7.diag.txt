@@ -1,5 +1,8 @@
-testData/diagnostics/assign_to_optional_7.nut line = (2) column = (0) : Error: can't assign to expression
+ERROR: can't assign to expression
+testData/diagnostics/assign_to_optional_7.nut:2:0
+
 local v = {v = {v = 0}}
 v.v ?? v = 3
 ^-------
+
 

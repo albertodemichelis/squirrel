@@ -1,19 +1,28 @@
-testData/static_analyser/w217_complex.nut line = (26) column = (12) : Warning: Unconditional 'break' inside a loop.
+WARNING: w217 (unconditional-terminated-loop) Unconditional 'break' inside a loop.
+testData/static_analyser/w217_complex.nut:26:12
+
             foo()
             break
             ^
         }
 
-testData/static_analyser/w217_complex.nut line = (44) column = (8) : Warning: Unconditional 'throw' inside a loop.
+
+WARNING: w217 (unconditional-terminated-loop) Unconditional 'throw' inside a loop.
+testData/static_analyser/w217_complex.nut:44:8
+
         foo()
         throw "y"
         ^--------
     }
 
-testData/static_analyser/w217_complex.nut line = (66) column = (4) : Warning: Unconditional 'return' inside a loop.
+
+WARNING: w217 (unconditional-terminated-loop) Unconditional 'return' inside a loop.
+testData/static_analyser/w217_complex.nut:66:4
+
     return 0
     ^-------
 }
+
 
 
 AN ERROR HAS OCCURRED [the index 'v' does not exist]

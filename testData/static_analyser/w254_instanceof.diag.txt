@@ -1,8 +1,11 @@
-testData/static_analyser/w254_instanceof.nut line = (3) column = (4) : Warning: Boolean passed to 'instanceof' operator.
+WARNING: w254 (bool-passed-to-strange) Boolean passed to 'instanceof' operator.
+testData/static_analyser/w254_instanceof.nut:3:4
+
 local x = 10
 if (x instanceof !"weapModSlotName")
     ^-------------------------------
   return null
+
 
 
 AN ERROR HAS OCCURRED [cannot apply instanceof between a bool and a integer]

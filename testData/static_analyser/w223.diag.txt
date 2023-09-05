@@ -1,6 +1,9 @@
-testData/static_analyser/w223.nut line = (6) column = (4) : Warning: Comparison with boolean.
+WARNING: w223 (compared-with-bool) Comparison with boolean.
+testData/static_analyser/w223.nut:6:4
+
 local z = 2
 if (x == y > z)
     ^---------
   ::print("a")
+
 

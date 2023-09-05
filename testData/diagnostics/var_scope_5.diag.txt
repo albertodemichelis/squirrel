@@ -1,5 +1,8 @@
-testData/diagnostics/var_scope_5.nut line = (4) column = (8) : Error: Unknown variable [x]
+ERROR: Unknown variable [x]
+testData/diagnostics/var_scope_5.nut:4:8
+
 else
   print(x)
         ^
+
 

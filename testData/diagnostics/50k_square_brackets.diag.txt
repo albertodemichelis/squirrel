@@ -1,5 +1,8 @@
-testData/diagnostics/50k_square_brackets.nut line = (1) column = (35) : Error: AST too big. Consider simplifing it
+ERROR: AST too big. Consider simplifing it
+testData/diagnostics/50k_square_brackets.nut:1:35
+
 [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
                                    ^
 [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
+
 

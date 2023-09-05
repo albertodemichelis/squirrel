@@ -1,8 +1,11 @@
-testData/static_analyser/w215.nut line = (4) column = (10) : Warning: The '?:' operator has lower priority than the '+' operator. Perhaps the '?:' operator works in a different way than it was expected.
+WARNING: w215 (ternary-priority) The '?:' operator has lower priority than the '+' operator. Perhaps the '?:' operator works in a different way than it was expected.
+testData/static_analyser/w215.nut:4:10
+
 local flag = true
 local b = 10 + flag ? 1 : 2
           ^--------
 ::print(b)
+
 
 
 AN ERROR HAS OCCURRED [arith op + on between 'integer' and 'bool']

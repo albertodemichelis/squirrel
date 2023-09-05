@@ -1,5 +1,8 @@
-testData/static_analyser/w224_then.nut line = (4) column = (11) : Warning: 'then' operator has an empty body.
+WARNING: w224 (empty-body) 'then' operator has an empty body.
+testData/static_analyser/w224_then.nut:4:11
+
 if (x == 5);
            ^
 {
+
 

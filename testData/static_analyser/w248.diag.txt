@@ -1,12 +1,18 @@
-testData/static_analyser/w248.nut line = (8) column = (4) : Warning: 'a' can be null, but is used as a function without checking.
+WARNING: w248 (access-potentially-nulled) 'a' can be null, but is used as a function without checking.
+testData/static_analyser/w248.nut:8:4
+
 } else {
     a()
     ^
 }
 
-testData/static_analyser/w248.nut line = (11) column = (7) : Warning: 'a' can be null, but is used as a function without checking.
+
+WARNING: w248 (access-potentially-nulled) 'a' can be null, but is used as a function without checking.
+testData/static_analyser/w248.nut:11:7
+
 return a()
        ^
+
 
 
 AN ERROR HAS OCCURRED [the index 'x' does not exist]

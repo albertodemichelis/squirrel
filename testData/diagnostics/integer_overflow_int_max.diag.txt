@@ -1,4 +1,7 @@
-testData/diagnostics/integer_overflow_int_max.nut line = (1) column = (8) : Error: integer constant overflow
+ERROR: integer constant overflow
+testData/diagnostics/integer_overflow_int_max.nut:1:8
+
 println(9223372036854775808)
         ^------------------
+
 

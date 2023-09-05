@@ -1,17 +1,26 @@
-testData/static_analyser/w248_terminated_branch1.nut line = (19) column = (12) : Warning: Potentially nullable expression used as array index.
+WARNING: w210 (potentially-nulled-index) Potentially nullable expression used as array index.
+testData/static_analyser/w248_terminated_branch1.nut:19:12
+
         res[t] <- {}
         res[nu] <- {}
             ^-
       }
 
-testData/static_analyser/w248_terminated_branch1.nut line = (23) column = (10) : Warning: Potentially nullable expression used as array index.
+
+WARNING: w210 (potentially-nulled-index) Potentially nullable expression used as array index.
+testData/static_analyser/w248_terminated_branch1.nut:23:10
+
       res[t][g] <- d
       res[nu][g] <- d
           ^-
     }
 
-testData/static_analyser/w248_terminated_branch1.nut line = (8) column = (0) : Warning: let 'bar' was declared but never used.
+
+WARNING: w228 (declared-never-used) let 'bar' was declared but never used.
+testData/static_analyser/w248_terminated_branch1.nut:8:0
+
 function bar() {
 ^--
     let c = a.value
+
 

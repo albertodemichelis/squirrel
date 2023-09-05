@@ -1,6 +1,9 @@
-testData/static_analyser/w222_deep.nut line = (10) column = (14) : Warning: Boolean used as array index.
+WARNING: w222 (bool-as-index) Boolean used as array index.
+testData/static_analyser/w222_deep.nut:10:14
+
     b()
     ::print(a[index])
               ^----
   }
+
 

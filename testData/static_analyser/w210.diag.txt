@@ -1,4 +1,7 @@
-testData/static_analyser/w210.nut line = (5) column = (9) : Warning: Potentially nullable expression used as array index.
+WARNING: w210 (potentially-nulled-index) Potentially nullable expression used as array index.
+testData/static_analyser/w210.nut:5:9
+
 ::f <- x[y?["a"]]
          ^------
+
 

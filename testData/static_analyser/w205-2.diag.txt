@@ -1,6 +1,9 @@
-testData/static_analyser/w205-2.nut line = (5) column = (2) : Warning: Unreachable code after 'return'.
+WARNING: w205 (unreachable-code) Unreachable code after 'return'.
+testData/static_analyser/w205-2.nut:5:2
+
   return
   let t = { //-declared-never-used
   ^
     a = 1
+
 

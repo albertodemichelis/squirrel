@@ -1,6 +1,9 @@
-testData/static_analyser/w275.nut line = (19) column = (6) : Warning: A 'break' statement is probably missing in a 'switch' statement.
+WARNING: w275 (missed-break) A 'break' statement is probably missing in a 'switch' statement.
+testData/static_analyser/w275.nut:19:6
+
     case 4:
       ::print("ccc")
       ^-------------
     default:        // <<<<<<< here
+
 

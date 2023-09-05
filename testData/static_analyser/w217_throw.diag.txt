@@ -1,5 +1,8 @@
-testData/static_analyser/w217_throw.nut line = (8) column = (4) : Warning: Unconditional 'throw' inside a loop.
+WARNING: w217 (unconditional-terminated-loop) Unconditional 'throw' inside a loop.
+testData/static_analyser/w217_throw.nut:8:4
+
     throw "err"
     ^----------
   }
+
 

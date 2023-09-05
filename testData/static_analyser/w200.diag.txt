@@ -1,6 +1,9 @@
-testData/static_analyser/w200.nut line = (4) column = (10) : Warning: Comparison operation with potentially nullable expression.
+WARNING: w200 (potentially-nulled-ops) Comparison operation with potentially nullable expression.
+testData/static_analyser/w200.nut:4:10
+
 let function fn(mod, wpUnitRank) { //-declared-never-used
   return (mod?.reqRank > wpUnitRank)
           ^-----------
 }
+
 

@@ -1,5 +1,8 @@
-testData/static_analyser/w286_2.nut line = (6) column = (7) : Warning: Declaration used in arith expression as operand.
+WARNING: w286 (decl-in-expression) Declaration used in arith expression as operand.
+testData/static_analyser/w286_2.nut:6:7
+
 }
 return cls || ::fn2 //-const-in-bool-expr
        ^--
+
 

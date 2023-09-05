@@ -1,7 +1,10 @@
-testData/static_analyser/w303_destruct.nut line = (3) column = (13) : Warning: parameter 'u' was declared but never used.
+WARNING: w228 (declared-never-used) parameter 'u' was declared but never used.
+testData/static_analyser/w303_destruct.nut:3:13
+
 function foo() { return "1" }
 function bar(u) {}
              ^
+
 
 
 AN ERROR HAS OCCURRED [the index 'x' does not exist]

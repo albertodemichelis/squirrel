@@ -1,5 +1,8 @@
-testData/static_analyser/w216.nut line = (5) column = (4) : Warning: Left and right operands of '<' operator are the same.
+WARNING: w216 (same-operands) Left and right operands of '<' operator are the same.
+testData/static_analyser/w216.nut:5:4
+
 if (a.x < a.x)
     ^--------
   ::print("x < y")
+
 

@@ -1,4 +1,7 @@
-testData/diagnostics/invalid_float_2.nut line = (1) column = (8) : Error: malformed number
+ERROR: malformed number
+testData/diagnostics/invalid_float_2.nut:1:8
+
 println(1e4......)
         ^--
+
 

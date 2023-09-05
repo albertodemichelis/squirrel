@@ -1,5 +1,8 @@
-testData/static_analyser/w225.nut line = (3) column = (4) : Warning: Not all control paths return a value.
+WARNING: w225 (all-paths-return-value) Not all control paths return a value.
+testData/static_analyser/w225.nut:3:4
+
 let function x(y) { //-declared-never-used
     ^
   if (y == 1)
+
 

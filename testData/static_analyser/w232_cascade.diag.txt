@@ -1,5 +1,8 @@
-testData/static_analyser/w232_cascade.nut line = (6) column = (0) : Warning: let 'foo' was declared but never used.
+WARNING: w228 (declared-never-used) let 'foo' was declared but never used.
+testData/static_analyser/w232_cascade.nut:6:0
+
 function foo(size, a, b) {
 ^--
     if (a && b)
+
 

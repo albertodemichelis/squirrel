@@ -1,7 +1,10 @@
-testData/static_analyser/w254_notin.nut line = (3) column = (4) : Warning: Boolean passed to 'in' operator.
+WARNING: w254 (bool-passed-to-strange) Boolean passed to 'in' operator.
+testData/static_analyser/w254_notin.nut:3:4
+
 if (!"weapModSlotName" not in ::item)
     ^-------------------------------
   return null
+
 
 
 AN ERROR HAS OCCURRED [the index 'item' does not exist]

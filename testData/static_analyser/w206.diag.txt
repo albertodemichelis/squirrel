@@ -1,5 +1,8 @@
-testData/static_analyser/w206.nut line = (5) column = (0) : Warning: Variable is assigned twice successively.
+WARNING: w206 (assigned-twice) Variable is assigned twice successively.
+testData/static_analyser/w206.nut:5:0
+
 tab.y = 7
 tab.x = 8
 ^--------
+
 

@@ -186,11 +186,14 @@ static SQInteger _sqstd_aux_printerror(HSQUIRRELVM v)
     return 0;
 }
 
-void _sqstd_compiler_error(HSQUIRRELVM v,const SQChar *sErr,const SQChar *sSource,SQInteger line,SQInteger column)
+void _sqstd_compiler_error(HSQUIRRELVM v,const SQChar *sErr,const SQChar *sSource,SQInteger line,SQInteger column, const SQChar *extra)
 {
     SQPRINTFUNCTION pf = sq_geterrorfunc(v);
     if(pf) {
-        pf(v,_SC("%s line = (%d) column = (%d) : %s\n"),sSource,(int)line,(int)column,sErr);
+        pf(v, _SC("%s\n"), sErr);
+        pf(v, _SC("%s:%d:%d\n"),sSource,(int)line,(int)column);
+        if (extra)
+          pf(v, _SC("%s\n"), extra);
     }
 }
 

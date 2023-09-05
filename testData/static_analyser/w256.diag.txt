@@ -1,6 +1,9 @@
-testData/static_analyser/w256.nut line = (4) column = (29) : Warning: Key and function name are not the same ('convertBlockedMsgToLink2' and 'convertBlockedMsgToLink').
+WARNING: w256 (key-and-function-name) Key and function name are not the same ('convertBlockedMsgToLink2' and 'convertBlockedMsgToLink').
+testData/static_analyser/w256.nut:4:29
+
 return class {
   convertBlockedMsgToLink2 = function convertBlockedMsgToLink(msg) {} //-declared-never-used
                              ^
 }
+
 

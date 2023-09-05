@@ -1,4 +1,7 @@
-testData/static_analyser/w209.nut line = (5) column = (0) : Warning: The variable is assigned to itself.
+WARNING: w209 (assigned-to-itself) The variable is assigned to itself.
+testData/static_analyser/w209.nut:5:0
+
 x.y = (((x.y)))
 ^--------------
+
 

@@ -1,7 +1,10 @@
-testData/static_analyser/w249_array.nut line = (4) column = (7) : Warning: 'expression' can be null, but is used as a container without checking.
+WARNING: w248 (access-potentially-nulled) 'expression' can be null, but is used as a container without checking.
+testData/static_analyser/w249_array.nut:4:7
+
 local a = ::x?.b
 return a[6];
        ^
+
 
 
 AN ERROR HAS OCCURRED [the index 'x' does not exist]

@@ -1,12 +1,18 @@
-testData/static_analyser/w305.nut line = (5) column = (4) : Warning: Comparison with boolean.
+WARNING: w223 (compared-with-bool) Comparison with boolean.
+testData/static_analyser/w305.nut:5:4
+
 if (B == x > y)
     ^---------
   ::print("a")
 
-testData/static_analyser/w305.nut line = (8) column = (4) : Warning: Relative comparison with boolean. It is potential runtime error
+
+WARNING: w305 (relative-bool-cmp) Relative comparison with boolean. It is potential runtime error
+testData/static_analyser/w305.nut:8:4
+
 if ((B == x) > y)
     ^-----------
   ::print("a")
+
 
 
 AN ERROR HAS OCCURRED [comparison between 'bool' and '1']

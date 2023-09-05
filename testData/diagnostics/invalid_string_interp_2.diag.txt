@@ -1,4 +1,7 @@
-testData/diagnostics/invalid_string_interp_2.nut line = (1) column = (10) : Error: recursion in reader macro
+ERROR: recursion in reader macro
+testData/diagnostics/invalid_string_interp_2.nut:1:10
+
 println($"{$"{2}"}");
           ^
+
 

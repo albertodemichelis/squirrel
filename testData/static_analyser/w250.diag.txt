@@ -1,6 +1,9 @@
-testData/static_analyser/w250.nut line = (3) column = (8) : Warning: Comparison with a array.
+WARNING: w250 (cmp-with-container) Comparison with a array.
+testData/static_analyser/w250.nut:3:8
+
 return (::a != [])
         ^--------
+
 
 
 AN ERROR HAS OCCURRED [the index 'a' does not exist]

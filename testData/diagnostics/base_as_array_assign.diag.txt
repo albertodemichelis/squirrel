@@ -1,4 +1,7 @@
-testData/diagnostics/base_as_array_assign.nut line = (1) column = (0) : Error: can't assign to expression
+ERROR: can't assign to expression
+testData/diagnostics/base_as_array_assign.nut:1:0
+
 base["x"] = 1
 ^--------
+
 

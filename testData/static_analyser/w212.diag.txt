@@ -1,5 +1,8 @@
-testData/static_analyser/w212.nut line = (4) column = (4) : Warning: Detected pattern 'if (A) {...} else if (A) {...}'. Branch unreachable.
+WARNING: w212 (duplicate-if-expression) Detected pattern 'if (A) {...} else if (A) {...}'. Branch unreachable.
+testData/static_analyser/w212.nut:4:4
+
 if (x == 1)
     ^-----
   ::print("1")
+
 

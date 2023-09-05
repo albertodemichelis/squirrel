@@ -1,5 +1,8 @@
-testData/diagnostics/div64_by_minus_one_vm.nut line = (1) column = (11) : Error: too many digits for an Hex number
+ERROR: too many digits for an Hex number
+testData/diagnostics/div64_by_minus_one_vm.nut:1:11
+
 local x = -0x7FFFFFFFFFFFFFFF - 1
            ^-----------------
 local y = @(a) -a
+
 

@@ -1,6 +1,9 @@
-testData/static_analyser/w238_heuristic.nut line = (4) column = (2) : Warning: Function name 'isLoggedIn' implies a return value, but its result is never used.
+WARNING: w238 (named-like-should-return) Function name 'isLoggedIn' implies a return value, but its result is never used.
+testData/static_analyser/w238_heuristic.nut:4:2
+
 let function x() { //-declared-never-used
   ::isLoggedIn()
   ^-------------
 }
+
 

@@ -1,4 +1,7 @@
-testData/diagnostics/div64_by_minus_one_opt.nut line = (1) column = (9) : Error: too many digits for an Hex number
+ERROR: too many digits for an Hex number
+testData/diagnostics/div64_by_minus_one_opt.nut:1:9
+
 print( (-0x7FFFFFFF_FFFFFFFF-1) / -1 )
          ^------------------
+
 

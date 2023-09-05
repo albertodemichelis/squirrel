@@ -1,5 +1,8 @@
-testData/static_analyser/w289.nut line = (6) column = (13) : Warning: The function parameter 'aaax' seems to be in the wrong position.
+WARNING: w289 (param-pos) The function parameter 'aaax' seems to be in the wrong position.
+testData/static_analyser/w289.nut:6:13
+
 local b = -1;
 return fn(b, aaaX);
              ^---
+
 

@@ -18,7 +18,7 @@ struct DiagnosticDescriptor {
 
 static const char severityPrefixes[] = "hwe";
 static const char *severityNames[] = {
-  "Hint", "Warning", "Error", nullptr
+  "HINT", "WARNING", "ERROR", nullptr
 };
 
 static DiagnosticDescriptor diagnosticDescriptors[] = {
@@ -411,45 +411,55 @@ void SQCompilationContext::vreportDiagnostic(enum DiagnosticsId diagId, int32_t 
 
   message.append(tempBuffer);
 
+  if (desc.id > 0) {
+    snprintf(tempBuffer, sizeof tempBuffer, "%c%d (%s) ", severityPrefixes[desc.severity], desc.id, desc.textId);
+    message.append(tempBuffer);
+  }
+
   int len = vsnprintf(tempBuffer, sizeof tempBuffer, desc.format, vargs);
 
   message.append(tempBuffer);
+
+  std::string extraInfo;
 
   const char *l1 = findLine(line - 1);
   const char *l2 = findLine(line);
   const char *l3 = findLine(line + 1);
 
   if (!isBlankLine(l1)) {
-    message.push_back('\n');
+    extraInfo.push_back('\n');
     int32_t j = 0;
     while (l1[j] && l1[j] != '\n' && l1[j] != '\r') { //-V522
-      message.push_back(l1[j++]); //-V595
+      extraInfo.push_back(l1[j++]); //-V595
     }
   }
 
   if (!isBlankLine(l2)) {
-    message.push_back('\n');
+    extraInfo.push_back('\n');
     int32_t j = 0;
     while (l2[j] && l2[j] != '\n' && l2[j] != '\r') { //-V522
-      message.push_back(l2[j++]); //-V595
+      extraInfo.push_back(l2[j++]); //-V595
     }
 
-    message.push_back('\n');
+    extraInfo.push_back('\n');
     j = 0;
 
-    drawUnderliner(pos, width, message);
+    drawUnderliner(pos, width, extraInfo);
   }
 
   if (!isBlankLine(l3)) {
-    message.push_back('\n');
+    extraInfo.push_back('\n');
     int32_t j = 0;
     while (l3[j] && l3[j] != '\n' && l3[j] != '\r') { //-V522
-      message.push_back(l3[j++]); //-V595
+      extraInfo.push_back(l3[j++]); //-V595
     }
   }
 
+  const char *extra = nullptr;
   if (l1 || l2 || l3) {
-    message.push_back('\n');
+    extraInfo.push_back('\n');
+    extraInfo.push_back('\n'); // separate with extra line
+    extra = extraInfo.c_str();
   }
 
   auto errorFunc = _ss(_vm)->_compilererrorhandler;
@@ -457,7 +467,7 @@ void SQCompilationContext::vreportDiagnostic(enum DiagnosticsId diagId, int32_t 
   const char *msg = message.c_str();
 
   if (_raiseError && errorFunc) {
-    errorFunc(_vm, msg, _sourceName, line, pos);
+    errorFunc(_vm, msg, _sourceName, line, pos, extra);
   }
   if (isError) {
     _vm->_lasterror = SQString::Create(_ss(_vm), msg, message.length());

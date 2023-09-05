@@ -1,6 +1,9 @@
-testData/static_analyser/w228_2.nut line = (4) column = (2) : Warning: variable 'f' was declared but never used.
+WARNING: w228 (declared-never-used) variable 'f' was declared but never used.
+testData/static_analyser/w228_2.nut:4:2
+
 let function fn() { //-declared-never-used
   local f = 123
   ^----
   local c = { f = 3 }
+
 
