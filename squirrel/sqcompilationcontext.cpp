@@ -422,7 +422,7 @@ void SQCompilationContext::vreportDiagnostic(enum DiagnosticsId diagId, int32_t 
   if (!isBlankLine(l1)) {
     message.push_back('\n');
     int32_t j = 0;
-    while (l1[j] && l1[j] != '\n') { //-V522
+    while (l1[j] && l1[j] != '\n' && l1[j] != '\r') { //-V522
       message.push_back(l1[j++]); //-V595
     }
   }
@@ -430,7 +430,7 @@ void SQCompilationContext::vreportDiagnostic(enum DiagnosticsId diagId, int32_t 
   if (!isBlankLine(l2)) {
     message.push_back('\n');
     int32_t j = 0;
-    while (l2[j] && l2[j] != '\n') { //-V522
+    while (l2[j] && l2[j] != '\n' && l2[j] != '\r') { //-V522
       message.push_back(l2[j++]); //-V595
     }
 
@@ -443,7 +443,7 @@ void SQCompilationContext::vreportDiagnostic(enum DiagnosticsId diagId, int32_t 
   if (!isBlankLine(l3)) {
     message.push_back('\n');
     int32_t j = 0;
-    while (l3[j] && l3[j] != '\n') { //-V522
+    while (l3[j] && l3[j] != '\n' && l3[j] != '\r') { //-V522
       message.push_back(l3[j++]); //-V595
     }
   }
