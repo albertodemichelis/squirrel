@@ -858,56 +858,112 @@ static bool isAssignExpr(const Expr *expr) {
   return op == TO_ASSIGN || op == TO_INEXPR_ASSIGN || (TO_PLUSEQ <= op && op <= TO_MODEQ);
 }
 
-class ConditionalExitFinder : public Visitor {
-  bool _firstLevel;
+class LoopTerminatorCollector : public Visitor {
+  bool _firstLevel; // means not under some condition, if or switch
+  bool _inSwitch;
+  bool _inTry;
+
+  void setTerminator(const Statement *t) {
+    if (terminator == nullptr)
+      terminator = t;
+  }
+
 public:
-  bool hasBreak;
-  bool hasContinue;
-  bool hasReturn;
-  bool hasThrow;
-  ConditionalExitFinder(bool firstLevel)
+
+  bool hasCondBreak;
+  bool hasCondContinue;
+  bool hasCondReturn;
+  bool hasCondThrow;
+
+  bool hasUnconditionalTerm;
+  bool hasUnconditionalContinue;
+
+  const Statement *terminator;
+
+  LoopTerminatorCollector(bool firstLevel)
     : _firstLevel(firstLevel)
-    , hasBreak(false)
-    , hasContinue(false)
-    , hasReturn(false)
-    , hasThrow(false) {}
+    , _inSwitch(false)
+    , _inTry(false)
+    , hasCondBreak(false)
+    , hasCondContinue(false)
+    , hasCondReturn(false)
+    , hasCondThrow(false)
+    , hasUnconditionalTerm(false)
+    , hasUnconditionalContinue(false)
+    , terminator(nullptr) {}
 
   void visitReturnStatement(ReturnStatement *stmt) {
-    if (!hasReturn)
-      hasReturn = !_firstLevel;
+    if (_firstLevel) {
+      hasUnconditionalTerm = true;
+      setTerminator(stmt);
+    }
+    else if (!hasUnconditionalTerm)
+      hasCondReturn = true;
   }
 
   void visitThrowStatement(ThrowStatement *stmt) {
-    if (!hasThrow)
-      hasThrow = !_firstLevel;
+    if (_firstLevel && !_inTry) {
+      hasUnconditionalTerm = true;
+      setTerminator(stmt);
+    }
+    else if(!hasUnconditionalTerm)
+      hasCondThrow = true;
   }
 
   void visitBreakStatement(BreakStatement *stmt) {
-    if (!hasBreak)
-      hasBreak = !_firstLevel;
+    if (_firstLevel) {
+      hasUnconditionalTerm = true;
+      setTerminator(stmt);
+    }
+    else if (!_inSwitch && !hasUnconditionalTerm)
+      hasCondBreak = true;
   }
 
   void visitContinueStatement(ContinueStatement *stmt) {
-    if (!hasContinue)
-      hasContinue = !_firstLevel;
+    if (_firstLevel) {
+      hasUnconditionalTerm = true;
+      hasUnconditionalContinue = true;
+      setTerminator(stmt);
+    }
+    else if (!hasUnconditionalTerm)
+      hasCondContinue = true;
   }
 
   void visitIfStatement(IfStatement *stmt) {
     bool old = _firstLevel;
-    _firstLevel = true;
+    _firstLevel = false;
     Visitor::visitIfStatement(stmt);
     _firstLevel = old;
   }
 
-  void visitSwitchStatement(SwitchStatement *stmt) {
-    bool old = _firstLevel;
-    _firstLevel = true;
-    Visitor::visitSwitchStatement(stmt);
-    _firstLevel = old;
+  void visitLoopStatement(LoopStatement *loop) {
+    // skip
   }
 
-  bool fallThrough() const {
-    return !(hasBreak || hasContinue || hasReturn || hasThrow);
+  void visitDecl(Decl *d) {
+    // skip
+  }
+
+  void visitTryStatement(TryStatement *stmt) {
+    bool old = _inTry;
+    _inTry = true;
+    stmt->tryStatement()->visit(this);
+    _inTry = old;
+    stmt->catchStatement()->visit(this);
+  }
+
+  void visitSwitchStatement(SwitchStatement *stmt) {
+    bool oldL = _firstLevel;
+    bool oldS = _inSwitch;
+    _firstLevel = false;
+    _inSwitch = true;
+    Visitor::visitSwitchStatement(stmt);
+    _inSwitch = oldS;
+    _firstLevel = oldL;
+  }
+
+  bool hasUnconditionalTerminator() const {
+    return (hasUnconditionalTerm && !hasCondContinue) || hasUnconditionalContinue;
   }
 };
 
@@ -982,11 +1038,11 @@ bool isHigherShiftPriority(enum TreeOp op) {
 }
 
 bool looksLikeBooleanExpr(const Expr *e) {
-  if (isBooleanResultOperator(e->op()))
+  if (isBooleanResultOperator(e->op())) // -V522
     return true;
 
-  if (e->op() == TO_LITERAL) {
-    return e->asLiteral()->kind() == LK_BOOL;
+  if (e->op() == TO_LITERAL) { // -V522
+    return e->asLiteral()->kind() == LK_BOOL; // -V522
   }
 
   return false;
@@ -2301,8 +2357,8 @@ void CheckerVisitor::checkRelativeCompareWithBool(const BinExpr *expr) {
   const Expr *er = maybeEval(dr);
 
   if (looksLikeBooleanExpr(l) || looksLikeBooleanExpr(r) ||
-    looksLikeBooleanExpr(dl) || looksLikeBooleanExpr(dr) ||
-    looksLikeBooleanExpr(el) || looksLikeBooleanExpr(er)) {
+    looksLikeBooleanExpr(dl) || looksLikeBooleanExpr(dr) || // -V522
+    looksLikeBooleanExpr(el) || looksLikeBooleanExpr(er)) { // -V522
     report(expr, DiagnosticsId::DI_RELATIVE_CMP_BOOL);
   }
 }
@@ -3131,66 +3187,27 @@ void CheckerVisitor::checkUnterminatedLoop(LoopStatement *loop) {
   if (effectsOnly)
     return;
 
+  LoopTerminatorCollector collector(true);
   Statement *body = loop->body();
 
-  ReturnStatement *retStmt = nullptr;
-  ThrowStatement *throwStmt = nullptr;
-  BreakStatement *breakStmt = nullptr;
-  ContinueStatement *continueStmt = nullptr;
+  body->visit(&collector);
 
-  switch (body->op())
-  {
-  case TO_BLOCK: {
-    Block *b = static_cast<Block *>(body);
-    for (Statement *stmt : b->statements()) {
-      switch (stmt->op())
-      {
-      case TO_RETURN: retStmt = static_cast<ReturnStatement *>(stmt); break;
-      case TO_THROW: throwStmt = static_cast<ThrowStatement *>(stmt); break;
-      case TO_BREAK: breakStmt = static_cast<BreakStatement *>(stmt); break;
-      case TO_CONTINUE: continueStmt = static_cast<ContinueStatement *>(stmt); break;
-      default:
-        break;
-      }
-    }
-    break;
-  }
-  case TO_RETURN: retStmt = static_cast<ReturnStatement *>(body); break;
-  case TO_THROW: throwStmt = static_cast<ThrowStatement *>(body); break;
-  case TO_BREAK: breakStmt = static_cast<BreakStatement *>(body); break;
-  case TO_CONTINUE: continueStmt = static_cast<ContinueStatement *>(body); break;
-  default:
-    //loop->visitChildren(this);
-    return;
-  }
-
-  if (retStmt || throwStmt || breakStmt || continueStmt) {
-    ConditionalExitFinder checker(false);
-    body->visit(&checker);
-
-    if (retStmt) {
-      if (!checker.hasBreak && !checker.hasContinue && !checker.hasThrow && loop->op() != TO_FOREACH) {
-        report(retStmt, DiagnosticsId::DI_UNCOND_TERMINATED_LOOP, "return");
-      }
+  if (collector.hasUnconditionalTerminator()) {
+    const Statement *t = collector.terminator;
+    assert(t);
+    const char *type = nullptr;
+    switch (t->op())
+    {
+    case TO_RETURN: type = "return"; break;
+    case TO_THROW: type = "throw"; break;
+    case TO_CONTINUE: type = "continue"; break;
+    case TO_BREAK: type = "break"; break;
+    default: assert(0); break;
     }
 
-    if (throwStmt) {
-      if (!checker.hasBreak && !checker.hasContinue && !checker.hasReturn && loop->op() != TO_FOREACH) {
-        report(throwStmt, DiagnosticsId::DI_UNCOND_TERMINATED_LOOP, "throw");
-      }
-    }
+    assert(type);
 
-    if (continueStmt) {
-      if (!checker.hasBreak && !checker.hasThrow && !checker.hasReturn) {
-        report(continueStmt, DiagnosticsId::DI_UNCOND_TERMINATED_LOOP, "continue");
-      }
-    }
-
-    if (breakStmt) {
-      if (!checker.hasContinue && !checker.hasReturn && !checker.hasThrow && loop->op() != TO_FOREACH) {
-        report(breakStmt, DiagnosticsId::DI_UNCOND_TERMINATED_LOOP, "break");
-      }
-    }
+    report(t, DiagnosticsId::DI_UNCOND_TERMINATED_LOOP, type);
   }
 }
 
