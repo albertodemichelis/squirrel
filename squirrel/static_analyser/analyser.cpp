@@ -3956,6 +3956,27 @@ void CheckerVisitor::speculateIfConditionHeuristics(const Expr *cond, VarScope *
     }
   }
 
+  if (isRelationOperator(op)) {
+    const BinExpr *bin = cond->asBinExpr();
+    const Expr *lhs = deparen(bin->lhs());
+    const Expr *rhs = deparen(bin->rhs());
+
+    const Id *lhs_id = lhs->op() == TO_ID ? lhs->asId() : nullptr; // -V522
+    const Id *rhs_id = rhs->op() == TO_ID ? rhs->asId() : nullptr; // -V522
+
+    if (thenScope) {
+      currentScope = thenScope;
+      if (lhs_id) {
+        setValueFlags(lhs_id, 0, RT_NULL);
+      }
+      if (rhs_id) {
+        setValueFlags(rhs_id, 0, RT_NULL);
+      }
+      currentScope = thisScope;
+    }
+    return;
+  }
+
   const LiteralExpr *typeLit = nullptr;
   const Expr *typeCheckee = nullptr;
 
