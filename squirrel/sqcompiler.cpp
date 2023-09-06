@@ -357,7 +357,7 @@ public:
             break; }
         case TK_BREAK:
             if (_fs->_breaktargets.size() <= 0)
-                reportDiagnostic(DiagnosticsId::DI_LOOP_CONTROLER_NOT_IN_LOOP, "break");
+                reportDiagnostic(DiagnosticsId::DI_LOOP_CONTROLLER_NOT_IN_LOOP, "break");
             if (_fs->_breaktargets.top() > 0) {
                 _fs->AddInstruction(_OP_POPTRAP, _fs->_breaktargets.top(), 0);
             }
@@ -368,7 +368,7 @@ public:
             break;
         case TK_CONTINUE:
             if (_fs->_continuetargets.size() <= 0)
-                reportDiagnostic(DiagnosticsId::DI_LOOP_CONTROLER_NOT_IN_LOOP, "continue");
+                reportDiagnostic(DiagnosticsId::DI_LOOP_CONTROLLER_NOT_IN_LOOP, "continue");
             if (_fs->_continuetargets.top() > 0) {
                 _fs->AddInstruction(_OP_POPTRAP, _fs->_continuetargets.top(), 0);
             }
@@ -534,19 +534,19 @@ public:
                     switch (expression_context)
                     {
                     case SQE_IF:
-                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "if");
+                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDDEN, "if");
                         break;
                     case SQE_LOOP_CONDITION:
-                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "loop condition");
+                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDDEN, "loop condition");
                         break;
                     case SQE_SWITCH:
-                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "switch");
+                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDDEN, "switch");
                         break;
                     case SQE_FUNCTION_ARG:
-                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "function argument");
+                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDDEN, "function argument");
                         break;
                     case SQE_RVALUE:
-                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "expression");
+                        reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDDEN, "expression");
                         break;
                     case SQE_REGULAR:
                         break;

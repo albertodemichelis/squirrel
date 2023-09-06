@@ -413,19 +413,19 @@ Expr* SQParser::Expression(SQExpressionContext expression_context)
                 switch (expression_context)
                 {
                 case SQE_IF:
-                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "if");
+                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDDEN, "if");
                     break;
                 case SQE_LOOP_CONDITION:
-                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "loop condition");
+                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDDEN, "loop condition");
                     break;
                 case SQE_SWITCH:
-                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "switch");
+                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDDEN, "switch");
                     break;
                 case SQE_FUNCTION_ARG:
-                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "function argument");
+                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDDEN, "function argument");
                     break;
                 case SQE_RVALUE:
-                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDEN, "expression");
+                    reportDiagnostic(DiagnosticsId::DI_ASSIGN_INSIDE_FORBIDDEN, "expression");
                     break;
                 case SQE_REGULAR:
                     break;

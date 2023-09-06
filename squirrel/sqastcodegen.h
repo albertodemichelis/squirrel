@@ -147,7 +147,7 @@ public:
 
     void visitDeclGroup(DeclGroup *group) override;
 
-    void visitDesctructingDecl(DestructuringDecl *destruct) override;
+    void visitDestructuringDecl(DestructuringDecl *destruct) override;
 
     void visitFunctionDecl(FunctionDecl *func) override;
 

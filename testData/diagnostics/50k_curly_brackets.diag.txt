@@ -1,4 +1,4 @@
-ERROR: AST too big. Consider simplifing it
+ERROR: AST too big. Consider simplifying it
 testData/diagnostics/50k_curly_brackets.nut:2:122
 
 {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{

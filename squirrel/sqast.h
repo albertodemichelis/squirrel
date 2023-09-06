@@ -1109,7 +1109,7 @@ public:
     virtual void visitConstDecl(ConstDecl *cnst) { visitDecl(cnst); }
     virtual void visitEnumDecl(EnumDecl *enm) { visitDecl(enm); }
     virtual void visitDeclGroup(DeclGroup *grp) { visitDecl(grp); }
-    virtual void visitDesctructingDecl(DestructuringDecl  *destruct) { visitDecl(destruct); }
+    virtual void visitDestructuringDecl(DestructuringDecl  *destruct) { visitDecl(destruct); }
     virtual void visitDirectiveStatement(DirectiveStmt *dir) { visitStmt(dir); }
 };
 
@@ -1270,7 +1270,7 @@ void Node::visit(V *visitor) {
     case TO_DECL_GROUP:
         visitor->visitDeclGroup(static_cast<DeclGroup *>(this)); return;
     case TO_DESTRUCT:
-        visitor->visitDesctructingDecl(static_cast<DestructuringDecl  *>(this)); return;
+        visitor->visitDestructuringDecl(static_cast<DestructuringDecl  *>(this)); return;
     case TO_FUNCTION:
         visitor->visitFunctionDecl(static_cast<FunctionDecl *>(this)); return;
     case TO_CONSTRUCTOR:

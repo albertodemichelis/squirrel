@@ -84,7 +84,7 @@ public:
 
   void visitDeclGroup(DeclGroup *group) override;
 
-  void visitDesctructingDecl(DestructuringDecl *destruct) override;
+  void visitDestructuringDecl(DestructuringDecl *destruct) override;
 
   void visitFunctionDecl(FunctionDecl *func) override;
 
@@ -316,7 +316,7 @@ void SQASTWritingVisitor::visitDeclGroup(DeclGroup *group) {
   }
 }
 
-void SQASTWritingVisitor::visitDesctructingDecl(DestructuringDecl *destruct) {
+void SQASTWritingVisitor::visitDestructuringDecl(DestructuringDecl *destruct) {
   visitDeclGroup(destruct);
   stream->writeInt8(destruct->type());
   destruct->initiExpression()->visit(this);

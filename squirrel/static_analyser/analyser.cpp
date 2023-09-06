@@ -1722,7 +1722,7 @@ class CheckerVisitor : public Visitor {
   void checkEmptyThenBody(IfStatement *stmt);
   void checkForgottenDo(const Block *block);
   void checkUnreachableCode(const Block *block);
-  void checkAssigneTwice(const Block *b);
+  void checkAssignedTwice(const Block *b);
   void checkUnutilizedResult(const ExprStatement *b);
   void checkNullableContainer(const ForeachStatement *loop);
   void checkMissedBreak(const SwitchStatement *swtch);
@@ -1769,11 +1769,11 @@ class CheckerVisitor : public Visitor {
 
   std::unordered_map<const FunctionDecl *, FunctionInfo *> functionInfoMap;
 
-  std::unordered_set<const SQChar *, StringHasher, StringEqualer> requriedModules;
+  std::unordered_set<const SQChar *, StringHasher, StringEqualer> requiredModules;
 
   Arena *arena;
 
-  FunctionInfo *currectInfo;
+  FunctionInfo *currentInfo;
 
   void declareSymbol(const SQChar *name, ValueRef *v);
   void pushFunctionScope(VarScope *functionScope, const FunctionDecl *decl);
@@ -1825,7 +1825,7 @@ public:
   CheckerVisitor(SQCompilationContext &ctx)
     : _ctx(ctx)
     , arena(ctx.arena())
-    , currectInfo(nullptr)
+    , currentInfo(nullptr)
     , currentScope(nullptr)
     , breakScope(nullptr)
     , trueValue(true)
@@ -1870,7 +1870,7 @@ public:
   void visitVarDecl(VarDecl *decl);
   void visitConstDecl(ConstDecl *cnst);
   void visitEnumDecl(EnumDecl *enm);
-  void visitDesctructingDecl(DestructuringDecl *decl);
+  void visitDestructuringDecl(DestructuringDecl *decl);
 
   void analyse(RootBlock *root);
 };
@@ -1987,7 +1987,7 @@ void CheckerVisitor::checkIdUsed(const Id *id, const Node *p, ValueRef *v) {
       e = p->asExpression();
   }
 
-  bool assgned = v->assigned;
+  bool assigned = v->assigned;
 
   if (e && isAssignExpr(e)) {
     const BinExpr *bin = static_cast<const BinExpr *>(e);
@@ -1996,7 +1996,7 @@ void CheckerVisitor::checkIdUsed(const Id *id, const Node *p, ValueRef *v) {
     bool simpleAsgn = e->op() == TO_ASSIGN || e->op() == TO_INEXPR_ASSIGN;
     if (id == lhs) {
       bool used = v->info->usedAfterAssign || existsInTree(id, bin->rhs());
-      if (!used && assgned && simpleAsgn) {
+      if (!used && assigned && simpleAsgn) {
         if (!v->lastAssigneeScope || currentScope->owner == v->lastAssigneeScope->owner)
           report(bin, DiagnosticsId::DI_REASSIGN_WITH_NO_USAGE);
       }
@@ -2011,16 +2011,16 @@ void CheckerVisitor::checkIdUsed(const Id *id, const Node *p, ValueRef *v) {
 
   // it's usage
   v->info->used = true;
-  if (assgned) {
+  if (assigned) {
     v->info->usedAfterAssign = true;
     v->assigned = e ? TO_PLUSEQ <= e->op() && e->op() <= TO_MODEQ : false;
   }
 
   if (v->state == VRS_PARTIALLY) {
-    report(id, DiagnosticsId::DI_POSSIBLE_GARGABE, id->id());
+    report(id, DiagnosticsId::DI_POSSIBLE_GARBAGE, id->id());
   }
   else if (v->state == VRS_UNDEFINED) {
-    report(id, DiagnosticsId::DI_UNITNIALIZED_VAR);
+    report(id, DiagnosticsId::DI_UNINITIALIZED_VAR);
   }
 }
 
@@ -2062,11 +2062,11 @@ void CheckerVisitor::checkCoalescingPriority(const BinExpr *expr) {
 
   if (expr->op() == TO_NULLC) {
     if (isSuspiciousNeighborOfNullCoalescing(l->op())) {
-      report(l, DiagnosticsId::DI_NULL_COALSESSING_PRIOR, treeopStr(l->op()));
+      report(l, DiagnosticsId::DI_NULL_COALESCING_PRIOR, treeopStr(l->op()));
     }
 
     if (isSuspiciousNeighborOfNullCoalescing(r->op())) {
-      report(r, DiagnosticsId::DI_NULL_COALSESSING_PRIOR, treeopStr(r->op()));
+      report(r, DiagnosticsId::DI_NULL_COALESCING_PRIOR, treeopStr(r->op()));
     }
   }
 }
@@ -2680,11 +2680,11 @@ void CheckerVisitor::checkAlreadyRequired(const CallExpr *call) {
 
   const SQChar *moduleName = l->s();
 
-  if (requriedModules.find(moduleName) != requriedModules.end()) {
+  if (requiredModules.find(moduleName) != requiredModules.end()) {
     report(call, DiagnosticsId::DI_ALREADY_REQUIRED, moduleName);
   }
   else {
-    requriedModules.insert(moduleName);
+    requiredModules.insert(moduleName);
   }
 }
 
@@ -2968,8 +2968,8 @@ void CheckerVisitor::visitIncExpr(IncExpr *expr) {
     ValueRef *v = findValueInScopes(name);
 
     if (v) {
-      if (currectInfo) {
-        currectInfo->addModifiable(name, v->info->ownedScope->owner);
+      if (currentInfo) {
+        currentInfo->addModifiable(name, v->info->ownedScope->owner);
       }
 
       v->expression = nullptr;
@@ -3016,7 +3016,7 @@ void CheckerVisitor::checkNullableIndex(const GetTableExpr *expr) {
   const Expr *key = expr->key();
 
   if (!isSafeAccess(expr) && isPotentiallyNullable(key)) {
-    report(expr->key(), DiagnosticsId::DI_POTENTILLY_NULLABLE_INDEX);
+    report(expr->key(), DiagnosticsId::DI_POTENTIALLY_NULLABLE_INDEX);
   }
 }
 
@@ -3226,7 +3226,7 @@ void CheckerVisitor::checkEmptyThenBody(IfStatement *stmt) {
   }
 }
 
-void CheckerVisitor::checkAssigneTwice(const Block *b) {
+void CheckerVisitor::checkAssignedTwice(const Block *b) {
   if (effectsOnly)
     return;
 
@@ -3361,7 +3361,7 @@ void CheckerVisitor::visitExprStatement(ExprStatement *stmt) {
 void CheckerVisitor::visitBlock(Block *b) {
   checkForgottenDo(b);
   checkUnreachableCode(b);
-  checkAssigneTwice(b);
+  checkAssignedTwice(b);
 
   VarScope *thisScope = currentScope;
   VarScope blockScope(thisScope ? thisScope->owner : nullptr, thisScope);
@@ -4337,10 +4337,10 @@ void CheckerVisitor::visitFunctionDecl(FunctionDecl *func) {
 
   pushFunctionScope(&functionScope, func);
 
-  FunctionInfo *oldInfo = currectInfo;
+  FunctionInfo *oldInfo = currentInfo;
   FunctionInfo *newInfo = functionInfoMap[func];
 
-  currectInfo = newInfo;
+  currentInfo = newInfo;
   assert(newInfo);
 
   checkFunctionReturns(func);
@@ -4353,7 +4353,7 @@ void CheckerVisitor::visitFunctionDecl(FunctionDecl *func) {
 
   functionScope.checkUnusedSymbols(this);
 
-  currectInfo = oldInfo;
+  currentInfo = oldInfo;
   currentScope = parentScope;
 }
 
@@ -4396,8 +4396,8 @@ void CheckerVisitor::applyAssignmentToScope(const BinExpr *bin) {
     currentScope->symbols[name] = v;
     info->ownedScope = currentScope;
     info->declarator.v = nullptr;
-    if (currectInfo) {
-      currectInfo->addModifiable(name, info->ownedScope->owner);
+    if (currentInfo) {
+      currentInfo->addModifiable(name, info->ownedScope->owner);
     }
   }
 
@@ -4423,8 +4423,8 @@ void CheckerVisitor::applyAssignEqToScope(const BinExpr *bin) {
   ValueRef *v = findValueInScopes(name);
 
   if (v) {
-    if (currectInfo) {
-      currectInfo->addModifiable(name, v->info->ownedScope->owner);
+    if (currentInfo) {
+      currentInfo->addModifiable(name, v->info->ownedScope->owner);
     }
     v->kill();
     v->evalIndex = currentScope->evalId;
@@ -4796,8 +4796,8 @@ void CheckerVisitor::applyKnownInvocationToScope(const ValueRef *value) {
       if (it->second->isConstant())
         continue;
 
-      if (currectInfo) {
-        currectInfo->addModifiable(it->first, it->second->info->ownedScope->owner);
+      if (currentInfo) {
+        currentInfo->addModifiable(it->first, it->second->info->ownedScope->owner);
       }
       it->second->kill();
     }
@@ -4812,8 +4812,8 @@ void CheckerVisitor::applyUnknownInvocationToScope() {
     for (auto &sym : symbols) {
       if (sym.second->isConstant())
         continue;
-      if (currectInfo) {
-        currectInfo->addModifiable(sym.first, sym.second->info->ownedScope->owner);
+      if (currentInfo) {
+        currentInfo->addModifiable(sym.first, sym.second->info->ownedScope->owner);
       }
       sym.second->kill();
     }
@@ -4890,9 +4890,9 @@ void CheckerVisitor::visitParamDecl(ParamDecl *p) {
 
   declareSymbol(p->name(), v);
 
-  assert(currectInfo);
+  assert(currentInfo);
   if (!effectsOnly)
-    currectInfo->parameters.push_back(normalizeParamName(p->name()));
+    currentInfo->parameters.push_back(normalizeParamName(p->name()));
 }
 
 void CheckerVisitor::visitVarDecl(VarDecl *decl) {
@@ -4979,11 +4979,11 @@ void CheckerVisitor::visitEnumDecl(EnumDecl *enm) {
   }
 }
 
-void CheckerVisitor::visitDesctructingDecl(DestructuringDecl *d) {
+void CheckerVisitor::visitDestructuringDecl(DestructuringDecl *d) {
 
   checkAccessNullable(d);
 
-  Visitor::visitDesctructingDecl(d);
+  Visitor::visitDestructuringDecl(d);
 }
 
 void CheckerVisitor::analyse(RootBlock *root) {

@@ -449,7 +449,7 @@ public:
         }
     }
 
-    virtual void visitDesctructingDecl(DestructuringDecl *destruct) {
+    virtual void visitDestructuringDecl(DestructuringDecl *destruct) {
       _out->writeString("{ ");
         for (SQUnsignedInteger i = 0; i < destruct->declarations().size(); ++i) {
             if (i) _out->writeString(", ");

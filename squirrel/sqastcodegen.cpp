@@ -526,7 +526,7 @@ void CodegenVisitor::visitTryStatement(TryStatement *tryStmt) {
 void CodegenVisitor::visitBreakStatement(BreakStatement *breakStmt) {
     addLineNumber(breakStmt);
     if (_fs->_breaktargets.size() <= 0)
-        reportDiagnostic(breakStmt, DiagnosticsId::DI_LOOP_CONTROLER_NOT_IN_LOOP, "break");
+        reportDiagnostic(breakStmt, DiagnosticsId::DI_LOOP_CONTROLLER_NOT_IN_LOOP, "break");
     if (_fs->_breaktargets.top() > 0) {
         _fs->AddInstruction(_OP_POPTRAP, _fs->_breaktargets.top(), 0);
     }
@@ -538,7 +538,7 @@ void CodegenVisitor::visitBreakStatement(BreakStatement *breakStmt) {
 void CodegenVisitor::visitContinueStatement(ContinueStatement *continueStmt) {
     addLineNumber(continueStmt);
     if (_fs->_continuetargets.size() <= 0)
-        reportDiagnostic(continueStmt, DiagnosticsId::DI_LOOP_CONTROLER_NOT_IN_LOOP, "continue");
+        reportDiagnostic(continueStmt, DiagnosticsId::DI_LOOP_CONTROLLER_NOT_IN_LOOP, "continue");
     if (_fs->_continuetargets.top() > 0) {
         _fs->AddInstruction(_OP_POPTRAP, _fs->_continuetargets.top(), 0);
     }
@@ -741,7 +741,7 @@ void CodegenVisitor::visitDeclGroup(DeclGroup *group) {
     }
 }
 
-void CodegenVisitor::visitDesctructingDecl(DestructuringDecl *destruct) {
+void CodegenVisitor::visitDestructuringDecl(DestructuringDecl *destruct) {
     addLineNumber(destruct);
     ArenaVector<SQInteger> targets(_arena);
 
