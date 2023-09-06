@@ -1045,6 +1045,11 @@ bool looksLikeBooleanExpr(const Expr *e) {
     return e->asLiteral()->kind() == LK_BOOL; // -V522
   }
 
+  if (e->op() == TO_NULLC) {
+    // check for `x?.y ?? false`
+    return looksLikeBooleanExpr(e->asBinExpr()->rhs());
+  }
+
   return false;
 }
 
@@ -1120,7 +1125,7 @@ static bool nameLooksLikeFunctionMustReturnResult(const SQChar *funcName) {
 }
 
 static bool nameLooksLikeResultMustBeUtilised(const SQChar *name) {
-  return hasAnyPrefix(name, SQCompilationContext::function_result_must_be_utilized) || nameLooksLikeResultMustBeBoolean(name);
+  return hasAnyPrefix(name, SQCompilationContext::function_result_must_be_utilized);
 }
 
 static bool nameLooksLikeResultMustBeString(const SQChar *name) {
@@ -1715,6 +1720,8 @@ class CheckerVisitor : public Visitor {
   bool checkModification(Expr *key, Node *tree) {
     return CheckModificationVisitor().check(key, tree);
   }
+
+  bool isCallResultShouldBeUtilized(const SQChar *name, const CallExpr *call);
 
   void checkUnterminatedLoop(LoopStatement *loop);
   void checkVariableMismatchForLoop(ForStatement *loop);
@@ -3284,6 +3291,54 @@ void CheckerVisitor::checkAssignedTwice(const Block *b) {
   }
 }
 
+bool CheckerVisitor::isCallResultShouldBeUtilized(const SQChar *name, const CallExpr *call) {
+  if (!name)
+    return false;
+
+  if (nameLooksLikeResultMustBeUtilised(name)) {
+    return true;
+  }
+
+  if (nameLooksLikeResultMustBeBoolean(name)) {
+    const auto &args = call->arguments();
+
+    if (args.size() != 1)
+      return true;
+
+    const Expr *arg = args[0];
+
+    if (looksLikeBooleanExpr(arg)) {
+      return false;
+    }
+
+    if (arg->op() == TO_ID) {
+      if (nameLooksLikeResultMustBeBoolean(arg->asId()->id())) {
+        return false;
+      }
+    }
+
+    if (arg->op() == TO_CALL) {
+      const CallExpr *acall = arg->asCallExpr();
+      const Expr *callee = acall->callee();
+      const SQChar *calleeName = nullptr;
+      if (callee->op() == TO_ID) {
+        calleeName = callee->asId()->id();
+      }
+      else if (callee->op() == TO_GETFIELD) {
+        calleeName = callee->asGetField()->fieldName();
+      }
+
+      return isCallResultShouldBeUtilized(calleeName, acall) == false;
+    }
+
+    const Expr *evaled = maybeEval(arg);
+
+    return looksLikeBooleanExpr(evaled) == false;
+  }
+
+  return false;
+}
+
 void CheckerVisitor::checkUnutilizedResult(const ExprStatement *s) {
   if (effectsOnly)
     return;
@@ -3302,7 +3357,7 @@ void CheckerVisitor::checkUnutilizedResult(const ExprStatement *s) {
       if (f->op() == TO_CONSTRUCTOR) {
         report(e, DiagnosticsId::DI_NAME_LIKE_SHOULD_RETURN, "<constructor>");
       }
-      else if (nameLooksLikeResultMustBeUtilised(f->name())) {
+      else if (isCallResultShouldBeUtilized(f->name(), c)) {
         report(e, DiagnosticsId::DI_NAME_LIKE_SHOULD_RETURN, f->name());
       }
     }
@@ -3319,7 +3374,7 @@ void CheckerVisitor::checkUnutilizedResult(const ExprStatement *s) {
       calleeName = callee->asGetField()->fieldName();
     }
 
-    if (calleeName && nameLooksLikeResultMustBeUtilised(calleeName)) {
+    if (isCallResultShouldBeUtilized(calleeName, c)) {
       report(e, DiagnosticsId::DI_NAME_LIKE_SHOULD_RETURN, calleeName);
     }
     return;
