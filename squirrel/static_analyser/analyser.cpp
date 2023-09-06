@@ -2909,7 +2909,7 @@ void CheckerVisitor::visitBinExpr(BinExpr *expr) {
   checkCopyOfExpression(expr);
   checkConstInBoolExpr(expr);
   checkShiftPriority(expr);
-  checkCanReturnNull(expr);
+  //checkCanReturnNull(expr);
   checkCompareWithContainer(expr);
   checkBoolToStrangePosition(expr);
   checkNewSlotNameMatch(expr);
@@ -4465,6 +4465,11 @@ void CheckerVisitor::applyAssignmentToScope(const BinExpr *bin) {
   v->assigned = true;
   v->lastAssigneeScope = currentScope;
   v->evalIndex = currentScope->evalId;
+
+  if (isPotentiallyNullable(rhs)) {
+    v->flagsPositive |= RT_NULL;
+  }
+
 }
 
 void CheckerVisitor::applyAssignEqToScope(const BinExpr *bin) {
@@ -4642,6 +4647,22 @@ bool CheckerVisitor::isPotentiallyNullable(const Expr *e, std::unordered_set<con
     const CallExpr *call = static_cast<const CallExpr *>(e);
     if (call->isNullable()) {
       return true;
+    }
+
+    const SQChar *funcName = nullptr;
+    const Expr *callee = call->callee();
+
+    if (callee->op() == TO_ID) {
+      funcName = callee->asId()->id();
+    }
+    else if (callee->op() == TO_GETFIELD) {
+      funcName = callee->asGetField()->fieldName();
+    }
+
+    if (funcName) {
+      if (canFunctionReturnNull(funcName)) {
+        return true;
+      }
     }
   }
 
