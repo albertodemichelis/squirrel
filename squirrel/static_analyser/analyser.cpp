@@ -1635,7 +1635,7 @@ class CheckerVisitor : public Visitor {
 
   void report(const Node *n, enum DiagnosticsId id, ...);
 
-  void checkKeyNameMismatch(const SQChar *keyName, const Expr *expr);
+  void checkKeyNameMismatch(const Expr *key, const Expr *expr);
 
   void checkAlwaysTrueOrFalse(const Expr *expr);
 
@@ -2569,10 +2569,25 @@ void CheckerVisitor::checkBoolToStrangePosition(const BinExpr *bin) {
   }
 }
 
-void CheckerVisitor::checkKeyNameMismatch(const SQChar *fieldName, const Expr *e) {
+const SQChar *tryExtractKeyName(const Expr *e) {
+
+  if (e->op() == TO_GETFIELD)
+    return e->asGetField()->fieldName();
+
+  if (e->op() == TO_LITERAL) {
+    if (e->asLiteral()->kind() == LK_STRING)
+      return e->asLiteral()->s();
+  }
+
+  return nullptr;
+}
+
+void CheckerVisitor::checkKeyNameMismatch(const Expr *key, const Expr *e) {
 
   if (effectsOnly)
     return;
+
+  const SQChar *fieldName = tryExtractKeyName(key);
 
   if (!fieldName)
     return;
@@ -2608,8 +2623,7 @@ void CheckerVisitor::checkNewSlotNameMatch(const BinExpr *bin) {
   const Expr *lhs = bin->lhs();
   const Expr *rhs = bin->rhs();
 
-  if (lhs->op() == TO_GETFIELD)
-    checkKeyNameMismatch(lhs->asGetField()->fieldName(), rhs);
+  checkKeyNameMismatch(lhs, rhs);
 }
 
 void CheckerVisitor::checkPlusString(const BinExpr *bin) {
@@ -4293,25 +4307,13 @@ void CheckerVisitor::checkEnumConstUsage(const GetFieldExpr *acc) {
   constV->info->used = true;
 }
 
-const SQChar *tryExtractKeyName(const Expr *e) {
-  if (e->op() == TO_ID)
-    return e->asId()->id();
-
-  if (e->op() == TO_LITERAL) {
-    if (e->asLiteral()->kind() == LK_STRING)
-      return e->asLiteral()->s();
-  }
-
-  return nullptr;
-}
-
 void CheckerVisitor::visitTableDecl(TableDecl *table) {
   for (auto &member : table->members()) {
     StackSlot slot;
     slot.sst = SST_TABLE_MEMBER;
     slot.member = &member;
 
-    checkKeyNameMismatch(tryExtractKeyName(member.key), member.value);
+    checkKeyNameMismatch(member.key, member.value);
 
     nodeStack.push_back(slot);
     member.key->visit(this);

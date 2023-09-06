@@ -1,9 +1,16 @@
-WARNING: w256 (key-and-function-name) Key and function name are not the same ('convertBlockedMsgToLink2' and 'convertBlockedMsgToLink').
-testData/static_analyser/w256.nut:4:29
+WARNING: w256 (key-and-function-name) Key and function name are not the same ('wrongName' and 'foo').
+testData/static_analyser/w256.nut:6:14
 
-return class {
-  convertBlockedMsgToLink2 = function convertBlockedMsgToLink(msg) {} //-declared-never-used
-                             ^
+let _t = {
+  wrongName = function foo(_p) {},
+              ^-------------------
+
+
+WARNING: w256 (key-and-function-name) Key and function name are not the same ('anotherWrongName' and 'qux').
+testData/static_analyser/w256.nut:10:23
+
+  "anotherWrongName" : function qux() {}
+                       ^
 }
 
 

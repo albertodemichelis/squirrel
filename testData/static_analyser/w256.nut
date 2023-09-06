@@ -1,5 +1,11 @@
 //expect:w256
 
-return class {
-  convertBlockedMsgToLink2 = function convertBlockedMsgToLink(msg) {} //-declared-never-used
+const C = 1
+
+let _t = {
+  wrongName = function foo(_p) {},
+
+  [C] = function bar(_p) {},
+
+  "anotherWrongName" : function qux() {}
 }
