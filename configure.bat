@@ -1,4 +1,5 @@
 @echo off
+
 md build
 
 if exist "build\" (
