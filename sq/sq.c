@@ -313,7 +313,7 @@ int main(int argc, char* argv[])
     _CrtSetAllocHook(MemAllocHook);
 #endif
 
-    v=sq_open(32);
+    v=sq_open(1024);
     sq_setprintfunc(v,printfunc,errorfunc);
 
     sq_pushroottable(v);
