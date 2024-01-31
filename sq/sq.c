@@ -17,6 +17,8 @@
 #include <sqstdstring.h>
 #include <sqstdaux.h>
 
+#include "sqinclude.h"
+
 #ifdef SQUNICODE
 #define scfprintf fwprintf
 #define scvprintf vfwprintf
@@ -316,11 +318,12 @@ int main(int argc, char* argv[])
 
     sq_pushroottable(v);
 
-    sqstd_register_bloblib(v);
-    sqstd_register_iolib(v);
-    sqstd_register_systemlib(v);
-    sqstd_register_mathlib(v);
-    sqstd_register_stringlib(v);
+    //sqstd_register_bloblib(v);
+    //sqstd_register_iolib(v);
+    //sqstd_register_systemlib(v);
+    //sqstd_register_mathlib(v);
+    //sqstd_register_stringlib(v);
+    sqstd_register_includelib(v);
 
     //aux library
     //sets error handlers

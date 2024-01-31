@@ -1,0 +1,16 @@
+﻿  sqapi.cpp
+  sqbaselib.cpp
+  sqclass.cpp
+  sqcompiler.cpp
+  sqdebug.cpp
+  sqfuncstate.cpp
+  sqlexer.cpp
+  sqmem.cpp
+  sqobject.cpp
+  sqstate.cpp
+  sqtable.cpp
+  sqvm.cpp
+  Создание кода...
+  Auto build dll exports
+     Создается библиотека L:/GitHub/squirrel/build/lib/Debug/squirrel.lib и объект L:/GitHub/squirrel/build/lib/Debug/squirrel.exp
+  squirrel.vcxproj -> L:\GitHub\squirrel\build\bin\Debug\squirrel.dll

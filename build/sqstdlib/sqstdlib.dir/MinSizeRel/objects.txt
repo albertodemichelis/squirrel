@@ -1,0 +1,8 @@
+L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/MinSizeRel/sqstdaux.obj
+L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/MinSizeRel/sqstdblob.obj
+L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/MinSizeRel/sqstdio.obj
+L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/MinSizeRel/sqstdmath.obj
+L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/MinSizeRel/sqstdrex.obj
+L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/MinSizeRel/sqstdstream.obj
+L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/MinSizeRel/sqstdstring.obj
+L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/MinSizeRel/sqstdsystem.obj

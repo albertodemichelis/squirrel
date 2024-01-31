@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>L:\GitHub\squirrel\build\x64\Debug\ZERO_CHECK</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>L:\GitHub\squirrel\build\bin\Debug\squirrel.dll</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>L:\GitHub\squirrel\build\bin\Debug\sqstdlib.dll</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>L:\GitHub\squirrel\build\bin\Debug\sq.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>L:\GitHub\squirrel\build\bin\Debug\sq_static.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>L:\GitHub\squirrel\build\x64\Debug\ALL_BUILD</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles />
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>
