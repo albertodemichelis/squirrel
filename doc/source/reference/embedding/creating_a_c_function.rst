@@ -6,18 +6,18 @@ Create a C function
 
 A native C function must have the following prototype: ::
 
-    typedef SQInteger (*SQFUNCTION)(HSQUIRRELVM);
+    typedef SQInteger (*SQFUNCTION)(HSQUIRRELVM,void*);
 
-The parameters is an handle to the calling VM and the return value is an integer
-respecting the following rules:
+The parameters is an handle to the calling VM and a user-provided pointer to arbitrary data,
+the return value is an integer respecting the following rules:
 
 * 1 if the function returns a value
 * 0 if the function does not return a value
 * SQ_ERROR runtime error is thrown
 
 In order to obtain a new callable squirrel function from a C function pointer, is necessary
-to call sq_newclosure() passing the C function to it; the new Squirrel function will be
-pushed in the stack.
+to call sq_newclosure() passing the C function to it;
+the new Squirrel function will be pushed in the stack.
 
 When the function is called, the stackbase is the first parameter of the function and the
 top is the last. In order to return a value the function has to push it in the stack and

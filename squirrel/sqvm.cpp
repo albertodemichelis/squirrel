@@ -1213,7 +1213,7 @@ bool SQVM::CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newb
     }
 
     _nnativecalls++;
-    SQInteger ret = (nclosure->_function)(this);
+    SQInteger ret = (nclosure->_function)(this, nclosure->_userdata);
     _nnativecalls--;
 
     suspend = false;
