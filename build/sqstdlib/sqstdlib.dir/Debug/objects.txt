@@ -1,8 +1,0 @@
-L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/Debug/sqstdaux.obj
-L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/Debug/sqstdblob.obj
-L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/Debug/sqstdio.obj
-L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/Debug/sqstdmath.obj
-L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/Debug/sqstdrex.obj
-L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/Debug/sqstdstream.obj
-L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/Debug/sqstdstring.obj
-L:/GitHub/squirrel/build/sqstdlib/sqstdlib.dir/Debug/sqstdsystem.obj
