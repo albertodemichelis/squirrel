@@ -7,12 +7,11 @@ NC='\033[0m'
 TITLE="Squirrel-lang installer"
 PROGNAME=$(basename $0)
 RELEASE="Revision 1.0"
-AUTHOR="(c) 2024 celisej567 & Aubertin Emmanuel (aka aTHO)"
 INSTALL=0
 
 
 print_release() {
-    echo "$RELEASE $AUTHOR"
+    echo "$RELEASE"
 }
 
 print_usage() {
@@ -24,7 +23,7 @@ print_usage() {
 		echo "          -h, --help		Help message"
 		echo "          -v, --version		Version"
         echo "          -i, --install		Install all binaries on your computer (in /bin)"
-		echo "          -u, --uninstall		Big misstake (uninstall Squirrel-lang)"
+		echo "          -u, --uninstall		Big mistake (uninstall Squirrel-lang)"
         echo ""
 }
 
@@ -60,7 +59,7 @@ while [ $# -gt 0 ]; do
 		-u | --uninstall)
                 uninstall
                 ;;
-        *)  echo "Unknow argument: $1"
+        *)  echo "Unknown argument: $1"
             print_usage
             ;;
         esac
