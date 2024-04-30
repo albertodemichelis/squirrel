@@ -250,6 +250,12 @@ void Interactive(HSQUIRRELVM v)
             int c;
             if(done)return;
             c = getchar();
+
+            if (c == EOF) {
+                scprintf(_SC("\nExit requested (Ctrl+D).\n"));
+                return;
+            }
+
             if (c == _SC('\n')) {
                 if (i>0 && buffer[i-1] == _SC('\\'))
                 {
