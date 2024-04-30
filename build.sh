@@ -1,5 +1,9 @@
 #!/bin/sh
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
 TITLE="Squirrel-lang installer"
 PROGNAME=$(basename $0)
 RELEASE="Revision 1.0"
@@ -20,6 +24,7 @@ print_usage() {
 		echo "          -h, --help		Help message"
 		echo "          -v, --version		Version"
         echo "          -i, --install		Install all binaries on your computer (in /bin)"
+		echo "          -u, --uninstall		Big misstake (uninstall Squirrel-lang)"
         echo ""
 }
 
@@ -30,6 +35,13 @@ print_help() {
         echo ""
 		print_release $PROGNAME $RELEASE
 		exit 0
+}
+
+uninstall(){
+	sudo rm /bin/sq /bin/sq_static
+	echo "${GREEN}Squirrel uninstalled${NC}"
+	echo "👋 Goodbye 👋"
+	exit 0
 }
 
 while [ $# -gt 0 ]; do
@@ -45,6 +57,9 @@ while [ $# -gt 0 ]; do
         -i | --install)
                 INSTALL=1
                 ;;
+		-u | --uninstall)
+                uninstall
+                ;;
         *)  echo "Unknow argument: $1"
             print_usage
             ;;
@@ -52,9 +67,7 @@ while [ $# -gt 0 ]; do
 shift
 done
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m'
+
 
 if [ -d "build" ]; then
 	if [ -z "$1" ]; then
@@ -71,7 +84,7 @@ else
 		cd build 
 		cmake .. $*
 	else 
-		echo "Unable to create \"build\" folder. Stopping configuration. \n"
+		echo "${RED}Unable to create \"build\" folder. Stopping configuration. \n${NC}"
 	fi
 fi
 
@@ -82,7 +95,8 @@ if [ $? -eq 0 ]; then
 	echo "${GREEN}Libraries built and should be located in \"/build/bin/\" folder.${NC}"
 	if [ $INSTALL  -eq 1 ]; then
 		sudo cp ./bin/sq /bin/sq
-		echo "${GREEN}Libraries installed, feel to try sq or sq_static.${NC}"
+		sudo cp ./bin/sq_static /bin/sq_static
+		echo "${GREEN}Libraries installed, feel free to try sq or sq_static.${NC}"
 	fi
 else
 	echo "${RED}Error: Build failed.${NC}"
