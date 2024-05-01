@@ -5,6 +5,13 @@
 #include <stdio.h>
 #include <sqstdsystem.h>
 
+#if defined(__APPLE__) && !defined(IOS)
+#include <TargetConditionals.h>
+#if TARGET_OS_IPHONE
+#define IOS
+#endif
+#endif
+
 #ifdef SQUNICODE
 #include <wchar.h>
 #define scgetenv _wgetenv
