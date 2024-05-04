@@ -40,7 +40,6 @@ extern "C" {
 #endif
 #endif
 
-
 #define SQTrue  (1)
 #define SQFalse (0)
 
@@ -128,7 +127,6 @@ typedef enum tagSQObjectType{
 }SQObjectType;
 
 #define ISREFCOUNTED(t) (t&SQOBJECT_REF_COUNTED)
-
 
 typedef union tagSQObjectValue
 {

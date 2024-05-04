@@ -1,3 +1,6 @@
+Features:
+ * Dynamic libruary caching with `include( string )` function
+
 The programming language SQUIRREL 3.2 stable
 
 --------------------------------------------------
