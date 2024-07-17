@@ -606,7 +606,7 @@ Sets the parameter validation scheme for the native closure at the top position 
     //expects exactly 3 parameters(userdata,string,number)
     sq_setparamscheck(v,3,3,_SC("usn"));
     //expects at least 2 parameters(userdata,string)
-    sq_setparamscheck(v,2,0,_SC("usnsb"));
+    sq_setparamscheck(v,2,0,_SC("usn"));
     //expects 1 to 3 parameters(userdata,string,number)
     sq_setparamscheck(v,1,3,_SC("usn"));
     //....stuff
