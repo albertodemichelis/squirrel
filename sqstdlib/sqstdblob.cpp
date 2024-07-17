@@ -167,18 +167,18 @@ static SQInteger _blob__cloned(HSQUIRRELVM v)
     return 0;
 }
 
-#define _DECL_BLOB_FUNC(name,nparams,typecheck) {_SC(#name),_blob_##name,nparams,typecheck}
+#define _DECL_BLOB_FUNC(name,nparamsmin,nparamsmax,typecheck) {_SC(#name),_blob_##name,nparamsmin,nparamsmax,typecheck}
 static const SQRegFunction _blob_methods[] = {
-    _DECL_BLOB_FUNC(constructor,-1,_SC("xn")),
-    _DECL_BLOB_FUNC(resize,2,_SC("xn")),
-    _DECL_BLOB_FUNC(swap2,1,_SC("x")),
-    _DECL_BLOB_FUNC(swap4,1,_SC("x")),
-    _DECL_BLOB_FUNC(_set,3,_SC("xnn")),
-    _DECL_BLOB_FUNC(_get,2,_SC("x.")),
-    _DECL_BLOB_FUNC(_typeof,1,_SC("x")),
-    _DECL_BLOB_FUNC(_nexti,2,_SC("x")),
-    _DECL_BLOB_FUNC(_cloned,2,_SC("xx")),
-    {NULL,(SQFUNCTION)0,0,NULL}
+    _DECL_BLOB_FUNC(constructor,1,0,_SC("xn")),
+    _DECL_BLOB_FUNC(resize,2,2,_SC("xn")),
+    _DECL_BLOB_FUNC(swap2,1,1,_SC("x")),
+    _DECL_BLOB_FUNC(swap4,1,1,_SC("x")),
+    _DECL_BLOB_FUNC(_set,3,3,_SC("xnn")),
+    _DECL_BLOB_FUNC(_get,2,2,_SC("x.")),
+    _DECL_BLOB_FUNC(_typeof,1,1,_SC("x")),
+    _DECL_BLOB_FUNC(_nexti,2,2,_SC("x")),
+    _DECL_BLOB_FUNC(_cloned,2,2,_SC("xx")),
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 
@@ -229,14 +229,14 @@ static SQInteger _g_blob_swapfloat(HSQUIRRELVM v)
     return 1;
 }
 
-#define _DECL_GLOBALBLOB_FUNC(name,nparams,typecheck) {_SC(#name),_g_blob_##name,nparams,typecheck}
+#define _DECL_GLOBALBLOB_FUNC(name,nparamsmin,nparamsmax,typecheck) {_SC(#name),_g_blob_##name,nparamsmin,nparamsmax,typecheck}
 static const SQRegFunction bloblib_funcs[]={
-    _DECL_GLOBALBLOB_FUNC(casti2f,2,_SC(".n")),
-    _DECL_GLOBALBLOB_FUNC(castf2i,2,_SC(".n")),
-    _DECL_GLOBALBLOB_FUNC(swap2,2,_SC(".n")),
-    _DECL_GLOBALBLOB_FUNC(swap4,2,_SC(".n")),
-    _DECL_GLOBALBLOB_FUNC(swapfloat,2,_SC(".n")),
-    {NULL,(SQFUNCTION)0,0,NULL}
+    _DECL_GLOBALBLOB_FUNC(casti2f,2,2,_SC(".n")),
+    _DECL_GLOBALBLOB_FUNC(castf2i,2,2,_SC(".n")),
+    _DECL_GLOBALBLOB_FUNC(swap2,2,2,_SC(".n")),
+    _DECL_GLOBALBLOB_FUNC(swap4,2,2,_SC(".n")),
+    _DECL_GLOBALBLOB_FUNC(swapfloat,2,2,_SC(".n")),
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 SQRESULT sqstd_getblob(HSQUIRRELVM v,SQInteger idx,SQUserPointer *ptr)

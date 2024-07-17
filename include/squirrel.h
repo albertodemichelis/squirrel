@@ -187,7 +187,8 @@ typedef SQInteger (*SQLEXREADFUNC)(SQUserPointer);
 typedef struct tagSQRegFunction{
     const SQChar *name;
     SQFUNCTION f;
-    SQInteger nparamscheck;
+    SQInteger nparamscheckmin;
+    SQInteger nparamscheckmax;
     const SQChar *typemask;
 }SQRegFunction;
 
@@ -243,7 +244,7 @@ SQUIRREL_API void sq_newtable(HSQUIRRELVM v);
 SQUIRREL_API void sq_newtableex(HSQUIRRELVM v,SQInteger initialcapacity);
 SQUIRREL_API void sq_newarray(HSQUIRRELVM v,SQInteger size);
 SQUIRREL_API void sq_newclosure(HSQUIRRELVM v,SQFUNCTION func,SQUnsignedInteger nfreevars);
-SQUIRREL_API SQRESULT sq_setparamscheck(HSQUIRRELVM v,SQInteger nparamscheck,const SQChar *typemask);
+SQUIRREL_API SQRESULT sq_setparamscheck(HSQUIRRELVM v,SQInteger nparamscheckmin,SQInteger nparamscheckmax,const SQChar *typemask);
 SQUIRREL_API SQRESULT sq_bindenv(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_setclosureroot(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_getclosureroot(HSQUIRRELVM v,SQInteger idx);
@@ -276,7 +277,7 @@ SQUIRREL_API void sq_setreleasehook(HSQUIRRELVM v,SQInteger idx,SQRELEASEHOOK ho
 SQUIRREL_API SQRELEASEHOOK sq_getreleasehook(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQChar *sq_getscratchpad(HSQUIRRELVM v,SQInteger minsize);
 SQUIRREL_API SQRESULT sq_getfunctioninfo(HSQUIRRELVM v,SQInteger level,SQFunctionInfo *fi);
-SQUIRREL_API SQRESULT sq_getclosureinfo(HSQUIRRELVM v,SQInteger idx,SQInteger *nparams,SQInteger *nfreevars);
+SQUIRREL_API SQRESULT sq_getclosureinfo(HSQUIRRELVM v,SQInteger idx,SQInteger *nparamsmin,SQInteger *nparamsmax,SQInteger *nfreevars);
 SQUIRREL_API SQRESULT sq_getclosurename(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_setnativeclosurename(HSQUIRRELVM v,SQInteger idx,const SQChar *name);
 SQUIRREL_API SQRESULT sq_setinstanceup(HSQUIRRELVM v, SQInteger idx, SQUserPointer p);

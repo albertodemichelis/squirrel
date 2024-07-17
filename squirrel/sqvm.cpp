@@ -1174,7 +1174,6 @@ void SQVM::CallDebugHook(SQInteger type,SQInteger forcedline)
 
 bool SQVM::CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newbase, SQObjectPtr &retval, SQInt32 target,bool &suspend, bool &tailcall)
 {
-    SQInteger nparamscheck = nclosure->_nparamscheck;
     SQInteger newtop = newbase + nargs + nclosure->_noutervalues;
 
     if (_nnativecalls + 1 > MAX_NATIVE_CALLS) {
@@ -1182,8 +1181,8 @@ bool SQVM::CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newb
         return false;
     }
 
-    if(nparamscheck && (((nparamscheck > 0) && (nparamscheck != nargs)) ||
-        ((nparamscheck < 0) && (nargs < (-nparamscheck)))))
+    if((nclosure->_nparamscheckmin > 0 && nargs < nclosure->_nparamscheckmin) ||
+         (nclosure->_nparamscheckmax > 0 && nargs > nclosure->_nparamscheckmax))
     {
         Raise_Error(_SC("wrong number of parameters"));
         return false;

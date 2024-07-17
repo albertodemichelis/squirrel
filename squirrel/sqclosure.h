@@ -167,7 +167,8 @@ public:
         ret->_name = _name;
         _COPY_VECTOR(ret->_outervalues,_outervalues,_noutervalues);
         ret->_typecheck.copy(_typecheck);
-        ret->_nparamscheck = _nparamscheck;
+        ret->_nparamscheckmin = _nparamscheckmin;
+        ret->_nparamscheckmax = _nparamscheckmax;
         return ret;
     }
     ~SQNativeClosure()
@@ -187,7 +188,8 @@ public:
     void Finalize() { _NULL_SQOBJECT_VECTOR(_outervalues,_noutervalues); }
     SQObjectType GetType() {return OT_NATIVECLOSURE;}
 #endif
-    SQInteger _nparamscheck;
+    SQInteger _nparamscheckmin;
+    SQInteger _nparamscheckmax;
     SQIntVec _typecheck;
     SQObjectPtr *_outervalues;
     SQUnsignedInteger _noutervalues;

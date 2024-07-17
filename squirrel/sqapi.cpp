@@ -386,7 +386,8 @@ SQRESULT sq_arrayinsert(HSQUIRRELVM v,SQInteger idx,SQInteger destpos)
 void sq_newclosure(HSQUIRRELVM v,SQFUNCTION func,SQUnsignedInteger nfreevars)
 {
     SQNativeClosure *nc = SQNativeClosure::Create(_ss(v), func,nfreevars);
-    nc->_nparamscheck = 0;
+    nc->_nparamscheckmin = 0;
+    nc->_nparamscheckmax = 0;
     for(SQUnsignedInteger i = 0; i < nfreevars; i++) {
         nc->_outervalues[i] = v->Top();
         v->Pop();
@@ -394,20 +395,22 @@ void sq_newclosure(HSQUIRRELVM v,SQFUNCTION func,SQUnsignedInteger nfreevars)
     v->Push(SQObjectPtr(nc));
 }
 
-SQRESULT sq_getclosureinfo(HSQUIRRELVM v,SQInteger idx,SQInteger *nparams,SQInteger *nfreevars)
+SQRESULT sq_getclosureinfo(HSQUIRRELVM v,SQInteger idx,SQInteger *nparamsmin,SQInteger *nparamsmax,SQInteger *nfreevars)
 {
     SQObject o = stack_get(v, idx);
     if(sq_type(o) == OT_CLOSURE) {
         SQClosure *c = _closure(o);
         SQFunctionProto *proto = c->_function;
-        *nparams = proto->_nparameters;
+        *nparamsmin = proto->_nparameters;
+        *nparamsmax = proto->_nparameters;
         *nfreevars = proto->_noutervalues;
         return SQ_OK;
     }
     else if(sq_type(o) == OT_NATIVECLOSURE)
     {
         SQNativeClosure *c = _nativeclosure(o);
-        *nparams = c->_nparamscheck;
+        *nparamsmin = c->_nparamscheckmin;
+        *nparamsmax = c->_nparamscheckmax;
         *nfreevars = (SQInteger)c->_noutervalues;
         return SQ_OK;
     }
@@ -425,13 +428,12 @@ SQRESULT sq_setnativeclosurename(HSQUIRRELVM v,SQInteger idx,const SQChar *name)
     return sq_throwerror(v,_SC("the object is not a nativeclosure"));
 }
 
-SQRESULT sq_setparamscheck(HSQUIRRELVM v,SQInteger nparamscheck,const SQChar *typemask)
+SQRESULT sq_setparamscheck(HSQUIRRELVM v,SQInteger nparamscheckmin,SQInteger nparamscheckmax,const SQChar *typemask)
 {
     SQObject o = stack_get(v, -1);
     if(!sq_isnativeclosure(o))
         return sq_throwerror(v, _SC("native closure expected"));
     SQNativeClosure *nc = _nativeclosure(o);
-    nc->_nparamscheck = nparamscheck;
     if(typemask) {
         SQIntVec res;
         if(!CompileTypemask(res, typemask))
@@ -441,9 +443,10 @@ SQRESULT sq_setparamscheck(HSQUIRRELVM v,SQInteger nparamscheck,const SQChar *ty
     else {
         nc->_typecheck.resize(0);
     }
-    if(nparamscheck == SQ_MATCHTYPEMASKSTRING) {
-        nc->_nparamscheck = nc->_typecheck.size();
-    }
+    nc->_nparamscheckmin = (nparamscheckmin == SQ_MATCHTYPEMASKSTRING ?
+      nc->_typecheck.size() : nparamscheckmin);
+    nc->_nparamscheckmax = (nparamscheckmax == SQ_MATCHTYPEMASKSTRING ?
+      nc->_typecheck.size() : nparamscheckmax);
     return SQ_OK;
 }
 
