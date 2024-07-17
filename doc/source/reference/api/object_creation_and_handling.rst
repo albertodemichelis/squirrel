@@ -66,11 +66,12 @@ pushes the value of a class or instance member using a member handle (see sq_get
 
 .. _sq_getclosureinfo:
 
-.. c:function:: SQRESULT sq_getclosureinfo(HSQUIRRELVM v, SQInteger idx, SQInteger * nparams, SQInteger * nfreevars)
+.. c:function:: SQRESULT sq_getclosureinfo(HSQUIRRELVM v, SQInteger idx, SQInteger * nparamsmin, SQInteger * nparamsmax, SQInteger * nfreevars)
 
     :param HSQUIRRELVM v: the target VM
     :param SQInteger idx: index of the target closure
-    :param SQInteger * nparams: a pointer to an integer that will store the number of parameters
+    :param SQInteger * nparamsmin: a pointer to an integer that will store the minimum required number of parameters (for non-native closures this is equal to 'nparamsmax')
+    :param SQInteger * nparamsmax: a pointer to an integer that will store the maximum allowed number of parameters (for non-native closures this is equal to 'nparamsmin')
     :param SQInteger * nfreevars: a pointer to an integer that will store the number of free variables
     :returns: an SQRESULT
 
@@ -569,12 +570,13 @@ sets the name of the native closure at the position idx in the stack. The name o
 
 .. _sq_setparamscheck:
 
-.. c:function:: SQRESULT sq_setparamscheck(HSQUIRRELVM v, SQInteger nparamscheck, const SQChar * typemask)
+.. c:function:: SQRESULT sq_setparamscheck(HSQUIRRELVM v, SQInteger nparamscheckmin, SQInteger nparamscheckmax, const SQChar * typemask)
 
     :param HSQUIRRELVM v: the target VM
-    :param SQInteger nparamscheck: defines the parameters number check policy (0 disables the param checking). If nparamscheck is greater than 0, the VM ensures that the number of parameters is exactly the number specified in nparamscheck (eg. if nparamscheck == 3 the function can only be called with 3 parameters). If nparamscheck is less than 0 the VM ensures that the closure is called with at least the absolute value of the number specified in nparamcheck (eg. nparamscheck == -3 will check that the function is called with at least 3 parameters). The hidden parameter 'this' is included in this number; free variables aren't. If SQ_MATCHTYPEMASKSTRING is passed instead of the number of parameters, the function will automatically infer the number of parameters to check from the typemask (eg. if the typemask is ".sn", it is like passing 3).
+    :param SQInteger nparamscheckmin: defines the minimum for the parameters number check policy (0 or negative disables the minimum parameters checking). The hidden parameter 'this' is included in this number; free variables aren't. If SQ_MATCHTYPEMASKSTRING is passed instead of the number of parameters, the function will automatically infer the number of minimum parameters to check from the typemask (eg. if the typemask is ".sn", it is like passing 3).
+    :param SQInteger nparamscheckmax: defines the maximum for the parameters number check policy (0 or negative disables the maximum parameters checking). The hidden parameter 'this' is included in this number; free variables aren't. If SQ_MATCHTYPEMASKSTRING is passed instead of the number of parameters, the function will automatically infer the number of maximum parameters to check from the typemask (eg. if the typemask is ".sn", it is like passing 3).
     :param SQChar * typemask: defines a mask to validate the parametes types passed to the function. If the parameter is NULL, no typechecking is applied (default).
-    :remarks: The typemask consists in a zero terminated string that represent the expected parameter type. The types are expressed as follows: 'o' null, 'i' integer, 'f' float, 'n' integer or float, 's' string, 't' table, 'a' array, 'u' userdata, 'c' closure and nativeclosure, 'g' generator, 'p' userpointer, 'v' thread, 'x' instance(class instance), 'y' class, 'b' bool. and '.' any type. The symbol '|' can be used as 'or' to accept multiple types on the same parameter. There isn't any limit on the number of 'or' that can be used. Spaces are ignored so can be inserted between types to increase readability. For instance to check a function that expect a table as 'this' a string as first parameter and a number or a userpointer as second parameter, the string would be "tsn|p" (table,string,number or userpointer). If the parameters mask is contains fewer parameters than 'nparamscheck', the remaining parameters will not be typechecked.
+    :remarks: The typemask consists in a zero terminated string that represent the expected parameter type. The types are expressed as follows: 'o' null, 'i' integer, 'f' float, 'n' integer or float, 's' string, 't' table, 'a' array, 'u' userdata, 'c' closure and nativeclosure, 'g' generator, 'p' userpointer, 'v' thread, 'x' instance(class instance), 'y' class, 'b' bool. and '.' any type. The symbol '|' can be used as 'or' to accept multiple types on the same parameter. There isn't any limit on the number of 'or' that can be used. Spaces are ignored so can be inserted between types to increase readability. For instance to check a function that expect a table as 'this' a string as first parameter and a number or a userpointer as second parameter, the string would be "tsn|p" (table,string,number or userpointer). If the parameters mask contains fewer parameters than 'nparamscheckmax', the remaining parameters will not be typechecked.
 
 Sets the parameter validation scheme for the native closure at the top position in the stack. Allows you to validate the number of parameters accepted by the function and optionally their types. If the function call does not comply with the parameter schema set by sq_setparamscheck, an exception is thrown.
 
@@ -602,7 +604,11 @@ Sets the parameter validation scheme for the native closure at the top position 
     //....stuff
     sq_newclosure(v,testy,0);
     //expects exactly 3 parameters(userdata,string,number)
-    sq_setparamscheck(v,3,_SC("usn"));
+    sq_setparamscheck(v,3,3,_SC("usn"));
+    //expects at least 2 parameters(userdata,string)
+    sq_setparamscheck(v,2,0,_SC("usn"));
+    //expects 1 to 3 parameters(userdata,string,number)
+    sq_setparamscheck(v,1,3,_SC("usn"));
     //....stuff
 
 

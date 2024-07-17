@@ -132,16 +132,16 @@ static SQInteger _system_date(HSQUIRRELVM v)
 
 
 
-#define _DECL_FUNC(name,nparams,pmask) {_SC(#name),_system_##name,nparams,pmask}
+#define _DECL_FUNC(name,nparamsmin,nparamsmax,pmask) {_SC(#name),_system_##name,nparamsmin,nparamsmax,pmask}
 static const SQRegFunction systemlib_funcs[]={
-    _DECL_FUNC(getenv,2,_SC(".s")),
-    _DECL_FUNC(system,2,_SC(".s")),
-    _DECL_FUNC(clock,0,NULL),
-    _DECL_FUNC(time,1,NULL),
-    _DECL_FUNC(date,-1,_SC(".nn")),
-    _DECL_FUNC(remove,2,_SC(".s")),
-    _DECL_FUNC(rename,3,_SC(".ss")),
-    {NULL,(SQFUNCTION)0,0,NULL}
+    _DECL_FUNC(getenv,2,2,_SC(".s")),
+    _DECL_FUNC(system,2,2,_SC(".s")),
+    _DECL_FUNC(clock,0,0,NULL),
+    _DECL_FUNC(time,1,1,NULL),
+    _DECL_FUNC(date,1,0,_SC(".nn")),
+    _DECL_FUNC(remove,2,2,_SC(".s")),
+    _DECL_FUNC(rename,3,3,_SC(".ss")),
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 #undef _DECL_FUNC
 
@@ -152,7 +152,7 @@ SQInteger sqstd_register_systemlib(HSQUIRRELVM v)
     {
         sq_pushstring(v,systemlib_funcs[i].name,-1);
         sq_newclosure(v,systemlib_funcs[i].f,0);
-        sq_setparamscheck(v,systemlib_funcs[i].nparamscheck,systemlib_funcs[i].typemask);
+        sq_setparamscheck(v,systemlib_funcs[i].nparamscheckmin,systemlib_funcs[i].nparamscheckmax,systemlib_funcs[i].typemask);
         sq_setnativeclosurename(v,-1,systemlib_funcs[i].name);
         sq_newslot(v,-3,SQFalse);
         i++;
