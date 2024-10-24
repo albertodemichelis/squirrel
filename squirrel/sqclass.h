@@ -72,6 +72,7 @@ public:
 #endif
     SQInteger Next(const SQObjectPtr &refpos, SQObjectPtr &outkey, SQObjectPtr &outval);
     SQInstance *CreateInstance();
+    bool GetMetaMethod(SQVM* v, SQMetaMethod mm, SQObjectPtr& res);
     SQTable *_members;
     SQClass *_base;
     SQClassMemberVec _defaultvalues;
