@@ -13,6 +13,7 @@ void sq_vm_free(void *p,SQUnsignedInteger size);
 #define SQ_REALLOC(__ptr,__oldsize,__size) sq_vm_realloc((__ptr),(__oldsize),(__size));
 
 #define sq_aligning(v) (((size_t)(v) + (SQ_ALIGNMENT-1)) & (~(SQ_ALIGNMENT-1)))
+#define sq_max(a, b) ((a) > (b) ? (a) : (b))
 
 //sqvector mini vector class, supports objects by value
 template<typename T> class sqvector
