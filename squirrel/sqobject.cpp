@@ -52,6 +52,12 @@ SQString *SQString::Create(SQSharedState *ss,const SQChar *s,SQInteger len)
     return str;
 }
 
+SQString* SQString::Concat(SQSharedState* ss, const SQChar* a, SQInteger alen, const SQChar* b, SQInteger blen)
+{
+    SQString* str = ss->_stringtable->Concat(a, alen, b, blen);
+    return str;
+}
+
 void SQString::Release()
 {
     REMOVE_STRING(_sharedstate,this);

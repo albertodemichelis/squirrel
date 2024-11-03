@@ -322,17 +322,20 @@ bool SQVM::ToString(const SQObjectPtr &o,SQObjectPtr &res)
     return true;
 }
 
-
 bool SQVM::StringCat(const SQObjectPtr &str,const SQObjectPtr &obj,SQObjectPtr &dest)
 {
     SQObjectPtr a, b;
     if(!ToString(str, a)) return false;
     if(!ToString(obj, b)) return false;
     SQInteger l = _string(a)->_len , ol = _string(b)->_len;
-    SQChar *s = _sp(sq_rsl(l + ol + 1));
+#ifdef SQ_NO_FAST_STRINGCAT
+    SQChar* s = _sp(sq_rsl(l + ol + 1));
     memcpy(s, _stringval(a), sq_rsl(l));
     memcpy(s + l, _stringval(b), sq_rsl(ol));
     dest = SQString::Create(_ss(this), _spval, l + ol);
+#else
+    dest = SQString::Concat(_ss(this),_stringval(a),l,_stringval(b),ol);
+#endif
     return true;
 }
 
@@ -1779,11 +1782,11 @@ void SQVM::dumpstack(SQInteger stackbase,bool dumpall)
     for(SQInteger i=0;i<size;i++){
         SQObjectPtr &obj=_stack[i];
         if(stackbase==i)scprintf(_SC(">"));else scprintf(_SC(" "));
-        scprintf(_SC("[" _PRINT_INT_FMT "]:"),n);
+        scprintf(_SC("[") _PRINT_INT_FMT _SC("]:"),n);
         switch(sq_type(obj)){
         case OT_FLOAT:          scprintf(_SC("FLOAT %.3f"),_float(obj));break;
-        case OT_INTEGER:        scprintf(_SC("INTEGER " _PRINT_INT_FMT),_integer(obj));break;
-        case OT_BOOL:           scprintf(_SC("BOOL %s"),_integer(obj)?"true":"false");break;
+        case OT_INTEGER:        scprintf(_SC("INTEGER ") _PRINT_INT_FMT,_integer(obj));break;
+        case OT_BOOL:           scprintf(_SC("BOOL %s"),_integer(obj)?_SC("true"):_SC("false"));break;
         case OT_STRING:         scprintf(_SC("STRING %s"),_stringval(obj));break;
         case OT_NULL:           scprintf(_SC("NULL"));  break;
         case OT_TABLE:          scprintf(_SC("TABLE %p[%p]"),_table(obj),_table(obj)->_delegate);break;

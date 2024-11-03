@@ -14,6 +14,7 @@ struct SQStringTable
     SQStringTable(SQSharedState*ss);
     ~SQStringTable();
     SQString *Add(const SQChar *,SQInteger len);
+    SQString* Concat(const SQChar* a, SQInteger alen, const SQChar* b, SQInteger blen);
     void Remove(SQString *);
 private:
     void Resize(SQInteger size);

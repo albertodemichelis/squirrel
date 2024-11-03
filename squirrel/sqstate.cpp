@@ -577,6 +577,41 @@ void SQStringTable::AllocNodes(SQInteger size)
     memset(_strings,0,sizeof(SQString*)*_numofslots);
 }
 
+SQString* SQStringTable::Concat(const SQChar* a, SQInteger alen, const SQChar* b, SQInteger blen)
+{
+    SQHash newhash = ::_hashstr2(a, alen, b, blen);
+    SQHash h = newhash & (_numofslots - 1);
+    SQString* s;
+    SQInteger len = alen + blen;
+    for (s = _strings[h]; s; s = s->_next) {
+        if (s->_len == len) {
+            if ((!memcmp(a, s->_val, sq_rsl(alen)))
+                && (!memcmp(b, &s->_val[alen], sq_rsl(blen)))) {
+                return s; //found
+            }
+        }
+    }
+    //
+    SQString* t = (SQString*)SQ_MALLOC(sq_rsl(len) + sizeof(SQString));
+    new (t) SQString;
+    t->_sharedstate = _sharedstate;
+    memcpy(t->_val, a, sq_rsl(alen));
+    memcpy(&t->_val[alen], b, sq_rsl(blen));
+    t->_val[len] = _SC('\0');
+    t->_len = len;
+    t->_hash = newhash;
+    t->_next = _strings[h];
+    _strings[h] = t;
+    _slotused++;
+#ifdef _DEBUG
+    SQHash old_newhash = ::_hashstr(t->_val, t->_len);
+    assert(old_newhash == newhash);
+#endif
+    if (_slotused > _numofslots)  /* too crowded? */
+        Resize(_numofslots * 2);
+    return t;
+}
+
 SQString *SQStringTable::Add(const SQChar *news,SQInteger len)
 {
     if(len<0)
