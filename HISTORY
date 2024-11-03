@@ -1,3 +1,8 @@
+***version 3.3 stable***
+-implemented faster string concatenation that doesn't copy the strings before hashing
+-fixed security vulnerability in scratchpad(thx Radnai L.)
+
+***2022-02-10      ***
 ***version 3.2 stable***
 -added new inline bind env syntax for closures
 -added sq_tailcall
@@ -6,7 +11,6 @@
 -added table.keys() and table.values()
 -added table.filter()
 -added skipempty in split()
--implemented faster string concatenation that doesn't copy the strings before hashing
 -additional parameters in array.map() and array.apply()
 -additional optional initializer in array.reduce()
 -added sqstd_pushstringf and sqstd_throwerrorf
@@ -18,7 +22,6 @@
 -sq_gettypetag doesn't set last error(it's treated as SQBool function but keeps a SQRESULT for backward compatibility)
 -fixed _set method in userdata delegates
 -fixed some warnings
--fixed security vulnerability in scratchpad(thx Radnai L.)
 
 ***2016-03-27      ***
 ***version 3.1 stable***

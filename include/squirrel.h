@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003-2022 Alberto Demichelis
+Copyright (c) 2003-2024 Alberto Demichelis
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ struct SQOuter;
 #include "sqconfig.h"
 
 #define SQUIRREL_VERSION    _SC("Squirrel 3.2 stable")
-#define SQUIRREL_COPYRIGHT  _SC("Copyright (C) 2003-2022 Alberto Demichelis")
+#define SQUIRREL_COPYRIGHT  _SC("Copyright (C) 2003-2024 Alberto Demichelis")
 #define SQUIRREL_AUTHOR     _SC("Alberto Demichelis")
 #define SQUIRREL_VERSION_NUMBER 320
 
