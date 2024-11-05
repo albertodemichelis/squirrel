@@ -376,13 +376,13 @@ SQChar* SQSharedState::GetScratchPad(SQInteger size)
     SQInteger newsize;
     if (size > 0) {
         if (_scratchpadsize < size) {
-            newsize = size + (size >> 1);
+            newsize = (SQInteger)((SQUnsignedInteger)size + (size >> 1));
             newsize = sq_max(newsize, size); //check for overflow
             _scratchpad = (SQChar*)SQ_REALLOC(_scratchpad, _scratchpadsize, newsize);
             _scratchpadsize = newsize;
 
         }
-        else if (_scratchpadsize >= (size << 5)) {
+        else if ((_scratchpadsize >> 5) >= size) {
             newsize = _scratchpadsize >> 1;
             newsize = sq_max(newsize, size); //check for overflow
             _scratchpad = (SQChar*)SQ_REALLOC(_scratchpad, _scratchpadsize, newsize);
