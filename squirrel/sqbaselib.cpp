@@ -990,6 +990,31 @@ static SQInteger string_find(HSQUIRRELVM v)
     return sq_throwerror(v,_SC("invalid param"));
 }
 
+static SQInteger string_rfind(HSQUIRRELVM v)
+{
+    SQInteger top,start_idx=0;
+    const SQChar *str,*substr,*ret;
+    if(((top=sq_gettop(v))>1) && SQ_SUCCEEDED(sq_getstring(v,1,&str)) && SQ_SUCCEEDED(sq_getstring(v,2,&substr))){
+        if(top>2)sq_getinteger(v,3,&start_idx);
+        if((sq_getsize(v,1)>start_idx) && (start_idx>=0)){
+            const SQChar *ptr = &str[start_idx];
+
+            ret = NULL;
+
+            while((ptr = scstrstr(ptr, substr)) != NULL) {
+                ret = ptr++;
+            }
+
+            if(ret){
+                sq_pushinteger(v,(SQInteger)(ret-str));
+                return 1;
+            }
+        }
+        return 0;
+    }
+    return sq_throwerror(v,_SC("invalid param"));
+}
+
 #define STRING_TOFUNCZ(func) static SQInteger string_##func(HSQUIRRELVM v) \
 {\
     SQInteger sidx,eidx; \
@@ -1020,6 +1045,7 @@ const SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
     {_SC("slice"),string_slice,-1, _SC("s n  n")},
     {_SC("find"),string_find,-2, _SC("s s n")},
+    {_SC("rfind"),string_rfind,-2, _SC("s s n")},
     {_SC("tolower"),string_tolower,-1, _SC("s n n")},
     {_SC("toupper"),string_toupper,-1, _SC("s n n")},
     {_SC("weakref"),obj_delegate_weakref,1, NULL },
