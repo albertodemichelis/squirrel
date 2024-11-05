@@ -340,7 +340,7 @@ void sq_base_register(HSQUIRRELVM v)
 
 static SQInteger default_delegate_len(HSQUIRRELVM v)
 {
-    v->Push(SQInteger(sq_getsize(v,1)));
+    v->Push(sq_getsize(v,1));
     return 1;
 }
 
