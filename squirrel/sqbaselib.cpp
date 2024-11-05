@@ -780,6 +780,32 @@ static SQInteger array_find(HSQUIRRELVM v)
     return 0;
 }
 
+static SQInteger array_join(HSQUIRRELVM v)
+{
+    const SQChar *separator;
+
+    SQObject &o = stack_get(v,1);
+    sq_getstring(v,2,&separator);
+    SQArray *a = _array(o);
+    SQInteger size = a->Size();
+    SQObjectPtr out = SQString::Create(_ss(v), _SC(""));
+    SQObjectPtr temp;
+    for(SQInteger n = 0; n < size; n++) {
+        a->Get(n,temp);
+
+        SQObjectPtr a;
+        v->ToString(temp, a);
+
+        v->StringCat(out, SQString::Create(_ss(v),_stringval(a)), out);
+
+        if(n < size - 1)
+            v->StringCat(out, SQString::Create(_ss(v), separator), out);
+    }
+
+    v->Push(out);
+
+    return 1;
+}
 
 static bool _sort_compare(HSQUIRRELVM v, SQArray *arr, SQObjectPtr &a,SQObjectPtr &b,SQInteger func,SQInteger &ret)
 {
@@ -927,6 +953,7 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("reduce"),array_reduce,-2, _SC("ac.")},
     {_SC("filter"),array_filter,2, _SC("ac")},
     {_SC("find"),array_find,2, _SC("a.")},
+    {_SC("join"),array_join,2, _SC("a.")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
