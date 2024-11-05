@@ -319,6 +319,19 @@ SQRESULT sq_arrayappend(HSQUIRRELVM v,SQInteger idx)
     return SQ_OK;
 }
 
+SQRESULT sq_arrayshift(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
+{
+    sq_aux_paramscheck(v, 1);
+    SQObjectPtr *arr;
+    _GETSAFE_OBJ(v, idx, OT_ARRAY,arr);
+    if(_array(*arr)->Size() > 0) {
+        if(pushval != 0){ v->Push(_array(*arr)->Bottom()); }
+        _array(*arr)->Shift();
+        return SQ_OK;
+    }
+    return sq_throwerror(v, _SC("empty array"));
+}
+
 SQRESULT sq_arraypop(HSQUIRRELVM v,SQInteger idx,SQBool pushval)
 {
     sq_aux_paramscheck(v, 1);

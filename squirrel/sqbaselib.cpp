@@ -587,6 +587,21 @@ static SQInteger array_reverse(HSQUIRRELVM v)
     return SQ_SUCCEEDED(sq_arrayreverse(v,-1)) ? 1 : SQ_ERROR;
 }
 
+static SQInteger array_shift(HSQUIRRELVM v)
+{
+    return SQ_SUCCEEDED(sq_arrayshift(v,1,SQTrue))?1:SQ_ERROR;
+}
+
+static SQInteger array_bottom(HSQUIRRELVM v)
+{
+    SQObject &o=stack_get(v,1);
+    if(_array(o)->Size()>0){
+        v->Push(_array(o)->Bottom());
+        return 1;
+    }
+    else return sq_throwerror(v,_SC("bottom() on a empty array"));
+}
+
 static SQInteger array_pop(HSQUIRRELVM v)
 {
     return SQ_SUCCEEDED(sq_arraypop(v,1,SQTrue))?1:SQ_ERROR;
@@ -937,6 +952,8 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("append"),array_append,2, _SC("a")},
     {_SC("extend"),array_extend,2, _SC("aa")},
     {_SC("push"),array_append,2, _SC("a")},
+    {_SC("shift"),array_shift,1,_SC("a")},
+    {_SC("bottom"),array_bottom,1,_SC("a")},
     {_SC("pop"),array_pop,1, _SC("a")},
     {_SC("top"),array_top,1, _SC("a")},
     {_SC("insert"),array_insert,3, _SC("an")},

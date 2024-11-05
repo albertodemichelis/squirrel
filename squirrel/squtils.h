@@ -70,6 +70,7 @@ public:
         }
     }
     void shrinktofit() { if(_size > 4) { _realloc(_size); } }
+    T& bottom() const { return _vals[0]; }
     T& top() const { return _vals[_size - 1]; }
     inline SQUnsignedInteger size() const { return _size; }
     bool empty() const { return (_size <= 0); }
