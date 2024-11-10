@@ -282,29 +282,29 @@ static SQInteger base_callee(HSQUIRRELVM v)
 
 static const SQRegFunction base_funcs[]={
     //generic
-    {_SC("seterrorhandler"),base_seterrorhandler,2, NULL},
-    {_SC("setdebughook"),base_setdebughook,2, NULL},
-    {_SC("enabledebuginfo"),base_enabledebuginfo,2, NULL},
-    {_SC("getstackinfos"),base_getstackinfos,2, _SC(".n")},
-    {_SC("getroottable"),base_getroottable,1, NULL},
-    {_SC("setroottable"),base_setroottable,2, NULL},
-    {_SC("getconsttable"),base_getconsttable,1, NULL},
-    {_SC("setconsttable"),base_setconsttable,2, NULL},
-    {_SC("assert"),base_assert,-2, NULL},
-    {_SC("print"),base_print,2, NULL},
-    {_SC("error"),base_error,2, NULL},
-    {_SC("compilestring"),base_compilestring,-2, _SC(".ss")},
-    {_SC("newthread"),base_newthread,2, _SC(".c")},
-    {_SC("suspend"),base_suspend,-1, NULL},
-    {_SC("array"),base_array,-2, _SC(".n")},
-    {_SC("type"),base_type,2, NULL},
-    {_SC("callee"),base_callee,0,NULL},
-    {_SC("dummy"),base_dummy,0,NULL},
+    {_SC("seterrorhandler"),base_seterrorhandler,2,2, NULL},
+    {_SC("setdebughook"),base_setdebughook,2,2, NULL},
+    {_SC("enabledebuginfo"),base_enabledebuginfo,2,2, NULL},
+    {_SC("getstackinfos"),base_getstackinfos,2,2, _SC(".n")},
+    {_SC("getroottable"),base_getroottable,1,1, NULL},
+    {_SC("setroottable"),base_setroottable,2,2, NULL},
+    {_SC("getconsttable"),base_getconsttable,1,1, NULL},
+    {_SC("setconsttable"),base_setconsttable,2,2, NULL},
+    {_SC("assert"),base_assert,2,0, NULL},
+    {_SC("print"),base_print,2,2, NULL},
+    {_SC("error"),base_error,2,2, NULL},
+    {_SC("compilestring"),base_compilestring,2,0, _SC(".ss")},
+    {_SC("newthread"),base_newthread,2,2, _SC(".c")},
+    {_SC("suspend"),base_suspend,1,0, NULL},
+    {_SC("array"),base_array,2,0, _SC(".n")},
+    {_SC("type"),base_type,2,2, NULL},
+    {_SC("callee"),base_callee,0,0,NULL},
+    {_SC("dummy"),base_dummy,0,0,NULL},
 #ifndef NO_GARBAGE_COLLECTOR
-    {_SC("collectgarbage"),base_collectgarbage,0, NULL},
-    {_SC("resurrectunreachable"),base_resurectureachable,0, NULL},
+    {_SC("collectgarbage"),base_collectgarbage,0,0, NULL},
+    {_SC("resurrectunreachable"),base_resurectureachable,0,0, NULL},
 #endif
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 void sq_base_register(HSQUIRRELVM v)
@@ -315,7 +315,7 @@ void sq_base_register(HSQUIRRELVM v)
         sq_pushstring(v,base_funcs[i].name,-1);
         sq_newclosure(v,base_funcs[i].f,0);
         sq_setnativeclosurename(v,-1,base_funcs[i].name);
-        sq_setparamscheck(v,base_funcs[i].nparamscheck,base_funcs[i].typemask);
+        sq_setparamscheck(v,base_funcs[i].nparamscheckmin,base_funcs[i].nparamscheckmax,base_funcs[i].typemask);
         sq_newslot(v,-3, SQFalse);
         i++;
     }
@@ -551,21 +551,21 @@ TABLE_TO_ARRAY_FUNC(table_values, val)
 
 
 const SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
-    {_SC("len"),default_delegate_len,1, _SC("t")},
-    {_SC("rawget"),container_rawget,2, _SC("t")},
-    {_SC("rawset"),container_rawset,3, _SC("t")},
-    {_SC("rawdelete"),table_rawdelete,2, _SC("t")},
-    {_SC("rawin"),container_rawexists,2, _SC("t")},
-    {_SC("weakref"),obj_delegate_weakref,1, NULL },
-    {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-    {_SC("clear"),obj_clear,1, _SC(".")},
-    {_SC("setdelegate"),table_setdelegate,2, _SC(".t|o")},
-    {_SC("getdelegate"),table_getdelegate,1, _SC(".")},
-    {_SC("filter"),table_filter,2, _SC("tc")},
-	{_SC("map"),table_map,2, _SC("tc") },
-	{_SC("keys"),table_keys,1, _SC("t") },
-	{_SC("values"),table_values,1, _SC("t") },
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {_SC("len"),default_delegate_len,1,1, _SC("t")},
+    {_SC("rawget"),container_rawget,2,2, _SC("t")},
+    {_SC("rawset"),container_rawset,3,3, _SC("t")},
+    {_SC("rawdelete"),table_rawdelete,2,2, _SC("t")},
+    {_SC("rawin"),container_rawexists,2,2, _SC("t")},
+    {_SC("weakref"),obj_delegate_weakref,1,1, NULL },
+    {_SC("tostring"),default_delegate_tostring,1,1, _SC(".")},
+    {_SC("clear"),obj_clear,1,1, _SC(".")},
+    {_SC("setdelegate"),table_setdelegate,2,2, _SC(".t|o")},
+    {_SC("getdelegate"),table_getdelegate,1,1, _SC(".")},
+    {_SC("filter"),table_filter,2,2, _SC("tc")},
+	{_SC("map"),table_map,2,2, _SC("tc") },
+	{_SC("keys"),table_keys,1,1, _SC("t") },
+	{_SC("values"),table_values,1,1, _SC("t") },
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 //ARRAY DEFAULT DELEGATE///////////////////////////////////////
@@ -657,9 +657,9 @@ static SQInteger __map_array(SQArray *dest,SQArray *src,HSQUIRRELVM v) {
         nArgs = _closure(closure)->_function->_nparameters;
     }
     else if (sq_type(closure) == OT_NATIVECLOSURE) {
-        SQInteger nParamsCheck = _nativeclosure(closure)->_nparamscheck;
-        if (nParamsCheck > 0)
-            nArgs = nParamsCheck;
+        SQInteger nParamsCheckMax = _nativeclosure(closure)->_nparamscheckmax;
+        if (nParamsCheckMax < 4)
+            nArgs = nParamsCheckMax;
         else // push all params when there is no check or only minimal count set
             nArgs = 4;
     }
@@ -907,27 +907,27 @@ static SQInteger array_slice(HSQUIRRELVM v)
 }
 
 const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
-    {_SC("len"),default_delegate_len,1, _SC("a")},
-    {_SC("append"),array_append,2, _SC("a")},
-    {_SC("extend"),array_extend,2, _SC("aa")},
-    {_SC("push"),array_append,2, _SC("a")},
-    {_SC("pop"),array_pop,1, _SC("a")},
-    {_SC("top"),array_top,1, _SC("a")},
-    {_SC("insert"),array_insert,3, _SC("an")},
-    {_SC("remove"),array_remove,2, _SC("an")},
-    {_SC("resize"),array_resize,-2, _SC("an")},
-    {_SC("reverse"),array_reverse,1, _SC("a")},
-    {_SC("sort"),array_sort,-1, _SC("ac")},
-    {_SC("slice"),array_slice,-1, _SC("ann")},
-    {_SC("weakref"),obj_delegate_weakref,1, NULL },
-    {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-    {_SC("clear"),obj_clear,1, _SC(".")},
-    {_SC("map"),array_map,2, _SC("ac")},
-    {_SC("apply"),array_apply,2, _SC("ac")},
-    {_SC("reduce"),array_reduce,-2, _SC("ac.")},
-    {_SC("filter"),array_filter,2, _SC("ac")},
-    {_SC("find"),array_find,2, _SC("a.")},
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {_SC("len"),default_delegate_len,1,1, _SC("a")},
+    {_SC("append"),array_append,2,2, _SC("a")},
+    {_SC("extend"),array_extend,2,2, _SC("aa")},
+    {_SC("push"),array_append,2,2, _SC("a")},
+    {_SC("pop"),array_pop,1,1, _SC("a")},
+    {_SC("top"),array_top,1,1, _SC("a")},
+    {_SC("insert"),array_insert,3,3, _SC("an")},
+    {_SC("remove"),array_remove,2,2, _SC("an")},
+    {_SC("resize"),array_resize,2,0, _SC("an")},
+    {_SC("reverse"),array_reverse,1,1, _SC("a")},
+    {_SC("sort"),array_sort,1,0, _SC("ac")},
+    {_SC("slice"),array_slice,1,0, _SC("ann")},
+    {_SC("weakref"),obj_delegate_weakref,1,1, NULL },
+    {_SC("tostring"),default_delegate_tostring,1,1, _SC(".")},
+    {_SC("clear"),obj_clear,1,1, _SC(".")},
+    {_SC("map"),array_map,2,2, _SC("ac")},
+    {_SC("apply"),array_apply,2,2, _SC("ac")},
+    {_SC("reduce"),array_reduce,2,0, _SC("ac.")},
+    {_SC("filter"),array_filter,2,2, _SC("ac")},
+    {_SC("find"),array_find,2,2, _SC("a.")},
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 //STRING DEFAULT DELEGATE//////////////////////////
@@ -987,26 +987,26 @@ STRING_TOFUNCZ(tolower)
 STRING_TOFUNCZ(toupper)
 
 const SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
-    {_SC("len"),default_delegate_len,1, _SC("s")},
-    {_SC("tointeger"),default_delegate_tointeger,-1, _SC("sn")},
-    {_SC("tofloat"),default_delegate_tofloat,1, _SC("s")},
-    {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-    {_SC("slice"),string_slice,-1, _SC("s n  n")},
-    {_SC("find"),string_find,-2, _SC("s s n")},
-    {_SC("tolower"),string_tolower,-1, _SC("s n n")},
-    {_SC("toupper"),string_toupper,-1, _SC("s n n")},
-    {_SC("weakref"),obj_delegate_weakref,1, NULL },
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {_SC("len"),default_delegate_len,1,1, _SC("s")},
+    {_SC("tointeger"),default_delegate_tointeger,1,0, _SC("sn")},
+    {_SC("tofloat"),default_delegate_tofloat,1,1, _SC("s")},
+    {_SC("tostring"),default_delegate_tostring,1,1, _SC(".")},
+    {_SC("slice"),string_slice,1,0, _SC("s n  n")},
+    {_SC("find"),string_find,2,0, _SC("s s n")},
+    {_SC("tolower"),string_tolower,1,0, _SC("s n n")},
+    {_SC("toupper"),string_toupper,1,0, _SC("s n n")},
+    {_SC("weakref"),obj_delegate_weakref,1,1, NULL },
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 //INTEGER DEFAULT DELEGATE//////////////////////////
 const SQRegFunction SQSharedState::_number_default_delegate_funcz[]={
-    {_SC("tointeger"),default_delegate_tointeger,1, _SC("n|b")},
-    {_SC("tofloat"),default_delegate_tofloat,1, _SC("n|b")},
-    {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-    {_SC("tochar"),number_delegate_tochar,1, _SC("n|b")},
-    {_SC("weakref"),obj_delegate_weakref,1, NULL },
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {_SC("tointeger"),default_delegate_tointeger,1,1, _SC("n|b")},
+    {_SC("tofloat"),default_delegate_tofloat,1,1, _SC("n|b")},
+    {_SC("tostring"),default_delegate_tostring,1,1, _SC(".")},
+    {_SC("tochar"),number_delegate_tochar,1,1, _SC("n|b")},
+    {_SC("weakref"),obj_delegate_weakref,1,1, NULL },
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 //CLOSURE DEFAULT DELEGATE//////////////////////////
@@ -1093,7 +1093,8 @@ static SQInteger closure_getinfos(HSQUIRRELVM v) {
         SQNativeClosure *nc = _nativeclosure(o);
         res->NewSlot(SQString::Create(_ss(v),_SC("native"),-1),true);
         res->NewSlot(SQString::Create(_ss(v),_SC("name"),-1),nc->_name);
-        res->NewSlot(SQString::Create(_ss(v),_SC("paramscheck"),-1),nc->_nparamscheck);
+        res->NewSlot(SQString::Create(_ss(v),_SC("paramscheckmin"),-1),nc->_nparamscheckmin);
+        res->NewSlot(SQString::Create(_ss(v),_SC("paramscheckmax"),-1),nc->_nparamscheckmax);
         SQObjectPtr typecheck;
         if(nc->_typecheck.size() > 0) {
             typecheck =
@@ -1111,17 +1112,17 @@ static SQInteger closure_getinfos(HSQUIRRELVM v) {
 
 
 const SQRegFunction SQSharedState::_closure_default_delegate_funcz[]={
-    {_SC("call"),closure_call,-1, _SC("c")},
-    {_SC("pcall"),closure_pcall,-1, _SC("c")},
-    {_SC("acall"),closure_acall,2, _SC("ca")},
-    {_SC("pacall"),closure_pacall,2, _SC("ca")},
-    {_SC("weakref"),obj_delegate_weakref,1, NULL },
-    {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-    {_SC("bindenv"),closure_bindenv,2, _SC("c x|y|t")},
-    {_SC("getinfos"),closure_getinfos,1, _SC("c")},
-    {_SC("getroot"),closure_getroot,1, _SC("c")},
-    {_SC("setroot"),closure_setroot,2, _SC("ct")},
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {_SC("call"),closure_call,1,0, _SC("c")},
+    {_SC("pcall"),closure_pcall,1,0, _SC("c")},
+    {_SC("acall"),closure_acall,2,2, _SC("ca")},
+    {_SC("pacall"),closure_pacall,2,2, _SC("ca")},
+    {_SC("weakref"),obj_delegate_weakref,1,1, NULL },
+    {_SC("tostring"),default_delegate_tostring,1,1, _SC(".")},
+    {_SC("bindenv"),closure_bindenv,2,2, _SC("c x|y|t")},
+    {_SC("getinfos"),closure_getinfos,1,1, _SC("c")},
+    {_SC("getroot"),closure_getroot,1,1, _SC("c")},
+    {_SC("setroot"),closure_setroot,2,2, _SC("ct")},
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 //GENERATOR DEFAULT DELEGATE
@@ -1137,10 +1138,10 @@ static SQInteger generator_getstatus(HSQUIRRELVM v)
 }
 
 const SQRegFunction SQSharedState::_generator_default_delegate_funcz[]={
-    {_SC("getstatus"),generator_getstatus,1, _SC("g")},
-    {_SC("weakref"),obj_delegate_weakref,1, NULL },
-    {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {_SC("getstatus"),generator_getstatus,1,1, _SC("g")},
+    {_SC("weakref"),obj_delegate_weakref,1,1, NULL },
+    {_SC("tostring"),default_delegate_tostring,1,1, _SC(".")},
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 //THREAD DEFAULT DELEGATE
@@ -1294,14 +1295,14 @@ static SQInteger thread_getstackinfos(HSQUIRRELVM v)
 }
 
 const SQRegFunction SQSharedState::_thread_default_delegate_funcz[] = {
-    {_SC("call"), thread_call, -1, _SC("v")},
-    {_SC("wakeup"), thread_wakeup, -1, _SC("v")},
-    {_SC("wakeupthrow"), thread_wakeupthrow, -2, _SC("v.b")},
-    {_SC("getstatus"), thread_getstatus, 1, _SC("v")},
-    {_SC("weakref"),obj_delegate_weakref,1, NULL },
-    {_SC("getstackinfos"),thread_getstackinfos,2, _SC("vn")},
-    {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {_SC("call"), thread_call, 1, 0, _SC("v")},
+    {_SC("wakeup"), thread_wakeup, 1, 0, _SC("v")},
+    {_SC("wakeupthrow"), thread_wakeupthrow, 2, 0, _SC("v.b")},
+    {_SC("getstatus"), thread_getstatus, 1, 1, _SC("v")},
+    {_SC("weakref"),obj_delegate_weakref,1, 1, NULL },
+    {_SC("getstackinfos"),thread_getstackinfos,2,2, _SC("vn")},
+    {_SC("tostring"),default_delegate_tostring,1,1, _SC(".")},
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 static SQInteger class_getattributes(HSQUIRRELVM v)
@@ -1357,18 +1358,18 @@ static SQInteger class_rawnewmember(HSQUIRRELVM v)
 }
 
 const SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
-    {_SC("getattributes"), class_getattributes, 2, _SC("y.")},
-    {_SC("setattributes"), class_setattributes, 3, _SC("y..")},
-    {_SC("rawget"),container_rawget,2, _SC("y")},
-    {_SC("rawset"),container_rawset,3, _SC("y")},
-    {_SC("rawin"),container_rawexists,2, _SC("y")},
-    {_SC("weakref"),obj_delegate_weakref,1, NULL },
-    {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-    {_SC("instance"),class_instance,1, _SC("y")},
-    {_SC("getbase"),class_getbase,1, _SC("y")},
-    {_SC("newmember"),class_newmember,-3, _SC("y")},
-    {_SC("rawnewmember"),class_rawnewmember,-3, _SC("y")},
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {_SC("getattributes"), class_getattributes, 2, 2, _SC("y.")},
+    {_SC("setattributes"), class_setattributes, 3, 3, _SC("y..")},
+    {_SC("rawget"),container_rawget,2,2, _SC("y")},
+    {_SC("rawset"),container_rawset,3,3, _SC("y")},
+    {_SC("rawin"),container_rawexists,2,2, _SC("y")},
+    {_SC("weakref"),obj_delegate_weakref,1,1, NULL },
+    {_SC("tostring"),default_delegate_tostring,1,1, _SC(".")},
+    {_SC("instance"),class_instance,1,1, _SC("y")},
+    {_SC("getbase"),class_getbase,1,1, _SC("y")},
+    {_SC("newmember"),class_newmember,3,0, _SC("y")},
+    {_SC("rawnewmember"),class_rawnewmember,3,0, _SC("y")},
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 
@@ -1380,13 +1381,13 @@ static SQInteger instance_getclass(HSQUIRRELVM v)
 }
 
 const SQRegFunction SQSharedState::_instance_default_delegate_funcz[] = {
-    {_SC("getclass"), instance_getclass, 1, _SC("x")},
-    {_SC("rawget"),container_rawget,2, _SC("x")},
-    {_SC("rawset"),container_rawset,3, _SC("x")},
-    {_SC("rawin"),container_rawexists,2, _SC("x")},
-    {_SC("weakref"),obj_delegate_weakref,1, NULL },
-    {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {_SC("getclass"), instance_getclass, 1, 1, _SC("x")},
+    {_SC("rawget"),container_rawget,2,2, _SC("x")},
+    {_SC("rawset"),container_rawset,3,3, _SC("x")},
+    {_SC("rawin"),container_rawexists,2,2, _SC("x")},
+    {_SC("weakref"),obj_delegate_weakref,1,1, NULL },
+    {_SC("tostring"),default_delegate_tostring,1,1, _SC(".")},
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 static SQInteger weakref_ref(HSQUIRRELVM v)
@@ -1397,8 +1398,8 @@ static SQInteger weakref_ref(HSQUIRRELVM v)
 }
 
 const SQRegFunction SQSharedState::_weakref_default_delegate_funcz[] = {
-    {_SC("ref"),weakref_ref,1, _SC("r")},
-    {_SC("weakref"),obj_delegate_weakref,1, NULL },
-    {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-    {NULL,(SQFUNCTION)0,0,NULL}
+    {_SC("ref"),weakref_ref,1,1, _SC("r")},
+    {_SC("weakref"),obj_delegate_weakref,1,1, NULL },
+    {_SC("tostring"),default_delegate_tostring,1,1, _SC(".")},
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };

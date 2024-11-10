@@ -58,27 +58,27 @@ SINGLE_ARG_FUNC(floor)
 SINGLE_ARG_FUNC(ceil)
 SINGLE_ARG_FUNC(exp)
 
-#define _DECL_FUNC(name,nparams,tycheck) {_SC(#name),math_##name,nparams,tycheck}
+#define _DECL_FUNC(name,nparamsmin,nparamsmax,tycheck) {_SC(#name),math_##name,nparamsmin,nparamsmax,tycheck}
 static const SQRegFunction mathlib_funcs[] = {
-    _DECL_FUNC(sqrt,2,_SC(".n")),
-    _DECL_FUNC(sin,2,_SC(".n")),
-    _DECL_FUNC(cos,2,_SC(".n")),
-    _DECL_FUNC(asin,2,_SC(".n")),
-    _DECL_FUNC(acos,2,_SC(".n")),
-    _DECL_FUNC(log,2,_SC(".n")),
-    _DECL_FUNC(log10,2,_SC(".n")),
-    _DECL_FUNC(tan,2,_SC(".n")),
-    _DECL_FUNC(atan,2,_SC(".n")),
-    _DECL_FUNC(atan2,3,_SC(".nn")),
-    _DECL_FUNC(pow,3,_SC(".nn")),
-    _DECL_FUNC(floor,2,_SC(".n")),
-    _DECL_FUNC(ceil,2,_SC(".n")),
-    _DECL_FUNC(exp,2,_SC(".n")),
-    _DECL_FUNC(srand,2,_SC(".n")),
-    _DECL_FUNC(rand,1,NULL),
-    _DECL_FUNC(fabs,2,_SC(".n")),
-    _DECL_FUNC(abs,2,_SC(".n")),
-    {NULL,(SQFUNCTION)0,0,NULL}
+    _DECL_FUNC(sqrt,2,2,_SC(".n")),
+    _DECL_FUNC(sin,2,2,_SC(".n")),
+    _DECL_FUNC(cos,2,2,_SC(".n")),
+    _DECL_FUNC(asin,2,2,_SC(".n")),
+    _DECL_FUNC(acos,2,2,_SC(".n")),
+    _DECL_FUNC(log,2,2,_SC(".n")),
+    _DECL_FUNC(log10,2,2,_SC(".n")),
+    _DECL_FUNC(tan,2,2,_SC(".n")),
+    _DECL_FUNC(atan,2,2,_SC(".n")),
+    _DECL_FUNC(atan2,3,3,_SC(".nn")),
+    _DECL_FUNC(pow,3,3,_SC(".nn")),
+    _DECL_FUNC(floor,2,2,_SC(".n")),
+    _DECL_FUNC(ceil,2,2,_SC(".n")),
+    _DECL_FUNC(exp,2,2,_SC(".n")),
+    _DECL_FUNC(srand,2,2,_SC(".n")),
+    _DECL_FUNC(rand,1,1,NULL),
+    _DECL_FUNC(fabs,2,2,_SC(".n")),
+    _DECL_FUNC(abs,2,2,_SC(".n")),
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 #undef _DECL_FUNC
 
@@ -92,7 +92,7 @@ SQRESULT sqstd_register_mathlib(HSQUIRRELVM v)
     while(mathlib_funcs[i].name!=0) {
         sq_pushstring(v,mathlib_funcs[i].name,-1);
         sq_newclosure(v,mathlib_funcs[i].f,0);
-        sq_setparamscheck(v,mathlib_funcs[i].nparamscheck,mathlib_funcs[i].typemask);
+        sq_setparamscheck(v,mathlib_funcs[i].nparamscheckmin,mathlib_funcs[i].nparamscheckmax,mathlib_funcs[i].typemask);
         sq_setnativeclosurename(v,-1,mathlib_funcs[i].name);
         sq_newslot(v,-3,SQFalse);
         i++;

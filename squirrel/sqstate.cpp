@@ -79,7 +79,8 @@ SQTable *CreateDefaultDelegate(SQSharedState *ss,const SQRegFunction *funcz)
     SQTable *t=SQTable::Create(ss,0);
     while(funcz[i].name!=0){
         SQNativeClosure *nc = SQNativeClosure::Create(ss,funcz[i].f,0);
-        nc->_nparamscheck = funcz[i].nparamscheck;
+        nc->_nparamscheckmin = funcz[i].nparamscheckmin;
+        nc->_nparamscheckmax = funcz[i].nparamscheckmax;
         nc->_name = SQString::Create(ss,funcz[i].name);
         if(funcz[i].typemask && !CompileTypemask(nc->_typecheck,funcz[i].typemask))
             return NULL;

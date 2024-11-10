@@ -163,12 +163,12 @@ static SQInteger _file_close(HSQUIRRELVM v)
 }
 
 //bindings
-#define _DECL_FILE_FUNC(name,nparams,typecheck) {_SC(#name),_file_##name,nparams,typecheck}
+#define _DECL_FILE_FUNC(name,nparamsmin,nparamsmax,typecheck) {_SC(#name),_file_##name,nparamsmin,nparamsmax,typecheck}
 static const SQRegFunction _file_methods[] = {
-    _DECL_FILE_FUNC(constructor,3,_SC("x")),
-    _DECL_FILE_FUNC(_typeof,1,_SC("x")),
-    _DECL_FILE_FUNC(close,1,_SC("x")),
-    {NULL,(SQFUNCTION)0,0,NULL}
+    _DECL_FILE_FUNC(constructor,3,3,_SC("x")),
+    _DECL_FILE_FUNC(_typeof,1,1,_SC("x")),
+    _DECL_FILE_FUNC(close,1,1,_SC("x")),
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 
@@ -462,12 +462,12 @@ SQInteger _g_io_dofile(HSQUIRRELVM v)
     return SQ_ERROR; //propagates the error
 }
 
-#define _DECL_GLOBALIO_FUNC(name,nparams,typecheck) {_SC(#name),_g_io_##name,nparams,typecheck}
+#define _DECL_GLOBALIO_FUNC(name,nparamsmin,nparamsmax,typecheck) {_SC(#name),_g_io_##name,nparamsmin,nparamsmax,typecheck}
 static const SQRegFunction iolib_funcs[]={
-    _DECL_GLOBALIO_FUNC(loadfile,-2,_SC(".sb")),
-    _DECL_GLOBALIO_FUNC(dofile,-2,_SC(".sb")),
-    _DECL_GLOBALIO_FUNC(writeclosuretofile,3,_SC(".sc")),
-    {NULL,(SQFUNCTION)0,0,NULL}
+    _DECL_GLOBALIO_FUNC(loadfile,2,0,_SC(".sb")),
+    _DECL_GLOBALIO_FUNC(dofile,2,0,_SC(".sb")),
+    _DECL_GLOBALIO_FUNC(writeclosuretofile,3,3,_SC(".sc")),
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 SQRESULT sqstd_register_iolib(HSQUIRRELVM v)

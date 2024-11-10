@@ -236,7 +236,7 @@ void Interactive(HSQUIRRELVM v)
     sq_pushstring(v,_SC("quit"),-1);
     sq_pushuserpointer(v,&done);
     sq_newclosure(v,quit,1);
-    sq_setparamscheck(v,1,NULL);
+    sq_setparamscheck(v,1,1,NULL);
     sq_newslot(v,-3,SQFalse);
     sq_pop(v,1);
 
