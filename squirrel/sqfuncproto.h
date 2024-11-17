@@ -12,19 +12,11 @@ enum SQOuterType {
 struct SQOuterVar
 {
 
-    SQOuterVar(){}
-    SQOuterVar(const SQObjectPtr &name,const SQObjectPtr &src,SQOuterType t)
-    {
-        _name = name;
-        _src=src;
-        _type=t;
-    }
+    SQOuterVar() = default;
+    SQOuterVar(const SQObjectPtr &name, const SQObjectPtr &src, SQOuterType t)
+        : _type(t), _name(name), _src(src) {}
     SQOuterVar(const SQOuterVar &ov)
-    {
-        _type=ov._type;
-        _src=ov._src;
-        _name=ov._name;
-    }
+        : _type(ov._type), _name(ov._name), _src(ov._src) {}
     SQOuterType _type;
     SQObjectPtr _name;
     SQObjectPtr _src;

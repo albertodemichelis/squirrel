@@ -499,8 +499,8 @@ bool SQFunctionProto::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr 
     SQFunctionProto *f = SQFunctionProto::Create(_opt_ss(v),ninstructions,nliterals,nparameters,
             nfunctions,noutervalues,nlineinfos,nlocalvarinfos,ndefaultparams);
     SQObjectPtr proto = f; //gets a ref in case of failure
-    f->_sourcename = sourcename;
-    f->_name = name;
+    f->_sourcename = std::move(sourcename);
+    f->_name = std::move(name);
 
     _CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));
 
