@@ -146,6 +146,15 @@ bool SQClass::GetAttributes(const SQObjectPtr &key,SQObjectPtr &outval)
     return false;
 }
 
+bool SQClass::GetMetaMethod(SQVM* SQ_UNUSED_ARG(v), SQMetaMethod mm, SQObjectPtr& res)
+{
+    if (sq_type(_metamethods[mm]) != OT_NULL) {
+        res = _metamethods[mm];
+        return true;
+    }
+    return false;
+}
+
 ///////////////////////////////////////////////////////////////////////
 void SQInstance::Init(SQSharedState *ss)
 {

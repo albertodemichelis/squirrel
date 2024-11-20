@@ -1371,6 +1371,25 @@ SQInteger SQVM::FallBackGet(const SQObjectPtr &self,const SQObjectPtr &key,SQObj
         }
                       }
         break;
+    case OT_CLASS: {
+        SQObjectPtr closure;
+        if (_class(self)->GetMetaMethod(this, MT_GET, closure)) {
+            Push(self); Push(key);
+            _nmetamethodscall++;
+            AutoDec ad(&_nmetamethodscall);
+            if (Call(closure, 2, _top - 2, dest, SQFalse)) {
+                Pop(2);
+                return FALLBACK_OK;
+            }
+            else {
+                Pop(2);
+                if (sq_type(_lasterror) != OT_NULL) { //NULL means "clean failure" (not found)
+                    return FALLBACK_ERROR;
+                }
+            }
+        }
+                      }
+        break;
     default: break;//shutup GCC 4.x
     }
     // no metamethod or no fallback type
