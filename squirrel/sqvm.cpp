@@ -1666,10 +1666,10 @@ void SQVM::FindOuter(SQObjectPtr &target, SQObjectPtr *stackindex)
             target = SQObjectPtr(p);
             return;
         }
-        pp = &p->_next;
+        pp = &p->_next_outer;
     }
     otr = SQOuter::Create(_ss(this), stackindex);
-    otr->_next = *pp;
+    otr->_next_outer = *pp;
     otr->_idx  = (stackindex - _stack._vals);
     __ObjAddRef(otr);
     *pp = otr;
@@ -1729,7 +1729,7 @@ void SQVM::RelocateOuters()
     SQOuter *p = _openouters;
     while (p) {
         p->_valptr = _stack._vals + p->_idx;
-        p = p->_next;
+        p = p->_next_outer;
     }
 }
 
@@ -1738,7 +1738,7 @@ void SQVM::CloseOuters(SQObjectPtr *stackindex) {
   while ((p = _openouters) != NULL && p->_valptr >= stackindex) {
     p->_value = *(p->_valptr);
     p->_valptr = &p->_value;
-    _openouters = p->_next;
+    _openouters = p->_next_outer;
     __ObjRelease(p);
   }
 }

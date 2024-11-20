@@ -101,7 +101,7 @@ public:
     SQObjectPtr *_valptr;  /* pointer to value on stack, or _value below */
     SQInteger    _idx;     /* idx in stack array, for relocation */
     SQObjectPtr  _value;   /* value of outer after stack frame is closed */
-    SQOuter     *_next;    /* pointer to next outer when frame is open   */
+    SQOuter     *_next_outer;    /* pointer to next outer when frame is open   */
 };
 
 //////////////////////////////////////////////
