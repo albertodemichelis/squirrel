@@ -234,7 +234,7 @@ bool SQVM::ObjCmp(const SQObjectPtr &o1,const SQObjectPtr &o2,SQInteger &result)
                     return false;
                 }
             }
-            //continues through (no break needed)
+            /* fallthrough */
         default:
             _RET_SUCCEED( _userpointer(o1) < _userpointer(o2)?-1:1 );
         }
@@ -315,6 +315,7 @@ bool SQVM::ToString(const SQObjectPtr &o,SQObjectPtr &res)
                 }
             }
         }
+        /* fallthrough */
     default:
         scsprintf(_sp(sq_rsl((sizeof(void*)*2)+NUMBER_MAX_CHAR)),sq_rsl((sizeof(void*)*2)+NUMBER_MAX_CHAR),_SC("(%s : 0x%p)"),GetTypeName(o),(void*)_rawval(o));
     }
@@ -577,6 +578,7 @@ bool SQVM::FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr
             _generator(o1)->Resume(this, o3);
             _FINISH(0);
         }
+        /* fallthrough */
     default:
         Raise_Error(_SC("cannot iterate %s"), GetTypeName(o1));
     }
@@ -769,6 +771,7 @@ exception_restore:
                     continue;
                 }
                               }
+                /* fallthrough */
             case _OP_CALL: {
                     SQObjectPtr clo = STK(arg1);
                     switch (sq_type(clo)) {
@@ -832,6 +835,7 @@ exception_restore:
                         //Raise_Error(_SC("attempt to call '%s'"), GetTypeName(clo));
                         //SQ_THROW();
                       }
+                      /* fallthrough */
                     default:
                         Raise_Error(_SC("attempt to call '%s'"), GetTypeName(clo));
                         SQ_THROW();
@@ -1351,7 +1355,7 @@ SQInteger SQVM::FallBackGet(const SQObjectPtr &self,const SQObjectPtr &key,SQObj
         else {
             return FALLBACK_NO_MATCH;
         }
-        //go through
+        /* fallthrough */
     case OT_INSTANCE: {
         SQObjectPtr closure;
         if(_delegable(self)->GetMetaMethod(this, MT_GET, closure)) {
@@ -1419,7 +1423,7 @@ SQInteger SQVM::FallBackSet(const SQObjectPtr &self,const SQObjectPtr &key,const
         if(_table(self)->_delegate) {
             if(Set(_table(self)->_delegate,key,val,DONT_FALL_BACK)) return FALLBACK_OK;
         }
-        //keps on going
+        /* fallthrough */
     case OT_INSTANCE:
     case OT_USERDATA:{
         SQObjectPtr closure;
