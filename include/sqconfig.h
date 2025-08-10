@@ -4,14 +4,21 @@
 #ifdef _MSC_VER
 typedef __int64 SQInteger;
 typedef unsigned __int64 SQUnsignedInteger;
+#ifndef _SQ64ON32
 typedef unsigned __int64 SQHash; /*should be the same size of a pointer*/
+#endif
 #else
 typedef long long SQInteger;
 typedef unsigned long long SQUnsignedInteger;
+#ifndef _SQ64ON32
 typedef unsigned long long SQHash; /*should be the same size of a pointer*/
+#endif
 #endif
 typedef int SQInt32;
 typedef unsigned int SQUnsignedInteger32;
+#ifdef _SQ64ON32
+typedef unsigned int SQHash; /*should be the same size of a pointer*/
+#endif
 #else
 typedef int SQInteger;
 typedef int SQInt32; /*must be 32 bits(also on 64bits processors)*/
@@ -20,14 +27,13 @@ typedef unsigned int SQUnsignedInteger;
 typedef unsigned int SQHash; /*should be the same size of a pointer*/
 #endif
 
-
 #ifdef SQUSEDOUBLE
 typedef double SQFloat;
 #else
 typedef float SQFloat;
 #endif
 
-#if defined(SQUSEDOUBLE) && !defined(_SQ64) || !defined(SQUSEDOUBLE) && defined(_SQ64)
+#if defined(SQUSEDOUBLE) && !defined(_SQ64) || !defined(SQUSEDOUBLE) && defined(_SQ64) || defined(_SQ64ON32)
 #ifdef _MSC_VER
 typedef __int64 SQRawObjectVal; //must be 64bits
 #else
@@ -50,6 +56,12 @@ typedef SQUnsignedInteger SQRawObjectVal; //is 32 bits on 32 bits builds and 64 
 typedef void* SQUserPointer;
 typedef SQUnsignedInteger SQBool;
 typedef SQInteger SQRESULT;
+
+#if defined(__cpp_static_assert) && __cpp_static_assert >= 201411L
+static_assert(sizeof(SQUserPointer) == sizeof(SQHash));
+#else
+typedef char _SQ_assert_hash_size[sizeof(SQUserPointer) == sizeof(SQHash) ? 1 : -1];
+#endif
 
 #ifdef SQUNICODE
 #include <wchar.h>

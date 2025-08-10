@@ -158,7 +158,7 @@ struct SQObjectPtr;
 #define tointeger(num) ((sq_type(num)==OT_FLOAT)?(SQInteger)_float(num):_integer(num))
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
-#if defined(SQUSEDOUBLE) && !defined(_SQ64) || !defined(SQUSEDOUBLE) && defined(_SQ64)
+#if defined(SQUSEDOUBLE) && !defined(_SQ64) || !defined(SQUSEDOUBLE) && defined(_SQ64) || defined(_SQ64ON32)
 #define SQ_REFOBJECT_INIT() SQ_OBJECT_RAWINIT()
 #else
 #define SQ_REFOBJECT_INIT()
