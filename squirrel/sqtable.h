@@ -31,11 +31,19 @@ private:
         SQObjectPtr val;
         SQObjectPtr key;
         _HashNode *next;
+#ifdef KEEP_SLOT_ORDER
+        _HashNode *nextinorder;
+        _HashNode *previnorder;
+#endif
     };
     _HashNode *_firstfree;
     _HashNode *_nodes;
     SQInteger _numofnodes;
     SQInteger _usednodes;
+#ifdef KEEP_SLOT_ORDER
+    _HashNode *_firstinorder;
+    _HashNode *_lastinorder;
+#endif
 
 ///////////////////////////
     void AllocNodes(SQInteger nSize);
