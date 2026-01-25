@@ -770,15 +770,30 @@ exception_restore:
                 }
                               }
             case _OP_CALL: {
+                    SQInteger is_delegate = 0;
                     SQObjectPtr clo = STK(arg1);
                     switch (sq_type(clo)) {
+                    case OT_TABLE:
+                    case OT_USERDATA:
+                    case OT_INSTANCE: {
+                        SQObjectPtr closure;
+                        if (_delegable(clo)->_delegate && _delegable(clo)->GetMetaMethod(this, MT_CALL, closure)) {
+                            clo = closure;
+                            is_delegate = 1;
+                        }
+                        break;
+                    }
+                    default: break;
+                    }
+
+                    switch (sq_type(clo)) {
                     case OT_CLOSURE:
-                        _GUARD(StartCall(_closure(clo), sarg0, arg3, _stackbase+arg2, false));
+                        _GUARD(StartCall(_closure(clo), sarg0, arg3 + is_delegate, _stackbase + arg2 - is_delegate, false));
                         continue;
                     case OT_NATIVECLOSURE: {
                         bool suspend;
-						bool tailcall;
-                        _GUARD(CallNative(_nativeclosure(clo), arg3, _stackbase+arg2, clo, (SQInt32)sarg0, suspend, tailcall));
+                        bool tailcall;
+                        _GUARD(CallNative(_nativeclosure(clo), arg3 + is_delegate, _stackbase + arg2 - is_delegate, clo, (SQInt32)sarg0, suspend, tailcall));
                         if(suspend){
                             _suspended = SQTrue;
                             _suspended_target = sarg0;
@@ -815,23 +830,6 @@ exception_restore:
                         }
                         }
                         break;
-                    case OT_TABLE:
-                    case OT_USERDATA:
-                    case OT_INSTANCE:{
-                        SQObjectPtr closure;
-                        if(_delegable(clo)->_delegate && _delegable(clo)->GetMetaMethod(this,MT_CALL,closure)) {
-                            Push(clo);
-                            for (SQInteger i = 0; i < arg3; i++) Push(STK(arg2 + i));
-                            if(!CallMetaMethod(closure, MT_CALL, arg3+1, clo)) SQ_THROW();
-                            if(sarg0 != -1) {
-                                STK(arg0) = clo;
-                            }
-                            break;
-                        }
-
-                        //Raise_Error(_SC("attempt to call '%s'"), GetTypeName(clo));
-                        //SQ_THROW();
-                      }
                     default:
                         Raise_Error(_SC("attempt to call '%s'"), GetTypeName(clo));
                         SQ_THROW();
