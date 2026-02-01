@@ -235,6 +235,7 @@ SQUIRREL_API SQInteger sq_gettop(HSQUIRRELVM v);
 SQUIRREL_API void sq_settop(HSQUIRRELVM v,SQInteger newtop);
 SQUIRREL_API SQRESULT sq_reservestack(HSQUIRRELVM v,SQInteger nsize);
 SQUIRREL_API SQInteger sq_cmp(HSQUIRRELVM v);
+SQUIRREL_API SQRESULT sq_cmpex(HSQUIRRELVM v, SQInteger *res, SQBool *alwaysfalse);
 SQUIRREL_API void sq_move(HSQUIRRELVM dest,HSQUIRRELVM src,SQInteger idx);
 
 /*object creation handling*/

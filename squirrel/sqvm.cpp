@@ -204,9 +204,14 @@ bool SQVM::NEG_OP(SQObjectPtr &trg,const SQObjectPtr &o)
 }
 
 #define _RET_SUCCEED(exp) { result = (exp); return true; }
-bool SQVM::ObjCmp(const SQObjectPtr &o1,const SQObjectPtr &o2,SQInteger &result)
+bool SQVM::ObjCmp(const SQObjectPtr &o1,const SQObjectPtr &o2,SQInteger &result, bool &alwaysfalse)
 {
     SQObjectType t1 = sq_type(o1), t2 = sq_type(o2);
+    alwaysfalse = false;
+    if((t1 == OT_FLOAT && isnan(_float(o1))) || (t2 == OT_FLOAT && isnan(_float(o2)))) {
+        alwaysfalse = true;
+        _RET_SUCCEED(0);
+    }
     if(t1 == t2) {
         if(_rawval(o1) == _rawval(o2))_RET_SUCCEED(0);
         SQObjectPtr res;
@@ -225,8 +230,12 @@ bool SQVM::ObjCmp(const SQObjectPtr &o1,const SQObjectPtr &o2,SQInteger &result)
                 if(_delegable(o1)->GetMetaMethod(this, MT_CMP, closure)) {
                     Push(o1);Push(o2);
                     if(CallMetaMethod(closure,MT_CMP,2,res)) {
+                        if(sq_type(res) == OT_FLOAT && isnan(_float(res))) {
+                            alwaysfalse = true;
+                            _RET_SUCCEED(0);
+                        }
                         if(sq_type(res) != OT_INTEGER) {
-                            Raise_Error(_SC("_cmp must return an integer"));
+                            Raise_Error(_SC("_cmp must return an integer or NAN"));
                             return false;
                         }
                         _RET_SUCCEED(_integer(res))
@@ -236,7 +245,12 @@ bool SQVM::ObjCmp(const SQObjectPtr &o1,const SQObjectPtr &o2,SQInteger &result)
             }
             //continues through (no break needed)
         default:
+#ifdef NO_POINTER_CMP
+            Raise_CompareError(o1,o2);
+            return false;
+#else
             _RET_SUCCEED( _userpointer(o1) < _userpointer(o2)?-1:1 );
+#endif
         }
         assert(0);
         //if(type(res)!=OT_INTEGER) { Raise_CompareError(o1,o2); return false; }
@@ -259,7 +273,6 @@ bool SQVM::ObjCmp(const SQObjectPtr &o1,const SQObjectPtr &o2,SQInteger &result)
         else if(t1==OT_NULL) {_RET_SUCCEED(-1);}
         else if(t2==OT_NULL) {_RET_SUCCEED(1);}
         else { Raise_CompareError(o1,o2); return false; }
-
     }
     assert(0);
     _RET_SUCCEED(0); //cannot happen
@@ -268,13 +281,14 @@ bool SQVM::ObjCmp(const SQObjectPtr &o1,const SQObjectPtr &o2,SQInteger &result)
 bool SQVM::CMP_OP(CmpOP op, const SQObjectPtr &o1,const SQObjectPtr &o2,SQObjectPtr &res)
 {
     SQInteger r;
-    if(ObjCmp(o1,o2,r)) {
+    bool alwaysfalse;
+    if(ObjCmp(o1,o2,r,alwaysfalse)) {
         switch(op) {
-            case CMP_G: res = (r > 0); return true;
-            case CMP_GE: res = (r >= 0); return true;
-            case CMP_L: res = (r < 0); return true;
-            case CMP_LE: res = (r <= 0); return true;
-            case CMP_3W: res = r; return true;
+            case CMP_G: res = (!alwaysfalse && r > 0); return true;
+            case CMP_GE: res = (!alwaysfalse && r >= 0); return true;
+            case CMP_L: res = (!alwaysfalse && r < 0); return true;
+            case CMP_LE: res = (!alwaysfalse && r <= 0); return true;
+            case CMP_3W: if (alwaysfalse) res = NAN; else res = r; return true;
         }
         assert(0);
     }

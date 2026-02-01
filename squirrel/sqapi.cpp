@@ -859,8 +859,18 @@ void sq_remove(HSQUIRRELVM v, SQInteger idx)
 SQInteger sq_cmp(HSQUIRRELVM v)
 {
     SQInteger res;
-    v->ObjCmp(stack_get(v, -1), stack_get(v, -2),res);
+    bool alwaysfalse;
+    v->ObjCmp(stack_get(v, -1), stack_get(v, -2),res,alwaysfalse);
     return res;
+}
+
+SQRESULT sq_cmpex(HSQUIRRELVM v, SQInteger *res, SQBool *alwaysfalse)
+{
+    if (!res || !alwaysfalse) return SQ_ERROR;
+    bool af;
+    SQRESULT result = v->ObjCmp(stack_get(v, -1), stack_get(v, -2), *res, af) ? SQ_OK : SQ_ERROR;
+    *alwaysfalse = af ? SQTrue : SQFalse;
+    return result;
 }
 
 SQRESULT sq_newslot(HSQUIRRELVM v, SQInteger idx, SQBool bstatic)
@@ -1197,7 +1207,7 @@ SQRESULT sq_tailcall(HSQUIRRELVM v, SQInteger nparams)
 	{
 		return sq_throwerror(v, _SC("generators cannot be tail called"));
 	}
-	
+
 	SQInteger stackbase = (v->_top - nparams) - v->_stackbase;
 	if (!v->TailCall(clo, stackbase, nparams)) {
 		return SQ_ERROR;

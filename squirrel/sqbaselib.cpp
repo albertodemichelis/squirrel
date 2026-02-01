@@ -784,7 +784,8 @@ static SQInteger array_find(HSQUIRRELVM v)
 static bool _sort_compare(HSQUIRRELVM v, SQArray *arr, SQObjectPtr &a,SQObjectPtr &b,SQInteger func,SQInteger &ret)
 {
     if(func < 0) {
-        if(!v->ObjCmp(a,b,ret)) return false;
+        bool alwaysfalse;
+        if(!v->ObjCmp(a,b,ret,alwaysfalse)) return false;
     }
     else {
         SQInteger top = sq_gettop(v);
