@@ -73,6 +73,9 @@ void SQTable::Rehash(bool force)
     SQInteger oldsize=_numofnodes;
     //prevent problems with the integer division
     if(oldsize<4)oldsize=4;
+#ifdef KEEP_SLOT_ORDER
+    _HashNode *oldn=_firstinorder;
+#endif
     _HashNode *nold=_nodes;
     SQInteger nelems=CountUsed();
     if (nelems >= oldsize-oldsize/4)  /* using more than 3/4? */
@@ -85,11 +88,19 @@ void SQTable::Rehash(bool force)
     else
         return;
     _usednodes = 0;
+#ifdef KEEP_SLOT_ORDER
+    while (oldn) {
+        assert(sq_type(oldn->key) != OT_NULL);
+        NewSlot(oldn->key,oldn->val);
+        oldn = oldn->nextinorder;
+    }
+#else
     for (SQInteger i=0; i<oldsize; i++) {
         _HashNode *old = nold+i;
         if (sq_type(old->key) != OT_NULL)
             NewSlot(old->key,old->val);
     }
+#endif
     for(SQInteger k=0;k<oldsize;k++)
         nold[k].~_HashNode();
     SQ_FREE(nold,oldsize*sizeof(_HashNode));
