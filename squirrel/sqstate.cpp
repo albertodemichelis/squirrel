@@ -436,8 +436,10 @@ SQUnsignedInteger RefTable::GetRefCount(SQObject &obj)
 {
      SQHash mainpos;
      RefNode *prev;
-     RefNode *ref = Get(obj,mainpos,&prev,true);
-     return ref->refs;
+     RefNode *ref = Get(obj,mainpos,&prev,false);
+     if (ref)
+         return ref->refs;
+     return 0;
 }
 
 
