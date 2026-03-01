@@ -102,3 +102,7 @@ The following functions convert a squirrel value in the stack to a C value::
 The function sq_cmp compares 2 values from the stack and returns their relation (like strcmp() in ANSI C).::
 
     SQInteger sq_cmp(HSQUIRRELVM v);
+
+The function sq_cmpex works like sq_cmp, but reports error conditions and sets alwaysfalse to SQTrue if the comparison would always return false, as is the case with floating-point NAN.::
+
+    SQRESULT sq_cmpex(HSQUIRRELVM v,SQInteger *res,SQBool *alwaysfalse);

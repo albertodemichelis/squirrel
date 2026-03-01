@@ -77,7 +77,7 @@ public:
     bool NewSlotA(const SQObjectPtr &self,const SQObjectPtr &key,const SQObjectPtr &val,const SQObjectPtr &attrs,bool bstatic,bool raw);
     bool DeleteSlot(const SQObjectPtr &self, const SQObjectPtr &key, SQObjectPtr &res);
     bool Clone(const SQObjectPtr &self, SQObjectPtr &target);
-    bool ObjCmp(const SQObjectPtr &o1, const SQObjectPtr &o2,SQInteger &res);
+    bool ObjCmp(const SQObjectPtr &o1, const SQObjectPtr &o2,SQInteger &res,bool &alwaysfalse);
     bool StringCat(const SQObjectPtr &str, const SQObjectPtr &obj, SQObjectPtr &dest);
     static bool IsEqual(const SQObjectPtr &o1,const SQObjectPtr &o2,bool &res);
     bool ToString(const SQObjectPtr &o,SQObjectPtr &res);

@@ -198,6 +198,8 @@ returns an integer as follow:
 |  < 0      | if ``this`` < ``other``    |
 +-----------+----------------------------+
 
+can also return a floating-point NAN value, which results in ``< > <= >=`` returning false and ``<=>`` returning NAN.
+
 ^^^^^^^^^^^^^^^^^^^^^^^^
 _call
 ^^^^^^^^^^^^^^^^^^^^^^^^
