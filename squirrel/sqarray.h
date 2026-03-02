@@ -65,7 +65,9 @@ public:
     void Reserve(SQInteger size) { _values.reserve(size); }
     void Append(const SQObject &o){_values.push_back(o);}
     void Extend(const SQArray *a);
+    SQObjectPtr &Bottom(){return _values.bottom();}
     SQObjectPtr &Top(){return _values.top();}
+    void Shift(){_values.remove(0); ShrinkIfNeeded(); }
     void Pop(){_values.pop_back(); ShrinkIfNeeded(); }
     bool Insert(SQInteger idx,const SQObject &val){
         if(idx < 0 || idx > (SQInteger)_values.size())

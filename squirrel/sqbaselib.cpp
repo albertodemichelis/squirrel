@@ -340,7 +340,7 @@ void sq_base_register(HSQUIRRELVM v)
 
 static SQInteger default_delegate_len(HSQUIRRELVM v)
 {
-    v->Push(SQInteger(sq_getsize(v,1)));
+    v->Push(sq_getsize(v,1));
     return 1;
 }
 
@@ -587,6 +587,21 @@ static SQInteger array_reverse(HSQUIRRELVM v)
     return SQ_SUCCEEDED(sq_arrayreverse(v,-1)) ? 1 : SQ_ERROR;
 }
 
+static SQInteger array_shift(HSQUIRRELVM v)
+{
+    return SQ_SUCCEEDED(sq_arrayshift(v,1,SQTrue))?1:SQ_ERROR;
+}
+
+static SQInteger array_bottom(HSQUIRRELVM v)
+{
+    SQObject &o=stack_get(v,1);
+    if(_array(o)->Size()>0){
+        v->Push(_array(o)->Bottom());
+        return 1;
+    }
+    else return sq_throwerror(v,_SC("bottom() on a empty array"));
+}
+
 static SQInteger array_pop(HSQUIRRELVM v)
 {
     return SQ_SUCCEEDED(sq_arraypop(v,1,SQTrue))?1:SQ_ERROR;
@@ -780,6 +795,32 @@ static SQInteger array_find(HSQUIRRELVM v)
     return 0;
 }
 
+static SQInteger array_join(HSQUIRRELVM v)
+{
+    const SQChar *separator;
+
+    SQObject &o = stack_get(v,1);
+    sq_getstring(v,2,&separator);
+    SQArray *a = _array(o);
+    SQInteger size = a->Size();
+    SQObjectPtr out = SQString::Create(_ss(v), _SC(""));
+    SQObjectPtr temp;
+    for(SQInteger n = 0; n < size; n++) {
+        a->Get(n,temp);
+
+        SQObjectPtr a;
+        v->ToString(temp, a);
+
+        v->StringCat(out, SQString::Create(_ss(v),_stringval(a)), out);
+
+        if(n < size - 1)
+            v->StringCat(out, SQString::Create(_ss(v), separator), out);
+    }
+
+    v->Push(out);
+
+    return 1;
+}
 
 static bool _sort_compare(HSQUIRRELVM v, SQArray *arr, SQObjectPtr &a,SQObjectPtr &b,SQInteger func,SQInteger &ret)
 {
@@ -911,6 +952,8 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("append"),array_append,2, _SC("a")},
     {_SC("extend"),array_extend,2, _SC("aa")},
     {_SC("push"),array_append,2, _SC("a")},
+    {_SC("shift"),array_shift,1,_SC("a")},
+    {_SC("bottom"),array_bottom,1,_SC("a")},
     {_SC("pop"),array_pop,1, _SC("a")},
     {_SC("top"),array_top,1, _SC("a")},
     {_SC("insert"),array_insert,3, _SC("an")},
@@ -927,6 +970,7 @@ const SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
     {_SC("reduce"),array_reduce,-2, _SC("ac.")},
     {_SC("filter"),array_filter,2, _SC("ac")},
     {_SC("find"),array_find,2, _SC("a.")},
+    {_SC("join"),array_join,2, _SC("a.")},
     {NULL,(SQFUNCTION)0,0,NULL}
 };
 
@@ -953,6 +997,31 @@ static SQInteger string_find(HSQUIRRELVM v)
         if(top>2)sq_getinteger(v,3,&start_idx);
         if((sq_getsize(v,1)>start_idx) && (start_idx>=0)){
             ret=scstrstr(&str[start_idx],substr);
+            if(ret){
+                sq_pushinteger(v,(SQInteger)(ret-str));
+                return 1;
+            }
+        }
+        return 0;
+    }
+    return sq_throwerror(v,_SC("invalid param"));
+}
+
+static SQInteger string_rfind(HSQUIRRELVM v)
+{
+    SQInteger top,start_idx=0;
+    const SQChar *str,*substr,*ret;
+    if(((top=sq_gettop(v))>1) && SQ_SUCCEEDED(sq_getstring(v,1,&str)) && SQ_SUCCEEDED(sq_getstring(v,2,&substr))){
+        if(top>2)sq_getinteger(v,3,&start_idx);
+        if((sq_getsize(v,1)>start_idx) && (start_idx>=0)){
+            const SQChar *ptr = &str[start_idx];
+
+            ret = NULL;
+
+            while((ptr = scstrstr(ptr, substr)) != NULL) {
+                ret = ptr++;
+            }
+
             if(ret){
                 sq_pushinteger(v,(SQInteger)(ret-str));
                 return 1;
@@ -993,6 +1062,7 @@ const SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
     {_SC("tostring"),default_delegate_tostring,1, _SC(".")},
     {_SC("slice"),string_slice,-1, _SC("s n  n")},
     {_SC("find"),string_find,-2, _SC("s s n")},
+    {_SC("rfind"),string_rfind,-2, _SC("s s n")},
     {_SC("tolower"),string_tolower,-1, _SC("s n n")},
     {_SC("toupper"),string_toupper,-1, _SC("s n n")},
     {_SC("weakref"),obj_delegate_weakref,1, NULL },
