@@ -701,7 +701,7 @@ bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQ
     _nnativecalls++;
     AutoDec ad(&_nnativecalls);
     SQInteger traps = 0;
-    CallInfo *prevci = ci;
+    SQUnsignedInteger prevci = (SQUnsignedInteger)(ci - _callsstack);
 
     switch(et) {
         case ET_CALL: {
@@ -711,7 +711,7 @@ bool SQVM::Execute(SQObjectPtr &closure, SQInteger nargs, SQInteger stackbase,SQ
                 if(ci == NULL) CallErrorHandler(_lasterror);
                 return false;
             }
-            if(ci == prevci) {
+            if((SQUnsignedInteger)(ci - _callsstack) == prevci) {
                 outres = STK(_top-nargs);
                 return true;
             }
