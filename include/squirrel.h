@@ -38,6 +38,10 @@ extern "C" {
 #ifndef _SQ64
 #define _SQ64
 #endif
+#else
+#if (defined(_SQ64) && !defined(_SQ64ON32) && !defined(_NOSQ64ON32))
+#define _SQ64ON32
+#endif
 #endif
 
 

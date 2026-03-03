@@ -92,7 +92,7 @@ SQWeakRef *SQRefCounted::GetWeakRef(SQObjectType type)
 {
     if(!_weakref) {
         sq_new(_weakref,SQWeakRef);
-#if defined(SQUSEDOUBLE) && !defined(_SQ64)
+#if defined(SQUSEDOUBLE) && !defined(_SQ64) || defined(_SQ64ON32)
         _weakref->_obj._unVal.raw = 0; //clean the whole union on 32 bits with double
 #endif
         _weakref->_obj._type = type;
