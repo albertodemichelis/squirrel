@@ -35,28 +35,14 @@ enum SQMetaMethod{
     MT_TOSTRING=15,
     MT_NEWMEMBER=16,
     MT_INHERITED=17,
-    MT_LAST = 18
+    MT_SHIFTL=18,
+    MT_SHIFTR=19,
+    MT_AND=20,
+    MT_OR=21,
+    MT_LAST = 22
 };
 
-#define MM_ADD      _SC("_add")
-#define MM_SUB      _SC("_sub")
-#define MM_MUL      _SC("_mul")
-#define MM_DIV      _SC("_div")
-#define MM_UNM      _SC("_unm")
-#define MM_MODULO   _SC("_modulo")
-#define MM_SET      _SC("_set")
-#define MM_GET      _SC("_get")
-#define MM_TYPEOF   _SC("_typeof")
-#define MM_NEXTI    _SC("_nexti")
-#define MM_CMP      _SC("_cmp")
-#define MM_CALL     _SC("_call")
-#define MM_CLONED   _SC("_cloned")
-#define MM_NEWSLOT  _SC("_newslot")
-#define MM_DELSLOT  _SC("_delslot")
-#define MM_TOSTRING _SC("_tostring")
-#define MM_NEWMEMBER _SC("_newmember")
-#define MM_INHERITED _SC("_inherited")
-
+extern const SQChar *SQMetaMethodName[];
 
 #define _CONSTRUCT_VECTOR(type,size,ptr) { \
     for(SQInteger n = 0; n < ((SQInteger)size); n++) { \
@@ -347,6 +333,7 @@ typedef sqvector<SQObjectPtr> SQObjectPtrVec;
 typedef sqvector<SQInteger> SQIntVec;
 const SQChar *GetTypeName(const SQObjectPtr &obj1);
 const SQChar *IdType2Name(SQObjectType type);
+const SQChar *GetMetaMethodName(SQInteger mmId);
 
 
 

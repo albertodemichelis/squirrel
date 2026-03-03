@@ -120,24 +120,8 @@ void SQSharedState::Init()
     newsysstring(_SC("instance"));
     newsysstring(_SC("bool"));
     //meta methods
-    newmetamethod(MM_ADD);
-    newmetamethod(MM_SUB);
-    newmetamethod(MM_MUL);
-    newmetamethod(MM_DIV);
-    newmetamethod(MM_UNM);
-    newmetamethod(MM_MODULO);
-    newmetamethod(MM_SET);
-    newmetamethod(MM_GET);
-    newmetamethod(MM_TYPEOF);
-    newmetamethod(MM_NEXTI);
-    newmetamethod(MM_CMP);
-    newmetamethod(MM_CALL);
-    newmetamethod(MM_CLONED);
-    newmetamethod(MM_NEWSLOT);
-    newmetamethod(MM_DELSLOT);
-    newmetamethod(MM_TOSTRING);
-    newmetamethod(MM_NEWMEMBER);
-    newmetamethod(MM_INHERITED);
+    for (int i=0; i<MT_LAST; i++)
+      newmetamethod(SQMetaMethodName[i]);
 
     _constructoridx = SQString::Create(this,_SC("constructor"));
     _registry = SQTable::Create(this,0);

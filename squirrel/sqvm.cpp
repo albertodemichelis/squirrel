@@ -33,9 +33,23 @@ bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,con
             case BW_USHIFTR:res = (SQInteger)(*((SQUnsignedInteger*)&i1) >> i2); break;
             default: { Raise_Error(_SC("internal vm error bitwise op failed")); return false; }
         }
+        trg = res;
+    }
+    else if( (sq_type(o1) & OT_INSTANCE) )
+    {
+        SQMetaMethod mm;
+        switch(op) {
+            case BW_AND:    mm = MT_AND; break;
+            case BW_OR:     mm = MT_OR;  break;
+            case BW_SHIFTL: mm = MT_SHIFTL; break;
+            case BW_SHIFTR: mm = MT_SHIFTR; break;
+            // add other
+            default: return false;
+        }
+        return ArithMetaMethod(mm,o1,o2,trg);
     }
     else { Raise_Error(_SC("bitwise op between '%s' and '%s'"),GetTypeName(o1),GetTypeName(o2)); return false;}
-    trg = res;
+
     return true;
 }
 
@@ -100,8 +114,20 @@ bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,
             if(op == '+' && (tmask & _RT_STRING)){
                 if(!StringCat(o1, o2, trg)) return false;
             }
-            else if(!ArithMetaMethod(op,o1,o2,trg)) {
-                return false;
+            else
+            {
+              SQMetaMethod mm;
+              switch(op) {
+                case _SC('+'): mm=MT_ADD; break;
+                case _SC('-'): mm=MT_SUB; break;
+                case _SC('/'): mm=MT_DIV; break;
+                case _SC('*'): mm=MT_MUL; break;
+                case _SC('%'): mm=MT_MODULO; break;
+                case _SC('&'): mm=MT_AND; break;
+                case _SC('|'): mm=MT_OR;  break;
+                default:       mm=(SQMetaMethod)op;
+              }
+              if (!ArithMetaMethod(mm,o1,o2,trg)) return false;
             }
     }
     return true;
@@ -151,26 +177,16 @@ SQVM::~SQVM()
     REMOVE_FROM_CHAIN(&_ss(this)->_gc_chain,this);
 }
 
-bool SQVM::ArithMetaMethod(SQInteger op,const SQObjectPtr &o1,const SQObjectPtr &o2,SQObjectPtr &dest)
+bool SQVM::ArithMetaMethod(SQMetaMethod mm,const SQObjectPtr &o1,const SQObjectPtr &o2,SQObjectPtr &dest)
 {
-    SQMetaMethod mm;
-    switch(op){
-        case _SC('+'): mm=MT_ADD; break;
-        case _SC('-'): mm=MT_SUB; break;
-        case _SC('/'): mm=MT_DIV; break;
-        case _SC('*'): mm=MT_MUL; break;
-        case _SC('%'): mm=MT_MODULO; break;
-        default: mm = MT_ADD; assert(0); break; //shutup compiler
-    }
-    if(is_delegable(o1) && _delegable(o1)->_delegate) {
-
+    if(mm>=0 && mm<MT_LAST && is_delegable(o1) && _delegable(o1)->_delegate) {
         SQObjectPtr closure;
         if(_delegable(o1)->GetMetaMethod(this, mm, closure)) {
             Push(o1);Push(o2);
             return CallMetaMethod(closure,mm,2,dest);
         }
     }
-    Raise_Error(_SC("arith op %c on between '%s' and '%s'"),op,GetTypeName(o1),GetTypeName(o2));
+    Raise_Error(_SC("arith op %s on between '%s' and '%s'"), GetMetaMethodName(mm) ,GetTypeName(o1),GetTypeName(o2));
     return false;
 }
 
