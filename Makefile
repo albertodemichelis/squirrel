@@ -1,22 +1,27 @@
+SQPROF_CXXFLAGS = -pg -pie -g3
+SQ64_CXXFLAGS = -m64 -D_SQ64
 
-SQUIRREL=.
-MAKE=make
+all: sq32
 
 sq32: folders
-	cd squirrel; $(MAKE)
-	cd sqstdlib; $(MAKE)
-	cd sq; $(MAKE)
+	$(MAKE) -C squirrel
+	$(MAKE) -C sqstdlib
+	$(MAKE) -C sq
 
 sqprof: folders
-	cd squirrel; $(MAKE) sqprof
-	cd sqstdlib; $(MAKE) sqprof
-	cd sq; $(MAKE) sqprof
+	CXXFLAGS="$(SQPROF_CXXFLAGS)" $(MAKE) -C squirrel
+	CXXFLAGS="$(SQPROF_CXXFLAGS)" $(MAKE) -C sqstdlib
+	CXXFLAGS="$(SQPROF_CXXFLAGS)" $(MAKE) -C sq
 
 sq64: folders
-	cd squirrel; $(MAKE) sq64
-	cd sqstdlib; $(MAKE) sq64
-	cd sq; $(MAKE) sq64
+	CXXFLAGS="$(SQ64_CXXFLAGS)" $(MAKE) -C squirrel
+	CXXFLAGS="$(SQ64_CXXFLAGS)" $(MAKE) -C sqstdlib
+	CXXFLAGS="$(SQ64_CXXFLAGS)" $(MAKE) -C sq
 
 folders:
-	mkdir -p lib
-	mkdir -p bin
+	mkdir -p lib bin
+
+clean:
+	$(MAKE) -C squirrel clean
+	$(MAKE) -C sqstdlib clean
+	$(MAKE) -C sq clean

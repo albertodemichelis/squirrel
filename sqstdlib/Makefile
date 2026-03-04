@@ -1,44 +1,19 @@
-SQUIRREL= ..
+TARGET = ../lib/libsqstdlib.a
 
+SRCS = $(wildcard *.cpp)
+OBJS = $(patsubst %.cpp,%.o,$(SRCS))
+DEPS = $(patsubst %.cpp,%.d,$(SRCS))
 
-CC?= gcc
-OUT?= $(SQUIRREL)/lib/libsqstdlib.a
-INCZ?= -I$(SQUIRREL)/include -I. -Iinclude
-DEFS= $(CC_EXTRA_FLAGS)
-LIB=
+DEPFLAGS = -MMD -MP -MF $*.d
+CXXFLAGS += -O2 -fno-exceptions -fno-rtti -Wall -fno-strict-aliasing -I../include $(DEPFLAGS)
 
-OBJS= \
-	sqstdblob.o \
-	sqstdio.o \
-	sqstdstream.o \
-	sqstdmath.o \
-	sqstdsystem.o \
-	sqstdstring.o \
-	sqstdaux.o \
-	sqstdrex.o
+all: $(TARGET)
 
-SRCS= \
-	sqstdblob.cpp \
-	sqstdio.cpp \
-	sqstdstream.cpp \
-	sqstdmath.cpp \
-	sqstdsystem.cpp \
-	sqstdstring.cpp \
-	sqstdaux.cpp \
-	sqstdrex.cpp
+$(TARGET): $(OBJS)
+	ar rc $@ $(OBJS)
 
+-include $(DEPS)
 
-sq32:
-	$(CC) -O2 -fno-exceptions -fno-rtti -Wall -fno-strict-aliasing -c $(SRCS) $(INCZ) $(DEFS)
-	ar rc $(OUT) *.o
-	rm *.o
-
-sqprof:
-	$(CC) -O2 -pg -fno-exceptions -fno-rtti -pie -gstabs -g3 -Wall -fno-strict-aliasing -c $(SRCS) $(INCZ) $(DEFS)
-	ar rc $(OUT) *.o
-	rm *.o
-
-sq64:
-	$(CC) -O2 -m64 -fno-exceptions -D_SQ64 -fno-rtti -Wall -fno-strict-aliasing -c $(SRCS) $(INCZ) $(DEFS)
-	ar rc $(OUT) *.o
-	rm *.o
+.PHONY: clean
+clean:
+	rm -f $(TARGET) *.o *.d

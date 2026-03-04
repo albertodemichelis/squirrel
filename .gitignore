@@ -4,3 +4,7 @@ lib/
 
 # Folders created at documentation generation
 doc/build/
+
+# Makefile
+*.d
+*.o
