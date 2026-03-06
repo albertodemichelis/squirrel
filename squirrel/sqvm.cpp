@@ -10,9 +10,9 @@
 #include "sqclosure.h"
 #include "sqstring.h"
 #include "sqtable.h"
-#include "squserdata.h"
 #include "sqarray.h"
 #include "sqclass.h"
+
 
 #define TOP() (_stack._vals[_top-1])
 #define TARGET _stack._vals[_stackbase+arg0]
@@ -50,15 +50,29 @@ bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,con
     } \
 }
 
-#define _ARITH_NOZERO(op,trg,o1,o2,err) \
-{ \
-    SQInteger tmask = sq_type(o1)|sq_type(o2); \
-    switch(tmask) { \
-        case OT_INTEGER: { SQInteger i2 = _integer(o2); if(i2 == 0) { Raise_Error(err); SQ_THROW(); } trg = _integer(o1) op i2; } break;\
-        case (OT_FLOAT|OT_INTEGER): \
-        case (OT_FLOAT): trg = tofloat(o1) op tofloat(o2); break;\
-        default: _GUARD(ARITH_OP((#op)[0],trg,o1,o2)); break;\
-    } \
+#define _ARITH_NOZERO(op,trg,o1,o2,err)                                    \
+{                                                                          \
+    SQInteger tmask = sq_type(o1)|sq_type(o2);                             \
+    switch(tmask) {                                                        \
+        case OT_INTEGER: {                                                 \
+	        SQInteger i2 = _integer(o2);                                   \
+	        if (i2 == 0) {                                                 \
+	          Raise_Error(err);                                            \
+	          SQ_THROW();                                                  \
+	        }                                                              \
+	        (trg) = _integer(o1) op i2;                                    \
+        } break;                                                           \
+        case (OT_FLOAT|OT_INTEGER):                                        \
+        case (OT_FLOAT): {                                                 \
+	        SQFloat f2 = tofloat(o2);                                      \
+	        if (f2 == static_cast<SQFloat>(0.0)) {                         \
+	          Raise_Error(err);                                            \
+	          SQ_THROW();                                                  \
+	        }                                                              \
+	        (trg) = tofloat(o1) op f2;                                     \
+        } break;                                                           \
+        default: _GUARD(ARITH_OP((#op)[0],trg,o1,o2)); break;              \
+    }                                                                      \
 }
 
 bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2)
