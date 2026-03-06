@@ -315,6 +315,7 @@ bool SQVM::ToString(const SQObjectPtr &o,SQObjectPtr &res)
                 }
             }
         }
+        break;
     default:
         scsprintf(_sp(sq_rsl((sizeof(void*)*2)+NUMBER_MAX_CHAR)),sq_rsl((sizeof(void*)*2)+NUMBER_MAX_CHAR),_SC("(%s : 0x%p)"),GetTypeName(o),(void*)_rawval(o));
     }
@@ -577,6 +578,7 @@ bool SQVM::FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr
             _generator(o1)->Resume(this, o3);
             _FINISH(0);
         }
+        break;
     default:
         Raise_Error(_SC("cannot iterate %s"), GetTypeName(o1));
     }
@@ -654,7 +656,7 @@ bool SQVM::CLASS_OP(SQObjectPtr &target,SQInteger baseclass,SQInteger attributes
         }
         Pop(nparams);
     }
-    _class(target)->_attributes = attrs;
+    _class(target)->_attributes = std::move(attrs);
     return true;
 }
 
@@ -1079,12 +1081,14 @@ exception_restore:
                 _GUARD(NewSlotA(STK(arg1),STK(arg2),STK(arg3),(arg0&NEW_SLOT_ATTRIBUTES_FLAG) ? STK(arg2-1) : SQObjectPtr(),(arg0&NEW_SLOT_STATIC_FLAG)?true:false,false));
                 continue;
             case _OP_GETBASE:{
-                SQClosure *clo = _closure(ci->_closure);
-                if(clo->_base) {
-                    TARGET = clo->_base;
-                }
-                else {
-                    TARGET.Null();
+                if (ci) {
+                    SQClosure* clo = _closure(ci->_closure);
+                    if (clo->_base) {
+                        TARGET = clo->_base;
+                    }
+                    else {
+                        TARGET.Null();
+                    }
                 }
                 continue;
             }
@@ -1419,7 +1423,7 @@ SQInteger SQVM::FallBackSet(const SQObjectPtr &self,const SQObjectPtr &key,const
         if(_table(self)->_delegate) {
             if(Set(_table(self)->_delegate,key,val,DONT_FALL_BACK)) return FALLBACK_OK;
         }
-        //keps on going
+        // keeps on going
     case OT_INSTANCE:
     case OT_USERDATA:{
         SQObjectPtr closure;
