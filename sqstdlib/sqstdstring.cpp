@@ -492,30 +492,30 @@ static SQInteger _regexp__typeof(HSQUIRRELVM v)
     return 1;
 }
 
-#define _DECL_REX_FUNC(name,nparams,pmask) {_SC(#name),_regexp_##name,nparams,pmask}
+#define _DECL_REX_FUNC(name,nparamsmin,nparamsmax,pmask) {_SC(#name),_regexp_##name,nparamsmin,nparamsmax,pmask}
 static const SQRegFunction rexobj_funcs[]={
-    _DECL_REX_FUNC(constructor,2,_SC(".s")),
-    _DECL_REX_FUNC(search,-2,_SC("xsn")),
-    _DECL_REX_FUNC(match,2,_SC("xs")),
-    _DECL_REX_FUNC(capture,-2,_SC("xsn")),
-    _DECL_REX_FUNC(subexpcount,1,_SC("x")),
-    _DECL_REX_FUNC(_typeof,1,_SC("x")),
-    {NULL,(SQFUNCTION)0,0,NULL}
+    _DECL_REX_FUNC(constructor,2,2,_SC(".s")),
+    _DECL_REX_FUNC(search,2,0,_SC("xsn")),
+    _DECL_REX_FUNC(match,2,2,_SC("xs")),
+    _DECL_REX_FUNC(capture,2,0,_SC("xsn")),
+    _DECL_REX_FUNC(subexpcount,1,1,_SC("x")),
+    _DECL_REX_FUNC(_typeof,1,1,_SC("x")),
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 #undef _DECL_REX_FUNC
 
-#define _DECL_FUNC(name,nparams,pmask) {_SC(#name),_string_##name,nparams,pmask}
+#define _DECL_FUNC(name,nparamsmin,nparamsmax,pmask) {_SC(#name),_string_##name,nparamsmin,nparamsmax,pmask}
 static const SQRegFunction stringlib_funcs[]={
-    _DECL_FUNC(format,-2,_SC(".s")),
-    _DECL_FUNC(printf,-2,_SC(".s")),
-    _DECL_FUNC(strip,2,_SC(".s")),
-    _DECL_FUNC(lstrip,2,_SC(".s")),
-    _DECL_FUNC(rstrip,2,_SC(".s")),
-    _DECL_FUNC(split,-3,_SC(".ssb")),
-    _DECL_FUNC(escape,2,_SC(".s")),
-    _DECL_FUNC(startswith,3,_SC(".ss")),
-    _DECL_FUNC(endswith,3,_SC(".ss")),
-    {NULL,(SQFUNCTION)0,0,NULL}
+    _DECL_FUNC(format,2,0,_SC(".s")),
+    _DECL_FUNC(printf,2,0,_SC(".s")),
+    _DECL_FUNC(strip,2,2,_SC(".s")),
+    _DECL_FUNC(lstrip,2,2,_SC(".s")),
+    _DECL_FUNC(rstrip,2,2,_SC(".s")),
+    _DECL_FUNC(split,3,0,_SC(".ssb")),
+    _DECL_FUNC(escape,2,2,_SC(".s")),
+    _DECL_FUNC(startswith,3,3,_SC(".ss")),
+    _DECL_FUNC(endswith,3,3,_SC(".ss")),
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 #undef _DECL_FUNC
 
@@ -531,7 +531,7 @@ SQInteger sqstd_register_stringlib(HSQUIRRELVM v)
         const SQRegFunction &f = rexobj_funcs[i];
         sq_pushstring(v,f.name,-1);
         sq_newclosure(v,f.f,0);
-        sq_setparamscheck(v,f.nparamscheck,f.typemask);
+        sq_setparamscheck(v,f.nparamscheckmin,f.nparamscheckmax,f.typemask);
         sq_setnativeclosurename(v,-1,f.name);
         sq_newslot(v,-3,SQFalse);
         i++;
@@ -543,7 +543,7 @@ SQInteger sqstd_register_stringlib(HSQUIRRELVM v)
     {
         sq_pushstring(v,stringlib_funcs[i].name,-1);
         sq_newclosure(v,stringlib_funcs[i].f,0);
-        sq_setparamscheck(v,stringlib_funcs[i].nparamscheck,stringlib_funcs[i].typemask);
+        sq_setparamscheck(v,stringlib_funcs[i].nparamscheckmin,stringlib_funcs[i].nparamscheckmax,stringlib_funcs[i].typemask);
         sq_setnativeclosurename(v,-1,stringlib_funcs[i].name);
         sq_newslot(v,-3,SQFalse);
         i++;

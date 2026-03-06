@@ -239,17 +239,17 @@ SQInteger _stream_eos(HSQUIRRELVM v)
  }
 
 static const SQRegFunction _stream_methods[] = {
-    _DECL_STREAM_FUNC(readblob,2,_SC("xn")),
-    _DECL_STREAM_FUNC(readn,2,_SC("xn")),
-    _DECL_STREAM_FUNC(writeblob,-2,_SC("xx")),
-    _DECL_STREAM_FUNC(writen,3,_SC("xnn")),
-    _DECL_STREAM_FUNC(seek,-2,_SC("xnn")),
-    _DECL_STREAM_FUNC(tell,1,_SC("x")),
-    _DECL_STREAM_FUNC(len,1,_SC("x")),
-    _DECL_STREAM_FUNC(eos,1,_SC("x")),
-    _DECL_STREAM_FUNC(flush,1,_SC("x")),
-    _DECL_STREAM_FUNC(_cloned,0,NULL),
-    {NULL,(SQFUNCTION)0,0,NULL}
+    _DECL_STREAM_FUNC(readblob,2,2,_SC("xn")),
+    _DECL_STREAM_FUNC(readn,2,2,_SC("xn")),
+    _DECL_STREAM_FUNC(writeblob,2,0,_SC("xx")),
+    _DECL_STREAM_FUNC(writen,3,3,_SC("xnn")),
+    _DECL_STREAM_FUNC(seek,2,0,_SC("xnn")),
+    _DECL_STREAM_FUNC(tell,1,1,_SC("x")),
+    _DECL_STREAM_FUNC(len,1,1,_SC("x")),
+    _DECL_STREAM_FUNC(eos,1,1,_SC("x")),
+    _DECL_STREAM_FUNC(flush,1,1,_SC("x")),
+    _DECL_STREAM_FUNC(_cloned,0,0,NULL),
+    {NULL,(SQFUNCTION)0,0,0,NULL}
 };
 
 void init_streamclass(HSQUIRRELVM v)
@@ -265,7 +265,7 @@ void init_streamclass(HSQUIRRELVM v)
             const SQRegFunction &f = _stream_methods[i];
             sq_pushstring(v,f.name,-1);
             sq_newclosure(v,f.f,0);
-            sq_setparamscheck(v,f.nparamscheck,f.typemask);
+            sq_setparamscheck(v,f.nparamscheckmin,f.nparamscheckmax,f.typemask);
             sq_newslot(v,-3,SQFalse);
             i++;
         }
@@ -301,7 +301,7 @@ SQRESULT declare_stream(HSQUIRRELVM v,const SQChar* name,SQUserPointer typetag,c
             const SQRegFunction &f = methods[i];
             sq_pushstring(v,f.name,-1);
             sq_newclosure(v,f.f,0);
-            sq_setparamscheck(v,f.nparamscheck,f.typemask);
+            sq_setparamscheck(v,f.nparamscheckmin,f.nparamscheckmax,f.typemask);
             sq_setnativeclosurename(v,-1,f.name);
             sq_newslot(v,-3,SQFalse);
             i++;
@@ -315,7 +315,7 @@ SQRESULT declare_stream(HSQUIRRELVM v,const SQChar* name,SQUserPointer typetag,c
             const SQRegFunction &f = globals[i];
             sq_pushstring(v,f.name,-1);
             sq_newclosure(v,f.f,0);
-            sq_setparamscheck(v,f.nparamscheck,f.typemask);
+            sq_setparamscheck(v,f.nparamscheckmin,f.nparamscheckmax,f.typemask);
             sq_setnativeclosurename(v,-1,f.name);
             sq_newslot(v,-3,SQFalse);
             i++;
