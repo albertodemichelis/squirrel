@@ -114,6 +114,10 @@ SOURCE=.\sqstdaux.cpp
 
 SOURCE=.\sqstdsystem.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\sqstdimport.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 

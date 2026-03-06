@@ -5,7 +5,8 @@ set(SQSTDLIB_SRC sqstdaux.cpp
                  sqstdrex.cpp
                  sqstdstream.cpp
                  sqstdstring.cpp
-                 sqstdsystem.cpp)
+                 sqstdsystem.cpp
+                 sqstdimport.cpp)
 
 if(NOT DISABLE_DYNAMIC)
   add_library(sqstdlib SHARED ${SQSTDLIB_SRC})

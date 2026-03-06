@@ -90,6 +90,8 @@ if(NOT SQ_DISABLE_INSTALLER AND NOT SQ_DISABLE_HEADER_INSTALLER)
     include/sqstdmath.h
     include/sqstdstring.h
     include/sqstdsystem.h
+    include/sqstdimport.h
+    include/sqstdmodule.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     COMPONENT Development
     )
