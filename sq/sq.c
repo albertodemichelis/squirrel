@@ -265,6 +265,11 @@ void Interactive(HSQUIRRELVM v)
                     string=!string;
                     buffer[i++] = (SQChar)c;
             }
+            else if (c == _SC('\0') || c == EOF) {
+                scprintf(_SC("\n"));
+                done = SQTrue;
+                break;
+            }
             else if (i >= MAXINPUT-1) {
                 scfprintf(stderr, _SC("sq : input line too long\n"));
                 break;
