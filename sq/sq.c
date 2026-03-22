@@ -125,7 +125,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                     return _DONE;
                 default:
                     PrintVersionInfos();
-                    scprintf(_SC("unknown prameter '-%c'\n"),argv[arg][1]);
+                    scprintf(_SC("unknown parameter '-%c'\n"),argv[arg][1]);
                     PrintUsage();
                     *retval = -1;
                     return _ERROR;
@@ -264,6 +264,11 @@ void Interactive(HSQUIRRELVM v)
             else if(c==_SC('"') || c==_SC('\'')){
                     string=!string;
                     buffer[i++] = (SQChar)c;
+            }
+            else if (c == _SC('\0') || c == EOF) {
+                scprintf(_SC("\n"));
+                done = SQTrue;
+                break;
             }
             else if (i >= MAXINPUT-1) {
                 scfprintf(stderr, _SC("sq : input line too long\n"));
