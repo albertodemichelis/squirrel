@@ -125,7 +125,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[],SQInteger *retval)
                     return _DONE;
                 default:
                     PrintVersionInfos();
-                    scprintf(_SC("unknown prameter '-%c'\n"),argv[arg][1]);
+                    scprintf(_SC("unknown parameter '-%c'\n"),argv[arg][1]);
                     PrintUsage();
                     *retval = -1;
                     return _ERROR;
