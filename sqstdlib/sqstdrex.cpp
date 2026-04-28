@@ -79,7 +79,7 @@ static SQInteger sqstd_rex_newnode(SQRex *exp, SQRexNodeType type)
         n.right = exp->_nsubexpr++;
     if(exp->_nallocated < (exp->_nsize + 1)) {
         SQInteger oldsize = exp->_nallocated;
-        exp->_nallocated *= 2;
+        exp->_nallocated = (exp->_nallocated == 0) ? (exp->_nsize + 1) : (exp->_nallocated * 2);
         exp->_nodes = (SQRexNode *)sq_realloc(exp->_nodes, oldsize * sizeof(SQRexNode) ,exp->_nallocated * sizeof(SQRexNode));
     }
     exp->_nodes[exp->_nsize++] = n;
