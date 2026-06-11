@@ -11,6 +11,31 @@
 #include "sqclass.h"
 #include "sqclosure.h"
 
+const SQChar *SQMetaMethodName[] = {
+  _SC("_add"),
+  _SC("_sub"),
+  _SC("_mul"),
+  _SC("_div"),
+  _SC("_unm"),
+  _SC("_modulo"),
+  _SC("_set"),
+  _SC("_get"),
+  _SC("_typeof"),
+  _SC("_nexti"),
+  _SC("_cmp"),
+  _SC("_call"),
+  _SC("_cloned"),
+  _SC("_newslot"),
+  _SC("_delslot"),
+  _SC("_tostring"),
+  _SC("_newmember"),
+  _SC("_inherited"),
+  _SC("_shiftl"),
+  _SC("_shiftr"),
+  _SC("_and"),
+  _SC("_or"),
+  NULL
+};
 
 const SQChar *IdType2Name(SQObjectType type)
 {
@@ -44,6 +69,14 @@ const SQChar *IdType2Name(SQObjectType type)
 const SQChar *GetTypeName(const SQObjectPtr &obj1)
 {
     return IdType2Name(sq_type(obj1));
+}
+
+const SQChar *GetMetaMethodName(SQInteger mmId)
+{
+  if (mmId<MT_LAST)
+    return SQMetaMethodName[mmId];
+  else
+    return _SC("unknown");
 }
 
 SQString *SQString::Create(SQSharedState *ss,const SQChar *s,SQInteger len)

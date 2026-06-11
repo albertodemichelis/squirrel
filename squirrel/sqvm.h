@@ -96,7 +96,7 @@ public:
 
     bool TypeOf(const SQObjectPtr &obj1, SQObjectPtr &dest);
     bool CallMetaMethod(SQObjectPtr &closure, SQMetaMethod mm, SQInteger nparams, SQObjectPtr &outres);
-    bool ArithMetaMethod(SQInteger op, const SQObjectPtr &o1, const SQObjectPtr &o2, SQObjectPtr &dest);
+    bool ArithMetaMethod(SQMetaMethod mm, const SQObjectPtr &o1, const SQObjectPtr &o2, SQObjectPtr &dest);
     bool Return(SQInteger _arg0, SQInteger _arg1, SQObjectPtr &retval);
     //new stuff
     _INLINE bool ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2);
