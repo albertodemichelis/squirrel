@@ -948,14 +948,19 @@ static SQInteger string_slice(HSQUIRRELVM v)
 static SQInteger string_find(HSQUIRRELVM v)
 {
     SQInteger top,start_idx=0;
-    const SQChar *str,*substr,*ret;
+    const SQChar *str,*substr;
     if(((top=sq_gettop(v))>1) && SQ_SUCCEEDED(sq_getstring(v,1,&str)) && SQ_SUCCEEDED(sq_getstring(v,2,&substr))){
         if(top>2)sq_getinteger(v,3,&start_idx);
-        if((sq_getsize(v,1)>start_idx) && (start_idx>=0)){
-            ret=scstrstr(&str[start_idx],substr);
-            if(ret){
-                sq_pushinteger(v,(SQInteger)(ret-str));
-                return 1;
+        SQInteger len=sq_getsize(v,1);
+        SQInteger sublen=sq_getsize(v,2);
+        if((len>start_idx) && (start_idx>=0)){
+            // Search by length rather than with scstrstr: a Squirrel string may
+            // contain NULs, and strstr stops at the first NUL in either string.
+            for(SQInteger i=start_idx; i+sublen<=len; i++){
+                if(memcmp(&str[i],substr,sublen*sizeof(SQChar))==0){
+                    sq_pushinteger(v,i);
+                    return 1;
+                }
             }
         }
         return 0;
