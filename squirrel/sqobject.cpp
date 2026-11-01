@@ -552,6 +552,56 @@ bool SQFunctionProto::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr 
     _CHECK_IO(SafeRead(v,read,up, &f->_bgenerator, sizeof(f->_bgenerator)));
     _CHECK_IO(SafeRead(v,read,up, &f->_varparams, sizeof(f->_varparams)));
 
+    if(f->_stacksize < 1) return false;
+
+    for(i = 0; i < ninstructions; i++) {
+        SQInstruction &instr = f->_instructions[i];
+        if(instr.op > _OP_CLOSE) return false;
+        if(instr._arg0 >= f->_stacksize) return false;
+        switch(instr.op) {
+        case _OP_LOAD: case _OP_PREPCALLK: case _OP_GETK:
+            if(instr._arg1 < 0 || instr._arg1 >= nliterals) return false;
+            break;
+        case _OP_DLOAD:
+            if(instr._arg1 < 0 || instr._arg1 >= nliterals) return false;
+            if(instr._arg3 >= (unsigned char)nliterals) return false;
+            if(instr._arg2 >= f->_stacksize) return false;
+            break;
+        case _OP_MOVE: case _OP_LOADNULLS: case _OP_LOADBOOL:
+        case _OP_NEG: case _OP_NOT: case _OP_BWNOT: case _OP_TYPEOF:
+        case _OP_CLONE: case _OP_RESUME: case _OP_THROW:
+            if(instr._arg1 >= 0 && instr._arg1 >= f->_stacksize) return false;
+            break;
+        case _OP_DMOVE:
+            if(instr._arg1 >= 0 && instr._arg1 >= f->_stacksize) return false;
+            if(instr._arg2 >= f->_stacksize) return false;
+            if(instr._arg3 >= f->_stacksize) return false;
+            break;
+        case _OP_JMP:
+            if(i + instr._arg1 < 0 || i + instr._arg1 >= ninstructions) return false;
+            break;
+        case _OP_JCMP: case _OP_JZ:
+            if(i + instr._arg1 < 0 || i + instr._arg1 >= ninstructions) return false;
+            if(instr._arg2 >= f->_stacksize) return false;
+            break;
+        case _OP_CLOSURE:
+            if(instr._arg1 < 0 || instr._arg1 >= nfunctions) return false;
+            break;
+        case _OP_SETOUTER: case _OP_GETOUTER:
+            if(instr._arg1 < 0 || instr._arg1 >= noutervalues) return false;
+            break;
+        case _OP_ADD: case _OP_SUB: case _OP_MUL: case _OP_DIV: case _OP_MOD:
+        case _OP_BITW: case _OP_EQ: case _OP_NE: case _OP_CMP:
+        case _OP_NEWSLOT: case _OP_SET: case _OP_GET: case _OP_INSTANCEOF:
+        case _OP_NEWSLOTA:
+            if(instr._arg2 >= f->_stacksize) return false;
+            if(instr._arg1 >= 0 && instr._arg1 >= f->_stacksize) return false;
+            break;
+        default:
+            break;
+        }
+    }
+
     ret = f;
     return true;
 }
